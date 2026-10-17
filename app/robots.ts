@@ -14,10 +14,13 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // The tracking beacon and site-verification endpoints are for
-      // the tracking snippet and the app itself, not content for
-      // crawlers to index.
-      disallow: ['/api/'],
+      // The tracking beacon and site-verification endpoints are for the
+      // tracking snippet and the app itself, not content for crawlers to
+      // index. /dashboard is a signed-in, per-account view (it also sets
+      // its own `robots: { index: false }` in app/dashboard/page.tsx —
+      // belt and suspenders, since some crawlers only honor one
+      // mechanism or the other).
+      disallow: ['/api/', '/dashboard'],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
