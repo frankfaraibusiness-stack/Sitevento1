@@ -48,16 +48,16 @@ export function MarketingFooter() {
           <h4>Product</h4>
           <ul>
             <li>
-              <a href="#">Visit logs</a>
+              <a href="/product/visit-logs">Visit logs</a>
             </li>
             <li>
-              <a href="#">Email capture</a>
+              <a href="/product/email-capture">Email capture</a>
             </li>
             <li>
-              <a href="#">Live overlays</a>
+              <a href="/product/live-overlays">Live overlays</a>
             </li>
             <li>
-              <a href="#">Dashboard</a>
+              <a href="/product/dashboard">Dashboard</a>
             </li>
           </ul>
         </div>
@@ -65,13 +65,13 @@ export function MarketingFooter() {
           <h4>Company</h4>
           <ul>
             <li>
-              <a href="#">About</a>
+              <a href="/about">About</a>
             </li>
             <li>
-              <a href="#">Pricing</a>
+              <a href="/pricing">Pricing</a>
             </li>
             <li>
-              <a href="#">Careers</a>
+              <a href="/careers">Careers</a>
             </li>
           </ul>
         </div>
@@ -79,16 +79,16 @@ export function MarketingFooter() {
           <h4>Resources</h4>
           <ul>
             <li>
-              <a href="#">Documentation</a>
+              <a href="/docs">Documentation</a>
             </li>
             <li>
-              <a href="#">Changelog</a>
+              <a href="/changelog">Changelog</a>
             </li>
             <li>
-              <a href="#">Status</a>
+              <a href="/status">Status</a>
             </li>
             <li>
-              <a href="#">Support</a>
+              <a href="/support">Support</a>
             </li>
           </ul>
         </div>
@@ -100,9 +100,9 @@ export function MarketingFooter() {
           <a href="/privacy">Privacy</a>
         </span>
         <div className="socials">
-          <a href="#">X</a>
-          <a href="#">GitHub</a>
-          <a href="#">LinkedIn</a>
+          <a href="https://x.com" target="_blank" rel="noopener noreferrer">X</a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         </div>
       </div>
     </footer>
