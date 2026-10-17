@@ -156,6 +156,10 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
           sidebar.setOpen(false);
           scrollToSection(section);
         }}
+        onOpenProfile={() => {
+          sidebar.setOpen(false);
+          router.push('/dashboard/profile');
+        }}
       />
 
       <main>
