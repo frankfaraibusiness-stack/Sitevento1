@@ -152,66 +152,75 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
 
       <div className="dash-panel-body bcp-body">
         {/* ── Templates ─────────────────────────────────────────── */}
-        <h4 className="bcp-subtitle">Start from a template</h4>
-        <div className="bcp-templates" role="listbox" aria-label="Banner templates">
-          {OVERLAY_TEMPLATES.map((t) => {
-            const selected = draft.template === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                className={`bcp-tpl${selected ? ' is-selected' : ''}`}
-                onClick={() => applyTemplate(t.id as OverlayTemplateId)}
-              >
-                <span className="bcp-tpl-chip" style={{ background: `linear-gradient(135deg, ${t.theme.bgFrom}, ${t.theme.bgTo})` }}>
-                  <span className="bcp-tpl-dot" style={{ background: t.theme.accent }} />
-                </span>
-                <span className="bcp-tpl-label">{t.label}</span>
-                <span className="bcp-tpl-blurb">{t.blurb}</span>
-              </button>
-            );
-          })}
-        </div>
+        <section className="bcp-section">
+          <h4 className="bcp-section-title">Start from a template</h4>
+          <div className="bcp-templates" role="listbox" aria-label="Banner templates">
+            {OVERLAY_TEMPLATES.map((t) => {
+              const selected = draft.template === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={`bcp-tpl${selected ? ' is-selected' : ''}`}
+                  onClick={() => applyTemplate(t.id as OverlayTemplateId)}
+                >
+                  <span className="bcp-tpl-chip" style={{ background: `linear-gradient(135deg, ${t.theme.bgFrom}, ${t.theme.bgTo})` }}>
+                    <span className="bcp-tpl-dot" style={{ background: t.theme.accent }} />
+                  </span>
+                  <span className="bcp-tpl-label">{t.label}</span>
+                  <span className="bcp-tpl-blurb">{t.blurb}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         {/* ── Preview ───────────────────────────────────────────── */}
-        <h4 className="bcp-subtitle">Preview</h4>
-        <div className="bcp-phone-wrap">
-          <div className="bcp-phone" aria-label="Banner preview">
-            <div className="bcp-phone-notch" />
-            <div className="bcp-phone-screen">
-              {hasOverlayContent(draft) || draft.art !== 'none' ? (
-                <BannerCard overlay={draft} />
-              ) : (
-                <div className="bcp-preview-empty">Add a title or description to see it here.</div>
-              )}
+        <section className="bcp-section">
+          <h4 className="bcp-section-title">Preview</h4>
+          <div className="bcp-phone-wrap">
+            <div
+              className="bcp-phone"
+              aria-label="Banner preview"
+              style={{ background: `linear-gradient(160deg, ${draft.theme.bgFrom}, ${draft.theme.bgTo})` }}
+            >
+              <div className="bcp-phone-notch" />
+              <div className="bcp-phone-screen">
+                {hasOverlayContent(draft) || draft.art !== 'none' ? (
+                  <BannerCard overlay={draft} />
+                ) : (
+                  <div className="bcp-preview-empty">Add a title or description to see it here.</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {isLive && (
-          <div className="bcp-stats" role="status" aria-label="Live banner stats">
-            <div className="bcp-stats-row">
-              <div className="bcp-stat">
-                <span className="bcp-stat-num">{stats.impressions.toLocaleString()}</span>
-                <span className="bcp-stat-label">Impressions</span>
+          {isLive && (
+            <div className="bcp-stats" role="status" aria-label="Live banner stats">
+              <div className="bcp-stats-row">
+                <div className="bcp-stat">
+                  <span className="bcp-stat-num">{stats.impressions.toLocaleString()}</span>
+                  <span className="bcp-stat-label">Impressions</span>
+                </div>
+                <div className="bcp-stat">
+                  <span className="bcp-stat-num">{stats.ctaClicks.toLocaleString()}</span>
+                  <span className="bcp-stat-label">{saved?.ctaLabel ? `Clicked "${saved.ctaLabel}"` : 'CTA clicks'}</span>
+                </div>
+                <div className="bcp-stat">
+                  <span className="bcp-stat-num">{stats.closes.toLocaleString()}</span>
+                  <span className="bcp-stat-label">Closed</span>
+                </div>
               </div>
-              <div className="bcp-stat">
-                <span className="bcp-stat-num">{stats.ctaClicks.toLocaleString()}</span>
-                <span className="bcp-stat-label">{saved?.ctaLabel ? `Clicked "${saved.ctaLabel}"` : 'CTA clicks'}</span>
-              </div>
-              <div className="bcp-stat">
-                <span className="bcp-stat-num">{stats.closes.toLocaleString()}</span>
-                <span className="bcp-stat-label">Closed</span>
-              </div>
+              <p className="bcp-stats-note">This push only &mdash; resets the next time you update or re-push.</p>
             </div>
-            <p className="bcp-stats-note">This push only &mdash; resets the next time you update or re-push.</p>
-          </div>
-        )}
+          )}
+        </section>
 
         {/* ── Content ───────────────────────────────────────────── */}
-        <h4 className="bcp-subtitle">Content</h4>
+        <section className="bcp-section">
+        <h4 className="bcp-section-title">Content</h4>
         <div className="bcp-group">
           <label className="bcp-row">
             <span className="bcp-row-label">Badge</span>
@@ -236,8 +245,10 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
             </span>
           </label>
         </div>
+        </section>
 
-        <h4 className="bcp-subtitle">Button</h4>
+        <section className="bcp-section">
+        <h4 className="bcp-section-title">Button</h4>
         <div className="bcp-group">
           <label className="bcp-row">
             <span className="bcp-row-label">Label</span>
@@ -258,8 +269,10 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
             />
           </label>
         </div>
+        </section>
 
-        <h4 className="bcp-subtitle">Artwork</h4>
+        <section className="bcp-section">
+        <h4 className="bcp-section-title">Artwork</h4>
         <div className="bcp-art-strip" role="listbox" aria-label="Artwork">
           {OVERLAY_ART_OPTIONS.map((a) => (
             <button
@@ -274,8 +287,10 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
             </button>
           ))}
         </div>
+        </section>
 
-        <h4 className="bcp-subtitle">Display</h4>
+        <section className="bcp-section">
+        <h4 className="bcp-section-title">Display</h4>
         <div className="bcp-group">
           <div className="bcp-row">
             <span className="bcp-row-label">Shown as</span>
@@ -289,8 +304,10 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
             </span>
           </div>
         </div>
+        </section>
 
-        <h4 className="bcp-subtitle">Style</h4>
+        <section className="bcp-section">
+        <h4 className="bcp-section-title">Style</h4>
         <div className="bcp-group">
           <ColorField label="Background top" value={draft.theme.bgFrom} onChange={(v) => patchTheme({ bgFrom: v })} />
           <ColorField label="Background bottom" value={draft.theme.bgTo} onChange={(v) => patchTheme({ bgTo: v })} />
@@ -309,8 +326,10 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
             </span>
           </div>
         </div>
+        </section>
 
-        <h4 className="bcp-subtitle">Behaviour</h4>
+        <section className="bcp-section">
+        <h4 className="bcp-section-title">Behaviour</h4>
         <div className="bcp-group">
           <div className="bcp-row">
             <span className="bcp-row-stack">
@@ -347,6 +366,7 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
             </div>
           )}
         </div>
+        </section>
 
         {warnings.length > 0 && (
           <div className="bcp-warn" role="status">
