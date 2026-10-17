@@ -123,8 +123,49 @@
       sessionId = '';
     }
 
+    // Opt-in diagnostics: add ?sv_debug=1 to the page URL (or set
+    // window.SITEVENTO_DEBUG = true before this script loads) to log
+    // what each endpoint actually returns. /api/track and /api/widget
+    // always answer 200 even on failure (by design — a tracking call
+    // must never surface an error to a real visitor), so without this
+    // a misconfigured backend (e.g. missing Firebase Admin env vars,
+    // or a site not yet indexed) fails completely silently. Never
+    // enabled unless explicitly requested.
+    var DEBUG = (function () {
+      try {
+        return window.SITEVENTO_DEBUG === true || /[?&]sv_debug=1\b/.test(location.search);
+      } catch (e) {
+        return false;
+      }
+    })();
+    function dlog() {
+      if (!DEBUG) return;
+      try {
+        console.log.apply(console, ['[sitevento]'].concat(Array.prototype.slice.call(arguments)));
+      } catch (e) {}
+    }
+
     function beacon(url, payloadObj) {
       var payload = JSON.stringify(payloadObj);
+      if (DEBUG) {
+        // Use fetch (not sendBeacon) in debug mode so the response body
+        // can actually be read and logged — sendBeacon never exposes one.
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true,
+        })
+          .then(function (res) {
+            return res.text().then(function (text) {
+              dlog(url, 'status', res.status, 'body', text);
+            });
+          })
+          .catch(function (err) {
+            dlog(url, 'request failed', err);
+          });
+        return;
+      }
       if (navigator.sendBeacon) {
         try {
           var blob = new Blob([payload], { type: 'application/json' });
@@ -206,29 +247,59 @@
       var style = document.createElement('style');
       style.id = 'sv-overlay-styles';
       style.textContent =
-        '#sv-overlay-backdrop{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;' +
-        'justify-content:center;padding:24px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,' +
-        '"Segoe UI",sans-serif;}' +
-        '#sv-overlay-backdrop.sv-popup{inset:auto;right:18px;bottom:18px;left:auto;top:auto;padding:0;' +
-        'justify-content:flex-end;align-items:flex-end;}' +
-        '.sv-card{position:relative;max-width:480px;width:100%;border-radius:16px;padding:28px;' +
-        'box-sizing:border-box;color:var(--sv-text,#fff);}' +
-        '.sv-popup .sv-card{max-width:340px;padding:18px;border-radius:14px;}' +
-        '.sv-close{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;' +
-        'border:none;background:rgba(255,255,255,0.15);color:inherit;cursor:pointer;display:flex;' +
-        'align-items:center;justify-content:center;padding:0;}' +
-        '.sv-close svg{width:14px;height:14px;}' +
-        '.sv-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;' +
-        'text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--sv-accent,#c6ff3d);' +
-        'color:var(--sv-accent-text,#101400);margin-bottom:10px;}' +
-        '.sv-title{font-size:22px;font-weight:800;margin:0 0 6px;color:var(--sv-title,#fff);line-height:1.25;}' +
-        '.sv-desc{font-size:14.5px;line-height:1.55;margin:0 0 16px;color:var(--sv-text,rgba(255,255,255,.8));}' +
-        '.sv-cta{display:inline-flex;align-items:center;gap:8px;background:var(--sv-accent,#c6ff3d);' +
-        'color:var(--sv-accent-text,#101400);font-weight:700;font-size:14px;padding:10px 16px;border-radius:10px;' +
+        // ── Full-screen wrapper: covers the ENTIRE viewport, independent
+        // of the host page's own layout/scroll position, same contract
+        // as siterifty's .sa-overlay.
+        '#sv-overlay-backdrop{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;' +
+        'z-index:2147483000;overflow:hidden;box-sizing:border-box;}' +
+        '#sv-overlay-backdrop *,#sv-overlay-backdrop *::before,#sv-overlay-backdrop *::after{box-sizing:border-box;}' +
+        // ── Stage: fills the wrapper, paints the gradient background,
+        // centers the card. This is what makes "fullscreen" actually
+        // sitewide — a popup only differs by anchoring to a corner.
+        '.sv-stage{position:relative;width:100%;height:100%;display:flex;flex-direction:column;' +
+        'align-items:center;justify-content:center;padding:22px;box-sizing:border-box;overflow:hidden;' +
+        'isolation:isolate;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;' +
+        '-webkit-font-smoothing:antialiased;}' +
+        '.sv-popup .sv-stage{align-items:flex-end;justify-content:flex-end;padding:18px;background:none !important;}' +
+        // Soft accent bloom behind the card (fullscreen only).
+        '.sv-glow{position:absolute;width:720px;height:720px;max-width:160%;left:50%;top:46%;' +
+        'transform:translate(-50%,-50%);background:radial-gradient(closest-side,var(--sv-accent,#c6ff3d),transparent 70%);' +
+        'opacity:.2;filter:blur(30px);pointer-events:none;z-index:-1;}' +
+        '.sv-popup .sv-glow{display:none;}' +
+        '.sv-card{position:relative;width:100%;max-width:430px;max-height:100%;overflow-y:auto;' +
+        'overflow-x:hidden;-webkit-overflow-scrolling:touch;border-radius:30px;padding:34px 26px 28px;' +
+        'box-sizing:border-box;text-align:center;color:var(--sv-text,#fff);scrollbar-width:none;}' +
+        '.sv-card::-webkit-scrollbar{display:none;}' +
+        '.sv-card-glass{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);' +
+        'backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);' +
+        'box-shadow:0 30px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);}' +
+        '.sv-card-solid{background:rgba(8,8,12,.92);border:1px solid rgba(255,255,255,.1);' +
+        'box-shadow:0 30px 70px rgba(0,0,0,.55);}' +
+        '.sv-popup .sv-card{max-width:340px;text-align:left;padding:18px;border-radius:16px;}' +
+        '.sv-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;' +
+        'border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:inherit;' +
+        'cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}' +
+        '.sv-close svg{width:15px;height:15px;}' +
+        '.sv-badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;' +
+        'letter-spacing:.04em;text-transform:uppercase;padding:6px 13px;border-radius:999px;' +
+        'color:var(--sv-accent,#c6ff3d);' +
+        'background:color-mix(in srgb,var(--sv-accent,#c6ff3d) 13%,transparent);' +
+        'border:1px solid color-mix(in srgb,var(--sv-accent,#c6ff3d) 32%,transparent);margin-bottom:14px;}' +
+        '.sv-title{font-size:clamp(22px,6vw,28px);font-weight:800;margin:0 0 10px;' +
+        'color:var(--sv-title,#fff);line-height:1.2;letter-spacing:-.02em;}' +
+        '.sv-popup .sv-title{font-size:15px;margin-bottom:4px;}' +
+        '.sv-desc{font-size:15px;line-height:1.55;margin:0;color:var(--sv-text,rgba(255,255,255,.8));' +
+        'white-space:pre-line;}' +
+        '.sv-popup .sv-desc{font-size:12px;}' +
+        '.sv-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;' +
+        'min-height:50px;margin-top:22px;background:var(--sv-accent,#c6ff3d);' +
+        'color:var(--sv-accent-text,#101400);font-weight:700;font-size:15.5px;padding:0 20px;border-radius:14px;' +
         'border:none;cursor:pointer;text-decoration:none;}' +
-        '.sv-cta svg{width:15px;height:15px;}' +
-        '.sv-notify-row{display:flex;gap:8px;margin-top:4px;}' +
-        '.sv-notify-input{flex:1;min-width:0;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.25);' +
+        '.sv-popup .sv-cta{width:auto;min-height:0;margin-top:12px;padding:9px 14px;font-size:12px;}' +
+        '.sv-cta svg{width:16px;height:16px;}' +
+        '.sv-notify-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center;}' +
+        '.sv-popup .sv-notify-row{justify-content:flex-start;}' +
+        '.sv-notify-input{flex:1 1 150px;min-width:0;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.25);' +
         'background:rgba(255,255,255,.08);color:inherit;font-size:13.5px;}' +
         '.sv-notify-btn{padding:9px 14px;border-radius:9px;border:none;background:var(--sv-accent,#c6ff3d);' +
         'color:var(--sv-accent-text,#101400);font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;}' +
@@ -278,13 +349,34 @@
       var theme = data.theme || {};
       var isPopup = data.display === 'popup';
 
+      // ── Full-page wrapper: pinned to the viewport regardless of the
+      // host page's own scroll position/layout, so this always covers
+      // the whole screen edge-to-edge (not just the visible fold).
       var backdrop = document.createElement('div');
       backdrop.id = 'sv-overlay-backdrop';
       if (isPopup) backdrop.className = 'sv-popup';
 
+      // ── Stage: paints the sitewide gradient and centers the card,
+      // mirroring siterifty's SiteAlertOverlay (.sa-overlay > .sa-stage
+      // > .sa-glow + .sa-card). In popup mode the stage is transparent
+      // (no sitewide tint) and just anchors the small card to a corner.
+      var stage = document.createElement('div');
+      stage.className = 'sv-stage';
+      stage.style.setProperty('--sv-accent', theme.accent || '#c6ff3d');
+      if (!isPopup) {
+        stage.style.background = 'linear-gradient(160deg,' + (theme.bgFrom || '#111') + ',' + (theme.bgTo || '#000') + ')';
+        var glow = document.createElement('div');
+        glow.className = 'sv-glow';
+        stage.appendChild(glow);
+      }
+
       var card = document.createElement('div');
-      card.className = 'sv-card';
-      card.style.background = 'linear-gradient(160deg,' + (theme.bgFrom || '#111') + ',' + (theme.bgTo || '#000') + ')';
+      card.className = 'sv-card sv-card-' + (theme.card === 'solid' ? 'solid' : 'glass');
+      if (isPopup) {
+        // Popup card still needs its own background since the stage
+        // behind it has none.
+        card.style.background = 'linear-gradient(160deg,' + (theme.bgFrom || '#111') + ',' + (theme.bgTo || '#000') + ')';
+      }
       card.style.setProperty('--sv-accent', theme.accent || '#c6ff3d');
       card.style.setProperty('--sv-accent-text', theme.accentText || '#101400');
       card.style.setProperty('--sv-title', theme.titleColor || '#fff');
@@ -373,7 +465,8 @@
         card.appendChild(msg);
       }
 
-      backdrop.appendChild(card);
+      stage.appendChild(card);
+      backdrop.appendChild(stage);
       document.body.appendChild(backdrop);
       if (!isPopup) {
         try {
