@@ -5,7 +5,7 @@ import type { MetadataRoute } from 'next';
 // only route), so there's just the one entry; add more objects to the
 // returned array as real routes are added. See app/robots.ts for the
 // NEXT_PUBLIC_SITE_URL note — same fallback here so both stay in sync.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://sitevento1.vercel.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://sitevento12.vercel.app';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
