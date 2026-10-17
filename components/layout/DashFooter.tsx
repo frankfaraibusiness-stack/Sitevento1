@@ -11,9 +11,9 @@ export function DashFooter({ onBackToMarketing }: DashFooterProps) {
       <div className="dash-footer-inner">
         <span className="dash-footer-brand">sitevento</span>
         <div className="dash-footer-links">
-          <a href="#">Help &amp; support</a>
-          <a href="#">Documentation</a>
-          <a href="#">Status</a>
+          <a href="/support" target="_blank" rel="noopener noreferrer">Help &amp; support</a>
+          <a href="/docs" target="_blank" rel="noopener noreferrer">Documentation</a>
+          <a href="/status" target="_blank" rel="noopener noreferrer">Status</a>
           <a
             href="#"
             onClick={(e) => {
