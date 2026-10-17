@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import type { Site } from '@/lib/types';
 
 export type DashState = 'loading' | 'empty' | 'error' | 'main';
@@ -29,6 +29,7 @@ export function useSites(uid: string | null) {
 
     setDashState('loading');
 
+    const db = getFirebaseDb();
     const sitesQuery = query(collection(db, 'users', uid, 'sites'), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(
       sitesQuery,
