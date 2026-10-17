@@ -62,12 +62,18 @@
     padding: 0;
     height: 100%;
     background: var(--bg);
+    /* Safety net: no single section (long unbroken text, a fixed-width
+       child, etc.) should ever be able to force the whole page wider
+       than the viewport and push other sections/scroll sideways. */
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   body {
     font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
     color: var(--ink);
     padding-top: env(safe-area-inset-top, 0px);
+    width: 100%;
   }
 
   header {
