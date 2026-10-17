@@ -24,7 +24,6 @@
 //   7. Zapier & Make         — no-code routing to anywhere
 //   8. AI Support Agent      — 24/7 AI agent that replies to customers automatically
 //   9. Automation Workflows  — simple if-this-then-that rules ("new lead → tag + notify")
-import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 interface FeatureOption {
@@ -152,9 +151,16 @@ const FEATURE_OPTIONS: FeatureOption[] = [
   },
 ];
 
-export function FeatureOptionsGrid() {
-  const router = useRouter();
+interface FeatureOptionsGridProps {
+  // Site Alert is the one live tile; rather than routing to a separate
+  // page (which would need its own copy of the auth gate + active-site
+  // state DashboardShell already owns), tapping it opens the existing
+  // BannerComposer in-place on the dashboard. The other 8 tiles have no
+  // href and stay inert ("Coming soon").
+  onOpenSiteAlert: () => void;
+}
 
+export function FeatureOptionsGrid({ onOpenSiteAlert }: FeatureOptionsGridProps) {
   return (
     <div className="feat-grid">
       {FEATURE_OPTIONS.map((opt) => {
@@ -164,7 +170,7 @@ export function FeatureOptionsGrid() {
             key={opt.id}
             type="button"
             className={`feat-card${disabled ? ' feat-card-disabled' : ''}`}
-            onClick={() => opt.href && router.push(opt.href)}
+            onClick={() => opt.id === 'site-alert' && onOpenSiteAlert()}
             disabled={disabled}
             aria-disabled={disabled}
           >
