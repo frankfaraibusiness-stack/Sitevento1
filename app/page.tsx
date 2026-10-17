@@ -19,6 +19,16 @@ import { useAppView } from '@/hooks/useAppView';
 import { useSidebar } from '@/hooks/useSidebar';
 import type { AuthPane } from '@/hooks/useAuthForms';
 
+// Firebase (lib/firebase.ts) initializes at module-evaluation time, and
+// useAuth() calls getAuth()/onAuthStateChanged() on mount. Without this,
+// `next build` prerenders "/" statically at build time, which runs this
+// client component on the server before real NEXT_PUBLIC_FIREBASE_*
+// values are necessarily valid in that context — causing the build to
+// fail with `auth/invalid-api-key`. Forcing dynamic rendering means this
+// page is only ever rendered per-request (server) or in the browser,
+// both of which have real env vars, never at build time.
+export const dynamic = 'force-dynamic';
+
 export default function Page() {
   const { user, authReady } = useAuth();
   const sidebar = useSidebar();
