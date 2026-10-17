@@ -16,12 +16,11 @@ import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashFooter } from '@/components/layout/DashFooter';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
-import { ProfilePage } from '@/components/dashboard/ProfilePage';
+import { DashBottomNav, type DashNavTarget } from '@/components/dashboard/DashBottomNav';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
-import { useSites } from '@/hooks/useSites';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { DashSection } from '@/hooks/useAppView';
 
@@ -32,20 +31,11 @@ const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
   overlay: 'panelOverlay',
 };
 
-interface DashboardClientProps {
-  // 'main' is the existing /dashboard route; 'profile' is the new
-  // /dashboard/profile route (see app/dashboard/profile/page.tsx) — one
-  // shared auth gate, header and sidebar for both instead of each route
-  // standing up its own copy.
-  view?: 'main' | 'profile';
-}
-
-export default function DashboardClient({ view = 'main' }: DashboardClientProps) {
+export default function DashboardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
-  const { sites, disconnectSite } = useSites(user?.uid ?? null);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
@@ -105,6 +95,21 @@ export default function DashboardClient({ view = 'main' }: DashboardClientProps)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // Bottom nav targets map onto the same anchor ids DashboardShell's
+  // panels already expose — "home" to the top of the dashboard,
+  // "analytics" to the visit log, "settings" to Quick Tools/Site Alert
+  // (closest existing equivalent). "help" scrolls to DashFooter's own
+  // help link instead of duplicating it with a second help surface.
+  function handleBottomNav(target: DashNavTarget) {
+    if (target === 'help') {
+      const footer = document.querySelector('.dash-footer');
+      if (footer) footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    const section: DashSection = target === 'analytics' ? 'logs' : target === 'settings' ? 'overlay' : 'overview';
+    scrollToSection(section);
+  }
+
   if (!authReady) return <BootSplash />;
 
   if (authError) {
@@ -124,7 +129,7 @@ export default function DashboardClient({ view = 'main' }: DashboardClientProps)
         user={user}
         onLogoClick={() => router.push('/')}
         onSignupClick={() => openAuth('signup')}
-        onProfileClick={() => router.push('/dashboard/profile')}
+        onProfileClick={() => scrollToSection('overview')}
         onHamburgerClick={() => sidebar.setOpen(true)}
       />
 
@@ -136,32 +141,18 @@ export default function DashboardClient({ view = 'main' }: DashboardClientProps)
         onSignIn={() => openAuth('signin')}
         onNavigate={(section) => {
           sidebar.setOpen(false);
-          if (view !== 'main') {
-            router.push(`/dashboard#${SECTION_ELEMENT_IDS[section] || 'dashMain'}`);
-            return;
-          }
           scrollToSection(section);
         }}
-        onOpenProfile={() => router.push('/dashboard/profile')}
       />
 
       <main>
         {user ? (
-          view === 'profile' ? (
-            <ProfilePage
-              user={user}
-              sites={sites}
-              onDisconnectSite={disconnectSite}
-              onAddSite={openAddSiteModal}
-            />
-          ) : (
-            <DashboardShell
-              user={user}
-              onOpenAddSiteModal={openAddSiteModal}
-              onResumeVerification={handleResumeVerification}
-              onLeadsCountChange={setLeadsCount}
-            />
-          )
+          <DashboardShell
+            user={user}
+            onOpenAddSiteModal={openAddSiteModal}
+            onResumeVerification={handleResumeVerification}
+            onLeadsCountChange={setLeadsCount}
+          />
         ) : (
           <section>
             <div className="dashboard-empty">
@@ -176,6 +167,8 @@ export default function DashboardClient({ view = 'main' }: DashboardClientProps)
           </section>
         )}
       </main>
+
+      {user && <DashBottomNav onNavigate={handleBottomNav} />}
 
       <DashFooter onBackToMarketing={() => router.push('/')} />
 
