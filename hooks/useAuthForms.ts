@@ -14,7 +14,7 @@ import {
   signInWithPopup,
   updateProfile,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { getFirebaseAuth } from '@/lib/firebase';
 import { friendlyFirebaseError } from '@/lib/authErrors';
 
 const googleProvider = new GoogleAuthProvider();
@@ -37,6 +37,7 @@ export function useAuthForms(onSuccess: (kind: SuccessKind) => void) {
       clearErrors();
       setSubmitting(true);
       try {
+        const auth = getFirebaseAuth();
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name });
         onSuccess('signup');
@@ -54,6 +55,7 @@ export function useAuthForms(onSuccess: (kind: SuccessKind) => void) {
       clearErrors();
       setSubmitting(true);
       try {
+        const auth = getFirebaseAuth();
         await signInWithEmailAndPassword(auth, email, password);
         onSuccess('signin');
       } catch (err) {
@@ -70,6 +72,7 @@ export function useAuthForms(onSuccess: (kind: SuccessKind) => void) {
       clearErrors();
       setSubmitting(true);
       try {
+        const auth = getFirebaseAuth();
         await sendPasswordResetEmail(auth, email);
         onSuccess('forgot');
       } catch (err) {
@@ -85,6 +88,7 @@ export function useAuthForms(onSuccess: (kind: SuccessKind) => void) {
     async (kind: 'signin' | 'signup') => {
       setSubmitting(true);
       try {
+        const auth = getFirebaseAuth();
         await signInWithPopup(auth, googleProvider);
         onSuccess(kind === 'signup' ? 'signup' : 'signin-google');
       } catch (err) {
