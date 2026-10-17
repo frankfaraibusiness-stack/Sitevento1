@@ -30,32 +30,94 @@
 //      visitors see and interact with the banner.
 (function () {
   try {
+    // ============================================================
+    // DEBUG BUILD — temporary, remove once delivery is confirmed.
+    //
+    // Two things were made loud on purpose, same reasoning as
+    // siterifty's widget-ping debug build:
+    //
+    //   1. API_ORIGIN is HARDCODED below instead of derived from
+    //      currentScript.src. If the script-origin detection was ever
+    //      silently resolving to the wrong thing (a copy/paste onto a
+    //      different host, a proxy/CDN rewriting the script's own src,
+    //      document.currentScript being null in some browser), every
+    //      beacon call would silently point at the wrong place with no
+    //      visible error. Hardcoding removes that variable entirely —
+    //      if tracking still doesn't show up with a hardcoded URL, the
+    //      problem is NOT the origin-detection logic.
+    //
+    //   2. beacon() no longer tries sendBeacon() first. sendBeacon()
+    //      returns a boolean and fails silently on a CORS rejection or
+    //      a blocked request — exactly the case where you most want to
+    //      see an error. This build always uses fetch() with a real
+    //      .then()/.catch(), and logs the outcome to the console so
+    //      "is it even firing, and what happened" is answerable just by
+    //      opening devtools on the live site.
+    //
+    // Revert both once you've confirmed real visits are landing in
+    // Firestore: restore the currentScript.src derivation, and put
+    // sendBeacon back as the first attempt (it's lighter-weight and
+    // survives page unload better than fetch+keepalive for the normal
+    // case — fine to lose that advantage temporarily while debugging).
+    // ============================================================
+    var DEBUG = true;
+
     var currentScript = document.currentScript || (function () {
       var scripts = document.getElementsByTagName('script');
       return scripts[scripts.length - 1];
     })();
 
     var siteId = currentScript && currentScript.getAttribute('data-site');
-    if (!siteId) return;
+    if (!siteId) {
+      if (DEBUG) console.error('[sitevento] no data-site attribute found on the <script> tag — tracking cannot start.');
+      return;
+    }
 
-    // Resolve the API origin from this script's own src — sitevento.js and
-    // every /api/* route live on the same deployment as the dashboard
-    // itself, whatever that deployment's current URL happens to be. No
-    // hardcoded domain, so a redeploy or a future custom domain just
-    // works without touching this file.
-    var API_ORIGIN = (function () {
+    // --- DEBUG: hardcoded origin, bypassing currentScript.src entirely ---
+    // TODO: replace with your real production origin if this isn't it.
+    var API_ORIGIN = 'https://sitevento12.vercel.app';
+
+    if (DEBUG) {
+      console.log('[sitevento] debug build active. siteId =', siteId, ' API_ORIGIN =', API_ORIGIN);
+      // Also log what the normal (non-debug) detection WOULD have
+      // resolved to, so you can see if it agrees with the hardcoded
+      // value above or was actually the problem all along.
       try {
-        return new URL(currentScript.src).origin;
+        console.log('[sitevento] (for comparison) currentScript.src =', currentScript && currentScript.src,
+          ' -> would have resolved origin to:', currentScript ? new URL(currentScript.src).origin : '(no currentScript)');
       } catch (e) {
-        return window.location.origin;
+        console.log('[sitevento] (for comparison) could not resolve an origin from currentScript.src:', e);
       }
-    })();
+    }
+
     var TRACK_ENDPOINT = API_ORIGIN + '/api/track';
     var OVERLAY_TRACK_ENDPOINT = API_ORIGIN + '/api/overlay-track';
     var NOTIFY_ENDPOINT = API_ORIGIN + '/api/overlay-notify';
 
     function beacon(url, payloadObj) {
       var payload = JSON.stringify(payloadObj);
+
+      if (DEBUG) {
+        console.log('[sitevento] sending beacon ->', url, payloadObj);
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true
+        })
+          .then(function (r) {
+            console.log('[sitevento] beacon response:', r.status, url);
+            return r.text().catch(function () { return ''; }).then(function (text) {
+              if (text) console.log('[sitevento] beacon response body:', text);
+            });
+          })
+          .catch(function (e) {
+            console.error('[sitevento] beacon BLOCKED/FAILED (likely CORS, network, or wrong origin):', url, e);
+          });
+        return;
+      }
+
+      // --- Normal (non-debug) path, left intact below the DEBUG branch ---
       if (navigator.sendBeacon) {
         var blob = new Blob([payload], { type: 'application/json' });
         var ok = navigator.sendBeacon(url, blob);
