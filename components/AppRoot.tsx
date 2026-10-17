@@ -137,7 +137,7 @@ export default function AppRoot() {
 
       <main>
         {view === 'marketing' && (
-          <MarketingPage onConnectClick={() => handleConnectCTA(openAddSiteModal)} />
+          <MarketingPage onConnectClick={handleConnectCTA} />
         )}
 
         {view === 'dashboard' && user && (
