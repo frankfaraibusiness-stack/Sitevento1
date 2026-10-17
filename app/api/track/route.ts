@@ -2,7 +2,7 @@
 //
 // Port of the original api/track.js Vercel function to a Next.js App
 // Router Route Handler. Called by the sitevento tracking snippet
-// (public/t.js) on every page view of a connected site. Resolves the
+// (public/sitevento.js) on every page view of a connected site. Resolves the
 // visitor's country from Vercel's geo headers, looks up whether the
 // site is verified and whether this visitor is blocked, then writes a
 // visit doc to:
