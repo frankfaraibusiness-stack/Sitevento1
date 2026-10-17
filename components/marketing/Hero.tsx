@@ -3,11 +3,22 @@
 // components/marketing/Hero.tsx — replaces <section class="hero">.
 //
 // Desktop widens this into a two-column layout (.hero-grid): copy/CTA/
-// snippet on the left in .hero-main (unchanged content, just re-wrapped),
-// and HeroSlime filling the previously-empty right column so that side
-// doesn't read as dead space on wide viewports. Below the collapse
-// breakpoint the grid stacks to one column and the slime is hidden via
-// CSS — see marketing-hero.css.
+// snippet on the left in .hero-main, and HeroSlime filling the right
+// column that would otherwise sit empty on wide viewports.
+//
+// Below the 960px collapse breakpoint, the slime stays visible (not
+// hidden) rather than desktop-only, so mobile visitors get the same
+// character — but at full hero width there's no room for a full-height
+// side column next to the rest of the copy. Instead the slime is
+// rendered inside .hero-top (the eyebrow+heading block), as
+// .hero-top-slime — on mobile it's a small companion sitting beside the
+// heading via flexbox. On desktop .hero-top-slime is hidden and the
+// *same* HeroSlime is rendered a second time in .hero-side, which only
+// becomes visible (and fills the full right column) at that breakpoint
+// — see marketing-hero.css. Two render sites, CSS visibility toggles
+// between them, rather than one DOM node needing to visually jump
+// between a row beside the heading and a full-height column, which
+// plain CSS can't do without reparenting.
 import { HeroSlime } from './HeroSlime';
 
 interface HeroProps {
@@ -19,10 +30,17 @@ export function Hero({ onConnectClick }: HeroProps) {
     <section className="hero">
       <div className="hero-grid">
         <div className="hero-main">
-          <span className="eyebrow-tag">
-            <span className="dot"></span>one script tag, live in minutes
-          </span>
-          <h1>Connect your site. Run it from here.</h1>
+          <div className="hero-top">
+            <div className="hero-top-copy">
+              <span className="eyebrow-tag">
+                <span className="dot"></span>one script tag, live in minutes
+              </span>
+              <h1>Connect your site. Run it from here.</h1>
+            </div>
+            <div className="hero-top-slime">
+              <HeroSlime />
+            </div>
+          </div>
           <p className="sub">
             Drop a single meta tag into your site and get a control panel for everything that happens on it: who
             visits, who converts, and what they see right now.
