@@ -19,6 +19,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
+import { overlayFromTemplate } from '@/lib/siteAlert';
 
 export type ConnectStep = 'domain' | 'tag' | 'success';
 export type VerifyStatusKind = 'pending' | 'checking' | 'ok' | 'fail';
@@ -134,7 +135,7 @@ export function useConnectSiteWizard(uid: string | null) {
           name: h,
           url: normalized,
           status: 'pending',
-          overlay: { active: false },
+          overlay: overlayFromTemplate('announcement'),
           createdAt: serverTimestamp(),
         });
 
