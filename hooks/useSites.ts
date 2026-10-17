@@ -7,8 +7,15 @@
 // yet, default to the first one.
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import type { Site } from '@/lib/types';
 
@@ -69,5 +76,23 @@ export function useSites(uid: string | null) {
 
   const activeSite = sites.find((s) => s.id === activeSiteId) || null;
 
-  return { sites, activeSiteId, setActiveSiteId, activeSite, dashState, errorMessage };
+  // Disconnects a site: removes the owner's users/{uid}/sites/{siteId}
+  // doc AND the flat siteIndex/{siteId} lookup doc that /api/track and
+  // /api/overlay-track use to resolve "which account owns this
+  // siteId" — without that second delete, a stale tag left on an old
+  // page could keep writing visits and reading banner state against an
+  // account the owner just disconnected it from. Does NOT delete the
+  // visits/leads/blockedVisitors subcollections themselves (Admin SDK
+  // batch-delete territory, not something the client should do), so a
+  // reconnected site with the same ID would still see old history —
+  // acceptable since siteId is freshly generated per connection.
+  const disconnectSite = useCallback(async (siteId: string) => {
+    const db = getFirebaseDb();
+    await deleteDoc(doc(db, 'siteIndex', siteId)).catch(() => {});
+    if (uid) {
+      await deleteDoc(doc(db, 'users', uid, 'sites', siteId));
+    }
+  }, [uid]);
+
+  return { sites, activeSiteId, setActiveSiteId, activeSite, dashState, errorMessage, disconnectSite };
 }
