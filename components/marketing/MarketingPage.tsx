@@ -4,6 +4,7 @@
 import { Hero } from './Hero';
 import { LogoMarquee } from './LogoMarquee';
 import { StatusStrip, TopCapabilities, DetailCapabilities, Stats } from './CapabilitiesAndStats';
+import { FeatureOrbit } from './FeatureOrbit';
 import { TestimonialsMarquee, TestimonialsGrid } from './Testimonials';
 import { Faq } from './Faq';
 import { HowItWorks } from './HowItWorks';
@@ -22,6 +23,7 @@ export function MarketingPage({ onConnectClick }: MarketingPageProps) {
       <TopCapabilities />
       <DetailCapabilities />
       <Stats />
+      <FeatureOrbit />
       <TestimonialsMarquee />
       <Faq />
       <TestimonialsGrid />
