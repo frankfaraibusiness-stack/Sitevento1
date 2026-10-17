@@ -1,0 +1,97 @@
+/* ============================================================
+ * boot-splash.css — full-screen boot splash shown while auth state
+ * resolves (components/BootSplash.tsx). One orchestrated lime
+ * "ink splash" reveal: a blot scales/morphs in from the center, then
+ * the wordmark fades up on top of it. Plays once, non-looping.
+ * ============================================================ */
+
+  .boot-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .boot-splash-stage {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .boot-splash-blot {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: scale(0);
+    transform-origin: center;
+    animation: boot-splash-blot-in 760ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .boot-splash-blot-path {
+    fill: var(--lime);
+  }
+
+  .boot-splash-word {
+    position: relative;
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: var(--lime-ink);
+    opacity: 0;
+    transform: translateY(6px);
+    animation: boot-splash-word-in 420ms ease-out 560ms forwards;
+  }
+
+  @keyframes boot-splash-blot-in {
+    0% {
+      transform: scale(0);
+    }
+    65% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes boot-splash-word-in {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boot-splash-blot {
+      transform: scale(1);
+      opacity: 0;
+      animation: boot-splash-fade-only 300ms ease-out forwards;
+    }
+
+    .boot-splash-word {
+      transform: none;
+      opacity: 0;
+      animation: boot-splash-fade-only 300ms ease-out 120ms forwards;
+    }
+
+    @keyframes boot-splash-fade-only {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  }
