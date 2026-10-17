@@ -8,7 +8,7 @@
 // OverlayComposer), VisitLogPanel, LeadsPanel and BlockedVisitorsPanel.
 // Lives at /dashboard now (see app/dashboard/page.tsx) instead of being
 // one branch of the old single-page AppRoot view switch.
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { useSites } from '@/hooks/useSites';
 import { useActiveSiteData } from '@/hooks/useActiveSiteData';
@@ -42,7 +42,30 @@ export function DashboardShell({
     onLeadsCountChange(stats.leadsCount);
   }, [stats.leadsCount, onLeadsCountChange]);
 
-  if (dashState === 'loading') {
+  // Minimum-hold for the loading skeleton, same idea as BootSplash's
+  // randomized hold (see components/BootSplash.tsx / AppRoot.tsx): on a
+  // fast connection useSites can resolve in well under a second, which
+  // would otherwise flash the skeleton for a single frame. Instead we
+  // hold it for a randomized 3-5s floor every time this component
+  // mounts into a loading state, regardless of how fast the real data
+  // actually arrives, so it always reads as deliberate rather than a
+  // glitchy flicker. Only gates the transition OUT of 'loading' — the
+  // 'error' and 'empty' states are informational, not decorative, so
+  // they still show the instant they're known.
+  const minHoldMs = useMemo(() => 3000 + Math.random() * 2000, []);
+  const [minHoldElapsed, setMinHoldElapsed] = useState(false);
+  const holdTimerStarted = useRef(false);
+
+  useEffect(() => {
+    if (holdTimerStarted.current) return;
+    holdTimerStarted.current = true;
+    const t = setTimeout(() => setMinHoldElapsed(true), minHoldMs);
+    return () => clearTimeout(t);
+  }, [minHoldMs]);
+
+  const showLoadingSkeleton = dashState === 'loading' || (!minHoldElapsed && dashState !== 'error');
+
+  if (showLoadingSkeleton) {
     // Same shaped shimmer skeleton as app/loading.tsx (route-skeleton.css's
     // .skel-* classes), reused here so the dashboard's own in-place loading
     // state (sites/stats still fetching after the route has already
