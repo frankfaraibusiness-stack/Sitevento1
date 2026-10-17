@@ -14,13 +14,15 @@ import {
   browserLocalPersistence,
   type User,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { getFirebaseAuth } from '@/lib/firebase';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
+    const auth = getFirebaseAuth();
+
     setPersistence(auth, browserLocalPersistence).catch((err) => {
       console.error('Failed to set auth persistence', err);
     });
