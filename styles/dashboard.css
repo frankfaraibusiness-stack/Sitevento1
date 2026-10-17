@@ -742,21 +742,28 @@
 
   .qt-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
     margin-bottom: 18px;
+    width: 100%;
+  }
+
+  @media (min-width: 860px) {
+    .qt-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
   }
 
   .qt-card {
     all: unset;
     box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 10px;
     background: var(--dash-tone-surface);
     border: 1px solid var(--dash-tone-border);
     border-radius: 16px;
-    padding: 14px;
+    padding: 12px;
     cursor: pointer;
   }
   .qt-card:active { transform: scale(0.99); }
@@ -767,56 +774,67 @@
   .qt-tone-orange { --dash-tone: var(--dash-orange); --dash-tone-ink: var(--dash-orange-ink); --dash-tone-surface: var(--dash-orange-surface); --dash-tone-border: var(--dash-orange-border); }
 
   .qt-card-icon {
-    width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     background: color-mix(in srgb, var(--dash-tone) 18%, transparent);
     color: var(--dash-tone-ink);
   }
-  .qt-card-icon svg { width: 18px; height: 18px; }
+  .qt-card-icon svg { width: 16px; height: 16px; }
   .qt-card-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
   .qt-card-name {
-    font-weight: 700; font-size: 14px; color: var(--ink);
+    font-weight: 700; font-size: 13px; color: var(--ink);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .qt-card-sub {
-    font-family: -apple-system, sans-serif; font-size: 12px; color: var(--dash-tone-ink); opacity: 0.75;
+    font-family: -apple-system, sans-serif; font-size: 11.5px; color: var(--dash-tone-ink); opacity: 0.75;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .qt-card-arrow { color: var(--dash-tone-ink); opacity: 0.6; flex-shrink: 0; }
-  .qt-card-arrow svg { width: 15px; height: 15px; }
+  .qt-card-arrow { display: none; }
 
-  @media (max-width: 420px) {
-    .qt-card-sub { display: none; }
+  @media (min-width: 420px) {
+    .qt-card-icon { width: 38px; height: 38px; border-radius: 11px; }
+    .qt-card-icon svg { width: 18px; height: 18px; }
+    .qt-card-name { font-size: 14px; }
+    .qt-card-sub { font-size: 12px; }
+    .qt-card-arrow {
+      display: block; color: var(--dash-tone-ink); opacity: 0.6; flex-shrink: 0;
+    }
+    .qt-card-arrow svg { width: 15px; height: 15px; }
   }
 
   /* ============================================================
    * Feature options grid — the remaining tap-to-open cards, revealed
-   * via Quick Tools' "More options" toggle above. Same card language as
-   * .dash-card (cream surface, --line border) so it reads as part of
-   * the same dashboard, not a bolted-on block.
+   * via Quick Tools' "More options" toggle above. Deliberately shares
+   * .qt-card's visual language (tinted icon chip, compact name+sub
+   * row, same radius/padding/grid rhythm) so the two grids read as one
+   * consistent system instead of two different card designs — only
+   * difference is a neutral walnut tone instead of the four Quick
+   * Tools accent colours, since these nine tiles aren't colour-coded.
+   * Same 2-up at 320px / 4-up on desktop layout as Quick Tools.
    * ============================================================ */
   .feat-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 24px;
+    width: 100%;
   }
-  @media (min-width: 640px) {
-    .feat-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (min-width: 960px) {
-    .feat-grid { grid-template-columns: repeat(3, 1fr); }
+  @media (min-width: 860px) {
+    .feat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
   }
 
   .feat-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     display: flex;
-    align-items: flex-start;
-    gap: 13px;
+    align-items: center;
+    gap: 10px;
     text-align: left;
     background: var(--cream);
     border: 1px solid var(--line);
     border-radius: 16px;
-    padding: 16px;
+    padding: 12px;
     font-family: inherit;
     cursor: pointer;
     transition: border-color 0.15s ease, transform 0.1s ease;
@@ -831,8 +849,8 @@
 
   .feat-card-icon {
     flex-shrink: 0;
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 10px;
     background: var(--cream-deep);
     display: flex;
@@ -840,46 +858,68 @@
     justify-content: center;
     color: var(--walnut-dark);
   }
-  .feat-card-icon svg { width: 18px; height: 18px; }
+  .feat-card-icon svg { width: 16px; height: 16px; }
 
   .feat-card-body {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 1px;
     min-width: 0;
     flex: 1;
   }
   .feat-card-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    font-size: 14.5px;
+    font-size: 13px;
     font-weight: 700;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .feat-card-soon {
-    font-family: -apple-system, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #8a8477;
-    background: var(--cream-deep);
-    border-radius: 999px;
-    padding: 2px 8px;
+  /* Below 640px the name row is a single truncating line (same as Quick
+     Tools), so the "Coming soon" badge has nowhere to sit without being
+     clipped — it only appears once the card switches to the wider,
+     multi-line layout at 640px+ (see that breakpoint below). */
+  .feat-card-soon { display: none; }
+  /* Full description drops on narrow cards — same information-density
+     tradeoff Quick Tools already makes (name + short sub only below
+     420px, full detail once there's room for it). */
+  .feat-card-desc { display: none; }
+  .feat-card-arrow { display: none; }
+
+  @media (min-width: 420px) {
+    .feat-card-icon { width: 38px; height: 38px; border-radius: 11px; }
+    .feat-card-icon svg { width: 18px; height: 18px; }
+    .feat-card-name { font-size: 14px; }
+    .feat-card-soon { font-size: 12px; }
+    .feat-card-arrow {
+      display: block; flex-shrink: 0; color: #a39d8e;
+    }
+    .feat-card-arrow svg { width: 15px; height: 15px; }
   }
-  .feat-card-desc {
-    font-family: -apple-system, sans-serif;
-    font-size: 12.5px;
-    line-height: 1.45;
-    color: #6b655c;
+  @media (min-width: 640px) {
+    .feat-card { align-items: flex-start; padding: 14px; }
+    .feat-card-body { gap: 3px; }
+    .feat-card-name { white-space: normal; }
+    .feat-card-desc {
+      display: block;
+      font-family: -apple-system, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #6b655c;
+    }
+    .feat-card-soon {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      background: var(--cream-deep);
+      border-radius: 999px;
+      padding: 2px 8px;
+      margin-left: 6px;
+    }
+    .feat-card-arrow { align-self: center; }
   }
-  .feat-card-arrow {
-    flex-shrink: 0;
-    align-self: center;
-    color: #a39d8e;
-  }
-  .feat-card-arrow svg { width: 16px; height: 16px; }
 
   /* Site Alert overlay sheet — reuses the .css-sheet-backdrop pattern
      (same fixed full-screen dim layer, bottom sheet on mobile / centered
