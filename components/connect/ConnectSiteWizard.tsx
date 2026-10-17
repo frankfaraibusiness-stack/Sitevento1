@@ -97,8 +97,10 @@ export function ConnectSiteWizard({ open, uid, resumeTarget, onClose, onFinished
 
                 <button
                   type="submit"
-                  className={`connect-submit${wizard.domainSubmitting ? ' loading' : ''}`}
-                  disabled={wizard.domainSubmitting}
+                  className={`connect-submit${
+                    wizard.domainSubmitting || wizard.domainLookupStatus === 'loading' ? ' loading' : ''
+                  }`}
+                  disabled={wizard.domainSubmitting || wizard.domainLookupStatus === 'loading'}
                 >
                   <span className="btn-text">Continue</span>
                   <span className="spinner" />
