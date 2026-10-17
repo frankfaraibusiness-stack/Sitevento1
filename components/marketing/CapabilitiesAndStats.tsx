@@ -5,7 +5,10 @@ export function StatusStrip() {
   return (
     <div className="status-strip">
       <span className="status-pill">
-        <span className="live-dot"></span>Currently tracking 2,418 active sessions
+        <span className="live-dot"></span>
+        <span className="status-pill-text">
+          Currently tracking <span className="status-pill-num">2,418</span> active sessions
+        </span>
       </span>
     </div>
   );
