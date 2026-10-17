@@ -5,7 +5,7 @@
 // goToDashboard(section) via props instead of global functions.
 import { signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { getFirebaseAuth } from '@/lib/firebase';
 import type { DashSection } from '@/hooks/useAppView';
 
 interface SidebarProps {
@@ -184,7 +184,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate 
         </nav>
 
         <div className="sidebar-foot">
-          <button className="signout" onClick={() => signOut(auth)}>
+          <button className="signout" onClick={() => signOut(getFirebaseAuth())}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
             </svg>
