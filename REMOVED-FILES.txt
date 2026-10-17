@@ -1,0 +1,18 @@
+Files to DELETE from your project when applying this patch
+(a zip can't represent removals, so they're not included here):
+
+  components/dashboard/OverlayComposer.tsx
+  components/dashboard/SiteTabs.tsx
+
+Both are fully replaced:
+  OverlayComposer.tsx -> components/dashboard/BannerComposer.tsx
+  SiteTabs.tsx         -> components/dashboard/ConnectedSitesSection.tsx
+
+Everything else in this zip is either a new file or overwrites an
+existing file at the same path (including styles/dashboard.css, which
+is rewritten in place — same filename, same import in app/globals.css).
+
+One file was left in your project untouched but is now unused and safe
+to delete if you want to clean up:
+  components/dashboard/ColorSwatches.tsx
+(it was only used by the old OverlayComposer.tsx)
