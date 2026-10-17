@@ -32,9 +32,6 @@ export function Hero({ onConnectClick }: HeroProps) {
         <div className="hero-main">
           <div className="hero-top">
             <div className="hero-top-copy">
-              <span className="eyebrow-tag">
-                <span className="dot"></span>one script tag, live in minutes
-              </span>
               <h1>Connect your site. Run it from here.</h1>
             </div>
             <div className="hero-top-slime">
