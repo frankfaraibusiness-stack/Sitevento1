@@ -1,110 +1,126 @@
 // hooks/useOverlayComposer.ts
 //
-// Replaces the overlay composer's module-level state (overlayType,
-// overlayDisplay, overlayBgColor, overlayTextColor) and its
-// push/stop/preview functions. Mirrors the active site's overlay into
-// the form whenever the active site changes, same as the original
-// renderOverlayPanel() did on every site switch.
+// Drives the redesigned banner editor (components/dashboard/
+// BannerComposer.tsx). Mirrors the siterifty console-site-alert pattern:
+// `saved` = what's persisted (and what visitors see if active), `draft`
+// = what's being edited, with the draft always driving the live phone
+// preview. Picking a template replaces copy + look but preserves
+// active/version/ctaUrl/notifyOnClose, same reasoning as siterifty's
+// applyTemplate — switching templates on a LIVE banner shouldn't
+// silently take it down or drop a CTA link the owner already typed.
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
-import type { OverlayDisplay, OverlayType, Site } from '@/lib/types';
+import {
+  overlayFromTemplate,
+  sanitizeSiteOverlay,
+  type OverlayTemplateId,
+  type SiteOverlayDoc,
+  type OverlayTheme,
+} from '@/lib/siteAlert';
+import type { Site } from '@/lib/types';
 
-export const OVERLAY_BG_SWATCHES = ['#22201c', '#6b4a34', '#b3432b', '#6ba84f', '#2f6fb3', '#f6f2e7'];
-export const OVERLAY_TEXT_SWATCHES = ['#f6f2e7', '#22201c'];
+function contentKey(o: SiteOverlayDoc): string {
+  const { version: _v, updatedAt: _u, ...rest } = o;
+  return JSON.stringify(rest);
+}
 
 export function useOverlayComposer(uid: string | null, activeSite: Site | null) {
-  const [type, setType] = useState<OverlayType>('announcement');
-  const [display, setDisplay] = useState<OverlayDisplay>('fullscreen');
-  const [text, setText] = useState('');
-  const [bgColor, setBgColor] = useState(OVERLAY_BG_SWATCHES[0]);
-  const [textColor, setTextColor] = useState(OVERLAY_TEXT_SWATCHES[0]);
+  const [draft, setDraft] = useState<SiteOverlayDoc>(() => overlayFromTemplate('announcement'));
+  const [saved, setSaved] = useState<SiteOverlayDoc | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  // Repopulate the form whenever the active site changes — same behavior
-  // as renderOverlayPanel() being called from renderActiveSiteHeader().
+  // Repopulate the draft whenever the active site changes — same
+  // behavior as the original's renderOverlayPanel() on every site
+  // switch. sanitizeSiteOverlay coerces whatever shape is on the doc
+  // (including an old pre-redesign overlay) into the new full shape.
   useEffect(() => {
-    if (activeSite?.overlay?.active) {
-      setText(activeSite.overlay.text || '');
-      setType(activeSite.overlay.type || 'announcement');
-      setDisplay(activeSite.overlay.display || 'fullscreen');
-      setBgColor(activeSite.overlay.bgColor || OVERLAY_BG_SWATCHES[0]);
-      setTextColor(activeSite.overlay.textColor || OVERLAY_TEXT_SWATCHES[0]);
+    if (activeSite?.overlay) {
+      const clean = sanitizeSiteOverlay(activeSite.overlay);
+      setSaved(clean);
+      setDraft(clean);
     } else {
-      setText('');
-      setType('announcement');
-      setDisplay('fullscreen');
-      setBgColor(OVERLAY_BG_SWATCHES[0]);
-      setTextColor(OVERLAY_TEXT_SWATCHES[0]);
+      setSaved(null);
+      setDraft(overlayFromTemplate('announcement'));
     }
   }, [activeSite?.id, activeSite?.overlay]);
 
-  const push = useCallback(async () => {
-    if (!uid || !activeSite) return;
-    const trimmed = text.trim();
-    if (!trimmed) {
-      window.alert('Write what visitors should see first.');
-      return;
-    }
-    const payload = {
-      active: true,
-      type,
-      display,
-      text: trimmed,
-      bgColor,
-      textColor,
-      updatedAt: Date.now(),
-    };
-    try {
-      const db = getFirebaseDb();
-      // Keep the owner-only site doc in sync (drives the dashboard's own
-      // "live now" banner and repopulates the form on reload) ...
-      await updateDoc(doc(db, 'users', uid, 'sites', activeSite.id), { overlay: payload });
-      // ... and mirror the same payload into the public siteOverlay doc,
-      // which is the one the live site's tracking script (sitevento.js) is
-      // allowed to read. Keeping this separate from the owner-only site
-      // doc means visitors never get read access to anything else on it
-      // (name, url, uid, etc).
-      await setDoc(doc(db, 'siteOverlay', activeSite.id), { ...payload, updatedAt: serverTimestamp() });
-    } catch (err) {
-      console.error('pushOverlay error', err);
-      window.alert('Could not push that overlay right now.');
-    }
-  }, [uid, activeSite, type, display, text, bgColor, textColor]);
+  const patch = useCallback((p: Partial<SiteOverlayDoc>) => {
+    setDraft((d) => ({ ...d, ...p }));
+  }, []);
 
-  const stop = useCallback(async () => {
-    if (!uid || !activeSite) return;
-    const payload = {
-      active: false,
-      type,
-      display,
-      text: '',
-      bgColor,
-      textColor,
-      updatedAt: Date.now(),
-    };
+  const patchTheme = useCallback((p: Partial<OverlayTheme>) => {
+    setDraft((d) => ({ ...d, theme: { ...d.theme, ...p } }));
+  }, []);
+
+  const applyTemplate = useCallback((id: OverlayTemplateId) => {
+    setDraft((d) => {
+      const t = overlayFromTemplate(id);
+      return { ...t, active: d.active, ctaUrl: d.ctaUrl, notifyOnClose: d.notifyOnClose, version: d.version };
+    });
+  }, []);
+
+  const dirty = saved ? contentKey(saved) !== contentKey(draft) : true;
+  const isLive = !!saved?.active;
+
+  async function persist(next: SiteOverlayDoc) {
+    if (!uid || !activeSite) return false;
+    setBusy(true);
     try {
       const db = getFirebaseDb();
+      const payload = { ...next, updatedAt: Date.now() };
+      // Owner-only site doc — drives the dashboard's own "live now"
+      // state and repopulates the form on reload.
       await updateDoc(doc(db, 'users', uid, 'sites', activeSite.id), { overlay: payload });
+      // Public siteOverlay doc — the one the live tracking script is
+      // allowed to read. Kept separate so a visitor's read access never
+      // extends to anything else on the owner-only site doc (name, url,
+      // uid, stats, etc).
       await setDoc(doc(db, 'siteOverlay', activeSite.id), { ...payload, updatedAt: serverTimestamp() });
+      return true;
     } catch (err) {
-      console.error('stopOverlay error', err);
-      window.alert('Could not take that overlay down right now.');
+      console.error('overlay persist error', err);
+      window.alert('Could not save that banner right now.');
+      return false;
+    } finally {
+      setBusy(false);
     }
-  }, [uid, activeSite, type, display, bgColor, textColor]);
+  }
+
+  // Save as draft = persist with active forced OFF. Never reaches visitors.
+  const saveDraft = useCallback(async () => {
+    const ok = await persist({ ...draft, active: false });
+    return ok;
+  }, [draft]);
+
+  // Push = persist with active ON, bumping version so "closed until a
+  // new version" logic in the live script treats this as a fresh push.
+  const push = useCallback(async () => {
+    const nextVersion = (saved?.version ?? 0) + 1;
+    const ok = await persist({ ...draft, active: true, version: nextVersion });
+    return ok;
+  }, [draft, saved]);
+
+  // Keep the content, just switch off — so it can be re-enabled later
+  // without retyping everything.
+  const stop = useCallback(async () => {
+    const base = saved || draft;
+    const ok = await persist({ ...base, active: false });
+    return ok;
+  }, [saved, draft]);
 
   return {
-    type,
-    setType,
-    display,
-    setDisplay,
-    text,
-    setText,
-    bgColor,
-    setBgColor,
-    textColor,
-    setTextColor,
+    draft,
+    saved,
+    patch,
+    patchTheme,
+    applyTemplate,
+    dirty,
+    isLive,
+    busy,
+    saveDraft,
     push,
     stop,
   };
