@@ -4,21 +4,26 @@
 // while auth state is resolving (and for a short minimum hold after,
 // see the onDone contract below).
 //
-// Redesigned from the original single clean-blob version: real spilled
-// paint isn't a smooth circle, so the main blot and its satellite
-// droplets are each generated as an irregular, jittered closed path
-// (randomized per mount — no two boots look identical), with a jelly
-// squash/stretch wobble instead of a uniform scale animation.
+// The main blot is sized to flood the entire viewport edge-to-edge
+// (the SVG viewBox is stretched to 100vw x 100vh with
+// preserveAspectRatio="none"), so this reads as the whole screen
+// filling with slime rather than a small shape centered in empty
+// space. Real spilled paint isn't a smooth circle either, so the main
+// blot and its satellite droplets are each generated as an irregular,
+// jittered closed path (randomized per mount — no two boots look
+// identical), with a jelly squash/stretch wobble instead of a uniform
+// scale animation.
 //
 // Lifecycle has three phases, driven from here (not just CSS), because
 // phase 3's duration is randomized and the parent needs to know when
 // the whole thing is actually done:
 //   1. "forming"  (~3s)   — droplets wobble and gather, spreading
 //                           unevenly like paint pooling, growing from
-//                           nothing up toward full size.
+//                           nothing up to flood the full screen.
 //   2. "splash"   (~420ms)— a sharp jelly overshoot/snap, like the
-//                           paint just hit the surface, then wordmark
-//                           fades in on top.
+//                           paint just hit the surface. The logo is
+//                           mounted the instant forming ends and plays
+//                           its own bouncy entrance on top.
 //   3. "holding"  (3-5s,  — fully formed, idle (a very slight ambient
 //       randomized)         jiggle so it doesn't look frozen), then
 //                           calls onDone().
@@ -111,11 +116,14 @@ function makeDroplets(seedBase: number): Droplet[] {
 
   const droplets: Droplet[] = [];
 
-  // Main blot: centered-ish, biggest, irregular.
-  const mainCx = 100 + (rand() - 0.5) * 10;
-  const mainCy = 100 + (rand() - 0.5) * 10;
+  // Main blot: centered, now sized to flood the whole 0-200 viewBox
+  // (viewBox is stretched to 100vw x 100vh at render time) so the
+  // splash reads as the screen itself filling with slime, not a
+  // small shape floating in the middle of empty space.
+  const mainCx = 100 + (rand() - 0.5) * 6;
+  const mainCy = 100 + (rand() - 0.5) * 6;
   droplets.push({
-    path: makeBlobPath(mainCx, mainCy, 62, 14, 10, Math.floor(rand() * 100000)),
+    path: makeBlobPath(mainCx, mainCy, 150, 22, 12, Math.floor(rand() * 100000)),
     cx: mainCx,
     cy: mainCy,
     scale: 1,
@@ -124,13 +132,16 @@ function makeDroplets(seedBase: number): Droplet[] {
     wobbleSeed: rand() * 1000,
   });
 
-  const satelliteCount = 3 + Math.floor(rand() * 3); // 3-5
+  // Satellite droplets scattered out toward and past the edges of the
+  // viewBox, so flecks of "overspill" read past the main flood rather
+  // than sitting inside a small central cluster.
+  const satelliteCount = 5 + Math.floor(rand() * 4); // 5-8
   for (let i = 0; i < satelliteCount; i++) {
     const angle = rand() * Math.PI * 2;
-    const dist = 55 + rand() * 35;
+    const dist = 130 + rand() * 90;
     const cx = 100 + Math.cos(angle) * dist;
     const cy = 100 + Math.sin(angle) * dist;
-    const r = 8 + rand() * 14;
+    const r = 14 + rand() * 26;
     droplets.push({
       path: makeBlobPath(cx, cy, r, r * 0.4, 7, Math.floor(rand() * 100000)),
       cx,
@@ -189,8 +200,7 @@ export function BootSplash({ onDone }: BootSplashProps) {
         <svg
           className="boot-splash-blot-group"
           viewBox="0 0 200 200"
-          width="200"
-          height="200"
+          preserveAspectRatio="none"
           aria-hidden="true"
         >
           {droplets.map((drop, i) => (
@@ -210,7 +220,18 @@ export function BootSplash({ onDone }: BootSplashProps) {
             />
           ))}
         </svg>
-        <span className="boot-splash-word">sitevento</span>
+        {/* Logo reveal: mounted only once forming is done (phase is no
+            longer 'forming'), ~3s in, so it always lands after the
+            slime has fully spread rather than racing it. Its own
+            entrance animation is driven by the is-splash/is-holding
+            CSS below, same as the old wordmark was. */}
+        {phase !== 'forming' && (
+          <img
+            className="boot-splash-logo"
+            src="https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png"
+            alt="sitevento"
+          />
+        )}
       </div>
     </div>
   );
