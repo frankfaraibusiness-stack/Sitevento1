@@ -12,7 +12,7 @@
 //   - lib/firebase.ts + hooks/useAuth.ts: account data (email, display
 //     name, auth state) is handled by Firebase Authentication; site/
 //     visit/lead data lives in Firestore, scoped per account.
-//   - api/sitevento.js: the tracking snippet sets no cookies and reads
+//   - public/sitevento.js: the tracking snippet sets no cookies and reads
 //     no fingerprinting-grade signal — only viewport size + browser
 //     language, both sent in the same beacon as the page view.
 import type { LegalSection } from '@/components/legal/LegalPage';
