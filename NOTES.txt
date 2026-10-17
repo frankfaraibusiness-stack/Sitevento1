@@ -1,32 +1,59 @@
-Touched files only — dashboard banner-editor visual fix.
+Touched file only: public/sitevento.js — DEBUG BUILD
 
-WHAT CHANGED
-  components/dashboard/BannerComposer.tsx
-    - Each group (Start from a template, Preview, Content, Button,
-      Artwork, Display, Style, Behaviour) is now wrapped in its own
-      <section className="bcp-section"> with a clear title and a
-      divider below it, instead of one continuous scroll of fields.
-    - The phone-preview frame now gets an inline background gradient
-      built from the draft's own theme colors (bgFrom/bgTo), so the
-      "screen" picks up the real customization live, like siterifty's
-      console/site-alert preview.
+WHAT THIS BUILD DOES DIFFERENTLY
+  1. API_ORIGIN is hardcoded to 'https://sitevento12.vercel.app' instead
+     of being derived from currentScript.src. This rules out — or
+     confirms — whether the origin-detection logic was ever the actual
+     problem (e.g. document.currentScript being null, a proxy rewriting
+     the script's own src, etc). It also logs what the normal detection
+     WOULD have resolved to, for comparison, right next to the
+     hardcoded value.
 
-  styles/dashboard.css
-    - .bcp-phone / .bcp-phone-notch / .bcp-phone-screen: removed the
-      hardcoded `background: #000`. The screen now uses
-      `background: inherit`, picking up the live gradient set inline
-      on .bcp-phone from the draft's colors, instead of a flat black
-      rectangle (this was the "hardcoded black" / bad-looking preview).
-    - Added .bcp-section / .bcp-section-title rules: each group gets
-      consistent padding and a bottom divider so the panel reads as
-      distinct, neat sections rather than a squashed single block.
-    - Loosened .bcp-row padding/min-height slightly so fields breathe.
-    - Removed the now-unused .bcp-subtitle rule (sections replace it).
+  2. beacon() no longer tries navigator.sendBeacon() first. It always
+     uses fetch() with a real .then()/.catch(), and logs:
+       - every outgoing beacon URL + payload
+       - the HTTP status code of the response
+       - the response body (useful since /api/track returns JSON like
+         {ok:false, reason:'unknown site'} on an expected failure)
+       - any network/CORS failure, with the actual error object
 
-NOT CHANGED
-  No hook, prop, or data logic was touched — useOverlayComposer, patch,
-  patchTheme, push/stop/saveDraft all work exactly as before. This is
-  a pure markup-structure + CSS pass on BannerComposer.tsx.
+HOW TO USE IT
+  1. Replace your current public/sitevento.js with this file and deploy.
+  2. Open the live customer site (e.g. testhoyoo.oneapp.dev) in a
+     browser, open DevTools -> Console, and reload the page.
+  3. Look for lines starting with [sitevento]. You should see, in order:
+       [sitevento] debug build active. siteId = ... API_ORIGIN = ...
+       [sitevento] (for comparison) currentScript.src = ...
+       [sitevento] sending beacon -> https://sitevento12.vercel.app/api/track {...}
+       [sitevento] beacon response: 200 https://sitevento12.vercel.app/api/track
+     (or an error instead of that last line if it's blocked/failing)
 
-Drop these two files into your project at the same paths, overwriting
-the existing copies.
+WHAT EACH OUTCOME TELLS YOU
+  - No "[sitevento] debug build active" line at all
+      -> the script never loaded/ran. This confirms the 404 (or
+         whatever is preventing the <script> tag from executing) is
+         still the root blocker — nothing past this point can run.
+  - "debug build active" appears, but no "sending beacon" line follows
+      -> the script loaded but returned early. Check for the
+         "no data-site attribute" error just above it.
+  - "sending beacon" appears, then a BLOCKED/FAILED error
+      -> network/CORS/DNS issue reaching API_ORIGIN itself (wrong
+         domain, site down, CORS headers misconfigured on the route).
+  - "sending beacon" appears, then "beacon response: 200" with a body
+    like {"ok":false,"reason":"unknown site"} or
+    {"ok":false,"reason":"site not verified"}
+      -> the request IS reaching /api/track successfully. The remaining
+         issue is in Firestore lookup logic (siteIndex doc missing,
+         status not actually 'verified', etc), not in the script or
+         network layer at all.
+  - "beacon response: 200" with {"ok":true}
+      -> tracking is fully working end-to-end. Check the dashboard's
+         onSnapshot listener next if stats still don't show there.
+
+REVERT BEFORE SHIPPING TO REAL CUSTOMERS
+  Once you've confirmed real visits are landing in Firestore, revert:
+    - API_ORIGIN back to the currentScript.src-derived version
+    - beacon() back to trying sendBeacon() first, fetch() as fallback
+  (both the removed blocks are preserved as comments inline in this
+  file below the DEBUG branch, so the revert is just deleting the
+  DEBUG-only code paths and un-indenting what's left).
