@@ -1,32 +1,32 @@
 // app/api/track/route.ts
 //
-// Port of the original api/track.js Vercel function to a Next.js App
-// Router Route Handler. Called by the sitevento tracking snippet
-// (public/sitevento.js) on every page view of a connected site. Resolves the
-// visitor's country from Vercel's geo headers, looks up whether the
-// site is verified and whether this visitor is blocked, then writes a
-// visit doc to:
+// Receives one beacon per page view from the sitevento tracking snippet
+// (public/sitevento.js). Rebuilt from the original version to capture a
+// fuller per-visit log while staying privacy-conscious: everything
+// network/UA-sensitive is derived server-side (geo headers, User-Agent
+// parsing) so the client script never has to read or ship anything
+// identifying beyond what the browser already exposes to any page
+// (viewport size, language) — no fingerprinting libraries, no
+// third-party geo-IP calls, no cookies.
 //
-//   users/{uid}/sites/{siteId}/visits/{autoId}
+// Writes to users/{uid}/sites/{siteId}/visits/{autoId}. The dashboard's
+// live onSnapshot listener on that collection picks the new doc up
+// immediately — no polling.
 //
-// The dashboard's onSnapshot listener on that collection picks the new
-// doc up in real time.
-//
-// Deploy notes:
+// Deploy notes (unchanged from before):
 //   - Same Firebase Admin env vars as verify-site/route.ts
 //     (FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY).
-//   - Designed to be called from the browser (sendBeacon/fetch with
-//     keepalive), so CORS is wide open and the response is always 200 —
-//     a tracking call should never surface an error to site visitors or
-//     block page rendering.
-//   - Does NOT require querying by meta-tag content; the client passes
-//     the siteId straight through (non-sensitive site-routing info, not
-//     a secret write credential — Firestore rules are bypassed via
-//     Admin SDK here same as verify-site).
+//   - Called via sendBeacon/fetch-keepalive from third-party pages, so
+//     CORS is wide open and the response is always 200 — a tracking
+//     call must never surface an error to a site visitor or block page
+//     rendering.
+//   - siteId is resolved to an owning uid via the flat siteIndex/{siteId}
+//     index doc (same as before), then the site doc's `status` gates
+//     whether traffic is logged at all.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAdminDb } from '@/lib/firebaseAdmin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -37,35 +37,47 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-function getAdminDb() {
-  const app = getApps().length
-    ? getApps()[0]
-    : initializeApp({
-        credential: cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-        }),
-      });
-  return getFirestore(app);
-}
+// ── User-Agent parsing ─────────────────────────────────────────────
+// Deliberately hand-rolled rather than a dependency: this only needs to
+// be "good enough for a dashboard column", checked in an order that
+// gets the common ambiguous cases right (Edge/Opera/Chrome share
+// "Chrome" in their UA string; iPadOS 13+ reports as Mac).
 
-// Lightweight device classification from the UA string — good enough
-// for the dashboard's "device" column without pulling in a parsing
-// library.
-function classifyDevice(ua: string) {
-  if (!ua || typeof ua !== 'string') return 'Unknown device';
+function classifyDevice(ua: string): string {
+  if (!ua) return 'Unknown device';
   const s = ua.toLowerCase();
-  if (/ipad|tablet/.test(s)) return 'Tablet';
-  if (/mobi|iphone|android/.test(s)) return 'Mobile';
+  if (/ipad|tablet(?!.*mobile)/.test(s)) return 'Tablet';
+  if (/mobi|iphone|android.*mobile|windows phone/.test(s)) return 'Mobile';
   return 'Desktop';
 }
 
-// Simple string hash so repeat visitors (same IP + UA) collapse into
-// the same visitorId for the "unique visitors" stat, without storing
-// raw IPs in Firestore long-term (the hash is one-way and not
-// reversible to the IP on its own).
-function hashVisitor(parts: string[]) {
+function classifyBrowser(ua: string): string {
+  if (!ua) return 'Unknown';
+  if (/edg\//i.test(ua)) return 'Edge';
+  if (/opr\/|opera/i.test(ua)) return 'Opera';
+  if (/firefox\//i.test(ua)) return 'Firefox';
+  if (/crios\//i.test(ua)) return 'Chrome';
+  if (/fxios\//i.test(ua)) return 'Firefox';
+  if (/chrome\//i.test(ua) && !/edg\//i.test(ua)) return 'Chrome';
+  if (/safari\//i.test(ua) && /version\//i.test(ua)) return 'Safari';
+  if (/msie|trident/i.test(ua)) return 'Internet Explorer';
+  return 'Unknown';
+}
+
+function classifyOS(ua: string): string {
+  if (!ua) return 'Unknown';
+  if (/windows nt/i.test(ua)) return 'Windows';
+  if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+  if (/mac os x/i.test(ua)) return 'macOS';
+  if (/android/i.test(ua)) return 'Android';
+  if (/cros/i.test(ua)) return 'ChromeOS';
+  if (/linux/i.test(ua)) return 'Linux';
+  return 'Unknown';
+}
+
+// Repeat-visitor collapsing (same IP + UA -> same visitorId), without
+// storing raw IPs long-term. One-way, non-reversible to the IP alone.
+function hashVisitor(parts: string[]): string {
   const str = parts.join('|');
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -74,17 +86,21 @@ function hashVisitor(parts: string[]) {
   return 'v' + hash.toString(36);
 }
 
+function clip(v: unknown, max: number): string {
+  return typeof v === 'string' && v ? v.slice(0, max) : '';
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
 export async function POST(req: NextRequest) {
-  // A tracking call should never block or error out the visitor's page,
-  // so every failure path below still returns 200 — the only thing
-  // that matters to the client is "don't retry forever."
+  // A tracking call should never block or error out the visitor's page —
+  // every failure path below still returns 200. The only thing that
+  // matters to the client is "don't retry forever."
   try {
     const body = await req.json().catch(() => ({}));
-    const { siteId, path, referrer } = body || {};
+    const { siteId, path, referrer, screen, lang, landing, sessionId } = body || {};
 
     if (!siteId || typeof siteId !== 'string') {
       return NextResponse.json({ ok: false, reason: 'missing siteId' }, { status: 200, headers: CORS_HEADERS });
@@ -101,25 +117,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // siteId alone doesn't tell us the owning uid. Sites live at
-    // users/{uid}/sites/{siteId}, so resolve uid via a flat index doc
-    // (siteIndex/{siteId} -> { uid }) written once at site-creation
-    // time. One cheap doc read instead of a collection-group query;
-    // siteId is already non-secret (it's pasted into the public <head>
-    // of the customer's site as the meta tag's content).
-    let uid: string | null = null;
-    let siteSnap = null;
-
+    // siteId alone doesn't tell us the owning uid — resolve via the
+    // flat siteIndex/{siteId} doc written once at site-creation time.
+    // One cheap doc read instead of a collection-group query; siteId is
+    // already non-secret (it's pasted into the customer's public page).
     const indexSnap = await db.collection('siteIndex').doc(siteId).get();
-    if (indexSnap.exists) {
-      uid = indexSnap.data()?.uid ?? null;
-      if (uid) {
-        const ref = db.collection('users').doc(uid).collection('sites').doc(siteId);
-        siteSnap = await ref.get();
-      }
+    const uid: string | null = indexSnap.exists ? indexSnap.data()?.uid ?? null : null;
+
+    if (!uid) {
+      return NextResponse.json({ ok: false, reason: 'unknown site' }, { status: 200, headers: CORS_HEADERS });
     }
 
-    if (!uid || !siteSnap || !siteSnap.exists) {
+    const siteRef = db.collection('users').doc(uid).collection('sites').doc(siteId);
+    const siteSnap = await siteRef.get();
+    if (!siteSnap.exists) {
       return NextResponse.json({ ok: false, reason: 'unknown site' }, { status: 200, headers: CORS_HEADERS });
     }
 
@@ -135,7 +146,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Vercel populates these geo headers at the edge from the request
-    // IP, so no external geo-IP API call (and no extra latency/cost) is
+    // IP — no external geo-IP API call (and no extra latency/cost)
     // needed. Falls back gracefully off-Vercel.
     const country = req.headers.get('x-vercel-ip-country') || 'Unknown';
     const cityHeader = req.headers.get('x-vercel-ip-city');
@@ -146,34 +157,36 @@ export async function POST(req: NextRequest) {
     const ua = req.headers.get('user-agent') || '';
     const visitorId = hashVisitor([ip, ua]);
 
-    const blockedSnap = await db
-      .collection('users')
-      .doc(uid)
-      .collection('sites')
-      .doc(siteId)
+    const blockedSnap = await siteRef
       .collection('blockedVisitors')
       .doc(visitorId)
       .get()
       .catch(() => null);
     const isBlocked = !!(blockedSnap && blockedSnap.exists);
 
-    const visitRef = db
-      .collection('users')
-      .doc(uid)
-      .collection('sites')
-      .doc(siteId)
-      .collection('visits')
-      .doc();
+    const visitRef = siteRef.collection('visits').doc();
     await visitRef.set({
       ts: FieldValue.serverTimestamp(),
-      path: typeof path === 'string' && path ? path.slice(0, 300) : '/',
-      referrer: typeof referrer === 'string' && referrer ? referrer.slice(0, 300) : 'Direct',
+      path: clip(path, 300) || '/',
+      referrer: clip(referrer, 300) || 'Direct',
       device: classifyDevice(ua),
+      browser: classifyBrowser(ua),
+      os: classifyOS(ua),
+      screen: clip(screen, 20) || null,
+      lang: clip(lang, 20) || null,
+      landing: landing === true,
+      sessionId: clip(sessionId, 60) || null,
       country,
       city,
       visitorId,
       blocked: isBlocked,
     });
+
+    // Fire-and-forget: bump the site's lastSeenAt so a future "active
+    // sites" view could sort by recent traffic without scanning visits.
+    // Never awaited beyond this call, and failure here must not affect
+    // the 200 the client already gets.
+    siteRef.update({ lastSeenAt: FieldValue.serverTimestamp() }).catch(() => {});
 
     return NextResponse.json({ ok: true }, { status: 200, headers: CORS_HEADERS });
   } catch (err) {
