@@ -1,0 +1,240 @@
+/* ============================================================
+ * feature-orbit.css — homepage "feature wheel" section
+ * (components/marketing/FeatureOrbit.tsx).
+ *
+ * Reuses the same ring + per-item --dot-x/--dot-y offset technique as
+ * boot-splash.css: a single rotating container (.orbit-ring) spins as
+ * a whole, while each .orbit-item is positioned via its own translate
+ * offset and runs an equal-and-opposite counter-rotation so it stays
+ * upright as the ring turns underneath it — clock hands, not tumbling
+ * dice. The center hub pulses gently and cross-fades its content
+ * whenever the active feature changes (driven from React state, keyed
+ * by feature id so the fade re-triggers per swap).
+ * ============================================================ */
+
+  .feature-orbit-heading {
+    text-align: center;
+  }
+
+  .feature-orbit-heading h2,
+  .feature-orbit-heading p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .orbit-section {
+    max-width: 900px;
+    margin: 40px auto 0;
+    padding: 0 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .orbit-stage {
+    position: relative;
+    width: min(92vw, 420px);
+    height: min(92vw, 420px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---- The ring -------------------------------------------------- */
+  .orbit-ring {
+    position: absolute;
+    inset: 0;
+    animation: orbit-ring-spin var(--ring-spin-duration, 26s) linear infinite;
+  }
+
+  .orbit-ring.is-paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes orbit-ring-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .orbit-item {
+    all: unset;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1.5px solid var(--cream-deep);
+    box-shadow: 0 6px 16px rgba(34, 32, 28, 0.08);
+    color: var(--ink);
+    transform: translate(-50%, -50%) translate(var(--dot-x), var(--dot-y));
+    transition: background-color 220ms ease, border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+    /* Counter-rotate against the ring's own spin so the icon stays
+       upright — same duration as the ring, reversed direction. */
+    animation: orbit-item-counter-spin var(--ring-spin-duration, 26s) linear infinite;
+  }
+
+  .orbit-ring.is-paused .orbit-item {
+    animation-play-state: paused;
+  }
+
+  @keyframes orbit-item-counter-spin {
+    from { rotate: 0deg; }
+    to   { rotate: -360deg; }
+  }
+
+  .orbit-item:hover,
+  .orbit-item:focus-visible {
+    border-color: var(--lime);
+    box-shadow: 0 8px 20px rgba(34, 32, 28, 0.14);
+  }
+
+  .orbit-item.is-active {
+    background: var(--lime);
+    border-color: var(--lime-ink);
+    transform: translate(-50%, -50%) translate(var(--dot-x), var(--dot-y)) scale(1.12);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--lime) 45%, transparent);
+  }
+
+  .orbit-item-icon {
+    width: 26px;
+    height: 26px;
+    display: flex;
+  }
+
+  .orbit-item-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ---- Center hub -------------------------------------------------- */
+  .orbit-hub {
+    position: relative;
+    z-index: 1;
+    width: min(56vw, 230px);
+    height: min(56vw, 230px);
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1.5px solid var(--cream-deep);
+    box-shadow: 0 12px 28px rgba(34, 32, 28, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    gap: 8px;
+    animation:
+      orbit-hub-pulse 2.6s ease-in-out infinite,
+      orbit-hub-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes orbit-hub-pulse {
+    0%, 100% { box-shadow: 0 12px 28px rgba(34, 32, 28, 0.1); }
+    50%      { box-shadow: 0 14px 32px color-mix(in srgb, var(--lime) 30%, rgba(34, 32, 28, 0.1)); }
+  }
+
+  @keyframes orbit-hub-in {
+    0%   { opacity: 0; transform: scale(0.88); }
+    60%  { opacity: 1; transform: scale(1.04); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .orbit-hub-icon {
+    width: 32px;
+    height: 32px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .orbit-hub-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .orbit-hub-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .orbit-hub-body {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #6b665e;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* ---- Mobile nav dots ---------------------------------------------
+   * Small supplementary tap targets under the wheel — same five
+   * features, easier to hit precisely on touch than the orbiting
+   * items themselves, and doubles as a progress indicator. */
+  .orbit-dots-nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .orbit-nav-dot {
+    all: unset;
+    cursor: pointer;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cream-deep);
+    transition: background-color 200ms ease, transform 200ms ease;
+  }
+
+  .orbit-nav-dot.is-active {
+    background: var(--lime);
+    transform: scale(1.3);
+  }
+
+  @media (max-width: 640px) {
+    .orbit-stage {
+      width: min(88vw, 320px);
+      height: min(88vw, 320px);
+    }
+
+    .orbit-item {
+      width: 48px;
+      height: 48px;
+    }
+
+    .orbit-item-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .orbit-hub {
+      width: min(52vw, 170px);
+      height: min(52vw, 170px);
+      padding: 14px;
+    }
+
+    .orbit-hub-title {
+      font-size: 14px;
+    }
+
+    .orbit-hub-body {
+      display: none; /* keep the small hub readable; full copy stays reachable via nav dots + hover */
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orbit-ring,
+    .orbit-item {
+      animation: none;
+    }
+
+    .orbit-hub {
+      animation: none;
+    }
+  }
