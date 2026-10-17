@@ -419,43 +419,35 @@
 
   /* ============================================================
    * Banner composer — templates, live phone preview, content/style/
-   * behaviour controls, sticky action bar. Dark, self-contained surface
-   * nested inside the normal .dash-panel wrapper (keeps the panel's
-   * cream card frame, but everything inside this panel runs on its own
-   * dark token set) — same "console feels different from the public
-   * site" idea as siterifty's /console/site-alert, scoped locally so it
-   * doesn't affect the rest of the cream-themed dashboard.
+   * behaviour controls, sticky action bar. Light, cream-toned surface
+   * that matches the rest of the app (previously ran on its own
+   * hardcoded dark token set, which read as a different, bolted-on
+   * product next to the light dashboard — these tokens now resolve to
+   * light values so .bcp-* styling is unchanged structurally but the
+   * whole composer sits on the same palette as everywhere else).
    * ============================================================ */
   .bcp-root {
-    --bcp-bg: #0b0b0e;
-    --bcp-group: #16161b;
-    --bcp-group-2: #1f1f26;
-    --bcp-sep: rgba(255, 255, 255, 0.08);
-    --bcp-text: #f5f5f7;
-    --bcp-dim: rgba(235, 235, 245, 0.6);
-    --bcp-faint: rgba(235, 235, 245, 0.32);
+    --bcp-bg: var(--cream);
+    --bcp-group: #ffffff;
+    --bcp-group-2: var(--cream-deep);
+    --bcp-sep: var(--line);
+    --bcp-text: var(--ink);
+    --bcp-dim: #6b655c;
+    --bcp-faint: #a39d8e;
     --bcp-lime: var(--lime);
     --bcp-lime-ink: var(--lime-ink);
-    --bcp-red: #ff6b5e;
-    --bcp-amber: #ffb84d;
-    overflow: hidden;
-    border-radius: 22px;
+    --bcp-red: #d64545;
+    --bcp-amber: #b4690e;
   }
-  .bcp-root .dash-panel-head {
-    background: var(--bcp-bg); color: var(--bcp-text);
-    padding: 20px 20px 14px;
-  }
-  .bcp-root .dash-panel-head .dp-sub { color: var(--bcp-dim); }
   .bcp-body {
     background: var(--bcp-bg);
     color: var(--bcp-text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
-    padding: 4px 18px 20px;
     transition: background 0.4s ease;
   }
   .bcp-root.is-live .bcp-body {
     background:
-      radial-gradient(900px 300px at 50% -10%, color-mix(in srgb, var(--bcp-lime) 14%, transparent), transparent 62%),
+      radial-gradient(900px 300px at 50% -10%, color-mix(in srgb, var(--bcp-lime) 20%, transparent), transparent 62%),
       var(--bcp-bg);
   }
 
@@ -492,9 +484,9 @@
   .bcp-tpl.is-selected { border-color: var(--bcp-lime); }
   .bcp-tpl-chip {
     height: 54px; border-radius: 11px; margin-bottom: 7px;
-    display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid; place-items: center; border: 1px solid var(--bcp-sep);
   }
-  .bcp-tpl-dot { width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); }
+  .bcp-tpl-dot { width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 6px 16px rgba(20, 18, 14, 0.2); }
   .bcp-tpl-label { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
   .bcp-tpl-blurb { font-size: 11px; line-height: 1.3; color: var(--bcp-dim); }
 
@@ -571,7 +563,7 @@
   .bcp-row-note { font-size: 11.5px; color: var(--bcp-dim); line-height: 1.4; max-width: 280px; }
 
   .bcp-input, .bcp-textarea {
-    background: var(--bcp-group-2); border: 1px solid transparent; border-radius: 10px;
+    background: var(--bcp-group-2); border: 1px solid var(--bcp-sep); border-radius: 10px;
     color: var(--bcp-text); font-family: inherit; font-size: 13.5px;
     padding: 9px 11px; min-width: 0; flex: 1 1 auto; max-width: 260px;
   }
@@ -585,11 +577,11 @@
   .bcp-color-ctrl { display: flex; align-items: center; gap: 8px; }
   .bcp-swatch-wrap {
     width: 28px; height: 28px; border-radius: 50%; position: relative; overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2); flex-shrink: 0;
+    border: 1px solid var(--bcp-sep); flex-shrink: 0;
   }
   .bcp-swatch-input { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); border: none; padding: 0; cursor: pointer; opacity: 0; }
   .bcp-hex {
-    width: 104px; background: var(--bcp-group-2); border: 1px solid transparent; border-radius: 8px;
+    width: 104px; background: var(--bcp-group-2); border: 1px solid var(--bcp-sep); border-radius: 8px;
     color: var(--bcp-text); font-family: ui-monospace, Menlo, monospace; font-size: 12px; padding: 7px 9px;
   }
 
@@ -634,29 +626,30 @@
   .bcp-bar .ghost-btn.live { flex: 1.3 1 auto; }
 
   .bcp-sheet-backdrop {
-    position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.55);
+    position: fixed; inset: 0; z-index: 2300; background: rgba(20, 18, 14, 0.45);
     display: flex; align-items: flex-end; justify-content: center;
   }
   @media (min-width: 560px) { .bcp-sheet-backdrop { align-items: center; } }
   .bcp-sheet {
-    width: 100%; max-width: 420px; background: #1c1c1e; color: #f5f5f7;
+    width: 100%; max-width: 420px; background: var(--bg); color: var(--ink);
     border-radius: 20px 20px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    border: 1px solid var(--line); border-bottom: none;
   }
-  @media (min-width: 560px) { .bcp-sheet { border-radius: 20px; } }
+  @media (min-width: 560px) { .bcp-sheet { border-radius: 20px; border-bottom: 1px solid var(--line); } }
   .bcp-sheet-title { font-size: 16.5px; font-weight: 700; margin-bottom: 8px; }
-  .bcp-sheet-msg { font-size: 13.5px; color: rgba(235,235,245,0.7); line-height: 1.5; margin: 0 0 18px; }
+  .bcp-sheet-msg { font-size: 13.5px; color: #6b655c; line-height: 1.5; margin: 0 0 18px; }
   .bcp-sheet-actions { display: flex; gap: 10px; justify-content: flex-end; }
-  .bcp-sheet .ghost-btn { background: #2c2c2e; border-color: rgba(255,255,255,0.1); color: #f5f5f7; }
+  .bcp-sheet .ghost-btn { background: var(--cream-deep); border-color: var(--line); color: var(--ink); }
   .bcp-sheet .ghost-btn.live { background: var(--bcp-lime); color: var(--bcp-lime-ink); border-color: var(--bcp-lime); }
 
   .bcp-toast {
     position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%); z-index: 2200;
-    background: #1c1c1e; color: #f5f5f7; border-radius: 100px; padding: 11px 20px;
+    transform: translateX(-50%); z-index: 2400;
+    background: var(--ink); color: var(--cream); border-radius: 100px; padding: 11px 20px;
     font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 600;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 12px 30px rgba(20, 18, 14, 0.25);
   }
-  .bcp-toast.is-error { background: var(--bcp-red); color: #2a0600; }
+  .bcp-toast.is-error { background: var(--bcp-red); color: #fff; }
 
   /* ============================================================
    * BannerCard — the actual banner visual, shared between the phone
@@ -921,39 +914,47 @@
     .feat-card-arrow { align-self: center; }
   }
 
-  /* Site Alert overlay sheet — reuses the .css-sheet-backdrop pattern
-     (same fixed full-screen dim layer, bottom sheet on mobile / centered
-     on wider screens) so BannerComposer opens the same way the connect
-     wizard's other sheets do, instead of being its own one-off modal. */
-  .feat-panel-backdrop {
+  /* Site Alert — full-screen takeover (not a sheet/modal) with a sticky
+     header that stays pinned while the form scrolls underneath it, same
+     pattern as a native settings/editor screen. Opens over the whole
+     viewport, light surface matching the rest of the app. */
+  .feat-panel-screen {
     position: fixed; inset: 0; z-index: 2100;
-    background: rgba(20, 18, 14, 0.5);
-    display: flex; align-items: flex-end; justify-content: center;
-    padding-top: env(safe-area-inset-top, 0px);
+    background: var(--cream);
+    display: flex; flex-direction: column;
+    overflow: hidden;
   }
-  @media (min-width: 720px) {
-    .feat-panel-backdrop { align-items: center; padding: 24px; }
+  .feat-panel-head {
+    position: sticky; top: 0; z-index: 2;
+    flex-shrink: 0;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 16px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--line);
   }
-  .feat-panel-sheet {
-    position: relative;
-    width: 100%;
-    max-width: 640px;
-    max-height: calc(100vh - env(safe-area-inset-top, 0px) - 24px);
-    overflow-y: auto;
-    background: var(--bg);
-    border-radius: 20px 20px 0 0;
+  .feat-panel-head-text h2 {
+    margin: 0 0 3px; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; color: var(--ink);
   }
-  @media (min-width: 720px) {
-    .feat-panel-sheet { border-radius: 20px; max-height: calc(100vh - 48px); }
+  .feat-panel-head-text span {
+    display: block; font-family: -apple-system, sans-serif; font-size: 12.5px; color: #6b655c; max-width: 46ch;
   }
   .feat-panel-close {
-    position: sticky; top: 12px; margin: 12px 12px -40px auto;
+    flex-shrink: 0; margin-top: 2px;
     width: 32px; height: 32px; border-radius: 50%; border: none;
-    background: rgba(20, 18, 14, 0.55); color: #fff; cursor: pointer;
+    background: var(--cream-deep); color: var(--ink); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    z-index: 1;
   }
   .feat-panel-close svg { width: 14px; height: 14px; }
+  .feat-panel-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 20px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  @media (min-width: 720px) {
+    .feat-panel-head { padding: 20px 32px 18px; }
+    .feat-panel-body { padding: 22px 32px calc(40px + env(safe-area-inset-bottom, 0px)); max-width: 760px; margin: 0 auto; width: 100%; }
+  }
 
   /* ============================================================
    * Sticky bottom nav (DashBottomNav) — Home / Analytics / Settings /
