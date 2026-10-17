@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import type { OverlayDisplay, OverlayType, Site } from '@/lib/types';
 
 export const OVERLAY_BG_SWATCHES = ['#22201c', '#6b4a34', '#b3432b', '#6ba84f', '#2f6fb3', '#f6f2e7'];
@@ -57,6 +57,7 @@ export function useOverlayComposer(uid: string | null, activeSite: Site | null) 
       updatedAt: Date.now(),
     };
     try {
+      const db = getFirebaseDb();
       // Keep the owner-only site doc in sync (drives the dashboard's own
       // "live now" banner and repopulates the form on reload) ...
       await updateDoc(doc(db, 'users', uid, 'sites', activeSite.id), { overlay: payload });
@@ -84,6 +85,7 @@ export function useOverlayComposer(uid: string | null, activeSite: Site | null) 
       updatedAt: Date.now(),
     };
     try {
+      const db = getFirebaseDb();
       await updateDoc(doc(db, 'users', uid, 'sites', activeSite.id), { overlay: payload });
       await setDoc(doc(db, 'siteOverlay', activeSite.id), { ...payload, updatedAt: serverTimestamp() });
     } catch (err) {
