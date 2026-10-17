@@ -62,7 +62,7 @@ export function useOverlayComposer(uid: string | null, activeSite: Site | null) 
       // "live now" banner and repopulates the form on reload) ...
       await updateDoc(doc(db, 'users', uid, 'sites', activeSite.id), { overlay: payload });
       // ... and mirror the same payload into the public siteOverlay doc,
-      // which is the one the live site's tracking script (t.js) is
+      // which is the one the live site's tracking script (sitevento.js) is
       // allowed to read. Keeping this separate from the owner-only site
       // doc means visitors never get read access to anything else on it
       // (name, url, uid, etc).
