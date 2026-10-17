@@ -19,21 +19,44 @@ import { getFirebaseAuth } from '@/lib/firebase';
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
-    const auth = getFirebaseAuth();
+    // getFirebaseAuth() throws if the app is misconfigured (missing
+    // NEXT_PUBLIC_FIREBASE_* env vars in this deployment). An uncaught
+    // throw inside useEffect propagates up and crashes the whole React
+    // tree (the "Application error: a client-side exception has
+    // occurred" blank-page screen) instead of just failing sign-in — so
+    // it's caught here and surfaced as state instead.
+    let auth;
+    try {
+      auth = getFirebaseAuth();
+    } catch (err) {
+      console.error('Failed to initialize Firebase Auth', err);
+      setAuthError(err instanceof Error ? err.message : 'Failed to initialize authentication.');
+      setAuthReady(true);
+      return;
+    }
 
     setPersistence(auth, browserLocalPersistence).catch((err) => {
       console.error('Failed to set auth persistence', err);
     });
 
-    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
-      setUser(nextUser);
-      setAuthReady(true);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        setUser(nextUser);
+        setAuthReady(true);
+      },
+      (err) => {
+        console.error('onAuthStateChanged error', err);
+        setAuthError(err instanceof Error ? err.message : 'Authentication error.');
+        setAuthReady(true);
+      }
+    );
 
     return () => unsubscribe();
   }, []);
 
-  return { user, authReady };
+  return { user, authReady, authError };
 }
