@@ -47,7 +47,15 @@ export function DashboardShell({
       if (e.key === 'Escape') setSiteAlertOpen(false);
     }
     document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    // Full-screen takeover, so lock background scroll the same way
+    // ConnectSiteWizard does for its own modal — otherwise the
+    // dashboard underneath can still scroll (and its scroll position
+    // shifts) while this covers the whole viewport.
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
   }, [siteAlertOpen]);
 
   useEffect(() => {
@@ -233,13 +241,19 @@ export function DashboardShell({
       </div>
 
       {siteAlertOpen && (
-        <div className="feat-panel-backdrop" role="presentation" onClick={() => setSiteAlertOpen(false)}>
-          <div className="feat-panel-sheet" role="dialog" aria-modal="true" aria-label="Site Alert" onClick={(e) => e.stopPropagation()}>
+        <div className="feat-panel-screen" role="dialog" aria-modal="true" aria-label="Site Alert">
+          <div className="feat-panel-head">
+            <div className="feat-panel-head-text">
+              <h2>Live banner</h2>
+              <span>Push a full-screen or popup banner to this site, right now.</span>
+            </div>
             <button type="button" className="feat-panel-close" aria-label="Close" onClick={() => setSiteAlertOpen(false)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
                 <path d="M5 5l14 14M19 5L5 19" />
               </svg>
             </button>
+          </div>
+          <div className="feat-panel-body">
             <BannerComposer uid={user.uid} activeSite={activeSite} />
           </div>
         </div>
