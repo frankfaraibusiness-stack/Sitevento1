@@ -15,9 +15,10 @@ interface SidebarProps {
   onClose: () => void;
   onSignIn: () => void;
   onNavigate: (section: DashSection) => void;
+  onOpenProfile: () => void;
 }
 
-export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate }: SidebarProps) {
+export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate, onOpenProfile }: SidebarProps) {
   const name = user ? user.displayName || (user.email ? user.email.split('@')[0] : 'Account') : '';
   const email = user?.email || '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -115,7 +116,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate 
             </span>
             Dashboard
           </a>
-          <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); navigate('overview'); }}>
+          <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); onClose(); onOpenProfile(); }}>
             <span className="icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                 <circle cx="12" cy="8" r="4" />
