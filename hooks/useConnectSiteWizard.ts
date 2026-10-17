@@ -18,7 +18,7 @@ import {
   setDoc,
   type Unsubscribe,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 
 export type ConnectStep = 'domain' | 'tag' | 'success';
 export type VerifyStatusKind = 'pending' | 'checking' | 'ok' | 'fail';
@@ -75,6 +75,7 @@ export function useConnectSiteWizard(uid: string | null) {
   const watchSiteStatus = useCallback(
     (watchUid: string, watchSiteId: string) => {
       teardownWatch();
+      const db = getFirebaseDb();
       unsubRef.current = onSnapshot(doc(db, 'users', watchUid, 'sites', watchSiteId), (snap) => {
         const data = snap.data();
         if (data && data.status === 'verified') {
@@ -128,6 +129,7 @@ export function useConnectSiteWizard(uid: string | null) {
           /* leave h as-is */
         }
 
+        const db = getFirebaseDb();
         const docRef = await addDoc(collection(db, 'users', uid, 'sites'), {
           name: h,
           url: normalized,
