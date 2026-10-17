@@ -59,6 +59,38 @@
     text-align: left;
   }
 
+  /* Two columns on desktop: copy on the left, the slime character
+     filling the right column that used to sit empty. Single column
+     (slime hidden) below the collapse breakpoint, see further down. */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .hero-side {
+    display: none;
+  }
+
+  @media (min-width: 960px) {
+    .hero {
+      max-width: 1120px;
+    }
+
+    .hero-grid {
+      grid-template-columns: minmax(0, 620px) 1fr;
+      gap: 24px;
+    }
+
+    .hero-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+    }
+  }
+
   .hero .eyebrow-tag {
     display: inline-flex;
     align-items: center;
