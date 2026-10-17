@@ -1,0 +1,32 @@
+Touched files only — dashboard banner-editor visual fix.
+
+WHAT CHANGED
+  components/dashboard/BannerComposer.tsx
+    - Each group (Start from a template, Preview, Content, Button,
+      Artwork, Display, Style, Behaviour) is now wrapped in its own
+      <section className="bcp-section"> with a clear title and a
+      divider below it, instead of one continuous scroll of fields.
+    - The phone-preview frame now gets an inline background gradient
+      built from the draft's own theme colors (bgFrom/bgTo), so the
+      "screen" picks up the real customization live, like siterifty's
+      console/site-alert preview.
+
+  styles/dashboard.css
+    - .bcp-phone / .bcp-phone-notch / .bcp-phone-screen: removed the
+      hardcoded `background: #000`. The screen now uses
+      `background: inherit`, picking up the live gradient set inline
+      on .bcp-phone from the draft's colors, instead of a flat black
+      rectangle (this was the "hardcoded black" / bad-looking preview).
+    - Added .bcp-section / .bcp-section-title rules: each group gets
+      consistent padding and a bottom divider so the panel reads as
+      distinct, neat sections rather than a squashed single block.
+    - Loosened .bcp-row padding/min-height slightly so fields breathe.
+    - Removed the now-unused .bcp-subtitle rule (sections replace it).
+
+NOT CHANGED
+  No hook, prop, or data logic was touched — useOverlayComposer, patch,
+  patchTheme, push/stop/saveDraft all work exactly as before. This is
+  a pure markup-structure + CSS pass on BannerComposer.tsx.
+
+Drop these two files into your project at the same paths, overwriting
+the existing copies.
