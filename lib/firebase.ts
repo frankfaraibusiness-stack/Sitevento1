@@ -23,24 +23,60 @@ const firebaseConfig = {
 
 // This module is imported (directly or transitively) by
 // components/AppRoot.tsx, a 'use client' component — but Next.js still
-// *executes* client components on the server during static generation
-// (prerendering `/` at build time); 'use client' only controls what
-// ships to the browser, not where the module first runs. The old
-// `export const auth = getAuth(...)` pattern ran at module-evaluation
-// time, so `next build` called getAuth() server-side before real env
-// vars were available in that context, throwing `auth/invalid-api-key`
-// and failing the build.
+// *executes* client components on the server, both at build time
+// (prerendering) and, with `force-dynamic`, on every request's SSR pass.
+// 'use client' only controls what ships to the browser, not where the
+// module first runs.
 //
-// Firebase SDK functions (onAuthStateChanged(auth, ...), collection(db,
-// ...), signOut(auth), etc.) do internal instanceof/branded-type checks
-// on these arguments, so a lazy Proxy wrapper isn't safe here — it has
-// to be the real SDK instance. Instead, every call site keeps using
-// `auth` / `db` as plain values exactly as before; what changed is that
-// app/page.tsx (a plain Server Component) now exports
-// `dynamic = 'force-dynamic'`, which stops Next.js from ever
-// prerendering "/" at build time, so this module only ever executes in
-// the browser or during a real per-request server render, both of
-// which have real env vars available.
-const firebaseApp: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth: Auth = getAuth(firebaseApp);
-export const db: Firestore = getFirestore(firebaseApp);
+// The old `export const auth = getAuth(...)` pattern constructed the SDK
+// instance at module-evaluation time — the instant anything imported this
+// file. That happens during every server render too, so if that
+// particular invocation's env didn't have real NEXT_PUBLIC_* values
+// (wrong Vercel Environment, cold start timing, etc.), getAuth() threw
+// `auth/invalid-api-key` on the server, not just at build.
+//
+// Fix: never construct anything at module scope. Construction is deferred
+// into getFirebaseAuth() / getFirebaseDb(), which every call site now
+// calls (instead of importing a pre-built `auth` / `db` constant) from
+// inside useEffect/useCallback/event handlers/async functions — i.e.
+// only in response to real browser-side invocation, never during a
+// server render pass. A lazy Proxy wouldn't work here: the Firebase SDK
+// does instanceof/branded-type checks on `auth`/`db` arguments, so
+// callers need the real constructed instance, just constructed late.
+//
+// As a last line of defense, each getter also throws a clear error if
+// somehow still invoked with `typeof window === 'undefined'` (i.e.
+// genuinely on the server), rather than letting it fail deep inside the
+// Firebase SDK with a cryptic invalid-api-key stack trace.
+
+let firebaseApp: FirebaseApp | undefined;
+let authInstance: Auth | undefined;
+let dbInstance: Firestore | undefined;
+
+function getFirebaseApp(): FirebaseApp {
+  if (typeof window === 'undefined') {
+    throw new Error(
+      'Firebase must not be initialized during server rendering. ' +
+        'Call getFirebaseAuth()/getFirebaseDb() only from client-side code ' +
+        '(useEffect, event handlers, etc.), never at module scope or during render.'
+    );
+  }
+  if (!firebaseApp) {
+    firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  }
+  return firebaseApp;
+}
+
+export function getFirebaseAuth(): Auth {
+  if (!authInstance) {
+    authInstance = getAuth(getFirebaseApp());
+  }
+  return authInstance;
+}
+
+export function getFirebaseDb(): Firestore {
+  if (!dbInstance) {
+    dbInstance = getFirestore(getFirebaseApp());
+  }
+  return dbInstance;
+}
