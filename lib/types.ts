@@ -30,6 +30,12 @@ export interface Site {
   overlayStats?: OverlayStats;
   createdAt?: { toDate: () => Date } | null;
   verifiedAt?: { toDate: () => Date } | null;
+  // Optional — no billing system exists yet, so these are read
+  // defensively (missing = active/default plan) by
+  // app/api/widget/route.ts rather than required here. Present so a
+  // future billing feature can set them without a type change.
+  plan?: string;
+  subscriptionStatus?: 'active' | 'suspended' | 'canceled';
 }
 
 // Device/browser/OS are parsed server-side from the User-Agent at
