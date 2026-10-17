@@ -24,7 +24,7 @@
 //   7. Zapier & Make         — no-code routing to anywhere
 //   8. AI Support Agent      — 24/7 AI agent that replies to customers automatically
 //   9. Automation Workflows  — simple if-this-then-that rules ("new lead → tag + notify")
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 interface FeatureOption {
   id: string;
@@ -160,38 +160,111 @@ interface FeatureOptionsGridProps {
   onOpenSiteAlert: () => void;
 }
 
+// "Quick Tools" header + a compact 2x2 preview of the four most useful
+// tiles (matching the siterifty-style reference), colour-coded the same
+// way as the stat cards above. Expanding "More options" reveals the
+// full nine-tile grid underneath — nothing from the original lineup is
+// removed, just collapsed by default so the page reads cleanly.
+const QUICK_TOOL_IDS = ['site-alert', 'visitor-api', 'crm-sync', 'zapier'] as const;
+const QUICK_TOOL_TONES: Record<(typeof QUICK_TOOL_IDS)[number], 'green' | 'purple' | 'blue' | 'orange'> = {
+  'site-alert': 'green',
+  'visitor-api': 'purple',
+  'crm-sync': 'blue',
+  zapier: 'orange',
+};
+const QUICK_TOOL_SUBTITLES: Record<(typeof QUICK_TOOL_IDS)[number], string> = {
+  'site-alert': 'Push live banners',
+  'visitor-api': 'Get your data',
+  'crm-sync': 'Auto lead sync',
+  zapier: 'Connect tools',
+};
+
 export function FeatureOptionsGrid({ onOpenSiteAlert }: FeatureOptionsGridProps) {
+  const [expanded, setExpanded] = useState(false);
+  const quickTools = QUICK_TOOL_IDS.map((id) => FEATURE_OPTIONS.find((o) => o.id === id)!);
+  const restTools = FEATURE_OPTIONS.filter((o) => !QUICK_TOOL_IDS.includes(o.id as (typeof QUICK_TOOL_IDS)[number]));
+
+  function handleTap(id: string) {
+    if (id === 'site-alert') onOpenSiteAlert();
+  }
+
   return (
-    <div className="feat-grid">
-      {FEATURE_OPTIONS.map((opt) => {
-        const disabled = !opt.href;
-        return (
-          <button
-            key={opt.id}
-            type="button"
-            className={`feat-card${disabled ? ' feat-card-disabled' : ''}`}
-            onClick={() => opt.id === 'site-alert' && onOpenSiteAlert()}
-            disabled={disabled}
-            aria-disabled={disabled}
-          >
-            <span className="feat-card-icon">{opt.icon}</span>
-            <span className="feat-card-body">
-              <span className="feat-card-name">
-                {opt.name}
-                {disabled && <span className="feat-card-soon">Coming soon</span>}
+    <div className="qt-section" id="panelQuickTools">
+      <div className="qt-head">
+        <h3>Quick Tools</h3>
+        <button type="button" className="qt-more-btn" onClick={() => setExpanded((v) => !v)}>
+          {expanded ? 'Fewer options' : 'More options'}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={expanded ? 'is-open' : ''}>
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="qt-grid">
+        {quickTools.map((opt) => {
+          const disabled = !opt.href;
+          const tone = QUICK_TOOL_TONES[opt.id as (typeof QUICK_TOOL_IDS)[number]];
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              className={`qt-card qt-tone-${tone}${disabled ? ' qt-card-disabled' : ''}`}
+              onClick={() => handleTap(opt.id)}
+              disabled={disabled}
+              aria-disabled={disabled}
+            >
+              <span className="qt-card-icon">{opt.icon}</span>
+              <span className="qt-card-body">
+                <span className="qt-card-name">{opt.name}</span>
+                <span className="qt-card-sub">
+                  {disabled ? 'Coming soon' : QUICK_TOOL_SUBTITLES[opt.id as (typeof QUICK_TOOL_IDS)[number]]}
+                </span>
               </span>
-              <span className="feat-card-desc">{opt.description}</span>
-            </span>
-            {!disabled && (
-              <span className="feat-card-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </span>
-            )}
-          </button>
-        );
-      })}
+              {!disabled && (
+                <span className="qt-card-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {expanded && (
+        <div className="feat-grid">
+          {restTools.map((opt) => {
+            const disabled = !opt.href;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                className={`feat-card${disabled ? ' feat-card-disabled' : ''}`}
+                onClick={() => handleTap(opt.id)}
+                disabled={disabled}
+                aria-disabled={disabled}
+              >
+                <span className="feat-card-icon">{opt.icon}</span>
+                <span className="feat-card-body">
+                  <span className="feat-card-name">
+                    {opt.name}
+                    {disabled && <span className="feat-card-soon">Coming soon</span>}
+                  </span>
+                  <span className="feat-card-desc">{opt.description}</span>
+                </span>
+                {!disabled && (
+                  <span className="feat-card-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
