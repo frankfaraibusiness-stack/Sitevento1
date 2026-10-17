@@ -287,7 +287,14 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
                   <div className="row-between" style={{ marginBottom: 20 }}>
                     <label className="check-row">
                       <input type="checkbox" required checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-                      I agree to the <a href="#" style={{ marginLeft: 4 }}>Terms</a>&nbsp;&amp;&nbsp;<a href="#">Privacy Policy</a>
+                      I agree to the{' '}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4 }}>
+                        Terms
+                      </a>
+                      &nbsp;&amp;&nbsp;
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                        Privacy Policy
+                      </a>
                     </label>
                   </div>
 
@@ -356,8 +363,15 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
             </div>
 
             <p className="terms-note">
-              By continuing you agree to sitevento&apos;s <a href="#">Terms of Service</a> and{' '}
-              <a href="#">Privacy Policy</a>.
+              By continuing you agree to sitevento&apos;s{' '}
+              <a href="/terms" target="_blank" rel="noopener noreferrer">
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                Privacy Policy
+              </a>
+              .
             </p>
           </div>
         </div>
