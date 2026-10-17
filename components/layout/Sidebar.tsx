@@ -171,7 +171,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate 
             </span>
             Settings
           </a>
-          <a href="#" className="sidebar-link">
+          <a href="/support" className="sidebar-link" target="_blank" rel="noopener noreferrer">
             <span className="icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                 <circle cx="12" cy="12" r="10" />
