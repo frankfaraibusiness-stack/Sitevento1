@@ -1006,3 +1006,219 @@
   }
   .dbn-tab.is-active .dbn-label { font-weight: 700; }
   .dbn-tab:active { transform: scale(0.96); }
+
+/* ============================================================
+ * Analytics tab (VisitLogPanel / AnalyticsCharts.tsx) — stats, trend
+ * chart and breakdown lists above the existing visit log. Reuses the
+ * --dash-green/purple/blue/orange tone tokens from base.css (same set
+ * OverviewStats' tiles use) so this reads as one system rather than a
+ * bolted-on second style.
+ * ============================================================ */
+
+  .ac-panel .dash-panel-head { flex-wrap: wrap; }
+
+  .ac-range-switch {
+    display: inline-flex; gap: 2px; background: var(--cream); border: 1px solid var(--line);
+    border-radius: 100px; padding: 3px;
+  }
+  .ac-range-btn {
+    all: unset; box-sizing: border-box; cursor: pointer;
+    font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600;
+    color: #8a8477; padding: 5px 12px; border-radius: 100px;
+  }
+  .ac-range-btn.is-active { background: var(--bg); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+  /* ---- KPI row ---- */
+  .ac-kpi-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 2px 0 18px;
+  }
+  @media (min-width: 640px) {
+    .ac-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .ac-kpi-card {
+    position: relative; display: flex; flex-direction: column; gap: 3px;
+    background: var(--ac-tone-surface); border: 1px solid var(--ac-tone-border);
+    border-radius: 14px; padding: 14px 14px 12px;
+  }
+  .ac-tone-green { --ac-tone: var(--dash-green); --ac-tone-ink: var(--dash-green-ink); --ac-tone-surface: var(--dash-green-surface); --ac-tone-border: var(--dash-green-border); }
+  .ac-tone-purple { --ac-tone: var(--dash-purple); --ac-tone-ink: var(--dash-purple-ink); --ac-tone-surface: var(--dash-purple-surface); --ac-tone-border: var(--dash-purple-border); }
+  .ac-tone-blue { --ac-tone: var(--dash-blue); --ac-tone-ink: var(--dash-blue-ink); --ac-tone-surface: var(--dash-blue-surface); --ac-tone-border: var(--dash-blue-border); }
+  .ac-tone-orange { --ac-tone: var(--dash-orange); --ac-tone-ink: var(--dash-orange-ink); --ac-tone-surface: var(--dash-orange-surface); --ac-tone-border: var(--dash-orange-border); }
+
+  .ac-kpi-icon {
+    width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--ac-tone) 16%, transparent); color: var(--ac-tone-ink); margin-bottom: 2px;
+  }
+  .ac-kpi-icon svg { width: 15px; height: 15px; }
+  .ac-kpi-label {
+    font-family: -apple-system, sans-serif; font-size: 11.5px; font-weight: 700;
+    color: var(--ac-tone-ink); letter-spacing: 0.01em;
+  }
+  .ac-kpi-value { font-size: 22px; font-weight: 800; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ac-kpi-value-text { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ac-kpi-change {
+    display: inline-flex; align-items: center; gap: 3px; width: fit-content;
+    font-size: 11px; font-weight: 700; border-radius: 20px; padding: 2px 8px 2px 5px;
+    background: rgba(0,0,0,0.035); margin-top: 2px;
+  }
+  .ac-kpi-change svg { width: 11px; height: 11px; }
+  .ac-kpi-change.up { color: #0f5c2e; }
+  .ac-kpi-change.down { color: #b3432b; }
+
+  /* ---- chart cards ---- */
+  .ac-chart-card {
+    background: var(--cream); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 14px 10px; margin-bottom: 12px;
+  }
+  .ac-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .ac-chart-head h4 { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink); }
+
+  .ac-legend { display: flex; gap: 12px; }
+  .ac-legend-item {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: -apple-system, sans-serif; font-size: 11px; color: #8a8477; font-weight: 600;
+  }
+  .ac-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .ac-dot-visits { background: var(--dash-green); }
+  .ac-dot-uniques { background: var(--dash-blue); }
+
+  .ac-trend-wrap { position: relative; }
+  .ac-trend-svg { width: 100%; height: 180px; display: block; }
+  .ac-grid-line { stroke: var(--line); stroke-width: 1; }
+  .ac-line { stroke-width: 2.25; vector-effect: non-scaling-stroke; }
+  .ac-line-visits { stroke: var(--dash-green); }
+  .ac-line-uniques { stroke: var(--dash-blue); stroke-dasharray: 4 3; opacity: 0.75; }
+  .ac-axis-label { font-size: 9px; fill: #a39d8e; font-family: -apple-system, sans-serif; }
+  .ac-trend-empty {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: #a39d8e;
+  }
+
+  /* ---- breakdown bar lists ---- */
+  .ac-breakdown-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 8px;
+  }
+  @media (min-width: 820px) {
+    .ac-breakdown-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .ac-barlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .ac-barlist-row { display: flex; align-items: center; gap: 8px; }
+  .ac-bar-track {
+    position: relative; flex: 1; min-width: 0; height: 26px; border-radius: 7px;
+    background: rgba(0,0,0,0.035); overflow: hidden; display: flex; align-items: center;
+  }
+  .ac-bar-fill {
+    position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--ac-tone) 28%, transparent);
+    border-radius: 7px;
+  }
+  .ac-barlist.ac-tone-green { --ac-tone: var(--dash-green); }
+  .ac-barlist.ac-tone-purple { --ac-tone: var(--dash-purple); }
+  .ac-barlist.ac-tone-blue { --ac-tone: var(--dash-blue); }
+  .ac-barlist.ac-tone-orange { --ac-tone: var(--dash-orange); }
+  .ac-bar-label {
+    position: relative; z-index: 1; padding: 0 9px; font-family: -apple-system, sans-serif;
+    font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ac-bar-count {
+    flex-shrink: 0; font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--ink);
+    display: inline-flex; align-items: baseline; gap: 5px; font-variant-numeric: tabular-nums;
+  }
+  .ac-bar-pct { font-size: 10.5px; font-weight: 600; color: #a39d8e; }
+  .ac-barlist-empty {
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: #a39d8e; padding: 10px 2px;
+  }
+
+  .ac-log-head { padding: 4px 0 6px; border-top: 1px solid var(--line); margin-top: 6px; padding-top: 16px; }
+  .ac-log-head h4 { margin: 0 0 2px; font-size: 14px; font-weight: 700; color: var(--ink); }
+
+  @media (max-width: 640px) {
+    .ac-kpi-value { font-size: 19px; }
+    .ac-breakdown-grid { grid-template-columns: 1fr; }
+  }
+
+/* ============================================================
+ * Widgets picker (WidgetsPanel.tsx) — opens full-screen via the same
+ * .feat-panel-screen/.feat-panel-head pattern Site Alert uses. Unlike
+ * .feat-card (which collapses to icon+name-only below 420px), every
+ * .wg-card always shows its icon on the left and full title+
+ * description on the right, at every width — full-width single-column
+ * rows on phone, 2-up grid on desktop.
+ * ============================================================ */
+  .wg-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+  @media (min-width: 720px) {
+    .wg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  }
+
+  .wg-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+  .wg-card:hover { border-color: var(--walnut); }
+  .wg-card:active { transform: scale(0.99); }
+  .wg-card-disabled { cursor: default; opacity: 0.62; }
+  .wg-card-disabled:hover { border-color: var(--line); }
+
+  .wg-card-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: var(--cream-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--walnut-dark);
+  }
+  .wg-card-icon svg { width: 19px; height: 19px; }
+
+  .wg-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+    padding-top: 2px;
+  }
+  .wg-card-name {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .wg-card-soon {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: var(--cream-deep);
+    color: #6b655c;
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+  .wg-card-desc {
+    font-family: -apple-system, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #6b655c;
+  }
