@@ -33,7 +33,7 @@ import { useSidebar } from '@/hooks/useSidebar';
 import type { AuthPane } from '@/hooks/useAuthForms';
 
 export default function AppRoot() {
-  const { user, authReady } = useAuth();
+  const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
 
   const [authOpen, setAuthOpen] = useState(false);
@@ -83,6 +83,26 @@ export default function AppRoot() {
   }
 
   if (!authReady) return null;
+
+  if (authError) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ maxWidth: 480 }}>
+          <p style={{ fontWeight: 600, marginBottom: 8 }}>Something went wrong loading the app.</p>
+          <p style={{ color: '#6b655c', fontSize: 14 }}>{authError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
