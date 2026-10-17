@@ -148,7 +148,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate 
                 <path d="M4 12h16M4 6h16M4 18h10" />
               </svg>
             </span>
-            Live overlays
+            Features
           </a>
           <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); navigate('overview'); }}>
             <span className="icon">
