@@ -124,7 +124,7 @@ export function ConnectSiteWizard({ open, uid, resumeTarget, onClose, onFinished
                 <br />
                 &lt;<span className="tag-name">script</span> <span className="attr">src</span>=
                 <span className="val">
-                  &quot;{typeof window !== 'undefined' ? window.location.origin : ''}/t.js&quot;
+                  &quot;{typeof window !== 'undefined' ? window.location.origin : ''}/sitevento.js&quot;
                 </span>{' '}
                 <span className="attr">data-site</span>=<span className="val">&quot;{wizard.siteId}&quot;</span>{' '}
                 <span className="attr">defer</span>&gt;&lt;/<span className="tag-name">script</span>&gt;
