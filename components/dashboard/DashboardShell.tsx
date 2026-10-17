@@ -16,6 +16,7 @@ import { DashEmptyState } from './DashEmptyState';
 import { ConnectedSitesSection } from './ConnectedSitesSection';
 import { OverviewStats } from './OverviewStats';
 import { BannerComposer } from './BannerComposer';
+import { FeatureOptionsGrid } from './FeatureOptionsGrid';
 import { VisitLogPanel } from './VisitLogPanel';
 import { LeadsPanel } from './LeadsPanel';
 import { BlockedVisitorsPanel } from './BlockedVisitorsPanel';
@@ -37,6 +38,17 @@ export function DashboardShell({
     user.uid
   );
   const { visits, leads, stats, toggleBlockVisit } = useActiveSiteData(user.uid, activeSiteId);
+
+  const [siteAlertOpen, setSiteAlertOpen] = useState(false);
+
+  useEffect(() => {
+    if (!siteAlertOpen) return;
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setSiteAlertOpen(false);
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [siteAlertOpen]);
 
   useEffect(() => {
     onLeadsCountChange(stats.leadsCount);
@@ -172,7 +184,9 @@ export function DashboardShell({
           blockedCount={stats.blockedCount}
         />
 
-        <BannerComposer uid={user.uid} activeSite={activeSite} />
+        <div id="panelOverlay">
+          <FeatureOptionsGrid onOpenSiteAlert={() => setSiteAlertOpen(true)} />
+        </div>
 
         <VisitLogPanel
           visits={visits}
@@ -186,6 +200,19 @@ export function DashboardShell({
           onUnblock={(visitId, visitorId) => toggleBlockVisit(visitId, false, visitorId)}
         />
       </div>
+
+      {siteAlertOpen && (
+        <div className="feat-panel-backdrop" role="presentation" onClick={() => setSiteAlertOpen(false)}>
+          <div className="feat-panel-sheet" role="dialog" aria-modal="true" aria-label="Site Alert" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="feat-panel-close" aria-label="Close" onClick={() => setSiteAlertOpen(false)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+                <path d="M5 5l14 14M19 5L5 19" />
+              </svg>
+            </button>
+            <BannerComposer uid={user.uid} activeSite={activeSite} />
+          </div>
+        </div>
+      )}
     </section>
   );
 }
