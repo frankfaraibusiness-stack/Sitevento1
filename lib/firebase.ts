@@ -21,9 +21,25 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// getApps().length check mirrors the original inline <script type="module">
-// pattern — avoids "Firebase App named '[DEFAULT]' already exists" errors
-// under Next.js Fast Refresh, where this module can be re-evaluated.
-export const firebaseApp: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// `page.tsx` is a 'use client' component, but Next.js still *executes*
+// client components on the server during static generation
+// (prerendering `/` at build time) — 'use client' only controls what
+// ships to the browser, not where the module first runs. The old
+// `export const auth = getAuth(...)` pattern ran at module-evaluation
+// time, so `next build` called getAuth() server-side before real env
+// vars were available in that context, throwing `auth/invalid-api-key`
+// and failing the build.
+//
+// Firebase SDK functions (onAuthStateChanged(auth, ...), collection(db,
+// ...), signOut(auth), etc.) do internal instanceof/branded-type checks
+// on these arguments, so a lazy Proxy wrapper isn't safe here — it has
+// to be the real SDK instance. Instead, every call site keeps using
+// `auth` / `db` as plain values exactly as before; what changed is that
+// `app/page.tsx` now forces the dynamic rendering of "/" (see its
+// `export const dynamic = 'force-dynamic'`), which stops Next.js from
+// ever prerendering this page at build time, so this module only ever
+// executes in the browser or during a real per-request server render,
+// both of which have real env vars available.
+const firebaseApp: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth: Auth = getAuth(firebaseApp);
 export const db: Firestore = getFirestore(firebaseApp);
