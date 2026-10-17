@@ -142,15 +142,8 @@ export function BannerComposer({ uid, activeSite }: BannerComposerProps) {
   if (!activeSite) return null;
 
   return (
-    <div className={`dash-panel bcp-root${isLive ? ' is-live' : ''}`} id="panelOverlay">
-      <div className="dash-panel-head">
-        <div>
-          <h3>Live banner</h3>
-          <span className="dp-sub">Push a full-screen or popup banner to this site, right now.</span>
-        </div>
-      </div>
-
-      <div className="dash-panel-body bcp-body">
+    <div className={`bcp-root${isLive ? ' is-live' : ''}`} id="panelOverlay">
+      <div className="bcp-body">
         {/* ── Templates ─────────────────────────────────────────── */}
         <section className="bcp-section">
           <h4 className="bcp-section-title">Start from a template</h4>
