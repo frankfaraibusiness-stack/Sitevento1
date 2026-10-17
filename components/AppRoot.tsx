@@ -54,7 +54,7 @@ export default function AppRoot() {
   }, []);
   const closeAuth = useCallback(() => setAuthOpen(false), []);
 
-  const { view, goToDashboard, showMarketing, handleConnectCTA } = useAppView(user, openAuth);
+  const { view, goToDashboard, goToProfile, showMarketing, handleConnectCTA } = useAppView(user, openAuth);
 
   const [connectOpen, setConnectOpen] = useState(false);
   const [connectResumeTarget, setConnectResumeTarget] = useState<ConnectSiteResumeTarget | null>(null);
@@ -122,7 +122,7 @@ export default function AppRoot() {
         user={user}
         onLogoClick={showMarketing}
         onSignupClick={() => openAuth('signup')}
-        onProfileClick={() => goToDashboard('overview')}
+        onProfileClick={goToProfile}
         onHamburgerClick={() => sidebar.setOpen(true)}
       />
 
@@ -133,6 +133,7 @@ export default function AppRoot() {
         onClose={() => sidebar.setOpen(false)}
         onSignIn={() => openAuth('signin')}
         onNavigate={(section) => goToDashboard(section)}
+        onOpenProfile={goToProfile}
       />
 
       <main>
