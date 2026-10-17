@@ -1,59 +1,79 @@
-Touched file only: public/sitevento.js — DEBUG BUILD
+Touched files only — boot splash redesign.
 
-WHAT THIS BUILD DOES DIFFERENTLY
-  1. API_ORIGIN is hardcoded to 'https://sitevento12.vercel.app' instead
-     of being derived from currentScript.src. This rules out — or
-     confirms — whether the origin-detection logic was ever the actual
-     problem (e.g. document.currentScript being null, a proxy rewriting
-     the script's own src, etc). It also logs what the normal detection
-     WOULD have resolved to, for comparison, right next to the
-     hardcoded value.
+  components/BootSplash.tsx   (rewritten)
+  styles/boot-splash.css      (rewritten)
+  components/AppRoot.tsx      (small, 2-spot change)
 
-  2. beacon() no longer tries navigator.sendBeacon() first. It always
-     uses fetch() with a real .then()/.catch(), and logs:
-       - every outgoing beacon URL + payload
-       - the HTTP status code of the response
-       - the response body (useful since /api/track returns JSON like
-         {ok:false, reason:'unknown site'} on an expected failure)
-       - any network/CORS failure, with the actual error object
+WHAT CHANGED AND WHY
 
-HOW TO USE IT
-  1. Replace your current public/sitevento.js with this file and deploy.
-  2. Open the live customer site (e.g. testhoyoo.oneapp.dev) in a
-     browser, open DevTools -> Console, and reload the page.
-  3. Look for lines starting with [sitevento]. You should see, in order:
-       [sitevento] debug build active. siteId = ... API_ORIGIN = ...
-       [sitevento] (for comparison) currentScript.src = ...
-       [sitevento] sending beacon -> https://sitevento12.vercel.app/api/track {...}
-       [sitevento] beacon response: 200 https://sitevento12.vercel.app/api/track
-     (or an error instead of that last line if it's blocked/failing)
+1. Shape: irregular, not a clean blob.
+   The old version animated one fixed, smooth SVG path (basically a
+   lumpy circle) with a uniform scale(). This version generates several
+   overlapping droplet shapes at mount time — one larger main blot plus
+   3-5 smaller satellite droplets scattered at random angles/distances
+   around it — each built from a jittered ring of points smoothed into
+   a closed Bezier path. The jitter amount, droplet count, positions,
+   and sizes are all randomized per page load (seeded from
+   Math.random() once in a useMemo), so no two boots look identical,
+   the way real spilled paint never splatters the same way twice.
 
-WHAT EACH OUTCOME TELLS YOU
-  - No "[sitevento] debug build active" line at all
-      -> the script never loaded/ran. This confirms the 404 (or
-         whatever is preventing the <script> tag from executing) is
-         still the root blocker — nothing past this point can run.
-  - "debug build active" appears, but no "sending beacon" line follows
-      -> the script loaded but returned early. Check for the
-         "no data-site attribute" error just above it.
-  - "sending beacon" appears, then a BLOCKED/FAILED error
-      -> network/CORS/DNS issue reaching API_ORIGIN itself (wrong
-         domain, site down, CORS headers misconfigured on the route).
-  - "sending beacon" appears, then "beacon response: 200" with a body
-    like {"ok":false,"reason":"unknown site"} or
-    {"ok":false,"reason":"site not verified"}
-      -> the request IS reaching /api/track successfully. The remaining
-         issue is in Firestore lookup logic (siteIndex doc missing,
-         status not actually 'verified', etc), not in the script or
-         network layer at all.
-  - "beacon response: 200" with {"ok":true}
-      -> tracking is fully working end-to-end. Check the dashboard's
-         onSnapshot listener next if stats still don't show there.
+2. Motion: jelly wobble, not a clean scale-up.
+   Three CSS-driven phases, matching three React state values
+   ('forming' | 'splash' | 'holding'):
+     - forming (~3s): droplets grow from 0 using non-uniform scaleX/
+       scaleY keyframes (boot-droplet-form) instead of a single scale()
+       value, so they stretch/settle unevenly like paint pooling out,
+       not a balloon inflating.
+     - splash (~420ms): a sharp squash-wide-then-rebound snap
+       (boot-droplet-splash) — the "paint just hit the surface" moment.
+       The wordmark fades in during this phase.
+     - holding (random 3-5s): settles into a slow continuous ambient
+       wobble (boot-droplet-wobble) so it still reads as soft/jelly
+       rather than freezing into a static image while it waits.
+   The continuous wobble animation is layered UNDERNEATH whichever
+   phase animation is active at any given moment (two animations on the
+   same element via comma-separated animation-name/duration/delay), so
+   the shape never looks perfectly rigid even mid-phase.
 
-REVERT BEFORE SHIPPING TO REAL CUSTOMERS
-  Once you've confirmed real visits are landing in Firestore, revert:
-    - API_ORIGIN back to the currentScript.src-derived version
-    - beacon() back to trying sendBeacon() first, fetch() as fallback
-  (both the removed blocks are preserved as comments inline in this
-  file below the DEBUG branch, so the revert is just deleting the
-  DEBUG-only code paths and un-indenting what's left).
+3. Timing: forms for ~3s, then a random 3-5s hold — driven from JS.
+   This can't be pure CSS, because the parent needs to know when the
+   WHOLE lifecycle (form + splash + hold) is actually finished, and the
+   hold duration is randomized per mount. BootSplash now takes an
+   onDone callback, fired exactly once after the randomized hold
+   completes.
+
+4. AppRoot.tsx: the splash is no longer tied directly to authReady.
+   Previously: `if (!authReady) return <BootSplash />;` — meaning on a
+   fast connection, authReady could flip true in well under a second,
+   cutting the splash animation off mid-form almost every time. Now:
+   AppRoot tracks its own `splashDone` state (starts false), and keeps
+   rendering BootSplash — passing it onDone={() => setSplashDone(true)}
+   — until BOTH authReady is true AND the splash's own full randomized
+   lifecycle has finished. This guarantees the splash always plays out
+   its complete ~6-8s animation regardless of how fast or slow auth
+   resolves underneath it.
+
+   One ordering note carried over unchanged from the original: the
+   authError screen is still checked AFTER the splash gate (same
+   relative order as before), so if auth errors out while the splash is
+   still playing, the error message will appear once the splash
+   finishes its full lifecycle, not instantly. This matches the
+   original's behavior (error was already gated behind authReady
+   before), just now with a few extra guaranteed seconds of splash
+   first. If you'd rather an auth error short-circuit the splash
+   immediately, that's a one-line change to move the authError check
+   above the splash gate — let me know if you want that instead.
+
+REDUCED MOTION
+   Respects prefers-reduced-motion: reduce — skips the wobble/jelly
+   animation entirely and just cross-fades the (still irregular,
+   still-randomized) shape and wordmark in on a short fixed timer. The
+   randomized SHAPE is structural (baked into the SVG path at mount),
+   so it's preserved even in the reduced-motion fallback; only the
+   physics-y motion is removed.
+
+NOT CHANGED
+   No other component, hook, or route was touched. DashboardShell,
+   useAuth, useAppView etc. all work exactly as before — this is
+   scoped entirely to the boot splash and its one call site in
+   AppRoot.tsx.
