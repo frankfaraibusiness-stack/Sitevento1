@@ -61,6 +61,18 @@ function getFirebaseApp(): FirebaseApp {
         '(useEffect, event handlers, etc.), never at module scope or during render.'
     );
   }
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.appId) {
+    // Fail with one clear message instead of letting the Firebase SDK
+    // throw its generic `auth/invalid-api-key` — that error gives no
+    // hint that the actual problem is missing/unset NEXT_PUBLIC_* env
+    // vars in this deployment's Environment (Production/Preview/Dev) in
+    // Vercel's project settings.
+    throw new Error(
+      'Firebase config is missing required values (apiKey/projectId/appId). ' +
+        'Check that NEXT_PUBLIC_FIREBASE_* environment variables are set for ' +
+        'this deployment\'s Environment in Vercel, then redeploy.'
+    );
+  }
   if (!firebaseApp) {
     firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
   }
