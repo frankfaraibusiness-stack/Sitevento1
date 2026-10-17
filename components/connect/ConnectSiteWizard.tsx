@@ -6,6 +6,7 @@
 // toggling display:none across sibling divs.
 import { useEffect } from 'react';
 import { useConnectSiteWizard } from '@/hooks/useConnectSiteWizard';
+import { DomainIntelCard } from '@/components/connect/DomainIntelCard';
 
 export interface ConnectSiteResumeTarget {
   id: string;
@@ -70,22 +71,30 @@ export function ConnectSiteWizard({ open, uid, resumeTarget, onClose, onFinished
               </span>
               <h2>Connect your site</h2>
               <p className="connect-sub">
-                Enter the domain you want to run from sitevento. We&apos;ll generate a unique tag for it next.
+                Enter your domain — with or without <code>https://</code>. We&apos;ll generate a unique tag for it
+                next.
               </p>
 
               <form onSubmit={wizard.submitDomain}>
                 <div className={`connect-field${wizard.domainError ? ' has-error' : ''}`}>
-                  <label htmlFor="connect-domain">Site URL</label>
+                  <label htmlFor="connect-domain">Site domain</label>
                   <input
                     id="connect-domain"
-                    type="url"
-                    placeholder="https://yourbusiness.com"
+                    type="text"
+                    inputMode="url"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    placeholder="yourbusiness.com"
                     required
                     value={wizard.domainInput}
                     onChange={(e) => wizard.setDomainInput(e.target.value)}
                   />
                   <span className="err-msg">{wizard.domainError}</span>
                 </div>
+
+                <DomainIntelCard status={wizard.domainLookupStatus} result={wizard.domainLookupResult} />
+
                 <button
                   type="submit"
                   className={`connect-submit${wizard.domainSubmitting ? ' loading' : ''}`}
