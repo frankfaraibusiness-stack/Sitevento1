@@ -626,3 +626,129 @@
     display: flex; align-items: center; justify-content: center;
   }
   .bc-close svg { width: 12px; height: 12px; }
+
+  /* ============================================================
+   * Feature options grid — nine tap-to-open cards replacing the old
+   * always-on banner composer in the main dashboard scroll. Same card
+   * language as .dash-card (cream surface, --line border) so it reads
+   * as part of the same dashboard, not a bolted-on block.
+   * ============================================================ */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media (min-width: 640px) {
+    .feat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 960px) {
+    .feat-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .feat-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    text-align: left;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+  .feat-card:hover { border-color: var(--walnut); }
+  .feat-card:active { transform: scale(0.99); }
+  .feat-card-disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+  .feat-card-disabled:hover { border-color: var(--line); }
+
+  .feat-card-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--cream-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--walnut-dark);
+  }
+  .feat-card-icon svg { width: 18px; height: 18px; }
+
+  .feat-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+  }
+  .feat-card-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 14.5px;
+    font-weight: 700;
+  }
+  .feat-card-soon {
+    font-family: -apple-system, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #8a8477;
+    background: var(--cream-deep);
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+  .feat-card-desc {
+    font-family: -apple-system, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #6b655c;
+  }
+  .feat-card-arrow {
+    flex-shrink: 0;
+    align-self: center;
+    color: #a39d8e;
+  }
+  .feat-card-arrow svg { width: 16px; height: 16px; }
+
+  /* Site Alert overlay sheet — reuses the .css-sheet-backdrop pattern
+     (same fixed full-screen dim layer, bottom sheet on mobile / centered
+     on wider screens) so BannerComposer opens the same way the connect
+     wizard's other sheets do, instead of being its own one-off modal. */
+  .feat-panel-backdrop {
+    position: fixed; inset: 0; z-index: 2100;
+    background: rgba(20, 18, 14, 0.5);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  @media (min-width: 720px) {
+    .feat-panel-backdrop { align-items: center; padding: 24px; }
+  }
+  .feat-panel-sheet {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    max-height: calc(100vh - env(safe-area-inset-top, 0px) - 24px);
+    overflow-y: auto;
+    background: var(--bg);
+    border-radius: 20px 20px 0 0;
+  }
+  @media (min-width: 720px) {
+    .feat-panel-sheet { border-radius: 20px; max-height: calc(100vh - 48px); }
+  }
+  .feat-panel-close {
+    position: sticky; top: 12px; margin: 12px 12px -40px auto;
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: rgba(20, 18, 14, 0.55); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+  }
+  .feat-panel-close svg { width: 14px; height: 14px; }
