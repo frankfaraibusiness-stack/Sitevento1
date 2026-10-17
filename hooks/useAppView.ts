@@ -45,6 +45,14 @@ export function useAppView(user: User | null, openAuth: (pane: 'signin' | 'signu
     [user, openAuth, router]
   );
 
+  const goToProfile = useCallback(() => {
+    if (!user) {
+      openAuth('signin');
+      return;
+    }
+    router.push('/dashboard/profile');
+  }, [user, openAuth, router]);
+
   const showMarketing = useCallback(() => router.push('/'), [router]);
 
   // Any "Connect your site" / "Start free" CTA on the marketing page
@@ -59,5 +67,5 @@ export function useAppView(user: User | null, openAuth: (pane: 'signin' | 'signu
     }
   }, [user, router, openAuth]);
 
-  return { view: 'marketing' as AppView, goToDashboard, showMarketing, handleConnectCTA };
+  return { view: 'marketing' as AppView, goToDashboard, goToProfile, showMarketing, handleConnectCTA };
 }
