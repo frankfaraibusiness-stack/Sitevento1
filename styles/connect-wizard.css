@@ -89,7 +89,16 @@
   }
   .connect-submit:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(34,32,28,0.9); }
   .connect-submit:disabled { opacity: 0.6; cursor: default; }
-  .connect-submit.loading .btn-text { opacity: 0; }
+  /* Loading state now also covers "still waiting on the domain lookup",
+     not just the post-click Firestore write — see ConnectSiteWizard.tsx.
+     Button content blurs + dims instead of just hiding the label, so the
+     CTA visibly reads as busy rather than looking identical to its
+     normal clickable state while it's actually disabled underneath. */
+  .connect-submit.loading .btn-text {
+    opacity: 0.35;
+    filter: blur(2.5px);
+  }
+  .connect-submit.loading { cursor: progress; }
   .connect-submit .spinner {
     display: none; position: absolute; width: 18px; height: 18px;
     border: 2.5px solid rgba(26,31,10,0.25); border-top-color: var(--lime-ink);
@@ -156,7 +165,24 @@
   }
   .connect-success-check svg { width: 28px; height: 28px; stroke: var(--lime-ink); }
 
-  /* ============ Domain intel reveal (step 1, under the URL field) ============ */
+  /* ============ Domain intel reveal (step 1, under the URL field) ============
+   * Deliberately a loud, highlighted banner now (lime-tinted border +
+   * wash, left accent bar) rather than a quiet gray inline row — this
+   * block is meant to stand out as "look, we found something about your
+   * domain", not blend into the surrounding help text.
+   *
+   * It also sits directly above the Continue button, and used to be
+   * able to grow/shrink (loading -> found, rows staggering in one at a
+   * time) WHILE the button was still clickable right below it — a click
+   * aimed at the button could land on the banner mid-reflow instead and
+   * silently do nothing. pointer-events is now locked off on the
+   * loading/transitioning states so a click never gets intercepted by
+   * this block; only the finished .domain-intel-card can be interacted
+   * with (it has no actionable content anyway, but this keeps the
+   * contract explicit for future additions). The actual anti-layout-
+   * shift fix is the submit button itself being disabled/loading
+   * whenever a lookup is in flight (see .connect-submit.loading above).
+   */
   .domain-intel {
     margin: -6px 0 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -164,8 +190,12 @@
 
   .domain-intel-loading,
   .domain-intel-plain {
-    display: flex; align-items: center; gap: 9px;
-    font-size: 13px; color: #8a8477;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--walnut-dark); font-weight: 600;
+    background: var(--cream); border: 1.5px solid var(--line);
+    border-left: 4px solid var(--lime);
+    border-radius: 12px; padding: 12px 14px;
+    pointer-events: none;
   }
 
   .domain-intel-scan-dot,
@@ -180,7 +210,9 @@
   .domain-intel-ok-dot { background: #6ba84f; }
 
   .domain-intel-card {
-    border: 1.5px solid var(--line); border-radius: 14px; background: var(--cream);
+    border: 1.5px solid var(--lime); border-radius: 14px;
+    background: linear-gradient(180deg, rgba(198,255,61,0.16), rgba(198,255,61,0.05)), var(--cream);
+    box-shadow: 0 2px 0 rgba(34,32,28,0.06);
     padding: 16px 18px 14px;
     animation: domain-intel-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
   }
@@ -189,8 +221,8 @@
     display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
   }
   .domain-intel-domain {
-    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
-    font-weight: 600; color: var(--walnut-dark); letter-spacing: -0.01em;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+    font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
   }
 
   .domain-intel-age {
@@ -211,6 +243,7 @@
     display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
     font-size: 12.5px; padding-bottom: 7px; border-bottom: 1px solid var(--line);
     animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+    pointer-events: none;
   }
   .domain-intel-row:last-child { border-bottom: none; padding-bottom: 0; }
   .domain-intel-row dt { margin: 0; color: #8a8477; }
