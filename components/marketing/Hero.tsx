@@ -36,7 +36,7 @@ export function Hero({ onConnectClick }: HeroProps) {
         <br />
         &lt;<span className="tag-name">script</span> <span className="attr">src</span>=
         <span className="val" id="heroScriptSrc">
-          &quot;…/t.js&quot;
+          &quot;…/sitevento.js&quot;
         </span>{' '}
         <span className="attr">defer</span>&gt;&lt;/<span className="tag-name">script</span>&gt;
         <br />
