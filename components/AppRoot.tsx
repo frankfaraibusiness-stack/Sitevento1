@@ -19,6 +19,7 @@
 // that declares `dynamic`, makes the force-dynamic setting actually
 // take effect.
 import { useCallback, useEffect, useState } from 'react';
+import { BootSplash } from '@/components/BootSplash';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MarketingFooter } from '@/components/layout/MarketingFooter';
@@ -82,7 +83,7 @@ export default function AppRoot() {
     goToDashboard('overview');
   }
 
-  if (!authReady) return null;
+  if (!authReady) return <BootSplash />;
 
   if (authError) {
     return (
