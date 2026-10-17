@@ -16,10 +16,12 @@ import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashFooter } from '@/components/layout/DashFooter';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
+import { ProfilePage } from '@/components/dashboard/ProfilePage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
+import { useSites } from '@/hooks/useSites';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { DashSection } from '@/hooks/useAppView';
 
@@ -30,11 +32,20 @@ const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
   overlay: 'panelOverlay',
 };
 
-export default function DashboardClient() {
+interface DashboardClientProps {
+  // 'main' is the existing /dashboard route; 'profile' is the new
+  // /dashboard/profile route (see app/dashboard/profile/page.tsx) — one
+  // shared auth gate, header and sidebar for both instead of each route
+  // standing up its own copy.
+  view?: 'main' | 'profile';
+}
+
+export default function DashboardClient({ view = 'main' }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
+  const { sites, disconnectSite } = useSites(user?.uid ?? null);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
@@ -113,7 +124,7 @@ export default function DashboardClient() {
         user={user}
         onLogoClick={() => router.push('/')}
         onSignupClick={() => openAuth('signup')}
-        onProfileClick={() => scrollToSection('overview')}
+        onProfileClick={() => router.push('/dashboard/profile')}
         onHamburgerClick={() => sidebar.setOpen(true)}
       />
 
@@ -125,18 +136,32 @@ export default function DashboardClient() {
         onSignIn={() => openAuth('signin')}
         onNavigate={(section) => {
           sidebar.setOpen(false);
+          if (view !== 'main') {
+            router.push(`/dashboard#${SECTION_ELEMENT_IDS[section] || 'dashMain'}`);
+            return;
+          }
           scrollToSection(section);
         }}
+        onOpenProfile={() => router.push('/dashboard/profile')}
       />
 
       <main>
         {user ? (
-          <DashboardShell
-            user={user}
-            onOpenAddSiteModal={openAddSiteModal}
-            onResumeVerification={handleResumeVerification}
-            onLeadsCountChange={setLeadsCount}
-          />
+          view === 'profile' ? (
+            <ProfilePage
+              user={user}
+              sites={sites}
+              onDisconnectSite={disconnectSite}
+              onAddSite={openAddSiteModal}
+            />
+          ) : (
+            <DashboardShell
+              user={user}
+              onOpenAddSiteModal={openAddSiteModal}
+              onResumeVerification={handleResumeVerification}
+              onLeadsCountChange={setLeadsCount}
+            />
+          )
         ) : (
           <section>
             <div className="dashboard-empty">
