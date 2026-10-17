@@ -142,32 +142,41 @@ export function DashboardShell({
 
   return (
     <section>
-      <div className="dash-wrap dash-wrap-v2">
-        <div className="dash-head">
-          <div>
-            <h1>{activeSite?.name || 'Dashboard'}</h1>
-            <p>{activeSite?.url || '\u2014'}</p>
-          </div>
-        </div>
-
+      <div className="dash-wrap dash-wrap-v2" id="dashMain">
         {activeSite?.status === 'pending' && (
           <div className="pending-verify-banner">
+            <span className="pvb-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M12 3l7 3v5c0 5-3.2 8.3-7 10-3.8-1.7-7-5-7-10V6l7-3z" />
+                <path d="M9 12.2l2 2 4-4.4" />
+              </svg>
+            </span>
             <div className="pvb-text">
-              <span className="pvb-dot" />
-              <span>
-                <strong>Not verified yet.</strong> This site won&apos;t log visits or accept banners until the tag
-                is confirmed.
-              </span>
+              <strong>Not verified yet.</strong>
+              <span>This site won&apos;t log visits or accept banners until the tag is confirmed.</span>
             </div>
             <button
               type="button"
-              className="ghost-btn"
+              className="pvb-cta"
               onClick={() => activeSite && onResumeVerification({ id: activeSite.id, url: activeSite.url })}
             >
               Finish verifying
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </button>
           </div>
         )}
+
+        <div className="dash-section-head">
+          <h2>Overview</h2>
+        </div>
+        <OverviewStats
+          totalVisits={stats.total}
+          uniqueVisitors={stats.unique}
+          leadsCount={stats.leadsCount}
+          blockedCount={stats.blockedCount}
+        />
 
         <ConnectedSitesSection
           sites={sites}
@@ -177,23 +186,45 @@ export function DashboardShell({
           onDisconnect={disconnectSite}
         />
 
-        <OverviewStats
-          totalVisits={stats.total}
-          uniqueVisitors={stats.unique}
-          leadsCount={stats.leadsCount}
-          blockedCount={stats.blockedCount}
-        />
+        {activeSite?.status === 'pending' && (
+          <div className="site-not-verified-row">
+            <span className="snv-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </span>
+            <div className="snv-text">
+              <strong>Site not verified yet?</strong>
+              <span>This site won&apos;t log visits or accept banners until the tag is confirmed.</span>
+            </div>
+            <button
+              type="button"
+              className="snv-cta"
+              onClick={() => activeSite && onResumeVerification({ id: activeSite.id, url: activeSite.url })}
+            >
+              Finish verifying
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         <div id="panelOverlay">
           <FeatureOptionsGrid onOpenSiteAlert={() => setSiteAlertOpen(true)} />
         </div>
 
-        <VisitLogPanel
-          visits={visits}
-          onToggleBlock={(visitId, blockedValue, visitorId) => toggleBlockVisit(visitId, blockedValue, visitorId)}
-        />
+        <div id="panelVisits">
+          <VisitLogPanel
+            visits={visits}
+            onToggleBlock={(visitId, blockedValue, visitorId) => toggleBlockVisit(visitId, blockedValue, visitorId)}
+          />
+        </div>
 
-        <LeadsPanel leads={leads} />
+        <div id="panelLeads">
+          <LeadsPanel leads={leads} />
+        </div>
 
         <BlockedVisitorsPanel
           blocked={stats.blocked}
