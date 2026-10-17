@@ -156,3 +156,91 @@
   }
   .connect-success-check svg { width: 28px; height: 28px; stroke: var(--lime-ink); }
 
+  /* ============ Domain intel reveal (step 1, under the URL field) ============ */
+  .domain-intel {
+    margin: -6px 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .domain-intel-loading,
+  .domain-intel-plain {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 13px; color: #8a8477;
+  }
+
+  .domain-intel-scan-dot,
+  .domain-intel-ok-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; position: relative;
+  }
+  .domain-intel-scan-dot { background: #d99a2b; }
+  .domain-intel-scan-dot::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    background: #d99a2b; opacity: 0.5; animation: pulse-ring 1.6s ease-out infinite;
+  }
+  .domain-intel-ok-dot { background: #6ba84f; }
+
+  .domain-intel-card {
+    border: 1.5px solid var(--line); border-radius: 14px; background: var(--cream);
+    padding: 16px 18px 14px;
+    animation: domain-intel-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .domain-intel-head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
+  }
+  .domain-intel-domain {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
+    font-weight: 600; color: var(--walnut-dark); letter-spacing: -0.01em;
+  }
+
+  .domain-intel-age {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;
+  }
+  .domain-intel-age-num {
+    font-family: "Georgia", serif; font-size: 30px; font-weight: 400; color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+  }
+  .domain-intel-age-unit {
+    font-size: 12.5px; color: #8a8477;
+  }
+
+  .domain-intel-rows {
+    margin: 0; display: flex; flex-direction: column; gap: 7px;
+  }
+  .domain-intel-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    font-size: 12.5px; padding-bottom: 7px; border-bottom: 1px solid var(--line);
+    animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .domain-intel-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .domain-intel-row dt { margin: 0; color: #8a8477; }
+  .domain-intel-row dd {
+    margin: 0; color: var(--ink); font-weight: 600; text-align: right;
+    max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .domain-intel-pills {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  }
+  .domain-intel-pill {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; font-weight: 600;
+    color: var(--walnut-dark); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 10px;
+    animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  @keyframes domain-intel-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes domain-intel-row-in {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .domain-intel-card,
+    .domain-intel-row,
+    .domain-intel-pill { animation: none !important; }
+    .domain-intel-scan-dot::after { animation: none !important; }
+  }
