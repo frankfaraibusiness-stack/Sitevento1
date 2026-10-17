@@ -95,7 +95,10 @@ export function MarketingFooter() {
       </div>
 
       <div className="footer-bottom">
-        <span>© 2026 sitevento. All rights reserved.</span>
+        <span>
+          © 2026 sitevento. All rights reserved. &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp;{' '}
+          <a href="/privacy">Privacy</a>
+        </span>
         <div className="socials">
           <a href="#">X</a>
           <a href="#">GitHub</a>
