@@ -18,7 +18,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getFirebaseDb } from '@/lib/firebase';
 import type { Lead, Visit } from '@/lib/types';
 
 export function useActiveSiteData(uid: string | null, siteId: string | null) {
@@ -31,6 +31,8 @@ export function useActiveSiteData(uid: string | null, siteId: string | null) {
       setLeads([]);
       return;
     }
+
+    const db = getFirebaseDb();
 
     const visitsQ = query(
       collection(db, 'users', uid, 'sites', siteId, 'visits'),
@@ -73,6 +75,7 @@ export function useActiveSiteData(uid: string | null, siteId: string | null) {
   async function toggleBlockVisit(visitId: string, blockedValue: boolean, visitorId: string) {
     if (!uid || !siteId) return;
     try {
+      const db = getFirebaseDb();
       await updateDoc(doc(db, 'users', uid, 'sites', siteId, 'visits', visitId), {
         blocked: blockedValue,
       });
