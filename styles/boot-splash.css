@@ -1,8 +1,22 @@
 /* ============================================================
- * boot-splash.css — full-screen boot splash shown while auth state
- * resolves (components/BootSplash.tsx). One orchestrated lime
- * "ink splash" reveal: a blot scales/morphs in from the center, then
- * the wordmark fades up on top of it. Plays once, non-looping.
+ * boot-splash.css — full-screen boot splash (components/BootSplash.tsx).
+ *
+ * Three phases, matched to the component's Phase state:
+ *   .is-forming — droplets grow from nothing, wobbling unevenly as
+ *                 they spread, like paint pooling out rather than a
+ *                 shape popping/scaling in uniformly. ~3s.
+ *   .is-splash  — a sharp jelly overshoot/snap (squash wider+flatter,
+ *                 then rebound), like the paint just hit the surface.
+ *                 ~420ms. Wordmark fades up during this phase.
+ *   .is-holding — settled, with a slow ambient jiggle so it reads as
+ *                 soft/jelly rather than a frozen static image while
+ *                 it waits out its randomized 3-5s hold.
+ *
+ * Each droplet also gets a continuous subtle wobble layered UNDER
+ * whichever phase animation is active (two animations on the same
+ * element, comma-separated durations/delays set inline from the
+ * component) so the outline never looks perfectly rigid at any point
+ * in the lifecycle.
  * ============================================================ */
 
   .boot-splash {
@@ -28,18 +42,97 @@
     justify-content: center;
   }
 
-  .boot-splash-blot {
+  .boot-splash-blot-group {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    transform: scale(0);
-    transform-origin: center;
-    animation: boot-splash-blot-in 760ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    overflow: visible;
   }
 
-  .boot-splash-blot-path {
+  /* Every droplet starts invisible/zero-scale; the two phase-driving
+     classes below (via the parent .is-forming / .is-splash / .is-holding)
+     take it from there. transform-origin is set inline per-droplet from
+     the component (its own center), so each one grows/wobbles from its
+     own middle rather than the SVG's (0,0). */
+  .boot-splash-droplet {
     fill: var(--lime);
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  /* ---- Phase 1: forming --------------------------------------- */
+  /* Uneven growth: overshoots non-uniformly on x/y (via scaleX/scaleY
+     instead of a single scale()) at different points in the curve, so
+     it reads as spreading/pooling rather than inflating like a balloon.
+     The two animations listed per droplet in the component's inline
+     style (droplet-form, droplet-wobble) run concurrently — form takes
+     it from 0 to settled, wobble is layered on top continuously. */
+  .is-forming .boot-splash-droplet {
+    animation-name: boot-droplet-form, boot-droplet-wobble;
+    animation-timing-function: cubic-bezier(0.34, 1.2, 0.4, 1), ease-in-out;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: forwards, none;
+  }
+
+  @keyframes boot-droplet-form {
+    0%   { opacity: 0; transform: scale(0, 0); }
+    12%  { opacity: 1; }
+    40%  { transform: scale(0.62, 0.74) translate(-2%, 3%); }
+    58%  { transform: scale(0.9, 0.78) translate(1%, -2%); }
+    74%  { transform: scale(0.8, 1.04) translate(-1%, 1%); }
+    88%  { transform: scale(1.05, 0.95) translate(0.5%, -0.5%); }
+    100% { opacity: 1; transform: scale(1, 1) translate(0, 0); }
+  }
+
+  /* ---- Continuous wobble (layered under every phase) ----------- */
+  @keyframes boot-droplet-wobble {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.015, 0.985); }
+    50%  { transform: scale(0.985, 1.02); }
+    75%  { transform: scale(1.01, 0.99); }
+    100% { transform: scale(1, 1); }
+  }
+
+  /* ---- Phase 2: splash ------------------------------------------ */
+  /* A hard squash-wide-and-flat on impact, then a rebound past neutral
+     before settling — the jelly "snap" moment. Applied on top of
+     whatever scale forming left it at (1,1), so this always starts from
+     a consistent base regardless of forming's randomized overshoot. */
+  .is-splash .boot-splash-droplet {
+    animation-name: boot-droplet-splash, boot-droplet-wobble;
+    animation-duration: 420ms, 2400ms;
+    animation-timing-function: cubic-bezier(0.36, 0, 0.66, -0.56), ease-in-out;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: forwards, none;
+    animation-delay: 0ms, 0ms;
+  }
+
+  @keyframes boot-droplet-splash {
+    0%   { transform: scale(1, 1); }
+    35%  { transform: scale(1.22, 0.74); }
+    60%  { transform: scale(0.88, 1.12); }
+    80%  { transform: scale(1.06, 0.95); }
+    100% { transform: scale(1, 1); }
+  }
+
+  /* ---- Phase 3: holding ------------------------------------------ */
+  /* Settled + idle wobble only, so it doesn't look like a frozen frame
+     while it waits out its randomized 3-5s hold before onDone() fires. */
+  .is-holding .boot-splash-droplet {
+    opacity: 1;
+    animation-name: boot-droplet-wobble;
+    animation-duration: 3200ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  .boot-splash-droplet.is-main {
+    /* The main blot sits visually "above" the satellite droplets in
+       paint-density terms, not z-order (SVG paint order already does
+       that since it's drawn first) — slightly higher opacity reads as
+       the thicker pool vs. thinner flecks around it. */
+    opacity: 1;
   }
 
   .boot-splash-word {
@@ -51,19 +144,16 @@
     color: var(--lime-ink);
     opacity: 0;
     transform: translateY(6px);
-    animation: boot-splash-word-in 420ms ease-out 560ms forwards;
   }
 
-  @keyframes boot-splash-blot-in {
-    0% {
-      transform: scale(0);
-    }
-    65% {
-      transform: scale(1.08);
-    }
-    100% {
-      transform: scale(1);
-    }
+  /* Wordmark fades in during the splash phase, same moment the paint
+     "lands" — timed to the splash keyframe's own duration via the
+     is-splash/is-holding selectors rather than a flat delay, since
+     forming's duration is randomized per mount and a fixed CSS delay
+     could no longer line up with it. */
+  .is-splash .boot-splash-word,
+  .is-holding .boot-splash-word {
+    animation: boot-splash-word-in 380ms ease-out forwards;
   }
 
   @keyframes boot-splash-word-in {
@@ -78,16 +168,27 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .boot-splash-blot {
-      transform: scale(1);
+    /* No wobble/jelly physics — still the irregular randomized shape
+       (that part is structural, from the SVG path, not animation), but
+       it simply fades in and holds rather than forming/splashing. */
+    .boot-splash-droplet {
+      animation: none !important;
+      opacity: 1;
+      transform: scale(1, 1);
+    }
+
+    .boot-splash-stage.is-forming .boot-splash-droplet,
+    .boot-splash-stage.is-forming .boot-splash-word {
       opacity: 0;
+    }
+
+    .boot-splash-stage.is-forming .boot-splash-blot-group {
       animation: boot-splash-fade-only 300ms ease-out forwards;
     }
 
-    .boot-splash-word {
-      transform: none;
-      opacity: 0;
-      animation: boot-splash-fade-only 300ms ease-out 120ms forwards;
+    .is-splash .boot-splash-word,
+    .is-holding .boot-splash-word {
+      animation: boot-splash-fade-only 300ms ease-out forwards;
     }
 
     @keyframes boot-splash-fade-only {
