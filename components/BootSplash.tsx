@@ -21,11 +21,11 @@
 //                                shrinks to nothing on arrival. The
 //                                logo mounts at the same instant and
 //                                plays its own pop-in.
-//   3. "holding"      (3-5s,  — logo sits still (tiny idle breathing so
-//       randomized)             it doesn't look frozen), then calls
+//   3. "holding"      (3s,     — logo sits still (tiny idle breathing so
+//       fixed)                   it doesn't look frozen), then calls
 //                                onDone().
 //
-// onDone is called exactly once, after the full randomized lifecycle
+// onDone is called exactly once, after the full fixed-length lifecycle
 // finishes — NOT tied to how long auth actually takes. The parent
 // (AppRoot) is expected to keep rendering BootSplash until onDone
 // fires, even if authReady flips true earlier, so the splash always
@@ -83,7 +83,7 @@ export function BootSplash({ onDone }: BootSplashProps) {
     return {
       dots: makeDots(seed),
       spinMs: 3000, // spin for exactly ~3s before converging, as requested
-      holdMs: 3000 + Math.random() * 2000, // random 3-5s hold once formed
+      holdMs: 3000, // fixed exactly 3s hold once formed (was randomized 3-5s)
     };
   }, []);
 
