@@ -278,3 +278,182 @@
       display: block;
     }
   }
+
+  /* ---- Pricing table (app/pricing — components/marketing/PricingTablePage.tsx) ----
+   * Reuses the .legal-* shell above for header/hero/footer chrome, but
+   * the body here is a comparison table instead of prose sections, so
+   * it gets its own rules rather than forcing the table into
+   * .legal-content's narrow single-column prose width. */
+  .pricing-table-wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 24px 8px;
+  }
+
+  .pricing-table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+
+  .pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    min-width: 640px;
+  }
+
+  .pricing-table th,
+  .pricing-table td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  .pricing-table thead th {
+    border-bottom: 1.5px solid var(--line);
+    vertical-align: top;
+    background: var(--cream);
+  }
+
+  .pricing-table thead th.pricing-table-row-label {
+    background: transparent;
+  }
+
+  .pricing-table-plan-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .pricing-table-plan-price {
+    font-size: 20px;
+    font-family: Georgia, serif;
+    font-weight: 400;
+  }
+
+  .pricing-table-plan-price span {
+    font-size: 12px;
+    opacity: 0.6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .pricing-table th.pricing-table-featured-col,
+  .pricing-table td:nth-child(3) {
+    background: rgba(198, 255, 61, 0.1);
+  }
+
+  .pricing-table tbody th {
+    font-weight: 500;
+    color: var(--walnut-dark);
+    white-space: normal;
+  }
+
+  .pricing-table tbody tr:last-child th,
+  .pricing-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .pricing-table-support {
+    text-transform: capitalize;
+  }
+
+  .pricing-table-ctas {
+    display: grid;
+    grid-template-columns: 180px repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 18px;
+    min-width: 640px;
+    overflow-x: auto;
+  }
+
+  .pricing-table-ctas a:first-child {
+    visibility: hidden;
+  }
+
+  .pricing-table-cta {
+    text-align: center;
+    border-radius: 999px;
+    padding: 11px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .pricing-table-cta:hover {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .pricing-table-cta.featured {
+    background: var(--lime);
+    border-color: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .pricing-table-cta.featured:hover {
+    opacity: 0.85;
+  }
+
+  .pricing-faq-inner {
+    grid-template-columns: 1fr !important;
+  }
+
+  @media (max-width: 880px) {
+    .pricing-table-ctas {
+      grid-template-columns: 140px repeat(4, 140px);
+    }
+  }
+
+  /* ---- Status page (app/status) ---- */
+  .status-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .status-list-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .status-list-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #3fae5c;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .status-list-name {
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-list-ok {
+    font-size: 12px;
+    font-weight: 600;
+    color: #3fae5c;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .status-list-note {
+    font-size: 14px;
+    color: #6b665e;
+    margin: 4px 0 0;
+    line-height: 1.6;
+  }
