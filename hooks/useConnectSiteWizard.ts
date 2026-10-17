@@ -200,7 +200,7 @@ export function useConnectSiteWizard(uid: string | null) {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const tag =
       `<meta name="sitevento" content="${siteId}">\n` +
-      `<script src="${origin}/t.js" data-site="${siteId}" defer></script>`;
+      `<script src="${origin}/sitevento.js" data-site="${siteId}" defer></script>`;
     const done = () => {
       setCopyLabel('Copied');
       setTimeout(() => setCopyLabel('Copy tag'), 1600);
