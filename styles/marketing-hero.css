@@ -59,14 +59,54 @@
     text-align: left;
   }
 
-  /* Two columns on desktop: copy on the left, the slime character
-     filling the right column that used to sit empty. Single column
-     (slime hidden) below the collapse breakpoint, see further down. */
+  /* Mobile/tablet (below 960px): single column — .hero-main (which now
+     contains .hero-top, then sub/actions/snippet below it) stacked
+     above the standalone .hero-side, which stays hidden at this
+     breakpoint (see further down). Inside .hero-top, a small second
+     slime instance (.hero-top-slime) sits beside the eyebrow+heading
+     via flexbox, so the character is visible without needing a
+     full-height side column — see Hero.tsx for why there are two
+     HeroSlime render sites instead of one repositioned element.
+     Desktop (>=960px) flips which slime instance is visible and
+     restores the original full-height two-column split. */
   .hero-grid {
     display: grid;
     grid-template-columns: 1fr;
     align-items: center;
     gap: 32px;
+  }
+
+  .hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .hero-top-copy {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* .hero-top-copy's own h1 keeps its normal bottom margin from the
+     .hero h1 rule further down (24px) — that's fine both as the gap
+     above .sub on desktop and as internal spacing here, since
+     .hero-top's own margin-bottom (above) is what actually separates
+     this row from .sub on mobile. */
+
+  .hero-top-slime {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Smaller on mobile so it reads as a companion beside the heading,
+     not a second hero — HeroSlime itself is unsized (fills its
+     wrapper), so this caps it. */
+  .hero-top-slime .hero-slime {
+    width: min(28vw, 110px);
   }
 
   .hero-side {
@@ -81,6 +121,20 @@
     .hero-grid {
       grid-template-columns: minmax(0, 620px) 1fr;
       gap: 24px;
+    }
+
+    /* On desktop .hero-top goes back to a plain block stacked with the
+       rest of .hero-main's children — its own margin-bottom (set on
+       mobile, above) is no longer needed since .hero h1's normal 24px
+       margin already provides that spacing — and its small companion
+       slime is hidden in favor of the full-height .hero-side instance. */
+    .hero-top {
+      display: block;
+      margin-bottom: 0;
+    }
+
+    .hero-top-slime {
+      display: none;
     }
 
     .hero-side {
