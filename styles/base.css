@@ -1,0 +1,61 @@
+/* ============================================================
+ * base.css — CSS variables, reset, html/body/header/main base layout
+ * Split from app/globals.css for maintainability.
+ * ============================================================ */
+
+  :root {
+    --bg: #ffffff;
+    --cream: #f6f2e7;
+    --cream-deep: #efe7d3;
+    --ink: #22201c;
+    --walnut: #6b4a34;
+    --walnut-dark: #4f3626;
+    --line: #e8e4de;
+    --lime: #c6ff3d;
+    --lime-ink: #1a1f0a;
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a, button, summary, input {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a:focus,
+  button:focus,
+  summary:focus,
+  input:focus {
+    outline: none;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+  }
+
+  body {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  header {
+    position: fixed;
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+  }
+
+  main {
+    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+  }
+
