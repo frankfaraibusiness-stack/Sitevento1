@@ -43,13 +43,38 @@ export function DashboardShell({
   }, [stats.leadsCount, onLeadsCountChange]);
 
   if (dashState === 'loading') {
+    // Same shaped shimmer skeleton as app/loading.tsx (route-skeleton.css's
+    // .skel-* classes), reused here so the dashboard's own in-place loading
+    // state (sites/stats still fetching after the route has already
+    // mounted) matches the route-transition skeleton instead of falling
+    // back to plain "Loading…" text.
     return (
       <section>
         <div className="dashboard-empty">
-          <div className="dash-empty-inner">
-            <p style={{ color: '#8a8477', fontFamily: '-apple-system, sans-serif', fontSize: 13.5 }}>
-              Loading your dashboard&hellip;
-            </p>
+          <div className="dash-empty-inner" role="status" aria-label="Loading your dashboard">
+            <div className="skel-head">
+              <div className="skel-block skel-title" />
+              <div className="skel-block skel-pill" />
+            </div>
+
+            <div className="skel-grid">
+              <div className="skel-block skel-card" />
+              <div className="skel-block skel-card" />
+              <div className="skel-block skel-card" />
+              <div className="skel-block skel-card" />
+            </div>
+
+            <div className="skel-panel">
+              <div className="skel-panel-head">
+                <div className="skel-block skel-panel-title" />
+                <div className="skel-block skel-panel-sub" />
+              </div>
+              <div className="skel-panel-body">
+                <div className="skel-block skel-row" />
+                <div className="skel-block skel-row" />
+                <div className="skel-block skel-row" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
