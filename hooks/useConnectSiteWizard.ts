@@ -20,15 +20,26 @@ import {
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { overlayFromTemplate } from '@/lib/siteAlert';
+import { useDomainLookup } from '@/hooks/useDomainLookup';
 
 export type ConnectStep = 'domain' | 'tag' | 'success';
 export type VerifyStatusKind = 'pending' | 'checking' | 'ok' | 'fail';
 
+// Accepts a bare domain ("yourbusiness.com") as happily as a full URL
+// ("https://yourbusiness.com/landing") — the step-1 field no longer
+// requires the user to type a scheme themselves (see
+// ConnectSiteWizard.tsx's plain-text input), so this has to meet them
+// halfway rather than relying on the browser's native type="url"
+// validation to reject anything without "https://" up front.
 function normalizeUrl(raw: string): string | null {
   let v = raw.trim();
   if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
   try {
     const u = new URL(v);
+    // A bare domain must still look like one (has a dot, has a TLD) —
+    // this rejects stray single words ("test") that new URL() would
+    // otherwise happily accept once we've prepended https://.
+    if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(u.hostname)) return null;
     return u.origin + (u.pathname !== '/' ? u.pathname : '');
   } catch {
     return null;
@@ -53,6 +64,20 @@ export function useConnectSiteWizard(uid: string | null) {
 
   const unsubRef = useRef<Unsubscribe | null>(null);
 
+  // Cosmetic "domain intel" lookup shown under the step-1 field — see
+  // components/connect/DomainIntelCard.tsx. Entirely decoupled from the
+  // actual connect flow below; it never blocks submitDomain or affects
+  // domainError.
+  const domainLookup = useDomainLookup();
+
+  const setDomainInputAndLookup = useCallback(
+    (value: string) => {
+      setDomainInput(value);
+      domainLookup.onDomainInputChange(value);
+    },
+    [domainLookup]
+  );
+
   const teardownWatch = useCallback(() => {
     if (unsubRef.current) {
       unsubRef.current();
@@ -71,7 +96,8 @@ export function useConnectSiteWizard(uid: string | null) {
     setVerifyStatus('pending');
     setVerifyMessage('Waiting for you to add the tag');
     setVerifySubmitting(false);
-  }, [teardownWatch]);
+    domainLookup.reset();
+  }, [teardownWatch, domainLookup]);
 
   const watchSiteStatus = useCallback(
     (watchUid: string, watchSiteId: string) => {
@@ -222,7 +248,7 @@ export function useConnectSiteWizard(uid: string | null) {
     step,
     setStep,
     domainInput,
-    setDomainInput,
+    setDomainInput: setDomainInputAndLookup,
     domainError,
     domainSubmitting,
     siteId,
@@ -239,5 +265,7 @@ export function useConnectSiteWizard(uid: string | null) {
     resumeVerification,
     reset,
     teardownWatch,
+    domainLookupStatus: domainLookup.status,
+    domainLookupResult: domainLookup.result,
   };
 }
