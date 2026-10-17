@@ -1,32 +1,46 @@
 // app/api/track/route.ts
 //
-// Receives one beacon per page view from the sitevento tracking snippet
-// (public/sitevento.js). Rebuilt from the original version to capture a
-// fuller per-visit log while staying privacy-conscious: everything
-// network/UA-sensitive is derived server-side (geo headers, User-Agent
-// parsing) so the client script never has to read or ship anything
-// identifying beyond what the browser already exposes to any page
-// (viewport size, language) — no fingerprinting libraries, no
-// third-party geo-IP calls, no cookies.
+// Rebuilt from zero. Receives one POST per page view from
+// public/sitevento.js (the loader embedded via the <meta name="sitevento">
+// + <script data-site> install tag). For every visit it records:
 //
-// Writes to users/{uid}/sites/{siteId}/visits/{autoId}. The dashboard's
-// live onSnapshot listener on that collection picks the new doc up
-// immediately — no polling.
+//   - country + city        (derived server-side from Vercel's geo
+//                             headers — never asked of / sent by the
+//                             browser)
+//   - device / browser / OS (parsed server-side from User-Agent)
+//   - visitorId              a stable per-visitor id (see below) so the
+//                             dashboard can tell "1 person, 5 views" from
+//                             "5 different people"
 //
-// Deploy notes (unchanged from before):
-//   - Same Firebase Admin env vars as verify-site/route.ts
-//     (FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY).
-//   - Called via sendBeacon/fetch-keepalive from third-party pages, so
-//     CORS is wide open and the response is always 200 — a tracking
-//     call must never surface an error to a site visitor or block page
-//     rendering.
-//   - siteId is resolved to an owning uid via the flat siteIndex/{siteId}
-//     index doc (same as before), then the site doc's `status` gates
-//     whether traffic is logged at all.
+// and writes it with the Firebase Admin SDK into
+//   users/{uid}/sites/{siteId}/visits/{autoId}
+// which is the exact path the dashboard's existing onSnapshot listener
+// (hooks/useActiveSiteData.ts) already reads — so visits show up live,
+// with no changes needed on the dashboard side.
+//
+// ── Identifying "the same visitor" ─────────────────────────────────
+// The loader generates a random id and stores it in the visitor's own
+// localStorage (sv_vid), sending it on every call. That's the primary
+// signal: it survives across sessions/days on the same browser, unlike
+// an IP+UA hash (which collapses everyone behind the same office
+// NAT/VPN into "one visitor" and reclassifies the same real person as
+// "new" the moment their IP or browser changes). If the client couldn't
+// set that cookie-equivalent (storage blocked, private mode, bots that
+// don't run JS fully), this route falls back to a one-way hash of
+// IP + User-Agent so a visit still gets *a* visitorId rather than none.
+// Either way, nothing reversible to the visitor's real IP is stored —
+// the raw IP itself is never written to Firestore.
+//
+// ── Contract ─────────────────────────────────────────────────────────
+// This is called via sendBeacon/fetch-keepalive from arbitrary
+// third-party pages: CORS is wide open and this ALWAYS returns 200,
+// even on a bad payload or an unknown site. A tracking call must never
+// surface an error to a site visitor or block the host page.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { allow } from '@/lib/rateLimit';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -37,11 +51,18 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-// ── User-Agent parsing ─────────────────────────────────────────────
-// Deliberately hand-rolled rather than a dependency: this only needs to
-// be "good enough for a dashboard column", checked in an order that
-// gets the common ambiguous cases right (Edge/Opera/Chrome share
-// "Chrome" in their UA string; iPadOS 13+ reports as Mac).
+// Keep the body small — this is a beacon, not a file upload. Guards
+// against a malformed/malicious client sending megabytes of junk.
+const MAX_BODY_BYTES = 8 * 1024;
+
+// ── User-Agent parsing ───────────────────────────────────────────────
+// Hand-rolled on purpose — this only needs to be "good enough for a
+// dashboard column", not a full UA database. Order matters: Edge/Opera
+// both contain "Chrome" in their UA string, so Edge/Opera are checked
+// first. Known gap: iPadOS 13+ reports as a desktop Mac UA by default
+// and will show as "Desktop" here — detecting that reliably needs a
+// client-side signal (navigator.maxTouchPoints) this server-only parser
+// doesn't have access to.
 
 function classifyDevice(ua: string): string {
   if (!ua) return 'Unknown device';
@@ -55,9 +76,9 @@ function classifyBrowser(ua: string): string {
   if (!ua) return 'Unknown';
   if (/edg\//i.test(ua)) return 'Edge';
   if (/opr\/|opera/i.test(ua)) return 'Opera';
-  if (/firefox\//i.test(ua)) return 'Firefox';
   if (/crios\//i.test(ua)) return 'Chrome';
   if (/fxios\//i.test(ua)) return 'Firefox';
+  if (/firefox\//i.test(ua)) return 'Firefox';
   if (/chrome\//i.test(ua) && !/edg\//i.test(ua)) return 'Chrome';
   if (/safari\//i.test(ua) && /version\//i.test(ua)) return 'Safari';
   if (/msie|trident/i.test(ua)) return 'Internet Explorer';
@@ -75,35 +96,68 @@ function classifyOS(ua: string): string {
   return 'Unknown';
 }
 
-// Repeat-visitor collapsing (same IP + UA -> same visitorId), without
-// storing raw IPs long-term. One-way, non-reversible to the IP alone.
+// One-way fallback id when the client has no persisted visitorId to
+// send (storage blocked, first beacon racing localStorage, etc). Not
+// reversible to the IP alone; same IP+UA pair always collapses to the
+// same fallback id so a burst of views without JS storage still groups
+// as one visitor rather than many.
 function hashVisitor(parts: string[]): string {
   const str = parts.join('|');
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
   }
-  return 'v' + hash.toString(36);
+  return 'h' + hash.toString(36);
 }
 
 function clip(v: unknown, max: number): string {
   return typeof v === 'string' && v ? v.slice(0, max) : '';
 }
 
+// A client-supplied visitorId must look like the id the loader actually
+// generates (see public/sitevento.js) — short, opaque, alphanumeric.
+// Anything else is ignored and the server falls back to the IP+UA hash,
+// so a malicious caller can't inject an arbitrary string to pose as a
+// specific existing visitor.
+const VISITOR_ID_RE = /^v[a-z0-9]{6,40}$/i;
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
 export async function POST(req: NextRequest) {
-  // A tracking call should never block or error out the visitor's page —
-  // every failure path below still returns 200. The only thing that
-  // matters to the client is "don't retry forever."
   try {
-    const body = await req.json().catch(() => ({}));
-    const { siteId, path, referrer, screen, lang, landing, sessionId } = body || {};
+    // Reject oversized bodies before even parsing JSON.
+    const contentLength = Number(req.headers.get('content-length') || 0);
+    if (contentLength > MAX_BODY_BYTES) {
+      return NextResponse.json({ ok: false, reason: 'payload too large' }, { status: 200, headers: CORS_HEADERS });
+    }
 
-    if (!siteId || typeof siteId !== 'string') {
+    const raw = await req.text();
+    if (raw.length > MAX_BODY_BYTES) {
+      return NextResponse.json({ ok: false, reason: 'payload too large' }, { status: 200, headers: CORS_HEADERS });
+    }
+
+    let body: any = {};
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return NextResponse.json({ ok: false, reason: 'invalid json' }, { status: 200, headers: CORS_HEADERS });
+    }
+
+    const { siteId, path, referrer, screen, lang, landing, sessionId, visitorId: clientVisitorId } = body || {};
+
+    if (!siteId || typeof siteId !== 'string' || siteId.length > 100) {
       return NextResponse.json({ ok: false, reason: 'missing siteId' }, { status: 200, headers: CORS_HEADERS });
+    }
+
+    // Abuse protection: cap beacons per IP+site. A tracking call still
+    // always returns 200 (never surface an error to a visitor's page),
+    // it just skips the Firestore write once the limit is hit.
+    const forwardedForHeader = req.headers.get('x-forwarded-for') || '';
+    const callerIp = forwardedForHeader.split(',')[0].trim() || 'unknown';
+    if (!allow(`track:${siteId}:${callerIp}`, 120, 60_000)) {
+      return NextResponse.json({ ok: false, reason: 'rate limited' }, { status: 200, headers: CORS_HEADERS });
     }
 
     let db;
@@ -118,9 +172,11 @@ export async function POST(req: NextRequest) {
     }
 
     // siteId alone doesn't tell us the owning uid — resolve via the
-    // flat siteIndex/{siteId} doc written once at site-creation time.
-    // One cheap doc read instead of a collection-group query; siteId is
-    // already non-secret (it's pasted into the customer's public page).
+    // flat siteIndex/{siteId} doc (written once at site-creation time
+    // in hooks/useConnectSiteWizard.ts, and relied on the same way by
+    // /api/overlay-track and /api/overlay-notify). One cheap doc read
+    // instead of a collection-group query; siteId is already
+    // non-secret (it's pasted into the customer's public page).
     const indexSnap = await db.collection('siteIndex').doc(siteId).get();
     const uid: string | null = indexSnap.exists ? indexSnap.data()?.uid ?? null : null;
 
@@ -147,15 +203,20 @@ export async function POST(req: NextRequest) {
 
     // Vercel populates these geo headers at the edge from the request
     // IP — no external geo-IP API call (and no extra latency/cost)
-    // needed. Falls back gracefully off-Vercel.
+    // needed. Falls back gracefully off-Vercel (local dev, other hosts).
     const country = req.headers.get('x-vercel-ip-country') || 'Unknown';
     const cityHeader = req.headers.get('x-vercel-ip-city');
     const city = cityHeader ? decodeURIComponent(cityHeader) : null;
 
-    const forwardedFor = req.headers.get('x-forwarded-for') || '';
-    const ip = forwardedFor.split(',')[0].trim() || '';
+    const ip = callerIp !== 'unknown' ? callerIp : '';
     const ua = req.headers.get('user-agent') || '';
-    const visitorId = hashVisitor([ip, ua]);
+
+    // Prefer the persisted id the loader sent; fall back to a hash only
+    // when it's missing or doesn't look like a real generated id.
+    const visitorId =
+      typeof clientVisitorId === 'string' && VISITOR_ID_RE.test(clientVisitorId)
+        ? clientVisitorId
+        : hashVisitor([ip, ua]);
 
     const blockedSnap = await siteRef
       .collection('blockedVisitors')
@@ -165,7 +226,7 @@ export async function POST(req: NextRequest) {
     const isBlocked = !!(blockedSnap && blockedSnap.exists);
 
     const visitRef = siteRef.collection('visits').doc();
-    await visitRef.set({
+    const writePromise = visitRef.set({
       ts: FieldValue.serverTimestamp(),
       path: clip(path, 300) || '/',
       referrer: clip(referrer, 300) || 'Direct',
@@ -182,11 +243,18 @@ export async function POST(req: NextRequest) {
       blocked: isBlocked,
     });
 
-    // Fire-and-forget: bump the site's lastSeenAt so a future "active
-    // sites" view could sort by recent traffic without scanning visits.
-    // Never awaited beyond this call, and failure here must not affect
-    // the 200 the client already gets.
-    siteRef.update({ lastSeenAt: FieldValue.serverTimestamp() }).catch(() => {});
+    // Fire-and-forget aggregate counters, so the dashboard can show
+    // totals without summing every visit document. Never awaited beyond
+    // this call — a failure here must not affect the 200 the client
+    // already gets, and must not delay the response.
+    siteRef
+      .update({
+        lastSeenAt: FieldValue.serverTimestamp(),
+        'stats.totalVisits': FieldValue.increment(1),
+      })
+      .catch(() => {});
+
+    await writePromise;
 
     return NextResponse.json({ ok: true }, { status: 200, headers: CORS_HEADERS });
   } catch (err) {
