@@ -120,30 +120,43 @@
 }
 
 /* ── Card grid ────────────────────────────────────────────────────── */
+/* Always 2-up, even on a 320px-wide phone — gap and card padding below
+   are sized so two columns fit without overflow at that width (320 -
+   2*16 wrap padding = 288 content; 288 = 2*134 + 1*20 gap). Was 1fr
+   (single column) below 640px; widened back out at >=640px only for
+   roomier cards, not because narrower viewports need to drop to one. */
 .wgp-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 420px) {
+  .wgp-grid { gap: 14px; }
 }
 
 @media (min-width: 640px) {
-  .wgp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .wgp-grid { gap: 16px; }
 }
 
 .wgp-card {
   box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  gap: 10px;
-  padding: 18px;
+  gap: 8px;
+  padding: 14px;
   border: 1px solid transparent;
-  border-radius: 20px;
+  border-radius: 18px;
   cursor: pointer;
   font-family: inherit;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+@media (min-width: 420px) {
+  .wgp-card { gap: 10px; padding: 18px; border-radius: 20px; }
 }
 .wgp-card:hover { box-shadow: 0 6px 18px rgba(34, 32, 28, 0.08); }
 .wgp-card:active { transform: scale(0.99); }
@@ -156,39 +169,63 @@
 }
 
 .wgp-card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
+  flex-shrink: 0;
 }
-.wgp-card-icon svg { width: 22px; height: 22px; }
+.wgp-card-icon svg { width: 18px; height: 18px; }
+@media (min-width: 420px) {
+  .wgp-card-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .wgp-card-icon svg { width: 22px; height: 22px; }
+}
 
 .wgp-card-arrow {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.wgp-card-arrow svg { width: 16px; height: 16px; }
+.wgp-card-arrow svg { width: 14px; height: 14px; }
+@media (min-width: 420px) {
+  .wgp-card-arrow { width: 32px; height: 32px; }
+  .wgp-card-arrow svg { width: 16px; height: 16px; }
+}
 
 .wgp-card-name {
   font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
-  font-size: 17px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--ink);
+  line-height: 1.25;
+  word-break: break-word;
+}
+@media (min-width: 420px) {
+  .wgp-card-name { font-size: 17px; }
 }
 
 .wgp-card-desc {
   font-family: -apple-system, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 11.5px;
+  line-height: 1.45;
   color: #4b5a62;
+  /* Keep card heights sane in a 2-up grid at narrow widths — the full
+     description is still in the title attr / on the designer page
+     this card now links to. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (min-width: 420px) {
+  .wgp-card-desc { font-size: 13px; -webkit-line-clamp: 4; }
 }
 
 /* ── Six-tone palette, cycled across the grid ────────────────────── */
@@ -273,7 +310,6 @@
 .wgp-soon-arrow svg { width: 16px; height: 16px; }
 
 @media (max-width: 420px) {
-  .wgp-main { padding-top: 96px; }
-  .wgp-head-text h1 { font-size: 26px; }
-  .wgp-card-icon { width: 44px; height: 44px; }
+  .wgp-main { padding: 96px 12px 110px; }
+  .wgp-head-text h1 { font-size: 24px; }
 }
