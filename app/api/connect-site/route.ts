@@ -31,6 +31,8 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { allow } from '@/lib/rateLimit';
 import { getPlan, type PlanId } from '@/lib/plans';
 import { overlayFromTemplate } from '@/lib/siteAlert';
+import { lookupDomain } from '@/lib/domainLookup';
+import type { SiteDomainInfo } from '@/lib/types';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -131,6 +133,19 @@ export async function POST(req: NextRequest) {
       /* leave hostname as-is */
     }
 
+    // Same best-effort RDAP lookup the connect wizard's step-1 "domain
+    // intel" card shows live (app/api/domain-lookup/route.ts via
+    // lib/domainLookup.ts) — run once here and persisted onto the site
+    // doc below, so the info survives past the wizard closing instead
+    // of only ever being shown transiently. Deliberately run BEFORE
+    // the transaction (it's a slow outbound network call to rdap.org,
+    // which has no place inside a Firestore transaction's
+    // read-then-write retry loop) and never allowed to block or fail
+    // site creation — lookupDomain() always resolves, never throws, so
+    // a slow/absent RDAP response just means domainInfo.found stays
+    // false rather than the connect flow erroring out.
+    const domainInfo: SiteDomainInfo = await lookupDomain(hostname);
+
     const userRef = db.collection('users').doc(uid);
     const sitesRef = userRef.collection('sites');
 
@@ -164,7 +179,9 @@ export async function POST(req: NextRequest) {
           name: hostname,
           url: normalized,
           status: 'pending',
+          paused: false,
           overlay: overlayFromTemplate('announcement'),
+          domainInfo,
           createdAt: FieldValue.serverTimestamp(),
         });
 
