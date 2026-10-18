@@ -4,8 +4,29 @@
 // 'ai-agent', replacing the old dead 'visitor-api' 3rd Quick Tools
 // slot — see components/dashboard/FeatureOptionsGrid.tsx). Mirrors
 // lib/widgets.ts's shape: one typed catalog, read by both the UI and
-// (once built) the API route, instead of duplicating feature lists in
-// multiple places.
+// the API route (app/api/site-agent/route.ts), instead of duplicating
+// feature lists in multiple places.
+//
+// ── Persistence & execution (this pass) ─────────────────────────────
+// Config now lives at users/{uid}/sites/{siteId}/agent/config, written
+// via app/api/site-agent/route.ts (same Admin-SDK + ID-token-ownership
+// pattern as app/api/site-widget/route.ts — see that route's header
+// for why a trusted uid can't just be taken from the request body).
+// hooks/useSiteAgent.ts mirrors hooks/useSiteWidget.ts's draft/saved
+// shape.
+//
+// There is deliberately NO new install snippet for this feature. Every
+// connected site already runs public/sitevento.js (installed once, at
+// connect time — see hooks/useConnectSiteWizard.ts's copyConnectTag),
+// which already calls home on every pageview (/api/track) and already
+// polls /api/site-widgets for this site's current configuration. The
+// agent's scheduling/moderation checks (daily-site-toggle,
+// country-block, maintenance-mode, etc.) are evaluated SERVER-SIDE,
+// inside the existing /api/track and /api/widget request handlers,
+// against this same users/{uid}/sites/{siteId}/agent/config document
+// — so "installing the agent" is just turning features on here, not a
+// second tag to paste anywhere. AgentVerifyPanel (component) surfaces
+// this honestly instead of inventing a redundant verification step.
 //
 // ── Model naming ─────────────────────────────────────────────────────
 // Two models are offered to the user, under sitevento's own names only
@@ -137,4 +158,90 @@ export function modelAllowedForPlan(modelId: AgentModelId, plan: PlanId): boolea
   if (!model) return false;
   const order: PlanId[] = ['free', 'starter', 'scale', 'pro-developer'];
   return order.indexOf(plan) >= order.indexOf(model.minPlan);
+}
+
+// ── Owner time zone (for daily-site-toggle / maintenance-mode) ────────
+//
+// A short, deliberately non-exhaustive list of IANA zone identifiers
+// — one representative per UTC offset band rather than the full tz
+// database, since this picker only needs to answer "what's 11pm for
+// you", not cover every city. Values are real IANA identifiers so a
+// server-side cron (Intl.DateTimeFormat / date-fns-tz) can resolve
+// them directly with no separate offset-math table to keep in sync.
+export interface TimezoneDef {
+  id: string;
+  label: string;
+}
+
+export const AGENT_TIMEZONES: TimezoneDef[] = [
+  { id: 'Pacific/Midway', label: '(UTC-11:00) Midway Island' },
+  { id: 'Pacific/Honolulu', label: '(UTC-10:00) Hawaii' },
+  { id: 'America/Anchorage', label: '(UTC-09:00) Alaska' },
+  { id: 'America/Los_Angeles', label: '(UTC-08:00) Pacific Time' },
+  { id: 'America/Denver', label: '(UTC-07:00) Mountain Time' },
+  { id: 'America/Chicago', label: '(UTC-06:00) Central Time' },
+  { id: 'America/New_York', label: '(UTC-05:00) Eastern Time' },
+  { id: 'America/Halifax', label: '(UTC-04:00) Atlantic Time' },
+  { id: 'America/Sao_Paulo', label: '(UTC-03:00) Sao Paulo' },
+  { id: 'Atlantic/Azores', label: '(UTC-01:00) Azores' },
+  { id: 'Europe/London', label: '(UTC+00:00) London' },
+  { id: 'Europe/Paris', label: '(UTC+01:00) Paris, Berlin' },
+  { id: 'Europe/Athens', label: '(UTC+02:00) Athens, Cairo' },
+  { id: 'Europe/Moscow', label: '(UTC+03:00) Moscow, Nairobi' },
+  { id: 'Asia/Dubai', label: '(UTC+04:00) Dubai' },
+  { id: 'Asia/Karachi', label: '(UTC+05:00) Karachi' },
+  { id: 'Asia/Kolkata', label: '(UTC+05:30) Mumbai, New Delhi' },
+  { id: 'Asia/Dhaka', label: '(UTC+06:00) Dhaka' },
+  { id: 'Asia/Bangkok', label: '(UTC+07:00) Bangkok, Jakarta' },
+  { id: 'Asia/Shanghai', label: '(UTC+08:00) Beijing, Singapore' },
+  { id: 'Asia/Tokyo', label: '(UTC+09:00) Tokyo, Seoul' },
+  { id: 'Australia/Sydney', label: '(UTC+10:00) Sydney' },
+  { id: 'Pacific/Auckland', label: '(UTC+12:00) Auckland' },
+];
+
+export function isValidTimezone(id: unknown): id is string {
+  return typeof id === 'string' && AGENT_TIMEZONES.some((tz) => tz.id === id);
+}
+
+// ── Stored config shape ─────────────────────────────────────────────
+//
+// users/{uid}/sites/{siteId}/agent/config. `enabledFeatureIds` is
+// pre-filtered against the owner's plan at write time (see
+// app/api/site-agent/route.ts) — NOT trusted as-is by any reader,
+// since a plan can be downgraded after features were enabled; readers
+// should always re-check isFeatureAllowedForPlan at use time too, the
+// same defense-in-depth the UI already applies in AgentFeatureGrid.
+export interface AgentConfig {
+  /** Whether the agent is actively evaluated at request time at all — the master switch. */
+  active: boolean;
+  model: AgentModelId;
+  enabledFeatureIds: string[];
+  /** ISO 3166-1 alpha-2 codes. Only meaningful if 'country-block' is enabled. */
+  blockedCountries: string[];
+  /** IANA zone id. Only meaningful if 'daily-site-toggle' or 'maintenance-mode' is enabled. */
+  timezone: string;
+  updatedAt?: unknown;
+}
+
+export const DEFAULT_AGENT_CONFIG: AgentConfig = {
+  active: false,
+  model: 'ventol',
+  enabledFeatureIds: [],
+  blockedCountries: [],
+  timezone: 'America/New_York',
+};
+
+/**
+ * Clamps an arbitrary config against a plan's real allowances —
+ * drops features/models the plan can no longer use rather than
+ * rejecting the whole save, so a downgrade degrades gracefully
+ * instead of erroring. Pure function so both the API route and any
+ * future server-side evaluator can share exactly this logic rather
+ * than re-implementing "what's actually allowed" twice.
+ */
+export function clampConfigToPlan(config: AgentConfig, plan: PlanId): AgentConfig {
+  const allowedFeatureIds = new Set(featuresForPlan(plan).map((f) => f.id));
+  const enabledFeatureIds = config.enabledFeatureIds.filter((id) => allowedFeatureIds.has(id));
+  const model = modelAllowedForPlan(config.model, plan) ? config.model : 'ventol';
+  return { ...config, model, enabledFeatureIds };
 }
