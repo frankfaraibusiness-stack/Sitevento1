@@ -217,10 +217,19 @@
     background: var(--bg); border: 1px solid var(--line); border-radius: 100px;
     padding: 9px 15px; font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 600;
     color: var(--ink); cursor: pointer; white-space: nowrap;
+    box-shadow: 0 1px 0 rgba(34, 32, 28, 0.08);
+    transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
   }
+  .ghost-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(34, 32, 28, 0.1); }
+  .ghost-btn:not(:disabled):active { transform: translateY(1px); box-shadow: none; }
   .ghost-btn:disabled { opacity: 0.45; cursor: default; }
   .ghost-btn.danger { color: #b3432b; border-color: #e9c9bd; }
-  .ghost-btn.live { background: var(--lime); border-color: var(--lime); color: var(--lime-ink); }
+  .ghost-btn.live {
+    background: var(--lime); border-color: var(--lime-ink); color: var(--lime-ink);
+    box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
+  }
+  .ghost-btn.live:not(:disabled):hover { box-shadow: 0 4px 0 rgba(34, 32, 28, 0.9); }
+  .ghost-btn.live:not(:disabled):active { box-shadow: none; }
   .ghost-btn svg { width: 13px; height: 13px; }
 
   .empty-row {
@@ -278,15 +287,21 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     margin-bottom: 12px;
   }
-  .css-head h3 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+  .css-head h3 {
+    margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.01em;
+    min-width: 0; flex: 1 1 auto;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   .css-add-btn {
     display: none;
     align-items: center; gap: 6px;
     background: none; border: none;
     font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 600;
     color: #8a8477; cursor: pointer;
+    flex-shrink: 0;
+    max-width: 100%;
   }
-  .css-add-btn svg { width: 13px; height: 13px; }
+  .css-add-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
   @media (min-width: 560px) {
     .css-add-btn { display: inline-flex; }
   }
@@ -311,12 +326,44 @@
     box-shadow: 0 1px 2px rgba(20, 18, 14, 0.04);
     padding: 14px 16px;
     display: flex;
-    align-items: center;
-    gap: 13px;
+    flex-direction: column;
+    gap: 12px;
     transition: border-color 0.15s ease;
   }
   .css-card.is-active { border-color: var(--dash-green); }
   .css-card.is-pending { border-style: dashed; }
+
+  .css-card-row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .css-manage-btn {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px;
+    border-radius: 12px;
+    border: 1.5px solid var(--walnut-dark);
+    background: var(--ink);
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
+    transition: transform 140ms ease, box-shadow 140ms ease;
+  }
+  .css-manage-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 rgba(34, 32, 28, 0.9); }
+  .css-manage-btn:active { transform: translateY(1px); box-shadow: none; }
 
   .css-card-icon {
     width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
@@ -453,18 +500,58 @@
 
   /* ── Sections ─────────────────────────────────────────────────
      Each logical group (Templates, Preview, Content, Button, Artwork,
-     Display, Style, Behaviour) sits in its own clearly separated block
-     with a divider below it, instead of one dense scroll of fields. */
-  .bcp-section {
-    padding: 18px 0;
-    border-bottom: 1px solid var(--bcp-sep);
+     Display, Style, Behaviour) is its own distinct card — a real
+     boundary (surface + border + radius), not just a divider line —
+     so the editor reads as ordered sections instead of one long flat
+     scroll of fields. On desktop the preview-ish sections pin to a
+     left rail while the editable form sections flow in their own
+     column on the right, so the layout actually uses the width
+     instead of staying a single centered column at every size. */
+  .bcp-main {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
-  .bcp-section:first-of-type { padding-top: 4px; }
-  .bcp-section:last-of-type { border-bottom: none; }
+  .bcp-section {
+    background: var(--bcp-group);
+    border: 1px solid var(--bcp-sep);
+    border-radius: 18px;
+    padding: 16px 16px 18px;
+    box-shadow: 0 1px 2px rgba(20, 18, 14, 0.03);
+  }
   .bcp-section-title {
     margin: 0 0 12px 2px;
     font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--bcp-dim);
+  }
+  .bcp-section .bcp-group { background: var(--bcp-group-2); }
+
+  @media (min-width: 860px) {
+    .bcp-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+    .bcp-rail {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .bcp-main {
+      gap: 14px;
+    }
+    .bcp-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .bcp-form-grid > .bcp-section-wide {
+      grid-column: 1 / -1;
+    }
   }
 
   /* Template strip */
@@ -561,6 +648,11 @@
   .bcp-row-label { font-size: 13.5px; font-weight: 500; }
   .bcp-row-stack { display: flex; flex-direction: column; gap: 3px; }
   .bcp-row-note { font-size: 11.5px; color: var(--bcp-dim); line-height: 1.4; max-width: 280px; }
+  p.bcp-row-note { max-width: none; margin: 0; }
+  p.bcp-row-note code {
+    background: var(--bcp-group-2); border: 1px solid var(--bcp-sep); border-radius: 6px;
+    padding: 1px 5px; font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+  }
 
   .bcp-input, .bcp-textarea {
     background: var(--bcp-group-2); border: 1px solid var(--bcp-sep); border-radius: 10px;
@@ -590,8 +682,10 @@
   .bcp-seg-btn {
     border: none; background: none; color: var(--bcp-dim); font-family: inherit; font-size: 12.5px; font-weight: 600;
     padding: 7px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
   }
-  .bcp-seg-btn.is-on { background: var(--bcp-bg); color: var(--bcp-text); }
+  .bcp-seg-btn.is-on { background: var(--bcp-bg); color: var(--bcp-text); box-shadow: 0 1px 2px rgba(20, 18, 14, 0.12); }
+  .bcp-seg-btn:active { transform: scale(0.97); }
 
   .bcp-switch {
     position: relative; width: 46px; height: 28px; border-radius: 999px; border: none;
@@ -608,9 +702,12 @@
   /* Artwork picker */
   .bcp-art-strip { display: flex; gap: 8px; flex-wrap: wrap; }
   .bcp-art-pill {
-    border: 1px solid var(--bcp-sep); background: var(--bcp-group); color: var(--bcp-text);
+    border: 1px solid var(--bcp-sep); background: var(--bcp-bg); color: var(--bcp-text);
     border-radius: 999px; padding: 8px 14px; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    transition: transform 120ms ease, border-color 120ms ease, background-color 120ms ease;
   }
+  .bcp-art-pill:hover { border-color: var(--bcp-lime); }
+  .bcp-art-pill:active { transform: scale(0.96); }
   .bcp-art-pill.is-selected { border-color: var(--bcp-lime); background: color-mix(in srgb, var(--bcp-lime) 14%, var(--bcp-group)); }
 
   .bcp-warn {
@@ -621,8 +718,14 @@
   .bcp-warn p { margin: 0 0 4px; }
   .bcp-warn p:last-child { margin-bottom: 0; }
 
-  .bcp-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
-  .bcp-bar .ghost-btn { flex: 1 1 auto; justify-content: center; }
+  .bcp-bar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    position: sticky; bottom: -18px;
+    margin: 4px 0 -18px;
+    padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, var(--bcp-bg) 70%, transparent);
+  }
+  .bcp-bar .ghost-btn { flex: 1 1 auto; justify-content: center; padding-top: 11px; padding-bottom: 11px; }
   .bcp-bar .ghost-btn.live { flex: 1.3 1 auto; }
 
   .bcp-sheet-backdrop {
