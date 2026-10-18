@@ -14,6 +14,11 @@ import { useSiteWidget } from '@/hooks/useSiteWidget';
 import { getWidgetCatalogEntry, type WidgetFieldDef } from '@/lib/widgets';
 import type { Site } from '@/lib/types';
 
+const AUTO_MOUNT_NOTE =
+  'This widget shows up on your site automatically — no code to paste. Want it in a specific spot on the page instead? Add ';
+const MANUAL_ONLY_NOTE =
+  'This widget only shows where you place it. Add this to your page where you want it to appear: ';
+
 interface WidgetConfigPanelProps {
   uid: string | null;
   activeSite: Site | null;
@@ -151,7 +156,16 @@ export function WidgetConfigPanel({ uid, activeSite, widgetId, onClose }: Widget
 
   async function handleToggle(next: boolean) {
     const ok = next ? await enable() : await disable();
-    flash(ok ? 'ok' : 'error', ok ? (next ? 'Widget is live on your site.' : 'Widget turned off.') : 'Could not update.');
+    flash(
+      ok ? 'ok' : 'error',
+      ok
+        ? next
+          ? entry.position === 'manual-only'
+            ? 'Turned on — add it to your page to show it (see below).'
+            : 'Widget is live on your site.'
+          : 'Widget turned off.'
+        : 'Could not update.'
+    );
   }
 
   return (
@@ -182,7 +196,11 @@ export function WidgetConfigPanel({ uid, activeSite, widgetId, onClose }: Widget
                     <span className="bcp-row-stack">
                       <span className="bcp-row-label">Live on {activeSite.name}</span>
                       <span className="bcp-row-note">
-                        {isLive ? 'Visitors see this widget now.' : 'Not shown to visitors yet.'}
+                        {isLive
+                          ? entry.position === 'manual-only'
+                            ? 'Live — visible wherever you\u2019ve placed it on your page.'
+                            : 'Visitors see this widget now.'
+                          : 'Not shown to visitors yet.'}
                       </span>
                     </span>
                     <Toggle on={isLive} onChange={handleToggle} label={`Enable ${entry.name}`} />
@@ -215,7 +233,9 @@ export function WidgetConfigPanel({ uid, activeSite, widgetId, onClose }: Widget
               </div>
 
               <p className="bcp-row-note">
-                Add this to your page to show it: <code>&lt;div data-sitevento-widget=&quot;{widgetId}&quot;&gt;&lt;/div&gt;</code>
+                {entry.position === 'manual-only' ? MANUAL_ONLY_NOTE : AUTO_MOUNT_NOTE}
+                <code>&lt;div data-sitevento-widget=&quot;{widgetId}&quot;&gt;&lt;/div&gt;</code>
+                {' '}wherever you want it on the page.
               </p>
             </div>
           </div>
