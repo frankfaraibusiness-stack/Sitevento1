@@ -3,10 +3,23 @@
 // Port of the original api/verify-site.js Vercel function to a Next.js
 // App Router Route Handler. Fetches the submitted site URL server-side
 // (avoiding the browser CORS restriction a client-side fetch would hit
-// on most real-world domains) and checks the page's HTML for the unique
-// sitevento meta tag:
+// on most real-world domains) and checks the page's HTML for BOTH
+// halves of the install tag (see hooks/useConnectSiteWizard.ts's
+// copyConnectTag, which gives the owner both lines together):
 //
 //   <meta name="sitevento" content="{siteId}">
+//   <script src="{origin}/sitevento.js" data-site="{siteId}" ...>
+//
+// Checking only the meta tag was the actual tracking bug this route
+// used to have: the meta tag is inert (sitevento.js only reads it as a
+// belt-and-braces identity cross-check against its own data-site
+// attribute — see that script's comments), so a page could pass
+// verification with the meta tag pasted in and the <script> tag that
+// does all the actual tracking/widget/overlay work left out entirely.
+// That site would then show status: 'verified' in the dashboard while
+// silently sending zero visit beacons forever, with nothing anywhere
+// surfacing why. Requiring both tags here means "verified" now
+// actually implies "the tracking script is installed and can run."
 //
 // On success, it uses the Firebase Admin SDK (trusted, server-side
 // only) to flip that site's Firestore doc to status: 'verified'. The
@@ -49,13 +62,40 @@ function getAdminDb() {
 const FETCH_TIMEOUT_MS = 8000;
 const MAX_BODY_BYTES = 2 * 1024 * 1024; // 2MB is plenty for a <head> scan
 
-function buildTagRegex(siteId: string) {
+function buildMetaTagRegex(siteId: string) {
   // Matches <meta name="sitevento" content="SITEID"> allowing attribute
-  // order to be swapped, single or double quotes, and extra whitespace.
+  // order to be swapped, single or double quotes, extra whitespace,
+  // and attributes wrapped across lines (see buildScriptTagRegex's
+  // comment on why [\s\S]*? rather than [^>]*).
   const escapedId = siteId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(
-    `<meta[^>]*name=["']sitevento["'][^>]*content=["']${escapedId}["'][^>]*>` +
-      `|<meta[^>]*content=["']${escapedId}["'][^>]*name=["']sitevento["'][^>]*>`,
+    `<meta[\\s\\S]*?name=["']sitevento["'][\\s\\S]*?content=["']${escapedId}["'][\\s\\S]*?>` +
+      `|<meta[\\s\\S]*?content=["']${escapedId}["'][\\s\\S]*?name=["']sitevento["'][\\s\\S]*?>`,
+    'i'
+  );
+}
+
+// Matches the install snippet's <script> half — the piece that
+// actually does the tracking/overlay/widget work (the meta tag above
+// is just a belt-and-braces identity check sitevento.js itself reads).
+// Only requires src="...sitevento.js" + data-site="SITEID" to both be
+// present somewhere in the tag, in either order, with any other
+// attributes (defer, type, etc.) around them — not the exact literal
+// string the wizard hands out, so this still passes if the owner's own
+// build tooling reorders/reformats attributes, or they install it via
+// a tag manager that does the same.
+function buildScriptTagRegex(siteId: string) {
+  const escapedId = siteId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const srcAttr = `src=["'][^"']*sitevento\\.js[^"']*["']`;
+  const siteAttr = `data-site=["']${escapedId}["']`;
+  // [\s\S]*? (not [^>]*) between attributes: some formatters/minifiers
+  // wrap a long tag's attributes across lines, and [^>]* would refuse
+  // to match across that newline since it's still "any char but >".
+  // Non-greedy + bounded by the literal <script ... > on each side
+  // keeps this from running away across unrelated tags.
+  return new RegExp(
+    `<script[\\s\\S]*?${srcAttr}[\\s\\S]*?${siteAttr}[\\s\\S]*?>` +
+      `|<script[\\s\\S]*?${siteAttr}[\\s\\S]*?${srcAttr}[\\s\\S]*?>`,
     'i'
   );
 }
@@ -186,17 +226,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const tagRegex = buildTagRegex(siteId);
-  const found = tagRegex.test(fetchResult.html);
+  // Both halves are required — the meta tag alone used to be enough to
+  // pass, which let a site go "verified" with the actual tracking
+  // script never installed, so it silently never tracked a single
+  // visit. See the module comment above for the full story.
+  const hasMetaTag = buildMetaTagRegex(siteId).test(fetchResult.html);
+  const hasScriptTag = buildScriptTagRegex(siteId).test(fetchResult.html);
 
-  if (!found) {
-    return NextResponse.json(
-      {
-        verified: false,
-        message: "Couldn't find the tag yet. Make sure it's pasted in the page's <head> and try again.",
-      },
-      { status: 200 }
-    );
+  if (!hasMetaTag || !hasScriptTag) {
+    const message = !hasMetaTag && !hasScriptTag
+      ? "Couldn't find the tag yet. Make sure it's pasted in the page's <head> and try again."
+      : !hasScriptTag
+        ? "Found the meta tag, but not the tracking script — make sure the <script src=\"...sitevento.js\"> line is on the page too, not just the <meta> line."
+        : "Found the script tag, but not the meta tag — make sure both lines from the install snippet are on the page.";
+    return NextResponse.json({ verified: false, message }, { status: 200 });
   }
 
   // Tag found — mark verified. Admin SDK write bypasses Firestore
