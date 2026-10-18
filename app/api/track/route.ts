@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
 
     const raw = await req.text();
     if (raw.length > MAX_BODY_BYTES) {
+      console.log('[track] reject: payload too large', raw.length);
       return NextResponse.json({ ok: false, reason: 'payload too large' }, { status: 200, headers: CORS_HEADERS });
     }
 
@@ -142,14 +143,18 @@ export async function POST(req: NextRequest) {
     try {
       body = JSON.parse(raw);
     } catch {
+      console.log('[track] reject: invalid json, raw head:', raw.slice(0, 120));
       return NextResponse.json({ ok: false, reason: 'invalid json' }, { status: 200, headers: CORS_HEADERS });
     }
 
     const { siteId, path, referrer, screen, lang, landing, sessionId, visitorId: clientVisitorId } = body || {};
 
     if (!siteId || typeof siteId !== 'string' || siteId.length > 100) {
+      console.log('[track] reject: missing/invalid siteId. body was:', JSON.stringify(body).slice(0, 300));
       return NextResponse.json({ ok: false, reason: 'missing siteId' }, { status: 200, headers: CORS_HEADERS });
     }
+
+    console.log('[track] received beacon', { siteId, path, landing });
 
     // Abuse protection: cap beacons per IP+site. A tracking call still
     // always returns 200 (never surface an error to a visitor's page),
@@ -157,6 +162,7 @@ export async function POST(req: NextRequest) {
     const forwardedForHeader = req.headers.get('x-forwarded-for') || '';
     const callerIp = forwardedForHeader.split(',')[0].trim() || 'unknown';
     if (!allow(`track:${siteId}:${callerIp}`, 120, 60_000)) {
+      console.log('[track] reject: rate limited', { siteId, callerIp });
       return NextResponse.json({ ok: false, reason: 'rate limited' }, { status: 200, headers: CORS_HEADERS });
     }
 
@@ -164,7 +170,12 @@ export async function POST(req: NextRequest) {
     try {
       db = getAdminDb();
     } catch (err) {
-      console.error('Firebase Admin init error', err);
+      // If this fires, the Admin SDK itself never initialized — almost
+      // always missing/malformed FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL
+      // / FIREBASE_PRIVATE_KEY in the deployment's env vars. Every beacon
+      // would hit this same branch and nothing would ever reach Firestore,
+      // while the client still only ever sees a 200.
+      console.error('[track] FIREBASE ADMIN INIT FAILED — check FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY env vars:', err);
       return NextResponse.json(
         { ok: false, reason: 'server not configured' },
         { status: 200, headers: CORS_HEADERS }
@@ -181,12 +192,14 @@ export async function POST(req: NextRequest) {
     const uid: string | null = indexSnap.exists ? indexSnap.data()?.uid ?? null : null;
 
     if (!uid) {
+      console.log('[track] reject: unknown site — no siteIndex doc (or no uid field) for siteId:', siteId);
       return NextResponse.json({ ok: false, reason: 'unknown site' }, { status: 200, headers: CORS_HEADERS });
     }
 
     const siteRef = db.collection('users').doc(uid).collection('sites').doc(siteId);
     const siteSnap = await siteRef.get();
     if (!siteSnap.exists) {
+      console.log('[track] reject: unknown site — siteIndex pointed to uid', uid, 'but users/{uid}/sites/{siteId} doc missing for siteId:', siteId);
       return NextResponse.json({ ok: false, reason: 'unknown site' }, { status: 200, headers: CORS_HEADERS });
     }
 
@@ -195,6 +208,7 @@ export async function POST(req: NextRequest) {
       // Don't log traffic for unverified sites — avoids a race where
       // someone pastes another account's tag before it's confirmed
       // theirs.
+      console.log('[track] reject: site not verified. siteId:', siteId, 'status:', site.status);
       return NextResponse.json(
         { ok: false, reason: 'site not verified' },
         { status: 200, headers: CORS_HEADERS }
@@ -205,6 +219,7 @@ export async function POST(req: NextRequest) {
       // hooks/useSites.ts's pauseSite) — distinct from verification.
       // A paused site keeps its tag installed and its history intact,
       // it just stops accumulating new visits until resumed.
+      console.log('[track] reject: site paused. siteId:', siteId);
       return NextResponse.json(
         { ok: false, reason: 'site paused' },
         { status: 200, headers: CORS_HEADERS }
@@ -236,22 +251,33 @@ export async function POST(req: NextRequest) {
     const isBlocked = !!(blockedSnap && blockedSnap.exists);
 
     const visitRef = siteRef.collection('visits').doc();
-    const writePromise = visitRef.set({
-      ts: FieldValue.serverTimestamp(),
-      path: clip(path, 300) || '/',
-      referrer: clip(referrer, 300) || 'Direct',
-      device: classifyDevice(ua),
-      browser: classifyBrowser(ua),
-      os: classifyOS(ua),
-      screen: clip(screen, 20) || null,
-      lang: clip(lang, 20) || null,
-      landing: landing === true,
-      sessionId: clip(sessionId, 60) || null,
-      country,
-      city,
-      visitorId,
-      blocked: isBlocked,
-    });
+    const writePromise = visitRef
+      .set({
+        ts: FieldValue.serverTimestamp(),
+        path: clip(path, 300) || '/',
+        referrer: clip(referrer, 300) || 'Direct',
+        device: classifyDevice(ua),
+        browser: classifyBrowser(ua),
+        os: classifyOS(ua),
+        screen: clip(screen, 20) || null,
+        lang: clip(lang, 20) || null,
+        landing: landing === true,
+        sessionId: clip(sessionId, 60) || null,
+        country,
+        city,
+        visitorId,
+        blocked: isBlocked,
+      })
+      .then(() => {
+        console.log('[track] visit doc written OK:', visitRef.path);
+      })
+      .catch((err) => {
+        // If this fires, every prior check passed (known site, verified,
+        // not paused) but the actual Firestore write failed — almost
+        // always an Admin SDK service-account permissions issue, not a
+        // logic bug in this route.
+        console.error('[track] VISIT WRITE FAILED for', visitRef.path, err);
+      });
 
     // Fire-and-forget aggregate counters, so the dashboard can show
     // totals without summing every visit document. Never awaited beyond
@@ -262,13 +288,18 @@ export async function POST(req: NextRequest) {
         lastSeenAt: FieldValue.serverTimestamp(),
         'stats.totalVisits': FieldValue.increment(1),
       })
-      .catch(() => {});
+      .then(() => {
+        console.log('[track] stats.totalVisits incremented OK for', siteRef.path);
+      })
+      .catch((err) => {
+        console.error('[track] STATS INCREMENT FAILED for', siteRef.path, err);
+      });
 
     await writePromise;
 
     return NextResponse.json({ ok: true }, { status: 200, headers: CORS_HEADERS });
   } catch (err) {
-    console.error('track handler error', err);
+    console.error('[track] UNCAUGHT handler error:', err);
     return NextResponse.json({ ok: false }, { status: 200, headers: CORS_HEADERS });
   }
 }
