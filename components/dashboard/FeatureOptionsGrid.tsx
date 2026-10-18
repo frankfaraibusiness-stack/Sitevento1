@@ -20,7 +20,7 @@
 // plugging into a tool they already run, or automating something
 // they'd otherwise do by hand:
 //   1. Site Alert            — on-site banners (live)
-//   2. Widgets                — on-site widget picker: support chat, spin-the-wheel, etc. (live — routes to /widgets)
+//   2. Widgets                — on-site widget picker: support chat, countdown timer (live — routes to /widgets)
 //   3. Visitor Data API      — pull visits/leads into their own systems
 //   4. CRM Sync              — push leads to Salesforce/HubSpot/Pipedrive
 //   5. Slack & Webhook Alerts— real-time ping on high-value visits
@@ -57,7 +57,7 @@ const FEATURE_OPTIONS: FeatureOption[] = [
   {
     id: 'widgets',
     name: 'Widgets',
-    description: 'Drop-in on-site widgets — support chat, spin-the-wheel, and more — no code, no redeploy.',
+    description: 'Drop-in on-site widgets — support chat and a countdown timer — no code, no redeploy.',
     href: '/widgets',
     live: true,
     icon: (
