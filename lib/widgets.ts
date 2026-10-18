@@ -204,6 +204,17 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
     configFields: [
       { key: 'greeting', label: 'Greeting message', type: 'textarea', default: "Hi! How can we help?", maxLength: 200 },
       { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
+      {
+        key: 'side',
+        label: 'Which side of the screen',
+        type: 'select',
+        default: 'right',
+        options: [
+          { value: 'right', label: 'Bottom right' },
+          { value: 'left', label: 'Bottom left' },
+        ],
+        help: 'Where the chat bubble sits on your site. Overrides the widget\u2019s default corner.',
+      },
       { key: 'height', label: 'Frame height', type: 'text', default: '480px' },
     ],
   },
