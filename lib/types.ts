@@ -30,6 +30,13 @@ export interface Site {
   overlayStats?: OverlayStats;
   createdAt?: { toDate: () => Date } | null;
   verifiedAt?: { toDate: () => Date } | null;
+  // Set by /api/track on every successfully recorded visit — i.e. only
+  // when the tracking <script> actually ran on a page and reached the
+  // backend. A `verified` site with verifiedAt set but lastSeenAt still
+  // null means verification passed but no real visit has ever come in
+  // (script removed after verifying, blocked by the visitor's browser,
+  // etc.) — see ProfilePage.tsx's status badge, which surfaces this.
+  lastSeenAt?: { toDate: () => Date } | null;
   // Optional — no billing system exists yet, so these are read
   // defensively (missing = active/default plan) by
   // app/api/widget/route.ts rather than required here. Present so a
