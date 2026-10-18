@@ -5,6 +5,7 @@
 // goToDashboard(section) via props instead of global functions.
 import { signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 import { getFirebaseAuth } from '@/lib/firebase';
 import type { DashSection } from '@/hooks/useAppView';
 
@@ -19,6 +20,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate, onOpenProfile }: SidebarProps) {
+  const router = useRouter();
   const name = user ? user.displayName || (user.email ? user.email.split('@')[0] : 'Account') : '';
   const email = user?.email || '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -26,6 +28,15 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
   function navigate(section: DashSection) {
     onClose();
     onNavigate(section);
+  }
+
+  function goToSettings() {
+    onClose();
+    if (!user) {
+      onSignIn();
+      return;
+    }
+    router.push('/settings');
   }
 
   return (
@@ -163,7 +174,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
 
           <div className="sidebar-divider" />
 
-          <a href="#" className="sidebar-link">
+          <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); goToSettings(); }}>
             <span className="icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
                 <circle cx="12" cy="12" r="3" />
