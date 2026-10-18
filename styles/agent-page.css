@@ -1,20 +1,32 @@
 /* ============================================================
  * styles/agent-page.css
  *
- * Stylesheet for /dashboard/agent (components/agent/AgentPageClient.tsx).
- * Own `agt-` prefix, same convention as `wgp-`/`wdg-` — reuses the
- * app's base --ink/--line/--bg/--cream variables, owns its own layout.
+ * Stylesheet for /dashboard/agent (components/agent/AgentPageClient.tsx
+ * and friends: AgentFeatureGrid, AgentModelPicker, AgentCountryBlocker,
+ * AgentVerifyPanel, AgentBlob). Own `agt-` prefix, same convention as
+ * `wgp-`/`wdg-`.
  *
- * This pass only covers the shell: back nav + page head. The builder
- * itself (model picker, permission toggles, country blocker, upsell)
- * lands in a follow-up pass and will extend this file rather than
- * replace it.
+ * Deliberately NOT in app/globals.css's @import list — every other
+ * styles/*.css file ships globally, this one is imported directly by
+ * app/dashboard/agent/page.tsx so it only loads on this one route.
+ * Reuses the app's base --ink/--lime/--cream/--walnut tokens from
+ * base.css but owns 100% of its own layout and component rules.
+ *
+ * Design language: the premium accent is the hard 2px ink "sticker"
+ * shadow (same trick plans-page.css uses on its featured card) paired
+ * with a single bold lime beat per section — the page head card, the
+ * active-switch fill, the upsell banner, the save bar's live state.
+ * Everywhere else stays calm cream/ink/line so the lime reads as an
+ * accent, not wallpaper. The lime blob character (AgentBlob, same
+ * body-path technique as HeroSlime) appears twice: greeting at the
+ * top of the page, winking next to the upsell nudge — never more than
+ * that, so it stays a personality touch rather than a mascot flood.
  * ============================================================ */
 
 .agt-main {
   width: 100%;
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--cream);
   padding: 104px 16px 120px;
   display: flex;
   justify-content: center;
@@ -39,28 +51,73 @@
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s ease, box-shadow 0.12s ease;
+  transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 .agt-back svg { width: 16px; height: 16px; flex-shrink: 0; }
-.agt-back:hover { background: var(--cream); box-shadow: 0 1px 2px rgba(34, 32, 28, 0.06); }
-.agt-back:active { transform: scale(0.98); }
+.agt-back:hover { background: #fff; box-shadow: 0 2px 0 rgba(34, 32, 28, 0.12); transform: translateY(-1px); }
+.agt-back:active { transform: translateY(0) scale(0.98); box-shadow: none; }
 
-.agt-head { margin-bottom: 22px; }
+/* ── Page head — the one "hero" moment on the page: a dark card with a
+   soft lime glow behind it and the blob peeking out of the corner. ── */
+.agt-head {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 26px;
+  padding: 26px 26px 24px;
+  border-radius: 24px;
+  background: var(--ink);
+  isolation: isolate;
+}
+.agt-head::before {
+  content: '';
+  position: absolute;
+  top: -70px;
+  right: -60px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, var(--lime) 0%, transparent 68%);
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+.agt-head-blob {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  width: 76px;
+  z-index: 1;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+.agt-head-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding-right: 96px;
+}
+.agt-head-top h1 { margin: 0; }
 .agt-head h1 {
   margin: 0 0 6px;
   font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
-  font-size: 28px;
+  font-size: 29px;
   font-weight: 700;
   line-height: 1.15;
-  color: var(--ink);
+  color: #fff;
 }
 .agt-head p {
+  position: relative;
+  z-index: 1;
   margin: 0;
   font-family: -apple-system, sans-serif;
   font-size: 14.5px;
-  line-height: 1.5;
-  color: #5c6a72;
-  max-width: 56ch;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 52ch;
+  padding-right: 60px;
 }
 
 p.agt-row-note {
@@ -86,14 +143,14 @@ p.agt-row-note {
   font-family: -apple-system, sans-serif;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #9a948a;
 }
 .agt-feature-count {
   font-family: -apple-system, sans-serif;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--walnut);
   white-space: nowrap;
 }
@@ -108,10 +165,11 @@ p.agt-row-note {
 }
 
 .agt-group {
-  background: var(--cream);
+  background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
+  box-shadow: 0 1px 0 rgba(34, 32, 28, 0.04);
 }
 
 .agt-row {
@@ -121,10 +179,12 @@ p.agt-row-note {
   gap: 14px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--line);
+  transition: background 0.12s ease;
 }
 .agt-row:last-child { border-bottom: none; }
 .agt-row-top { align-items: flex-start; }
-.agt-row.is-locked { background: rgba(255, 255, 255, 0.35); }
+.agt-row:not(.is-locked):hover { background: var(--cream); }
+.agt-row.is-locked { background: rgba(154, 148, 138, 0.06); }
 
 .agt-row-stack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 
@@ -174,11 +234,12 @@ p.agt-row-note {
   font-size: 10.5px;
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.12s ease;
 }
 .agt-lock-pill svg { width: 11px; height: 11px; }
 .agt-lock-pill:hover { background: var(--walnut); }
 
-/* ── Switch (re-themed, own agt- prefix) ──────────────────────────── */
+/* ── Switch — lime fill is the page's main "on" signal ────────────── */
 .agt-switch {
   flex-shrink: 0;
   width: 44px;
@@ -190,9 +251,9 @@ p.agt-row-note {
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: background 0.15s ease;
+  transition: background 0.18s ease;
 }
-.agt-switch.is-on { background: var(--lime); }
+.agt-switch.is-on { background: var(--lime); box-shadow: inset 0 0 0 1px var(--lime-ink); }
 .agt-switch:disabled { cursor: not-allowed; opacity: 0.55; }
 .agt-switch-knob {
   width: 20px;
@@ -200,30 +261,24 @@ p.agt-row-note {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s ease;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .agt-switch.is-on .agt-switch-knob { transform: translateX(18px); }
 
 @media (max-width: 420px) {
   .agt-main { padding: 96px 12px 110px; }
+  .agt-head { padding: 22px 20px 20px; border-radius: 20px; }
   .agt-head h1 { font-size: 23px; }
+  .agt-head-top { padding-right: 70px; }
+  .agt-head p { padding-right: 0; }
+  .agt-head-blob { width: 56px; top: 14px; right: 14px; }
   .agt-row { padding: 12px 14px; }
 }
 
 /* ============================================================
- * Builder pass: plan pill, verify panel, model picker, country
- * blocker, time zone select, upsell banner, save bar.
+ * Builder: plan pill, verify panel, model picker, country blocker,
+ * time zone select, upsell banner, save bar.
  * ============================================================ */
-
-.agt-head-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
-}
-.agt-head-top h1 { margin: 0; }
 
 .agt-plan-pill {
   display: inline-flex;
@@ -234,9 +289,9 @@ p.agt-row-note {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
-  background: var(--cream-deep);
-  color: var(--walnut-dark);
-  border: 1px solid var(--line);
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 1px solid var(--lime-ink);
 }
 .agt-plan-pro-developer,
 .agt-plan-scale { background: var(--dash-purple-surface); color: var(--dash-purple-ink); border-color: var(--dash-purple-border); }
@@ -285,42 +340,62 @@ p.agt-row-note {
 }
 .agt-verify-copy strong { color: var(--ink); }
 
-/* ── Upsell banner ───────────────────────────────────────────────── */
+/* ── Upsell banner — the one spot the blob does a little sales pitch,
+   with the lime/ink combo at full strength since it's a single call
+   to action and not competing with anything else on the page. ──── */
 .agt-upsell-banner {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   width: 100%;
-  padding: 13px 16px;
+  padding: 14px 18px 14px 86px;
   margin-bottom: 14px;
-  border: 1px dashed var(--dash-purple-border);
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--dash-purple-surface), #fff);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  background: linear-gradient(120deg, var(--cream) 0%, #fff 55%, var(--cream) 100%);
+  box-shadow: 0 2px 0 var(--ink);
   cursor: pointer;
   text-align: left;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.agt-upsell-banner:hover { box-shadow: 0 2px 10px rgba(124, 92, 252, 0.15); }
-.agt-upsell-banner:active { transform: scale(0.995); }
+.agt-upsell-banner:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+.agt-upsell-banner:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--ink); }
+.agt-upsell-blob {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 64px;
+  flex-shrink: 0;
+}
 .agt-upsell-copy {
   font-family: -apple-system, sans-serif;
   font-size: 12.5px;
   line-height: 1.5;
-  color: var(--dash-purple-ink);
-  max-width: 58ch;
+  color: #51493e;
+  max-width: 54ch;
 }
 .agt-upsell-copy strong { color: var(--ink); }
 .agt-upsell-cta {
   flex-shrink: 0;
-  padding: 7px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 1px solid var(--lime-ink);
   font-family: -apple-system, sans-serif;
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .agt-upsell-banner { flex-wrap: wrap; padding: 44px 16px 14px 16px; }
+  .agt-upsell-blob { left: 14px; top: 10px; transform: none; width: 44px; }
+  .agt-upsell-cta { margin-left: auto; }
 }
 
 /* ── Model picker ────────────────────────────────────────────────── */
@@ -337,7 +412,7 @@ p.agt-row-note {
   flex-direction: column;
   gap: 4px;
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1.5px solid var(--line);
   background: var(--bg);
   cursor: pointer;
@@ -345,10 +420,10 @@ p.agt-row-note {
   font-family: -apple-system, sans-serif;
   transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.1s ease;
 }
-.agt-model-card:hover { border-color: var(--walnut); }
-.agt-model-card:active { transform: scale(0.99); }
+.agt-model-card:hover { border-color: var(--walnut); transform: translateY(-1px); }
+.agt-model-card:active { transform: translateY(0) scale(0.99); }
 .agt-model-card.is-selected { border-color: var(--ink); box-shadow: 0 2px 0 var(--ink); background: var(--cream); }
-.agt-model-card.is-locked { opacity: 0.75; }
+.agt-model-card.is-locked { opacity: 0.72; }
 
 .agt-model-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .agt-model-name { font-size: 16px; font-weight: 700; color: var(--ink); font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif; }
@@ -365,6 +440,7 @@ p.agt-row-note {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--lime-ink);
 }
 .agt-model-check svg { width: 12px; height: 12px; }
 
@@ -373,7 +449,7 @@ p.agt-row-note {
 /* ── Country blocker ─────────────────────────────────────────────── */
 .agt-country-box {
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--cream);
   padding: 14px;
   margin-bottom: 24px;
@@ -447,7 +523,7 @@ p.agt-row-note {
 }
 .agt-country-row:last-child { border-bottom: none; }
 .agt-country-row:hover { background: var(--cream); }
-.agt-country-row.is-on { background: #fff4f0; }
+.agt-country-row.is-on { background: rgba(198, 255, 61, 0.18); }
 .agt-country-row input { width: 15px; height: 15px; flex-shrink: 0; accent-color: var(--ink); }
 .agt-country-name { flex: 1; font-size: 13px; color: var(--ink); }
 .agt-country-code { font-size: 11px; font-weight: 700; color: #9a948a; letter-spacing: 0.03em; }
@@ -478,10 +554,10 @@ p.agt-row-note {
   flex-wrap: wrap;
   margin-top: 28px;
   padding: 14px 16px;
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--bg);
-  border: 1px solid var(--line);
-  box-shadow: 0 4px 18px rgba(34, 32, 28, 0.1);
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 6px 24px rgba(34, 32, 28, 0.14);
 }
 .agt-master { display: flex; align-items: center; gap: 10px; }
 .agt-master-label {
@@ -502,4 +578,67 @@ p.agt-row-note {
 @media (max-width: 420px) {
   .agt-save-bar { bottom: 8px; flex-direction: column; align-items: stretch; }
   .agt-save-right { justify-content: space-between; }
+}
+
+/* ============================================================
+ * AgentBlob (components/agent/AgentBlob.tsx) — small lime slime
+ * character, same body-path technique as hero-slime.css but scaled
+ * and placed for this page's own spots (page head, upsell banner).
+ * ============================================================ */
+.agt-blob {
+  display: block;
+  line-height: 0;
+}
+.agt-blob-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.agt-blob-wrap {
+  transform-origin: 60px 100px;
+  animation: agt-blob-idle 3.8s ease-in-out infinite;
+}
+.agt-blob-body {
+  fill: var(--lime);
+  stroke: var(--lime-ink);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+.agt-blob-shine {
+  fill: #ffffff;
+  opacity: 0.5;
+  transform: rotate(-16deg);
+  transform-origin: 46px 46px;
+}
+.agt-blob-shadow {
+  fill: #000;
+  opacity: 0.12;
+}
+.agt-blob-eye-white { fill: var(--lime-ink); }
+.agt-blob-eye-pupil { fill: var(--lime); }
+.agt-blob-eye { transform-origin: center; transition: transform 120ms ease-out; }
+.agt-blob-eyes.is-blinking .agt-blob-eye { transform: scaleY(0.08); }
+.agt-blob-wink {
+  fill: none;
+  stroke: var(--lime-ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.agt-blob-mouth {
+  fill: none;
+  stroke: var(--lime-ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+@keyframes agt-blob-idle {
+  0%   { transform: scale(1, 1); }
+  25%  { transform: scale(1.02, 0.97); }
+  50%  { transform: scale(0.985, 1.02); }
+  75%  { transform: scale(1.012, 0.99); }
+  100% { transform: scale(1, 1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agt-blob-wrap { animation: none !important; }
 }
