@@ -38,24 +38,42 @@ export function useAuth() {
       return;
     }
 
-    setPersistence(auth, browserLocalPersistence).catch((err) => {
-      console.error('Failed to set auth persistence', err);
-    });
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (nextUser) => {
-        setUser(nextUser);
-        setAuthReady(true);
-      },
-      (err) => {
-        console.error('onAuthStateChanged error', err);
-        setAuthError(err instanceof Error ? err.message : 'Authentication error.');
-        setAuthReady(true);
-      }
-    );
+    // setPersistence() can itself tear down and re-create the auth
+    // instance's internal state. Attaching onAuthStateChanged before it
+    // resolves means the *first* callback can fire with a stale/null
+    // user while the real persisted session is still loading — and
+    // since authReady latches on that first callback, an already
+    // signed-in visitor would briefly (or on some loads, permanently
+    // for that page view) see themselves as signed out, prompting a
+    // "please sign in" screen even though their session is fine. Wait
+    // for persistence to settle first, then subscribe.
+    setPersistence(auth, browserLocalPersistence)
+      .catch((err) => {
+        console.error('Failed to set auth persistence', err);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        unsubscribe = onAuthStateChanged(
+          auth,
+          (nextUser) => {
+            setUser(nextUser);
+            setAuthReady(true);
+          },
+          (err) => {
+            console.error('onAuthStateChanged error', err);
+            setAuthError(err instanceof Error ? err.message : 'Authentication error.');
+            setAuthReady(true);
+          }
+        );
+      });
 
-    return () => unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   return { user, authReady, authError };
