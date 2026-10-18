@@ -46,6 +46,23 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Site-wide: no text selection (no drag-select highlight, no
+     long-press "Copy" callout on touch). Form fields are explicitly
+     exempted below so typing, selecting, and copying out of an actual
+     input/textarea still works the normal way — this only blocks
+     selecting the surrounding UI copy/labels. */
+  html {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   a, button, summary, input {
     -webkit-tap-highlight-color: transparent;
   }
