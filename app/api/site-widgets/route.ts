@@ -149,11 +149,14 @@ export async function GET(req: NextRequest) {
     if (!registeredHost || !hostAuthorized(requestHost, registeredHost)) {
       return jsonError(403, 'DOMAIN_NOT_AUTHORIZED', 'This page is not on a domain authorized for this site.');
     }
-    if (site.status !== 'verified') {
+    if (site.status !== 'verified' || site.paused === true) {
       // Quietly return an empty list rather than an error — an
       // unverified site's page still loads sitevento.js for tracking
       // purposes, and this is a routine, expected state (mid-setup),
       // not something worth a loud console.warn on every page view.
+      // Same empty-list treatment for a paused site (owner-level pause,
+      // see lib/types.ts's Site['paused']) — widgets stop mounting
+      // without the owner having to disable each one individually.
       return NextResponse.json(
         { success: true, widgets: [] },
         { status: 200, headers: { ...CORS_HEADERS, 'Cache-Control': CACHE_CONTROL } }
