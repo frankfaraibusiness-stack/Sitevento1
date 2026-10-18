@@ -5,7 +5,7 @@
 // useConnectSiteWizard; step switching is React state instead of
 // toggling display:none across sibling divs.
 import { useEffect } from 'react';
-import { useConnectSiteWizard } from '@/hooks/useConnectSiteWizard';
+import { useConnectSiteWizard, type LimitStatus } from '@/hooks/useConnectSiteWizard';
 import { DomainIntelCard } from '@/components/connect/DomainIntelCard';
 
 export interface ConnectSiteResumeTarget {
@@ -19,10 +19,26 @@ interface ConnectSiteWizardProps {
   resumeTarget: ConnectSiteResumeTarget | null;
   onClose: () => void;
   onFinished: (siteId: string | null) => void;
+  // Safety net: /api/site-limits is checked BEFORE the wizard even
+  // opens (see DashboardClient's openAddSiteModal), so this is only
+  // reached if the account went from "under limit" to "at limit"
+  // between that check and hitting Continue here — e.g. another tab
+  // connected a site in the meantime. app/api/connect-site/route.ts
+  // re-checks atomically at creation time regardless, so this is
+  // purely about giving the user the same UpsellOverlay experience
+  // instead of a plain inline error in that race window.
+  onLimitReached?: (status: LimitStatus) => void;
 }
 
-export function ConnectSiteWizard({ open, uid, resumeTarget, onClose, onFinished }: ConnectSiteWizardProps) {
+export function ConnectSiteWizard({ open, uid, resumeTarget, onClose, onFinished, onLimitReached }: ConnectSiteWizardProps) {
   const wizard = useConnectSiteWizard(uid);
+
+  useEffect(() => {
+    if (wizard.limitStatus.state === 'reached' && onLimitReached) {
+      onLimitReached(wizard.limitStatus);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wizard.limitStatus]);
 
   // Open fresh each time the modal opens: either resume a pending site's
   // verify step, or reset to a blank domain step — mirrors
