@@ -45,10 +45,25 @@ import { allow } from '@/lib/rateLimit';
 export const maxDuration = 10;
 export const runtime = 'nodejs';
 
+// Forces this route to run per-request rather than being eligible for
+// Next's static-optimization path. Without this, a Route Handler that
+// reads nothing from the request — which OPTIONS below doesn't — can
+// get its response frozen into a single cached response at build time,
+// including whatever CORS headers were (or weren't) wired up at that
+// moment. A stale/incomplete cached OPTIONS response has no
+// Access-Control-Allow-* headers for the browser to approve the real
+// POST against, so every preflight across every embedding site fails
+// and the browser silently drops the follow-up POST — sendBeacon and
+// fetch().catch() both swallow that failure client-side, so nothing
+// here ever looks broken even though no beacon is ever recorded. This
+// is the single most likely explanation for "nothing ever tracks."
+export const dynamic = 'force-dynamic';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
+  'Cache-Control': 'no-store',
 };
 
 // Keep the body small — this is a beacon, not a file upload. Guards
