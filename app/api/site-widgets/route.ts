@@ -48,6 +48,7 @@ import {
   isValidPageUrl,
   hostAuthorized,
   getWidgetCatalogEntry,
+  expectedCatalogDoc,
   type SiteWidgetDoc,
   type WidgetPosition,
   type WidgetType,
@@ -187,8 +188,23 @@ export async function GET(req: NextRequest) {
       // Pull the global catalog doc for bundleUrl/version, same source
       // /api/widget uses — keeps this endpoint's idea of "live" in
       // sync with the one that actually serves widget content.
-      const widgetSnap = await db.collection('widgets').doc(widgetId).get();
-      if (!widgetSnap.exists) continue;
+      const widgetDocRef = db.collection('widgets').doc(widgetId);
+      let widgetSnap = await widgetDocRef.get();
+      if (!widgetSnap.exists) {
+        // Same self-heal as /api/widget: a shipped catalog entry with
+        // no global doc yet is auto-seeded on first real request,
+        // instead of silently staying invisible to every site forever
+        // (see lib/widgets.ts's expectedCatalogDoc for why this is
+        // safe — only ever applies to ids already in WIDGET_CATALOG).
+        const expected = expectedCatalogDoc(widgetId, req.nextUrl.origin);
+        if (!expected) continue;
+        console.warn('[site-widgets] auto-seeding missing global catalog doc for', widgetId);
+        await widgetDocRef.set(
+          { ...expected, updatedAt: FieldValue.serverTimestamp() },
+          { merge: true }
+        );
+        widgetSnap = await widgetDocRef.get();
+      }
       const widgetDoc = widgetSnap.data()!;
       if (!widgetDoc.enabled || !widgetDoc.bundleUrl) continue;
 
