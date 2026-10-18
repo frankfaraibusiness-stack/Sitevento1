@@ -4,12 +4,15 @@
 //
 // The dashboard's "Features" hub — ten tap-to-open growth/ops modules,
 // replacing the old approach of cramming the banner composer directly
-// into the main dashboard scroll. "Site Alert" is wired to a real page
-// (/dashboard/features/site-alert, which hosts the existing
-// BannerComposer unchanged) and "Widgets" opens its own in-place panel
-// (WidgetsPanel); the other eight render as the same card, same icon
-// treatment, same tap target, but are intentionally inert (a "Coming
-// soon" pill, no navigation) until each is actually built.
+// into the main dashboard scroll. "Site Alert" opens its own in-place
+// panel (the one feature that still works that way — see
+// onOpenSiteAlert) and "Widgets" now routes to its own standalone,
+// SEO-indexable page at /widgets (see app/widgets/page.tsx — it used
+// to be an in-place panel here too, WidgetsPanel, but that couldn't be
+// crawled or linked to, so it moved out to a real route); the other
+// eight render as the same card, same icon treatment, same tap target,
+// but are intentionally inert (a "Coming soon" pill, no navigation)
+// until each is actually built.
 //
 // Lineup skews toward startup-stage value, not big-company-only infra
 // — each one is something a small team can turn on themselves and get
@@ -17,7 +20,7 @@
 // plugging into a tool they already run, or automating something
 // they'd otherwise do by hand:
 //   1. Site Alert            — on-site banners (live)
-//   2. Widgets                — on-site widget picker: support chat, spin-the-wheel, etc. (live — opens the picker)
+//   2. Widgets                — on-site widget picker: support chat, spin-the-wheel, etc. (live — routes to /widgets)
 //   3. Visitor Data API      — pull visits/leads into their own systems
 //   4. CRM Sync              — push leads to Salesforce/HubSpot/Pipedrive
 //   5. Slack & Webhook Alerts— real-time ping on high-value visits
@@ -27,6 +30,7 @@
 //   9. AI Support Agent      — 24/7 AI agent that replies to customers automatically
 //   10. Automation Workflows — simple if-this-then-that rules ("new lead → tag + notify")
 import { useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface FeatureOption {
   id: string;
@@ -54,7 +58,7 @@ const FEATURE_OPTIONS: FeatureOption[] = [
     id: 'widgets',
     name: 'Widgets',
     description: 'Drop-in on-site widgets — support chat, spin-the-wheel, and more — no code, no redeploy.',
-    href: null,
+    href: '/widgets',
     live: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
@@ -171,13 +175,13 @@ const FEATURE_OPTIONS: FeatureOption[] = [
 ];
 
 interface FeatureOptionsGridProps {
-  // Site Alert and Widgets are the two live tiles; rather than routing
-  // to a separate page (which would need its own copy of the auth gate
-  // + active-site state DashboardShell already owns), tapping either
-  // opens its panel in-place over the dashboard. The other 8 tiles
-  // have no href and stay inert ("Coming soon").
+  // Site Alert is the one tile that still opens an in-place panel over
+  // the dashboard (it needs DashboardShell's own activeSite state).
+  // Widgets instead routes to its own standalone page (see
+  // FEATURE_OPTIONS' href above) via this component's own router — it
+  // doesn't need anything from DashboardShell's state tree. The other
+  // 8 tiles have no href and stay inert ("Coming soon").
   onOpenSiteAlert: () => void;
-  onOpenWidgets: () => void;
 }
 
 // "Quick Tools" header + a compact 2x2 preview of the four most useful
@@ -200,14 +204,20 @@ const QUICK_TOOL_SUBTITLES: Record<(typeof QUICK_TOOL_IDS)[number], string> = {
   'crm-sync': 'Auto lead sync',
 };
 
-export function FeatureOptionsGrid({ onOpenSiteAlert, onOpenWidgets }: FeatureOptionsGridProps) {
+export function FeatureOptionsGrid({ onOpenSiteAlert }: FeatureOptionsGridProps) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const quickTools = QUICK_TOOL_IDS.map((id) => FEATURE_OPTIONS.find((o) => o.id === id)!);
   const restTools = FEATURE_OPTIONS.filter((o) => !QUICK_TOOL_IDS.includes(o.id as (typeof QUICK_TOOL_IDS)[number]));
 
-  function handleTap(id: string) {
-    if (id === 'site-alert') onOpenSiteAlert();
-    if (id === 'widgets') onOpenWidgets();
+  function handleTap(opt: FeatureOption) {
+    if (opt.id === 'site-alert') {
+      onOpenSiteAlert();
+      return;
+    }
+    if (opt.href) {
+      router.push(opt.href);
+    }
   }
 
   return (
@@ -231,7 +241,7 @@ export function FeatureOptionsGrid({ onOpenSiteAlert, onOpenWidgets }: FeatureOp
               key={opt.id}
               type="button"
               className={`qt-card qt-tone-${tone}${disabled ? ' qt-card-disabled' : ''}`}
-              onClick={() => handleTap(opt.id)}
+              onClick={() => handleTap(opt)}
               disabled={disabled}
               aria-disabled={disabled}
             >
@@ -263,7 +273,7 @@ export function FeatureOptionsGrid({ onOpenSiteAlert, onOpenWidgets }: FeatureOp
                 key={opt.id}
                 type="button"
                 className={`feat-card${disabled ? ' feat-card-disabled' : ''}`}
-                onClick={() => handleTap(opt.id)}
+                onClick={() => handleTap(opt)}
                 disabled={disabled}
                 aria-disabled={disabled}
               >
