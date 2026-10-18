@@ -18,6 +18,25 @@
 // (hooks/useActiveSiteData.ts) already reads — so visits show up live,
 // with no changes needed on the dashboard side.
 //
+// ── Enforcing blocks (visitor + country) ─────────────────────────────
+// Two independent reasons a visitor can be blocked, both decided HERE,
+// server-side, since this is the only place that already knows both
+// the visitor's identity and their geo-derived country:
+//   1. Per-visitor block — users/{uid}/sites/{siteId}/blockedVisitors/
+//      {visitorId} (existing; was already computed into `isBlocked`
+//      but never surfaced to the client).
+//   2. Country block — the site's AI Agent config, at
+//      users/{uid}/sites/{siteId}/agent/config (see lib/agent.ts's
+//      AgentConfig). Only enforced when `active` is true AND
+//      'country-block' is in `enabledFeatureIds` (the feature's own
+//      on/off switch; blockedCountries alone doesn't mean enforce).
+// Either reason sets `blocked: true` on the visit doc (as before) and
+// now ALSO returns a `blocked`/`blockReason` pair in the JSON response
+// so public/sitevento.js can show the full-screen block banner. This
+// route still always answers 200 with CORS wide open — a block is
+// communicated in the body, never via HTTP status, so it can't look
+// like a network failure to the embedded script.
+//
 // ── Identifying "the same visitor" ─────────────────────────────────
 // The loader generates a random id and stores it in the visitor's own
 // localStorage (sv_vid), sending it on every call. That's the primary
@@ -41,6 +60,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { allow } from '@/lib/rateLimit';
+import type { AgentConfig } from '@/lib/agent';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -258,12 +278,36 @@ export async function POST(req: NextRequest) {
         ? clientVisitorId
         : hashVisitor([ip, ua]);
 
-    const blockedSnap = await siteRef
-      .collection('blockedVisitors')
-      .doc(visitorId)
-      .get()
-      .catch(() => null);
-    const isBlocked = !!(blockedSnap && blockedSnap.exists);
+    const [blockedSnap, agentSnap] = await Promise.all([
+      siteRef.collection('blockedVisitors').doc(visitorId).get().catch(() => null),
+      siteRef.collection('agent').doc('config').get().catch(() => null),
+    ]);
+    const isVisitorBlocked = !!(blockedSnap && blockedSnap.exists);
+
+    // Country-block is only live when the agent's master switch is on
+    // AND the 'country-block' feature is in enabledFeatureIds — matches
+    // the same gating lib/agent.ts's AgentConfig and the dashboard UI
+    // already apply; a saved-but-disabled blockedCountries list must
+    // never silently start blocking visitors.
+    const agentConfig = (agentSnap && agentSnap.exists ? agentSnap.data() : null) as AgentConfig | null;
+    const isCountryBlocked = !!(
+      agentConfig &&
+      agentConfig.active &&
+      Array.isArray(agentConfig.enabledFeatureIds) &&
+      agentConfig.enabledFeatureIds.includes('country-block') &&
+      Array.isArray(agentConfig.blockedCountries) &&
+      agentConfig.blockedCountries.includes(country)
+    );
+
+    // Per-visitor block takes priority in the reason reported to the
+    // client (it's the more specific/intentional of the two), but
+    // either one marks the visit doc as blocked for dashboard stats.
+    const isBlocked = isVisitorBlocked || isCountryBlocked;
+    const blockReason: 'visitor' | 'country' | null = isVisitorBlocked
+      ? 'visitor'
+      : isCountryBlocked
+        ? 'country'
+        : null;
 
     const visitRef = siteRef.collection('visits').doc();
     const writePromise = visitRef
@@ -312,7 +356,10 @@ export async function POST(req: NextRequest) {
 
     await writePromise;
 
-    return NextResponse.json({ ok: true }, { status: 200, headers: CORS_HEADERS });
+    return NextResponse.json(
+      { ok: true, blocked: isBlocked, blockReason },
+      { status: 200, headers: CORS_HEADERS }
+    );
   } catch (err) {
     console.error('[track] UNCAUGHT handler error:', err);
     return NextResponse.json({ ok: false }, { status: 200, headers: CORS_HEADERS });
