@@ -17,7 +17,6 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { DashFooter } from '@/components/layout/DashFooter';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { ProfilePage } from '@/components/dashboard/ProfilePage';
-import { DashBottomNav, type DashNavTarget } from '@/components/dashboard/DashBottomNav';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
 import { useAuth } from '@/hooks/useAuth';
@@ -108,21 +107,6 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // Bottom nav targets map onto the same anchor ids DashboardShell's
-  // panels already expose — "home" to the top of the dashboard,
-  // "analytics" to the visit log, "settings" to Quick Tools/Site Alert
-  // (closest existing equivalent). "help" scrolls to DashFooter's own
-  // help link instead of duplicating it with a second help surface.
-  function handleBottomNav(target: DashNavTarget) {
-    if (target === 'help') {
-      const footer = document.querySelector('.dash-footer');
-      if (footer) footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-    const section: DashSection = target === 'analytics' ? 'logs' : target === 'settings' ? 'overlay' : 'overview';
-    scrollToSection(section);
-  }
-
   if (!authReady) return <BootSplash />;
 
   if (authError) {
@@ -193,8 +177,6 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
           </section>
         )}
       </main>
-
-      {user && view === 'dashboard' && <DashBottomNav onNavigate={handleBottomNav} />}
 
       <DashFooter onBackToMarketing={() => router.push('/')} />
 
