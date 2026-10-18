@@ -82,6 +82,24 @@ export function GlobalNav() {
   const pathname = usePathname() || '/';
   const { user } = useAuth();
 
+  // ── Widget delivery pages must stay bare ─────────────────────────
+  // app/w/[widgetId]/page.tsx is what every widget's bundleUrl points
+  // at (see that file's own comment) — it's loaded inside a sandboxed
+  // iframe on a THIRD-PARTY CUSTOMER'S SITE, not sitevento's own UI.
+  // GlobalNav rendering there means our Home/Dashboard/Settings/
+  // account nav bar shows up inside the iframe, stacked under
+  // whatever the widget itself renders, on every site that embeds a
+  // widget — this is the actual cause of widgets appearing to render
+  // "inside sitevento's own body" on a customer's page. app/w/ was
+  // already deliberately built without the dashboard's own CSS for
+  // exactly this isolation reason (see that route's comment); this is
+  // the matching exception for the one piece of UI — GlobalNav — that
+  // still reaches every route from the root layout instead of a
+  // scoped one. Returning null here, rather than moving GlobalNav out
+  // of app/layout.tsx into a route group, keeps this a one-file fix
+  // with no routing restructure.
+  if (pathname.startsWith('/w/')) return null;
+
   function go(href: string) {
     router.push(href);
   }
