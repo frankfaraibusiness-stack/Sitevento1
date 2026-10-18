@@ -20,7 +20,6 @@ import { FeatureOptionsGrid } from './FeatureOptionsGrid';
 import { VisitLogPanel } from './VisitLogPanel';
 import { LeadsPanel } from './LeadsPanel';
 import { BlockedVisitorsPanel } from './BlockedVisitorsPanel';
-import { WidgetsPanel } from './WidgetsPanel';
 
 interface DashboardShellProps {
   user: User;
@@ -41,14 +40,12 @@ export function DashboardShell({
   const { visits, leads, stats, toggleBlockVisit } = useActiveSiteData(user.uid, activeSiteId);
 
   const [siteAlertOpen, setSiteAlertOpen] = useState(false);
-  const [widgetsOpen, setWidgetsOpen] = useState(false);
 
   useEffect(() => {
-    if (!siteAlertOpen && !widgetsOpen) return;
+    if (!siteAlertOpen) return;
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setSiteAlertOpen(false);
-        setWidgetsOpen(false);
       }
     }
     document.addEventListener('keydown', handleEscape);
@@ -61,7 +58,7 @@ export function DashboardShell({
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [siteAlertOpen, widgetsOpen]);
+  }, [siteAlertOpen]);
 
   useEffect(() => {
     onLeadsCountChange(stats.leadsCount);
@@ -225,10 +222,7 @@ export function DashboardShell({
         )}
 
         <div id="panelOverlay">
-          <FeatureOptionsGrid
-            onOpenSiteAlert={() => setSiteAlertOpen(true)}
-            onOpenWidgets={() => setWidgetsOpen(true)}
-          />
+          <FeatureOptionsGrid onOpenSiteAlert={() => setSiteAlertOpen(true)} />
         </div>
 
         <div id="panelVisits">
@@ -265,10 +259,6 @@ export function DashboardShell({
             <BannerComposer uid={user.uid} activeSite={activeSite} />
           </div>
         </div>
-      )}
-
-      {widgetsOpen && (
-        <WidgetsPanel uid={user.uid} activeSite={activeSite} onClose={() => setWidgetsOpen(false)} />
       )}
     </section>
   );
