@@ -1,5 +1,5 @@
 // app/widgets/[widgetId]/page.tsx — one route for every widget's own
-// design page (e.g. /widgets/spin-wheel, /widgets/support-chat).
+// design page (e.g. /widgets/support-chat, /widgets/countdown-timer).
 //
 // Mirrors app/widgets/page.tsx's own split: this file stays a Server
 // Component so `generateMetadata` below (and `generateStaticParams`)
