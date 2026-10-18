@@ -35,6 +35,21 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // ---- users/{uid}/sites/{siteId}: block client-side CREATE ----
+    // More specific than the users/{uid}/{document=**} match above, so
+    // this one wins for exactly this path. A new site now has to be
+    // created through app/api/connect-site/route.ts (Admin SDK), which
+    // atomically enforces the plan's connectedSites limit in a
+    // transaction — something a Firestore rule can't do cleanly (no
+    // race-safe way to count sibling docs against a value read from a
+    // different document, purely in rules). Reading, updating
+    // (BannerComposer's overlay field, disconnect's delete) stay
+    // client-side exactly as before — only `create` moves server-side.
+    match /users/{uid}/sites/{siteId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if false;
+    }
+
     // ---- siteIndex/{siteId} ----
     // Flat siteId -> uid lookup, written once when a site is connected
     // (hooks/useConnectSiteWizard.ts) and read by every Admin-SDK
@@ -43,11 +58,15 @@ service cloud.firestore {
     // discoverable/writable by anyone other than its owner via the
     // client SDK. The Admin SDK bypasses this rule anyway for the
     // server-side reads in app/api/*.
+    // `create` moved server-side too (see users/{uid}/sites/{siteId}'s
+    // comment above) — app/api/connect-site/route.ts writes this doc
+    // in the same Admin-SDK transaction as the site doc it indexes, so
+    // the two can never be created out of sync via two separate client
+    // calls. Read/update/delete stay as they were.
     match /siteIndex/{siteId} {
       allow read: if request.auth != null
         && resource.data.uid == request.auth.uid;
-      allow create: if request.auth != null
-        && request.resource.data.uid == request.auth.uid;
+      allow create: if false;
       allow update, delete: if request.auth != null
         && resource.data.uid == request.auth.uid;
     }
