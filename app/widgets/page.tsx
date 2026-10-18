@@ -15,8 +15,9 @@
 // Unlike /dashboard, this route is NOT noindex: the catalog itself
 // (what each widget does) is product content worth ranking for, same
 // as the /product/* pages. Only the actual per-site enable/configure
-// step (WidgetConfigPanel) requires sign-in, and that still happens
-// in-place on this same URL rather than a separate route.
+// step — now its own route per widget, /widgets/[widgetId] (see
+// app/widgets/[widgetId]/page.tsx + WidgetDesigner) — requires
+// sign-in, prompted for right here before navigating there.
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import WidgetsPageClient from '@/components/widgets/WidgetsPageClient';
