@@ -8,7 +8,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function ProfileRoutePage() {
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading your profile" />}>
       <DashboardClient view="profile" />
     </Suspense>
   );
