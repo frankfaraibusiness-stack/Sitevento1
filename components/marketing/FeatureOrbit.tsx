@@ -94,6 +94,16 @@ export function FeatureOrbit() {
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Touch devices fire onMouseEnter on tap but often never fire a
+  // matching onMouseLeave (no cursor to "leave" with), which left this
+  // auto-advancing section stuck paused after a single tap. Only real
+  // hover-capable pointers (mouse/trackpad) are allowed to pause it this
+  // way; checked once since hover capability doesn't change at runtime.
+  const canHoverRef = useRef(false);
+  useEffect(() => {
+    canHoverRef.current = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
+  }, []);
+
   useEffect(() => {
     if (isPaused) return;
     timerRef.current = setInterval(() => {
@@ -161,8 +171,8 @@ export function FeatureOrbit() {
 
       <div
         className="orbit-section"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
+        onMouseEnter={() => canHoverRef.current && setIsPaused(true)}
+        onMouseLeave={() => canHoverRef.current && setIsPaused(false)}
       >
         <div
           className="orbit-stage"
