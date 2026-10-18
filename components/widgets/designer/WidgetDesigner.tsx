@@ -23,11 +23,12 @@ import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { useSiteWidget } from '@/hooks/useSiteWidget';
-import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
+import { useWidgetDesignerAuth } from './useWidgetDesignerAuth';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import { getWidgetCatalogEntry, type WidgetFieldDef } from '@/lib/widgets';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { CustomSelect } from './CustomSelect';
 import { CustomColorPicker } from './CustomColorPicker';
 import { CustomDateTimePicker } from './CustomDateTimePicker';
@@ -123,7 +124,16 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 
 export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const router = useRouter();
-  const { user, authReady } = useAuth();
+  // This route is reached by a client-side router.push from /widgets
+  // (same tab, no reload), straight into a brand-new mount of this
+  // component — and a plain useAuth() here used to re-run Firebase's
+  // onAuthStateChanged subscription from scratch on every single one
+  // of those navigations, reading as signed-out for a beat even when
+  // the session was already resolved one route ago. useWidgetDesignerAuth
+  // (./useWidgetDesignerAuth.ts) replaces that per-mount race with a
+  // synchronous auth.currentUser seed plus a short settle window, so
+  // this page stops bouncing people back to sign-in on every visit.
+  const { user, authReady } = useWidgetDesignerAuth();
   const sidebar = useSidebar();
   const { activeSiteId, activeSite } = useSites(user?.uid ?? null);
   const entry = getWidgetCatalogEntry(widgetId);
@@ -139,13 +149,10 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const [toast, setToast] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(true);
 
-  // Gated on authReady (see hooks/useAuth.ts) — not just !user. Firebase
-  // restores a persisted session from storage asynchronously, so user
-  // is briefly null on every load even for someone who's already
-  // signed in. Popping the sign-in overlay off that initial null
-  // (before authReady flips true) is exactly why this page used to
-  // "ask to log in" / "lose the session" on a plain refresh — it
-  // never actually lost the session, it just didn't wait to check.
+  // authReady here only ever flips true once useWidgetDesignerAuth is
+  // actually sure (current user checked + onAuthStateChanged settled,
+  // or the grace window ran out) — so there's no earlier false-null
+  // tick left to guard against, unlike the old per-mount useAuth().
   useEffect(() => {
     if (authReady && !user) {
       setAuthPane('signin');
@@ -248,13 +255,13 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
           </div>
 
           {!authReady ? (
-            <p className="wdg-row-note">{'Loading\u2026'}</p>
+            <AppSkeleton label="Loading widget" rows={2} />
           ) : !user ? (
             <p className="wdg-row-note">Sign in to design and turn on this widget.</p>
           ) : !activeSiteId ? (
             <p className="wdg-row-note">Connect a site from your dashboard to turn widgets on.</p>
           ) : loading ? (
-            <p className="wdg-row-note">{'Loading\u2026'}</p>
+            <AppSkeleton label="Loading widget" rows={2} />
           ) : (
             <div className="wdg-layout">
               <div className="wdg-preview-col">
