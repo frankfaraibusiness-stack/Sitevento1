@@ -17,6 +17,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { DashFooter } from '@/components/layout/DashFooter';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { ProfilePage } from '@/components/dashboard/ProfilePage';
+import { PlansPage } from '@/components/dashboard/PlansPage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,9 +28,11 @@ import type { DashSection } from '@/hooks/useAppView';
 
 interface DashboardClientProps {
   // Defaults to the main dashboard. "profile" renders the account page
-  // instead (see app/dashboard/profile/page.tsx) while still sharing
-  // this component's single auth gate, header and sidebar.
-  view?: 'dashboard' | 'profile';
+  // instead (see app/dashboard/profile/page.tsx), "plans" renders the
+  // plan-switch/compare page (see app/dashboard/plans/page.tsx) —
+  // both while still sharing this component's single auth gate, header
+  // and sidebar.
+  view?: 'dashboard' | 'profile' | 'plans';
 }
 
 const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
@@ -44,10 +47,11 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
   const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
-  // Only the profile view needs the sites list/disconnect handler at
-  // this level — DashboardShell already owns its own useSites call for
-  // the main dashboard view.
-  const { sites, disconnectSite } = useSites(view === 'profile' ? (user?.uid ?? null) : null);
+  // Only the profile/plans views need the sites list at this level —
+  // DashboardShell already owns its own useSites call for the main
+  // dashboard view. "plans" only needs the list itself (for the usage
+  // banner), not disconnectSite.
+  const { sites, disconnectSite } = useSites(view === 'profile' || view === 'plans' ? (user?.uid ?? null) : null);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
@@ -155,6 +159,8 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
               onDisconnectSite={disconnectSite}
               onAddSite={openAddSiteModal}
             />
+          ) : view === 'plans' ? (
+            <PlansPage user={user} sites={sites} />
           ) : (
             <DashboardShell
               user={user}
