@@ -10,7 +10,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function PlansRoutePage() {
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading plans" />}>
       <DashboardClient view="plans" />
     </Suspense>
   );
