@@ -91,140 +91,149 @@ export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: Profil
           </div>
         </div>
 
-        {/* ── Identity card ─────────────────────────────────────── */}
-        <div className="prof-card prof-identity">
-          <div className="prof-avatar" aria-hidden="true">
-            {user.photoURL ? <img src={user.photoURL} alt="" /> : <span>{initial}</span>}
-          </div>
-          <div className="prof-identity-fields">
-            <label className="prof-field">
-              <span className="prof-field-label">Name</span>
-              <div className="prof-field-row">
-                <input
-                  className="prof-input"
-                  value={name}
-                  maxLength={80}
-                  placeholder="Your name"
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="ghost-btn live prof-save-btn"
-                  disabled={!nameDirty || savingName}
-                  onClick={handleSaveName}
-                >
-                  {savingName ? 'Saving\u2026' : 'Save'}
-                </button>
+        {/* Two-column on desktop (>=860px, matching BannerComposer's own
+            .bcp-layout breakpoint): identity + plan form a sticky left
+            rail, connected sites — the part that actually grows — gets
+            the remaining width as its own column, instead of every
+            section stacking in one narrow centered strip at every size. */}
+        <div className="prof-layout">
+          <div className="prof-rail">
+            {/* ── Identity card ─────────────────────────────────── */}
+            <div className="prof-card prof-identity">
+              <div className="prof-avatar" aria-hidden="true">
+                {user.photoURL ? <img src={user.photoURL} alt="" /> : <span>{initial}</span>}
               </div>
-              {nameToast === 'ok' && <span className="prof-field-note is-ok">Name updated.</span>}
-              {nameToast === 'error' && <span className="prof-field-note is-error">Couldn&apos;t save. Try again.</span>}
-            </label>
-            <label className="prof-field">
-              <span className="prof-field-label">Email</span>
-              <div className="prof-field-row">
-                <input className="prof-input" value={user.email || ''} readOnly disabled />
-              </div>
-              <span className="prof-field-note">Contact support to change the email on your account.</span>
-            </label>
-          </div>
-        </div>
-
-        {/* ── Plan banner ───────────────────────────────────────── */}
-        <div className={`prof-plan-banner${atLimit ? ' is-urgent' : ''}`}>
-          <div className="prof-plan-banner-glow" aria-hidden="true" />
-          <div className="prof-plan-banner-top">
-            <span className="prof-plan-pill">{plan.name} plan</span>
-            {atLimit && <span className="prof-plan-urgent-pill">Limit reached</span>}
-          </div>
-          <h2>{plan.price === 0 ? 'You\u2019re on Free' : `${plan.priceDisplay}/mo \u2014 ${plan.name}`}</h2>
-          <p>
-            {usedCount} of {limit} connected site{limit === 1 ? '' : 's'} used.
-          </p>
-          <div className="prof-usage-track" aria-hidden="true">
-            <div className="prof-usage-fill" style={{ width: `${usagePct}%` }} />
-          </div>
-          <div className="prof-plan-banner-actions">
-            {upgrade && (
-              <button type="button" className="prof-upgrade-btn" onClick={() => router.push('/dashboard/plans')}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 19V5M5 12l7-7 7 7" />
-                </svg>
-                {atLimit ? `Upgrade to ${upgrade.name}` : 'Upgrade plan'}
-              </button>
-            )}
-            <button type="button" className="ghost-btn" onClick={() => router.push('/dashboard/plans')}>
-              {upgrade ? 'Compare all plans' : 'Manage plan'}
-            </button>
-            <a className="ghost-btn" href="/pricing">
-              Full plan details
-            </a>
-          </div>
-        </div>
-
-        {/* ── Connected sites ───────────────────────────────────── */}
-        <div className="dash-panel prof-sites-panel">
-          <div className="dash-panel-head">
-            <div>
-              <h3>Connected sites</h3>
-              <span className="dp-sub">
-                {usedCount} of {limit} used
-              </span>
-            </div>
-            <button type="button" className="ghost-btn" onClick={onAddSite} disabled={atLimit}>
-              + Add site
-            </button>
-          </div>
-          <div className="dash-panel-body prof-sites-body">
-            {sites.length === 0 ? (
-              <p className="prof-sites-empty">No sites connected yet.</p>
-            ) : (
-              <ul className="prof-site-list">
-                {sites.map((site) => (
-                  <li className="prof-site-row" key={site.id}>
-                    <span className={`prof-site-dot prof-site-dot-${site.status}`} />
-                    <span className="prof-site-info">
-                      <span className="prof-site-name">{site.name}</span>
-                      <span className="prof-site-url">{site.url}</span>
-                    </span>
-                    <span className={`prof-site-status prof-site-status-${site.status}`}>
-                      {site.status === 'verified' ? 'Verified' : 'Pending'}
-                    </span>
-                    {site.status === 'verified' && !site.lastSeenAt && (
-                      // The site passed verification (the tag was found
-                      // once), but /api/track has never recorded a real
-                      // visit from it since — most likely the tracking
-                      // <script> isn't actually running on the live
-                      // page (removed after verifying, blocked by an
-                      // extension, wrong deploy, etc). Surfaced here
-                      // rather than silently showing "Verified" with no
-                      // other signal anything is wrong.
-                      <span className="prof-site-status prof-site-status-warn" title="No visits recorded yet — double check the tracking script is live on your site.">
-                        No traffic yet
-                      </span>
-                    )}
+              <div className="prof-identity-fields">
+                <label className="prof-field">
+                  <span className="prof-field-label">Name</span>
+                  <div className="prof-field-row">
+                    <input
+                      className="prof-input"
+                      value={name}
+                      maxLength={80}
+                      placeholder="Your name"
+                      onChange={(e) => setName(e.target.value)}
+                    />
                     <button
                       type="button"
-                      className="ghost-btn danger prof-site-disconnect"
-                      onClick={() => setConfirmId(site.id)}
-                      disabled={busyId === site.id}
+                      className="ghost-btn live prof-save-btn"
+                      disabled={!nameDirty || savingName}
+                      onClick={handleSaveName}
                     >
-                      Disconnect
+                      {savingName ? 'Saving\u2026' : 'Save'}
                     </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {atLimit && (
-              <p className="prof-limit-note">
-                You&rsquo;ve reached the {plan.name} plan&rsquo;s site limit.{' '}
-                {upgrade && (
-                  <button type="button" className="prof-inline-link" onClick={() => router.push('/dashboard/plans')}>
-                    Upgrade to {upgrade.name}
-                  </button>
-                )}{' '}
-                to connect more.
+                  </div>
+                  {nameToast === 'ok' && <span className="prof-field-note is-ok">Name updated.</span>}
+                  {nameToast === 'error' && <span className="prof-field-note is-error">Couldn&apos;t save. Try again.</span>}
+                </label>
+                <label className="prof-field">
+                  <span className="prof-field-label">Email</span>
+                  <div className="prof-field-row">
+                    <input className="prof-input" value={user.email || ''} readOnly disabled />
+                  </div>
+                  <span className="prof-field-note">Contact support to change the email on your account.</span>
+                </label>
+              </div>
+            </div>
+
+            {/* ── Plan banner ───────────────────────────────────── */}
+            <div className={`prof-plan-banner${atLimit ? ' is-urgent' : ''}`}>
+              <div className="prof-plan-banner-glow" aria-hidden="true" />
+              <div className="prof-plan-banner-top">
+                <span className="prof-plan-pill">{plan.name} plan</span>
+                {atLimit && <span className="prof-plan-urgent-pill">Limit reached</span>}
+              </div>
+              <h2>{plan.price === 0 ? 'You\u2019re on Free' : `${plan.priceDisplay}/mo \u2014 ${plan.name}`}</h2>
+              <p>
+                {usedCount} of {limit} connected site{limit === 1 ? '' : 's'} used.
               </p>
-            )}
+              <div className="prof-usage-track" aria-hidden="true">
+                <div className="prof-usage-fill" style={{ width: `${usagePct}%` }} />
+              </div>
+              <div className="prof-plan-banner-actions">
+                {upgrade && (
+                  <button type="button" className="prof-upgrade-btn" onClick={() => router.push('/dashboard/plans')}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 19V5M5 12l7-7 7 7" />
+                    </svg>
+                    {atLimit ? `Upgrade to ${upgrade.name}` : 'Upgrade plan'}
+                  </button>
+                )}
+                <button type="button" className="ghost-btn" onClick={() => router.push('/dashboard/plans')}>
+                  {upgrade ? 'Compare all plans' : 'Manage plan'}
+                </button>
+                <a className="ghost-btn" href="/pricing">
+                  Full plan details
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Connected sites ───────────────────────────────────── */}
+          <div className="dash-panel prof-sites-panel">
+            <div className="dash-panel-head">
+              <div>
+                <h3>Connected sites</h3>
+                <span className="dp-sub">
+                  {usedCount} of {limit} used
+                </span>
+              </div>
+              <button type="button" className="ghost-btn" onClick={onAddSite} disabled={atLimit}>
+                + Add site
+              </button>
+            </div>
+            <div className="dash-panel-body prof-sites-body">
+              {sites.length === 0 ? (
+                <p className="prof-sites-empty">No sites connected yet.</p>
+              ) : (
+                <ul className="prof-site-list">
+                  {sites.map((site) => (
+                    <li className="prof-site-row" key={site.id}>
+                      <span className={`prof-site-dot prof-site-dot-${site.status}`} />
+                      <span className="prof-site-info">
+                        <span className="prof-site-name">{site.name}</span>
+                        <span className="prof-site-url">{site.url}</span>
+                      </span>
+                      <span className={`prof-site-status prof-site-status-${site.status}`}>
+                        {site.status === 'verified' ? 'Verified' : 'Pending'}
+                      </span>
+                      {site.status === 'verified' && !site.lastSeenAt && (
+                        // The site passed verification (the tag was found
+                        // once), but /api/track has never recorded a real
+                        // visit from it since — most likely the tracking
+                        // <script> isn't actually running on the live
+                        // page (removed after verifying, blocked by an
+                        // extension, wrong deploy, etc). Surfaced here
+                        // rather than silently showing "Verified" with no
+                        // other signal anything is wrong.
+                        <span className="prof-site-status prof-site-status-warn" title="No visits recorded yet — double check the tracking script is live on your site.">
+                          No traffic yet
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className="ghost-btn danger prof-site-disconnect"
+                        onClick={() => setConfirmId(site.id)}
+                        disabled={busyId === site.id}
+                      >
+                        Disconnect
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {atLimit && (
+                <p className="prof-limit-note">
+                  You&rsquo;ve reached the {plan.name} plan&rsquo;s site limit.{' '}
+                  {upgrade && (
+                    <button type="button" className="prof-inline-link" onClick={() => router.push('/dashboard/plans')}>
+                      Upgrade to {upgrade.name}
+                    </button>
+                  )}{' '}
+                  to connect more.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
