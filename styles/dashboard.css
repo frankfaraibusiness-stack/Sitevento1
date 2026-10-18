@@ -425,6 +425,17 @@
 
   .css-card-add {
     all: unset;
+    /* all: unset resets box-sizing back to its initial content-box
+       value, clearing the global border-box reset from base.css. On
+       this card's sibling, .css-card, box-sizing: border-box keeps
+       its 1px border inside its 100% width; here, without it, the
+       1.5px dashed border and padding were added on TOP of the
+       100% width, pushing the card's right edge further right than
+       intended and clipping it against the column's overflow instead
+       of lining up flush with .css-card above it. Restoring
+       border-box right after all: unset fixes that without touching
+       anything else all: unset clears. */
+    box-sizing: border-box;
     width: 100%;
     border-radius: 18px;
     border: 1.5px dashed var(--line);
