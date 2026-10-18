@@ -9,15 +9,15 @@
 // Mounted at /dashboard/profile (see app/dashboard/profile/page.tsx)
 // and opened from the header avatar + sidebar's "My profile" link.
 //
-// Plan changes write straight to users/{uid}.plan (see
-// hooks/useUserProfile.ts) — there's no billing provider wired up yet,
-// so "upgrade" here is the full flow already available: picking a plan
-// sets it immediately. Swapping in real checkout later only touches
-// useUserProfile.setPlan's call site, not this page. Plan data itself
-// (names, prices, limits, highlight copy) all comes from lib/plans.ts
-// so this can't drift from the /pricing page or the homepage pricing
-// cards.
+// Plan switching itself now lives on its own page, /dashboard/plans
+// (see components/dashboard/PlansPage.tsx and
+// app/dashboard/plans/page.tsx) — this page's plan banner just shows
+// current usage and links out to it, rather than opening an in-page
+// comparison sheet. Plan data itself (names, prices, limits, highlight
+// copy) all comes from lib/plans.ts so nothing here can drift from the
+// /pricing page, the homepage pricing cards, or the plans page.
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import type { Site } from '@/lib/types';
 import { PLANS, getPlan, type PlanId } from '@/lib/plans';
@@ -40,7 +40,8 @@ function nextPlan(id: PlanId) {
 }
 
 export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: ProfilePageProps) {
-  const { planId, setPlan, updateDisplayName } = useUserProfile(user);
+  const router = useRouter();
+  const { planId, updateDisplayName } = useUserProfile(user);
   const plan = getPlan(planId);
   const upgrade = nextPlan(planId);
 
@@ -62,21 +63,6 @@ export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: Profil
     setSavingName(false);
     setNameToast(ok ? 'ok' : 'error');
     setTimeout(() => setNameToast(null), 2800);
-  }
-
-  // ── Plan switch sheet ───────────────────────────────────────────
-  const [planSheetOpen, setPlanSheetOpen] = useState(false);
-  const [switching, setSwitching] = useState<PlanId | null>(null);
-
-  async function handleChoosePlan(id: PlanId) {
-    if (id === planId) {
-      setPlanSheetOpen(false);
-      return;
-    }
-    setSwitching(id);
-    await setPlan(id);
-    setSwitching(null);
-    setPlanSheetOpen(false);
   }
 
   // ── Disconnect confirm ──────────────────────────────────────────
@@ -159,14 +145,14 @@ export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: Profil
           </div>
           <div className="prof-plan-banner-actions">
             {upgrade && (
-              <button type="button" className="prof-upgrade-btn" onClick={() => setPlanSheetOpen(true)}>
+              <button type="button" className="prof-upgrade-btn" onClick={() => router.push('/dashboard/plans')}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 19V5M5 12l7-7 7 7" />
                 </svg>
                 {atLimit ? `Upgrade to ${upgrade.name}` : 'Upgrade plan'}
               </button>
             )}
-            <button type="button" className="ghost-btn" onClick={() => setPlanSheetOpen(true)}>
+            <button type="button" className="ghost-btn" onClick={() => router.push('/dashboard/plans')}>
               {upgrade ? 'Compare all plans' : 'Manage plan'}
             </button>
             <a className="ghost-btn" href="/pricing">
@@ -232,7 +218,7 @@ export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: Profil
               <p className="prof-limit-note">
                 You&rsquo;ve reached the {plan.name} plan&rsquo;s site limit.{' '}
                 {upgrade && (
-                  <button type="button" className="prof-inline-link" onClick={() => setPlanSheetOpen(true)}>
+                  <button type="button" className="prof-inline-link" onClick={() => router.push('/dashboard/plans')}>
                     Upgrade to {upgrade.name}
                   </button>
                 )}{' '}
@@ -242,55 +228,6 @@ export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: Profil
           </div>
         </div>
       </div>
-
-      {/* ── Plan comparison sheet ─────────────────────────────────── */}
-      {planSheetOpen && (
-        <div className="feat-panel-backdrop" role="presentation" onClick={() => !switching && setPlanSheetOpen(false)}>
-          <div className="feat-panel-sheet prof-plan-sheet" role="dialog" aria-modal="true" aria-label="Choose a plan" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="feat-panel-close" aria-label="Close" onClick={() => !switching && setPlanSheetOpen(false)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-                <path d="M5 5l14 14M19 5L5 19" />
-              </svg>
-            </button>
-            <div className="prof-plan-sheet-inner">
-              <h3>Choose your plan</h3>
-              <p className="prof-plan-sheet-sub">Switch anytime. Changes apply immediately.</p>
-              <div className="prof-plan-grid">
-                {PLANS.map((p) => {
-                  const current = p.id === planId;
-                  return (
-                    <div key={p.id} className={`prof-plan-card${current ? ' is-current' : ''}${p.featured && !current ? ' is-featured' : ''}`}>
-                      {p.featured && !current && <span className="prof-plan-card-badge">Most popular</span>}
-                      {current && <span className="prof-plan-card-badge is-current">Current plan</span>}
-                      <p className="prof-plan-card-name">{p.name}</p>
-                      <p className="prof-plan-card-price">
-                        {p.priceDisplay}
-                        <span>/mo</span>
-                      </p>
-                      <ul className="prof-plan-card-features">
-                        {p.cardHighlights.map((f) => (
-                          <li key={f}>{f}</li>
-                        ))}
-                      </ul>
-                      <button
-                        type="button"
-                        className={`prof-plan-card-btn${current ? ' is-current' : ''}`}
-                        disabled={current || switching !== null}
-                        onClick={() => handleChoosePlan(p.id)}
-                      >
-                        {switching === p.id ? 'Switching\u2026' : current ? 'Current plan' : p.price === 0 ? 'Downgrade' : p.cta}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="prof-plan-sheet-foot">
-                Need the full limits breakdown? <a href="/pricing">See the pricing page →</a>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Disconnect confirm ────────────────────────────────────── */}
       {confirmId && (
