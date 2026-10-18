@@ -44,6 +44,7 @@ import { useActiveSiteData } from '@/hooks/useActiveSiteData';
 import { useSiteWidgetsList } from '@/hooks/useSiteWidgetsList';
 import { getCountryName } from '@/lib/countries';
 import { AgentBlob } from '@/components/agent/AgentBlob';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 interface SiteManagePageProps {
   user: User;
@@ -131,12 +132,7 @@ export function SiteManagePage({ user, siteId }: SiteManagePageProps) {
     return (
       <div className="smp-main">
         <div className="smp-wrap">
-          <div className="smp-loading" role="status" aria-label="Loading site">
-            <div className="smp-skel smp-skel-back" />
-            <div className="smp-skel smp-skel-head" />
-            <div className="smp-skel smp-skel-row" />
-            <div className="smp-skel smp-skel-row" />
-          </div>
+          <AppSkeleton label="Loading site" rows={4} />
         </div>
       </div>
     );
@@ -349,7 +345,7 @@ export function SiteManagePage({ user, siteId }: SiteManagePageProps) {
                 <span className="smp-meta-label">Widgets</span>
                 <span className="smp-meta-value">
                   {widgetsLoading ? (
-                    '\u2026'
+                    <span className="smp-meta-skel" aria-hidden="true" />
                   ) : hasAnyEnabled ? (
                     <span className="smp-widgets-on">
                       {enabledWidgets.length} enabled
