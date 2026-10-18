@@ -1215,7 +1215,39 @@
  * same -apple-system body font.
  * ============================================================ */
 
-  .prof-wrap { max-width: 640px; }
+  /* .dash-wrap already caps this route at the same 1080px every other
+     dashboard page uses (see .dash-wrap above) — no narrower max-width
+     here. A fixed 640px cap on a wide desktop viewport was the actual
+     "centered" bug: everything stacked single-column inside a thin
+     strip with large empty gutters either side. .prof-layout below
+     fixes that the same way BannerComposer's own .bcp-layout does
+     (see that rule) — a real two-column split once there's room,
+     instead of stretching one column wider than it should ever be. */
+  .prof-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .prof-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  @media (min-width: 860px) {
+    .prof-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      align-items: start;
+      gap: 24px;
+    }
+    .prof-rail {
+      /* Clears the fixed pill header (see header's own `top`/height in
+         base.css) plus a little breathing room, so the rail never
+         tucks under it while the sites column scrolls past. */
+      position: sticky;
+      top: calc(72px + env(safe-area-inset-top, 0px));
+    }
+  }
 
   /* ── Identity card ─────────────────────────────────────────── */
   .prof-card {
@@ -1223,7 +1255,9 @@
     border: 1px solid var(--line);
     border-radius: 18px;
     padding: 20px;
-    margin-bottom: 18px;
+    /* No margin-bottom here — .prof-rail's own `gap` spaces this
+       against the plan banner below it now that both sit in a real
+       flex column instead of the page's plain document flow. */
   }
   .prof-identity {
     display: flex;
@@ -1277,7 +1311,8 @@
     color: #fff;
     border-radius: 18px;
     padding: 20px;
-    margin-bottom: 18px;
+    /* No margin-bottom — .prof-rail's `gap` handles spacing (see
+       .prof-card's matching note above). */
   }
   .prof-plan-banner.is-urgent { background: #3a1f16; }
   .prof-plan-banner-glow {
