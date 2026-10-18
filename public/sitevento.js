@@ -89,6 +89,7 @@
     var OVERLAY_TRACK_ENDPOINT = API_ORIGIN + '/api/overlay-track';
     var NOTIFY_ENDPOINT = API_ORIGIN + '/api/overlay-notify';
     var WIDGET_ENDPOINT = API_ORIGIN + '/api/widget';
+    var SITE_WIDGETS_ENDPOINT = API_ORIGIN + '/api/site-widgets';
 
     // ---- Persistent visitor id ----
     var VISITOR_KEY = 'sv_vid';
@@ -628,6 +629,115 @@
     } else {
       mountWidgets();
     }
+
+    // ============================================================
+    // 4. AUTO-MOUNT — widgets turned on in the dashboard appear on the
+    //    site automatically, with no HTML to paste, the same way the
+    //    live banner above already does. This is what actually makes
+    //    "enable" in the dashboard mean something: previously a widget
+    //    only rendered if the owner separately pasted
+    //    `<div data-sitevento-widget="id"></div>` into their page by
+    //    hand, which most owners never did (or didn't know to do),
+    //    so turning a widget on produced nothing anyone could see.
+    //
+    //    A widget the owner HAS manually placed (its data- div already
+    //    exists on the page, handled by mountWidgets() above) is left
+    //    alone — manual placement always wins, this only fills in
+    //    widgets with no existing mount point. Widgets whose catalog
+    //    `position` is 'manual-only' (ones meant to live inline in the
+    //    page's own content, e.g. Reviews) are never auto-mounted.
+    // ============================================================
+    var AUTO_MOUNT_CONTAINER_IDS = {
+      'fixed-top': 'sv-auto-fixed-top',
+      'fixed-bottom': 'sv-auto-fixed-bottom',
+      'corner-bottom-right': 'sv-auto-corner-br',
+      'corner-bottom-left': 'sv-auto-corner-bl',
+    };
+
+    function mountAutoStyles() {
+      if (document.getElementById('sv-auto-styles')) return;
+      var style = document.createElement('style');
+      style.id = 'sv-auto-styles';
+      style.textContent =
+        '#sv-auto-fixed-top{position:fixed;top:0;left:0;right:0;z-index:2147482900;}' +
+        '#sv-auto-fixed-bottom{position:fixed;bottom:0;left:0;right:0;z-index:2147482900;}' +
+        '#sv-auto-corner-br{position:fixed;bottom:16px;right:16px;z-index:2147482900;' +
+        'display:flex;flex-direction:column;align-items:flex-end;gap:10px;}' +
+        '#sv-auto-corner-bl{position:fixed;bottom:16px;left:16px;z-index:2147482900;' +
+        'display:flex;flex-direction:column;align-items:flex-start;gap:10px;}' +
+        '#sv-auto-corner-br .sv-widget-frame,#sv-auto-corner-bl .sv-widget-frame{width:auto;}';
+      document.head.appendChild(style);
+    }
+
+    // Lazily creates (once) and returns the shared positioned container
+    // for a given auto-mount slot, appending it to <body>.
+    function getAutoContainer(position) {
+      var id = AUTO_MOUNT_CONTAINER_IDS[position];
+      if (!id) return null;
+      var el = document.getElementById(id);
+      if (!el) {
+        mountAutoStyles();
+        el = document.createElement('div');
+        el.id = id;
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+
+    function autoMountWidgets() {
+      var url = SITE_WIDGETS_ENDPOINT + '?siteId=' + encodeURIComponent(siteId) +
+        '&pageUrl=' + encodeURIComponent(location.href);
+
+      fetch(url)
+        .then(function (res) {
+          return res.json().catch(function () {
+            return { success: false };
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.success || !data.widgets || !data.widgets.length) return;
+
+          for (var i = 0; i < data.widgets.length; i++) {
+            (function (widget) {
+              if (!widget || !widget.id) return;
+
+              // Manual placement always wins: if the owner already has
+              // a data- div for this exact widget anywhere on the
+              // page, don't also auto-mount a second copy of it.
+              var manual = document.querySelector('[data-sitevento-widget="' + widget.id + '"]');
+              if (manual) return;
+
+              var container = getAutoContainer(widget.position);
+              if (!container) return; // 'manual-only' or unknown position
+
+              var mount = document.createElement('div');
+              mount.setAttribute('data-sitevento-widget', widget.id);
+              mount.setAttribute('data-sitevento-auto', '1');
+              container.appendChild(mount);
+
+              // Render directly from what this endpoint already
+              // returned (name/config/bundleUrl) instead of making a
+              // second round trip through /api/widget for content this
+              // response already carries.
+              renderWidget(mount, widget);
+            })(data.widgets[i]);
+          }
+        })
+        .catch(function () {
+          // Network failure — the owner's manually-placed widgets (if
+          // any) above are unaffected; just no auto-mounted ones this
+          // load.
+        });
+    }
+
+    function startAutoMount() {
+      if (!document.body) {
+        document.addEventListener('DOMContentLoaded', startAutoMount, { once: true });
+        return;
+      }
+      autoMountWidgets();
+    }
+    startAutoMount();
   } catch (e) {
     // Never throw into the host page.
   }
