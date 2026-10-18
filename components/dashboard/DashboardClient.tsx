@@ -19,12 +19,15 @@ import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { ProfilePage } from '@/components/dashboard/ProfilePage';
 import { PlansPage } from '@/components/dashboard/PlansPage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
+import { UpsellOverlay } from '@/components/dashboard/UpsellOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { DashSection } from '@/hooks/useAppView';
+import type { LimitStatus } from '@/hooks/useConnectSiteWizard';
+import type { PlanId } from '@/lib/plans';
 
 interface DashboardClientProps {
   // Defaults to the main dashboard. "profile" renders the account page
@@ -63,11 +66,52 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
 
   const [connectOpen, setConnectOpen] = useState(false);
   const [connectResumeTarget, setConnectResumeTarget] = useState<ConnectSiteResumeTarget | null>(null);
-  const openAddSiteModal = useCallback(() => {
+
+  // Upsell state: shown instead of the wizard whenever the account is
+  // at its plan's connected-site limit. Populated either (a) by the
+  // /api/site-limits check below, before the wizard ever opens, or
+  // (b) by ConnectSiteWizard's onLimitReached safety net if the
+  // account hits the limit in the race window between that check and
+  // actually submitting the domain form (see that prop's comment).
+  const [upsellOpen, setUpsellOpen] = useState(false);
+  const [upsellInfo, setUpsellInfo] = useState<{ planId: PlanId; limit: number; used: number } | null>(null);
+
+  const openAddSiteModal = useCallback(async () => {
+    if (!user) return;
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/site-limits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+      const result = await res.json().catch(() => ({}));
+
+      if (res.ok && result.ok && result.atLimit) {
+        setUpsellInfo({ planId: result.planId, limit: result.limit, used: result.used });
+        setUpsellOpen(true);
+        return;
+      }
+    } catch (err) {
+      // If the limit check itself fails (network blip, etc.), don't
+      // block the user from trying to connect a site — the wizard's
+      // own /api/connect-site call re-checks the limit anyway and will
+      // surface the upsell then if they're genuinely over, via
+      // onLimitReached below. Fail open on the advisory check only.
+      console.error('site-limits check failed', err);
+    }
     setConnectResumeTarget(null);
     setConnectOpen(true);
-  }, []);
+  }, [user]);
+
   const closeConnectModal = useCallback(() => setConnectOpen(false), []);
+  const closeUpsell = useCallback(() => setUpsellOpen(false), []);
+
+  function handleWizardLimitReached(status: LimitStatus) {
+    setConnectOpen(false);
+    setUpsellInfo({ planId: (status.planId as PlanId) || 'free', limit: status.limit || 0, used: status.used || 0 });
+    setUpsellOpen(true);
+  }
 
   const [leadsCount, setLeadsCount] = useState(0);
 
@@ -192,7 +236,22 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
         resumeTarget={connectResumeTarget}
         onClose={closeConnectModal}
         onFinished={handleConnectFinished}
+        onLimitReached={handleWizardLimitReached}
       />
+
+      {upsellInfo && (
+        <UpsellOverlay
+          open={upsellOpen}
+          planId={upsellInfo.planId}
+          limit={upsellInfo.limit}
+          used={upsellInfo.used}
+          onClose={closeUpsell}
+          onUpgrade={() => {
+            closeUpsell();
+            router.push('/dashboard/plans');
+          }}
+        />
+      )}
 
       <AuthOverlay
         open={authOpen}
