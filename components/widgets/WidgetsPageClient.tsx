@@ -140,7 +140,7 @@ const BulbIcon = () => (
 
 export default function WidgetsPageClient() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
   const sidebar = useSidebar();
   const { activeSiteId } = useSites(user?.uid ?? null);
 
@@ -161,7 +161,14 @@ export default function WidgetsPageClient() {
   }
 
   function handleCardClick(widget: WidgetCatalogEntry) {
-    if (!user) {
+    // While authReady is still false, Firebase hasn't finished
+    // restoring a persisted session from storage yet — user reads as
+    // null for that brief window even for someone already signed in.
+    // Navigating through anyway is safe: WidgetDesigner (the
+    // destination) re-checks authReady itself and only prompts sign-in
+    // once it's actually sure, so this just avoids a false "please
+    // sign in" popping up here first on a fast click right after load.
+    if (authReady && !user) {
       setAuthPane('signin');
       setAuthOpen(true);
       return;
