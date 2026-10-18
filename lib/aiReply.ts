@@ -9,18 +9,26 @@
 // app/api/chat/route.ts), and neither API key is ever sent to the
 // client — the widget iframe only ever talks to this app's own /api/chat.
 //
-// Models: both picks favor free, high-quota tiers over the providers'
+// Models: picks favor free, high-quota tiers over the providers'
 // flagship paid-tier models, per the deployment's own choice of
-// GROQ_API_KEY / GEMINI_API_KEY as free-tier credentials:
-//   - Groq:   llama-3.1-8b-instant — Groq's fastest/highest-limit free
-//             model (vs. e.g. llama-3.1-70b, which has a much lower
-//             free-tier rate limit).
-//   - Gemini: gemini-1.5-flash — Google's free-tier model with the
-//             highest request quota (vs. gemini-1.5-pro's much lower
-//             free quota).
-// If either provider changes its lineup, swap the model string in that
-// provider's function only — nothing else in this file or its caller
-// needs to change.
+// GROQ_API_KEY / GEMINI_API_KEY as free-tier credentials. Verified
+// live and current as of October 2026:
+//   - Groq (1st try): llama-3.1-8b-instant — 30 req/min, 14,400 req/day,
+//             6,000 tokens/min, 500K tokens/day on the free tier.
+//   - Groq (2nd try): gemma2-9b-it — a separate model on the same Groq
+//             account, so it has its own independent free-tier quota
+//             (30 req/min, 14,400 req/day, 15,000 tokens/min) rather
+//             than sharing llama-3.1-8b-instant's — this is a second
+//             real attempt, not just a formality, if the first model
+//             is rate-limited.
+//   - Gemini (3rd try, fallback): gemini-2.5-flash-lite — the current
+//             live Flash-tier model. gemini-1.5-flash (the model this
+//             used to call) was retired by Google in 2026 and now
+//             returns a model-not-found error on every call, so it
+//             was silently never providing a real fallback reply.
+// If a provider changes its lineup again, swap the model string in
+// that provider's function only — nothing else in this file or its
+// caller needs to change.
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
@@ -38,7 +46,7 @@ const SYSTEM_PROMPT =
   'specific to this business (pricing, order status, policies), say so plainly and suggest ' +
   'they leave their email or wait for a human reply, rather than guessing.';
 
-async function tryGroq(history: ChatTurn[], greeting: string): Promise<string | null> {
+async function tryGroqModel(model: string, history: ChatTurn[], greeting: string): Promise<string | null> {
   const key = process.env.GROQ_API_KEY;
   if (!key) return null;
   try {
@@ -49,7 +57,7 @@ async function tryGroq(history: ChatTurn[], greeting: string): Promise<string | 
         Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model,
         messages: [
           { role: 'system', content: `${SYSTEM_PROMPT} The site\u2019s configured greeting is: "${greeting}"` },
           ...history.map((t) => ({ role: t.role, content: t.content })),
@@ -60,16 +68,28 @@ async function tryGroq(history: ChatTurn[], greeting: string): Promise<string | 
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
-      console.error('[aiReply] Groq non-OK', res.status, await res.text().catch(() => ''));
+      console.error(`[aiReply] Groq (${model}) non-OK`, res.status, await res.text().catch(() => ''));
       return null;
     }
     const data = await res.json();
     const text = data?.choices?.[0]?.message?.content;
     return typeof text === 'string' && text.trim() ? text.trim() : null;
   } catch (err) {
-    console.error('[aiReply] Groq error', err);
+    console.error(`[aiReply] Groq (${model}) error`, err);
     return null;
   }
+}
+
+function tryGroqLlama(history: ChatTurn[], greeting: string): Promise<string | null> {
+  return tryGroqModel('llama-3.1-8b-instant', history, greeting);
+}
+
+// Second, independent attempt on Groq before falling through to Gemini:
+// gemma2-9b-it is a different model on the same account, so it draws
+// from its own free-tier quota rather than sharing llama-3.1-8b-instant's
+// — if the first model is rate-limited, this one usually isn't.
+function tryGroqGemma(history: ChatTurn[], greeting: string): Promise<string | null> {
+  return tryGroqModel('gemma2-9b-it', history, greeting);
 }
 
 async function tryGemini(history: ChatTurn[], greeting: string): Promise<string | null> {
@@ -77,7 +97,7 @@ async function tryGemini(history: ChatTurn[], greeting: string): Promise<string 
   if (!key) return null;
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,8 +128,13 @@ async function tryGemini(history: ChatTurn[], greeting: string): Promise<string 
 }
 
 export async function getAiReply(history: ChatTurn[], greeting: string): Promise<AiReplyResult> {
-  const groq = await tryGroq(history, greeting);
-  if (groq) return { reply: groq, provider: 'groq' };
+  const llama = await tryGroqLlama(history, greeting);
+  if (llama) return { reply: llama, provider: 'groq' };
+
+  // Separate model, separate quota — worth a real second try on Groq
+  // before spending the Gemini fallback.
+  const gemma = await tryGroqGemma(history, greeting);
+  if (gemma) return { reply: gemma, provider: 'groq' };
 
   const gemini = await tryGemini(history, greeting);
   if (gemini) return { reply: gemini, provider: 'gemini' };
