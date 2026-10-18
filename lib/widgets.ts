@@ -136,7 +136,7 @@ export function isValidPageUrl(v: unknown): v is string {
 
 // ── Widget catalog ───────────────────────────────────────────────────
 //
-// The 10 on-site widgets offered from the dashboard's WidgetsPanel. This
+// The 10 on-site widgets offered on the /widgets picker page. This
 // is the single place that enumerates them, their default config, and
 // the bundleUrl path each one is served from (see app/w/[widgetId]/
 // page.tsx, which renders the actual iframe content for every id below
