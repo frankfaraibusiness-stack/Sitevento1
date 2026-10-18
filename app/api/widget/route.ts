@@ -50,6 +50,7 @@ import {
   hostAuthorized,
   widgetErrorBody,
   widgetErrorStatus,
+  expectedCatalogDoc,
   type WidgetDoc,
   type SiteWidgetDoc,
   type WidgetResponsePayload,
@@ -206,11 +207,32 @@ export async function POST(req: NextRequest) {
     }
 
     // ---- 4 & 6. Widget exists, enabled, and its config ----
-    const widgetSnap = await db.collection('widgets').doc(widgetId).get();
+    const widgetDocRef = db.collection('widgets').doc(widgetId);
+    let widgetSnap = await widgetDocRef.get();
+    let widget: WidgetDoc;
+
     if (!widgetSnap.exists) {
-      return jsonError('WIDGET_NOT_FOUND');
+      // Self-heal: this is one of our own shipped widgets (its id is
+      // in lib/widgets.ts's WIDGET_CATALOG) but the global catalog doc
+      // was never seeded — the only reason every widget used to go
+      // dark site-wide. Create it now from the known, derivable shape
+      // (see expectedCatalogDoc) instead of rejecting forever. A
+      // request widgetId that ISN'T a real catalog entry still gets a
+      // clean WIDGET_NOT_FOUND, same as before — this never invents a
+      // doc for an unknown id.
+      const expected = expectedCatalogDoc(widgetId, req.nextUrl.origin);
+      if (!expected) {
+        return jsonError('WIDGET_NOT_FOUND');
+      }
+      console.warn('[widget] auto-seeding missing global catalog doc for', widgetId);
+      await widgetDocRef.set(
+        { ...expected, updatedAt: FieldValue.serverTimestamp() },
+        { merge: true }
+      );
+      widgetSnap = await widgetDocRef.get();
     }
-    const widget = widgetSnap.data() as WidgetDoc;
+
+    widget = widgetSnap.data() as WidgetDoc;
     if (!widget.enabled) {
       return jsonError('WIDGET_DISABLED');
     }
