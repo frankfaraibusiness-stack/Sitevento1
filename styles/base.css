@@ -76,6 +76,17 @@
     width: 100%;
   }
 
+  /* Clearance for GlobalNav's fixed bottom bar (styles/global-nav.css),
+     applied globally (not just on the dashboard) so marketing-page
+     content — including its footer — never sits underneath the nav on
+     phones. Desktop's GlobalNav floats near the top instead, so no
+     bottom padding is needed there. */
+  @media (max-width: 859px) {
+    body {
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   header {
     position: fixed;
     top: calc(20px + env(safe-area-inset-top, 0px));
