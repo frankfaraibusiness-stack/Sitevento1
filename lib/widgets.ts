@@ -321,6 +321,50 @@ export function getWidgetCatalogEntry(id: string): WidgetCatalogEntry | undefine
   return WIDGET_CATALOG.find((w) => w.id === id);
 }
 
+// ── Self-healing global catalog ──────────────────────────────────────
+//
+// widgets/{id} (the GLOBAL "is this widget live at all" doc read by
+// app/api/widget/route.ts and app/api/site-widgets/route.ts) used to
+// only ever get created by manually running
+// `node scripts/manage-widget.mjs seed-catalog`. That script was never
+// run against this deployment, so every widget — including
+// support-chat — silently never rendered: WidgetConfigPanel told the
+// owner "Visitors see this widget now," app/api/site-widget/route.ts's
+// checkLiveStatus correctly reported `saved_but_blocked` with "not yet
+// in the global catalog," but nothing ever surfaced that as a loud
+// failure, so it went unnoticed.
+//
+// Fix: every WIDGET_CATALOG entry has a known, derivable shape for its
+// global doc (bundleUrl is always `${origin}/w/${id}` on THIS
+// deployment — see app/w/[widgetId]/ — never a third-party CDN), so
+// there's no real reason this ever needs a human to type it in by
+// hand. expectedCatalogDoc() is that derivation, shared by both
+// /api/widget and /api/site-widgets so each one self-heals (create the
+// doc if it's missing, same shape the seed script used to write) the
+// first time any shipped widget is actually requested, instead of
+// rejecting forever until someone remembers to run a CLI command.
+// Still only applies to IDs that exist in WIDGET_CATALOG — this can't
+// be used to inject an arbitrary widgetId into the catalog.
+export interface ExpectedCatalogDoc {
+  name: string;
+  type: WidgetType;
+  enabled: boolean;
+  version: number;
+  bundleUrl: string;
+}
+
+export function expectedCatalogDoc(id: string, origin: string): ExpectedCatalogDoc | null {
+  const entry = getWidgetCatalogEntry(id);
+  if (!entry) return null;
+  return {
+    name: entry.name,
+    type: 'iframe',
+    enabled: true,
+    version: 1,
+    bundleUrl: `${origin.replace(/\/$/, '')}/w/${id}`,
+  };
+}
+
 export function defaultConfigFor(id: string): Record<string, unknown> {
   const entry = getWidgetCatalogEntry(id);
   if (!entry) return {};
