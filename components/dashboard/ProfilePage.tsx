@@ -203,6 +203,19 @@ export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: Profil
                     <span className={`prof-site-status prof-site-status-${site.status}`}>
                       {site.status === 'verified' ? 'Verified' : 'Pending'}
                     </span>
+                    {site.status === 'verified' && !site.lastSeenAt && (
+                      // The site passed verification (the tag was found
+                      // once), but /api/track has never recorded a real
+                      // visit from it since — most likely the tracking
+                      // <script> isn't actually running on the live
+                      // page (removed after verifying, blocked by an
+                      // extension, wrong deploy, etc). Surfaced here
+                      // rather than silently showing "Verified" with no
+                      // other signal anything is wrong.
+                      <span className="prof-site-status prof-site-status-warn" title="No visits recorded yet — double check the tracking script is live on your site.">
+                        No traffic yet
+                      </span>
+                    )}
                     <button
                       type="button"
                       className="ghost-btn danger prof-site-disconnect"
