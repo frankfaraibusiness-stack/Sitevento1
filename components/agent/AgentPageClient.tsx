@@ -4,17 +4,19 @@
 //
 // Client half of /dashboard/agent (see app/dashboard/agent/page.tsx).
 // Reuses the same Header + Sidebar + useAuth/useSidebar/useSites
-// wiring as WidgetsPageClient.tsx and WidgetDesigner.tsx so this page
-// carries the exact same top bar as the rest of the app, with its own
-// AuthOverlay prompt for anyone who isn't signed in — this is a
-// configuration page, not public catalog content, so it gates up
-// front rather than letting a signed-out visitor see the builder UI.
+// wiring as WidgetsPageClient.tsx and WidgetDesigner.tsx.
 //
-// This pass adds the 20-option permissions grid (AgentFeatureGrid,
-// reading lib/agent.ts's AGENT_FEATURES) with local toggle state and
-// plan-based locking. Model picker, country blocker, and actual
-// persistence/API wiring still land in follow-up passes — see
-// lib/agent.ts's header comment.
+// This pass wires up what the previous pass's header comment flagged
+// as follow-up work: model picker (AgentModelPicker), country blocker
+// (AgentCountryBlocker, shown inline once 'country-block' is enabled),
+// a time zone picker (shown once a schedule-dependent feature is on),
+// real persistence (hooks/useSiteAgent.ts -> app/api/site-agent/
+// route.ts), and AgentVerifyPanel, which explains that no second
+// install tag is needed (see lib/agent.ts's header comment). Local
+// toggle state is gone — draft/saved now comes from useSiteAgent, the
+// same draft/saved/dirty/save shape WidgetConfigPanel.tsx already uses
+// for widgets, so Save is one explicit action rather than every toggle
+// writing immediately.
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
@@ -23,9 +25,14 @@ import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
+import { useSiteAgent } from '@/hooks/useSiteAgent';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { PlanId } from '@/lib/plans';
+import { agentFeatureLimit, AGENT_TIMEZONES } from '@/lib/agent';
 import { AgentFeatureGrid } from './AgentFeatureGrid';
+import { AgentModelPicker } from './AgentModelPicker';
+import { AgentCountryBlocker } from './AgentCountryBlocker';
+import { AgentVerifyPanel } from './AgentVerifyPanel';
 
 export default function AgentPageClient() {
   const router = useRouter();
@@ -35,8 +42,7 @@ export default function AgentPageClient() {
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
-  // Local-only for this pass — not yet persisted (see file header).
-  const [enabledIds, setEnabledIds] = useState<string[]>([]);
+  const [justSaved, setJustSaved] = useState(false);
 
   // No billing system exists yet (see lib/types.ts's Site.plan
   // comment) — missing/unknown plan defensively reads as 'free', same
@@ -44,8 +50,36 @@ export default function AgentPageClient() {
   // paid tier that was never actually granted.
   const plan: PlanId = isPlanId(activeSite?.plan) ? activeSite.plan : 'free';
 
-  function handleToggle(featureId: string, next: boolean) {
-    setEnabledIds((ids) => (next ? [...ids, featureId] : ids.filter((id) => id !== featureId)));
+  const {
+    draft,
+    loading,
+    busy,
+    dirty,
+    wasClamped,
+    toggleFeature,
+    setModel,
+    toggleCountry,
+    setTimezone,
+    setActive,
+    save,
+  } = useSiteAgent(user?.uid ?? null, activeSite);
+
+  const limit = agentFeatureLimit(plan);
+  const countryBlockOn = draft.enabledFeatureIds.includes('country-block');
+  const needsTimezone = draft.enabledFeatureIds.some(
+    (id) => id === 'daily-site-toggle' || id === 'maintenance-mode' || id === 'business-hours-chat' || id === 'widget-rotation'
+  );
+
+  async function handleSave() {
+    const result = await save();
+    if (result.ok) {
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2200);
+    }
+  }
+
+  function goUpgrade() {
+    router.push('/dashboard/plans');
   }
 
   return (
@@ -90,21 +124,89 @@ export default function AgentPageClient() {
           </button>
 
           <div className="agt-head">
-            <h1>AI Agent</h1>
-            <p>Build your own AI agent, grant it permission over your site, and let it work on its own.</p>
+            <div className="agt-head-top">
+              <h1>AI Agent</h1>
+              {activeSite && !loading && (
+                <span className={`agt-plan-pill agt-plan-${plan}`}>
+                  {planLabel(plan)} · {limit}/20 features
+                </span>
+              )}
+            </div>
+            <p>Build your own agent, personalize what it does, and grant it permission over your site — it runs on its own, on your schedule.</p>
           </div>
 
           {!user ? (
             <p className="agt-row-note">Sign in to build and run your agent.</p>
           ) : !activeSite ? (
             <p className="agt-row-note">Connect a site from your dashboard to build an agent for it.</p>
+          ) : loading ? (
+            <p className="agt-row-note">Loading your agent…</p>
           ) : (
-            <AgentFeatureGrid
-              plan={plan}
-              enabledIds={enabledIds}
-              onToggle={handleToggle}
-              onUpgradeClick={() => router.push('/dashboard/plans')}
-            />
+            <>
+              <AgentVerifyPanel site={activeSite} />
+
+              <AgentModelPicker plan={plan} selected={draft.model} onSelect={setModel} onUpgradeClick={goUpgrade} />
+
+              <AgentFeatureGrid
+                plan={plan}
+                enabledIds={draft.enabledFeatureIds}
+                onToggle={toggleFeature}
+                onUpgradeClick={goUpgrade}
+              />
+
+              {countryBlockOn && (
+                <section className="agt-section">
+                  <div className="agt-section-head">
+                    <h4 className="agt-section-title">Blocked countries</h4>
+                  </div>
+                  <AgentCountryBlocker selected={draft.blockedCountries} onToggle={toggleCountry} />
+                </section>
+              )}
+
+              {needsTimezone && (
+                <section className="agt-section">
+                  <div className="agt-section-head">
+                    <h4 className="agt-section-title">Your time zone</h4>
+                  </div>
+                  <p className="agt-row-note agt-tz-note">Used to work out when "11pm" and other scheduled times actually mean for you.</p>
+                  <select
+                    className="agt-tz-select"
+                    value={draft.timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
+                    aria-label="Your time zone"
+                  >
+                    {AGENT_TIMEZONES.map((tz) => (
+                      <option key={tz.id} value={tz.id}>
+                        {tz.label}
+                      </option>
+                    ))}
+                  </select>
+                </section>
+              )}
+
+              <div className="agt-save-bar">
+                <div className="agt-master">
+                  <span className="agt-master-label">Agent is {draft.active ? 'active' : 'off'}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={draft.active}
+                    aria-label="Turn agent on or off"
+                    className={`agt-switch${draft.active ? ' is-on' : ''}`}
+                    onClick={() => setActive(!draft.active)}
+                  >
+                    <span className="agt-switch-knob" />
+                  </button>
+                </div>
+                <div className="agt-save-right">
+                  {wasClamped && <span className="agt-row-note agt-clamp-note">Some choices were adjusted to fit your plan.</span>}
+                  {justSaved && !dirty && <span className="agt-saved-note">Saved</span>}
+                  <button type="button" className="ghost-btn live" disabled={busy || !dirty} onClick={handleSave}>
+                    {busy ? 'Saving…' : 'Save agent'}
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </main>
@@ -121,4 +223,9 @@ export default function AgentPageClient() {
 
 function isPlanId(v: string | undefined): v is PlanId {
   return v === 'free' || v === 'starter' || v === 'scale' || v === 'pro-developer';
+}
+
+function planLabel(plan: PlanId): string {
+  if (plan === 'pro-developer') return 'Pro Developer';
+  return plan.charAt(0).toUpperCase() + plan.slice(1);
 }
