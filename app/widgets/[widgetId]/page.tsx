@@ -17,7 +17,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { WidgetDesigner } from '@/components/widgets/designer/WidgetDesigner';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { WIDGET_CATALOG, getWidgetCatalogEntry } from '@/lib/widgets';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://sitevento12.vercel.app';
@@ -58,7 +58,7 @@ export default function WidgetDesignerPage({ params }: { params: { widgetId: str
   if (!entry) notFound();
 
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading widget" />}>
       <WidgetDesigner widgetId={params.widgetId} />
     </Suspense>
   );
