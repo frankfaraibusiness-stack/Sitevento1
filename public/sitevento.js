@@ -884,7 +884,16 @@
         'display:flex;flex-direction:column;align-items:flex-end;gap:10px;}' +
         '#sv-auto-corner-bl{position:fixed;bottom:16px;left:16px;z-index:2147482900;' +
         'display:flex;flex-direction:column;align-items:flex-start;gap:10px;}' +
-        '#sv-auto-corner-br .sv-widget-frame,#sv-auto-corner-bl .sv-widget-frame{width:auto;}';
+        // A corner frame's box is fixed at its OPEN size (the chat
+        // panel's own footprint) from the moment it mounts, whether the
+        // launcher is collapsed or the panel is open — the inner widget
+        // (see SupportChatWidget.tsx) positions its collapsed circle
+        // inside that fixed box via absolute positioning instead of the
+        // box itself growing/shrinking as it opens and closes. This is
+        // what stops the "starts small, snaps bigger" jump: the iframe
+        // the browser lays out never changes size, only its contents do.
+        '#sv-auto-corner-br .sv-widget-frame,#sv-auto-corner-bl .sv-widget-frame{' +
+        'width:336px;max-width:calc(100vw - 32px);background:transparent;}';
       document.head.appendChild(style);
     }
 
@@ -926,7 +935,21 @@
               var manual = document.querySelector('[data-sitevento-widget="' + widget.id + '"]');
               if (manual) return;
 
-              var container = getAutoContainer(widget.position);
+              // A corner widget's catalog `position` is its default
+              // side; a per-site `config.side` ('left'/'right') lets
+              // the owner override it without a second catalog entry.
+              // Only meaningful for the two corner positions — a
+              // fixed-top/-bottom bar has no left/right to choose.
+              var effectivePosition = widget.position;
+              if (
+                (effectivePosition === 'corner-bottom-right' || effectivePosition === 'corner-bottom-left') &&
+                widget.config &&
+                (widget.config.side === 'left' || widget.config.side === 'right')
+              ) {
+                effectivePosition = widget.config.side === 'left' ? 'corner-bottom-left' : 'corner-bottom-right';
+              }
+
+              var container = getAutoContainer(effectivePosition);
               if (!container) return; // 'manual-only' or unknown position
 
               var mount = document.createElement('div');
