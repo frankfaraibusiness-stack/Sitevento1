@@ -11,7 +11,7 @@
 // comment).
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashFooter } from '@/components/layout/DashFooter';
@@ -164,7 +164,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  if (!authReady) return <BootSplash />;
+  if (!authReady) return <AppSkeleton fullScreen label="Loading your dashboard" />;
 
   if (authError) {
     return (
