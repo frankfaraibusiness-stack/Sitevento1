@@ -136,22 +136,14 @@ async function putSiteWidget(db, args) {
   );
 }
 
-// The 10 widget ids this project ships UI/content for (see lib/widgets.ts
+// The 2 widget ids this project ships UI/content for (see lib/widgets.ts
 // WIDGET_CATALOG and app/w/[widgetId]/ for the actual rendered content).
 // Every one is served from THIS deployment's own /w/{id} route — no
 // separate CDN/hosting needed — so seeding the catalog is just pointing
 // each widgetId at https://<your-deployment>/w/{id}.
 const SHIPPED_WIDGET_IDS = [
   'support-chat',
-  'spin-wheel',
-  'exit-intent',
   'countdown-timer',
-  'social-proof',
-  'reviews-widget',
-  'video-popup',
-  'feedback-widget',
-  'referral-widget',
-  'announcement-bar',
 ];
 
 async function seedCatalog(db, args) {
