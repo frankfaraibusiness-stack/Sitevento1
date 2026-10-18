@@ -17,6 +17,7 @@
 // actually gated, not an arbitrary split.
 import { AGENT_FEATURES, agentFeatureLimit, isFeatureAllowedForPlan, type AgentFeatureDef } from '@/lib/agent';
 import type { PlanId } from '@/lib/plans';
+import { AgentBlob } from './AgentBlob';
 
 const CATEGORY_LABELS: Record<AgentFeatureDef['category'], string> = {
   scheduling: 'Scheduling',
@@ -62,6 +63,7 @@ export function AgentFeatureGrid({ plan, enabledIds, onToggle, onUpgradeClick }:
 
       {lockedCount > 0 && (
         <button type="button" className="agt-upsell-banner" onClick={onUpgradeClick}>
+          <AgentBlob variant="wink" className="agt-upsell-blob" />
           <span className="agt-upsell-copy">
             <strong>{lockedCount} more feature{lockedCount === 1 ? '' : 's'}</strong> — live model calls and
             continuous monitoring, like AI content moderation and full site autopilot — unlock on a higher plan.
