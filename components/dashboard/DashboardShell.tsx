@@ -9,6 +9,7 @@
 // Lives at /dashboard now (see app/dashboard/page.tsx) instead of being
 // one branch of the old single-page AppRoot view switch.
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import { useSites } from '@/hooks/useSites';
 import { useActiveSiteData } from '@/hooks/useActiveSiteData';
@@ -34,6 +35,7 @@ export function DashboardShell({
   onResumeVerification,
   onLeadsCountChange,
 }: DashboardShellProps) {
+  const router = useRouter();
   const { sites, activeSiteId, setActiveSiteId, activeSite, dashState, errorMessage, disconnectSite } = useSites(
     user.uid
   );
@@ -194,6 +196,7 @@ export function DashboardShell({
           onSelect={setActiveSiteId}
           onAddSite={onOpenAddSiteModal}
           onDisconnect={disconnectSite}
+          onManageSite={(siteId) => router.push(`/dashboard/sites/${siteId}`)}
         />
 
         {activeSite?.status === 'pending' && (
