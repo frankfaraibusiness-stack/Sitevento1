@@ -6,7 +6,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import SettingsPageClient from '@/components/settings/SettingsPageClient';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function SettingsRoutePage() {
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading settings" />}>
       <SettingsPageClient initialPanel="account" />
     </Suspense>
   );
