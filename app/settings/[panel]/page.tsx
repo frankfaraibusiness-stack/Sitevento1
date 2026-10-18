@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import SettingsPageClient from '@/components/settings/SettingsPageClient';
 import type { SettingsPanelId } from '@/components/settings/SettingsSidebar';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +54,7 @@ export default async function SettingsPanelRoutePage({ params }: { params: Promi
   const { panel } = await params;
   const id = (VALID_PANELS as string[]).includes(panel) ? (panel as SettingsPanelId) : 'account';
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading settings" />}>
       <SettingsPageClient initialPanel={id} />
     </Suspense>
   );
