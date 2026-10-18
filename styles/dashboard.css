@@ -1222,3 +1222,305 @@
     line-height: 1.45;
     color: #6b655c;
   }
+
+/* ============================================================
+ * Profile page (components/dashboard/ProfilePage.tsx) — account
+ * identity card, plan usage banner + plan comparison sheet, and the
+ * connected-sites management list at /dashboard/profile.
+ *
+ * Previously missing entirely: ProfilePage.tsx renders a `prof-*`
+ * class namespace that had no matching rules anywhere in styles/, so
+ * the whole route rendered unstyled. Built here to match the
+ * existing .dash-wrap/.dash-panel/.ghost-btn/.css-sheet* primitives
+ * above rather than introducing a second visual language — same
+ * --ink/--line/--bg/--cream/--lime tokens, same 18px panel radius,
+ * same -apple-system body font.
+ * ============================================================ */
+
+  .prof-wrap { max-width: 640px; }
+
+  /* ── Identity card ─────────────────────────────────────────── */
+  .prof-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .prof-identity {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .prof-avatar {
+    flex-shrink: 0;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--cream-deep);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    font-size: 22px; font-weight: 800; color: var(--ink);
+  }
+  .prof-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .prof-identity-fields {
+    flex: 1 1 auto;
+    display: flex; flex-direction: column; gap: 16px;
+    min-width: 0;
+  }
+  .prof-field { display: flex; flex-direction: column; gap: 6px; }
+  .prof-field-label {
+    font-family: -apple-system, sans-serif;
+    font-size: 12.5px; font-weight: 700; color: #6b655c;
+  }
+  .prof-field-row { display: flex; gap: 8px; align-items: center; }
+  .prof-input {
+    flex: 1 1 auto; min-width: 0;
+    font-family: inherit; font-size: 14.5px;
+    padding: 10px 12px;
+    border-radius: 11px; border: 1px solid var(--line);
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .prof-input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  .prof-input:disabled { color: #8a8477; cursor: not-allowed; }
+  .prof-save-btn { flex-shrink: 0; }
+  .prof-field-note {
+    font-family: -apple-system, sans-serif; font-size: 12px; color: #8a8477;
+  }
+  .prof-field-note.is-ok { color: var(--dash-green-ink, #2f7a4f); }
+  .prof-field-note.is-error { color: #b3432b; }
+
+  /* ── Plan usage banner ─────────────────────────────────────── */
+  .prof-plan-banner {
+    position: relative;
+    overflow: hidden;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .prof-plan-banner.is-urgent { background: #3a1f16; }
+  .prof-plan-banner-glow {
+    position: absolute; inset: -40% -20% auto auto;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle, var(--lime) 0%, transparent 70%);
+    opacity: 0.35; pointer-events: none;
+  }
+  .prof-plan-banner-top {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    position: relative;
+  }
+  .prof-plan-pill {
+    display: inline-flex; align-items: center;
+    background: rgba(255,255,255,0.14);
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-family: -apple-system, sans-serif; font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .prof-plan-urgent-pill {
+    display: inline-flex; align-items: center;
+    background: #e8847a; color: #3a1f16;
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-family: -apple-system, sans-serif; font-size: 11.5px; font-weight: 700;
+  }
+  .prof-plan-banner h2 {
+    position: relative;
+    margin: 0 0 4px;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+  }
+  .prof-plan-banner p {
+    position: relative;
+    margin: 0 0 12px;
+    font-family: -apple-system, sans-serif; font-size: 13px; color: rgba(255,255,255,0.72);
+  }
+  .prof-usage-track {
+    position: relative;
+    height: 6px; border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .prof-usage-fill {
+    height: 100%; border-radius: 999px;
+    background: var(--lime);
+    transition: width 0.25s ease;
+  }
+  .prof-plan-banner-actions {
+    position: relative;
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .prof-upgrade-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--lime); color: var(--lime-ink);
+    border: none; border-radius: 100px;
+    padding: 10px 16px;
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+  }
+  .prof-upgrade-btn svg { width: 13px; height: 13px; }
+  .prof-plan-banner-actions .ghost-btn {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.18);
+    color: #fff;
+  }
+  .prof-plan-banner-actions a.ghost-btn { text-decoration: none; }
+
+  /* ── Connected sites list ──────────────────────────────────── */
+  .prof-sites-panel { margin-bottom: 0; }
+  .prof-sites-empty {
+    padding: 18px 4px;
+    font-family: -apple-system, sans-serif; font-size: 13px; color: #a39d8e;
+    text-align: center;
+  }
+  .prof-site-list { list-style: none; margin: 0; padding: 0; }
+  .prof-site-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+  }
+  .prof-site-row:first-child { border-top: none; }
+  .prof-site-dot {
+    flex-shrink: 0;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #c9c2b2;
+  }
+  .prof-site-dot-verified { background: var(--dash-green, #3fae5c); }
+  .prof-site-dot-pending { background: var(--dash-orange, #d99a3f); }
+  .prof-site-info {
+    flex: 1 1 auto; min-width: 0;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .prof-site-name {
+    font-size: 14px; font-weight: 600; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .prof-site-url {
+    font-family: -apple-system, sans-serif; font-size: 12px; color: #8a8477;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .prof-site-status {
+    flex-shrink: 0;
+    font-family: -apple-system, sans-serif; font-size: 11.5px; font-weight: 700;
+    border-radius: 999px; padding: 3px 9px;
+  }
+  .prof-site-status-verified { background: var(--dash-green-surface, #e9f5ee); color: var(--dash-green-ink, #2f7a4f); }
+  .prof-site-status-pending { background: var(--dash-orange-surface, #fdf1df); color: var(--dash-orange-ink, #8a5a1a); }
+  .prof-site-disconnect { flex-shrink: 0; }
+  .prof-limit-note {
+    margin: 14px 0 0;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: #6b655c; line-height: 1.5;
+  }
+  .prof-inline-link {
+    all: unset; cursor: pointer;
+    color: var(--ink); font-weight: 700; text-decoration: underline;
+  }
+
+  /* ── Plan comparison sheet (bottom sheet / centered modal) ────
+     Same backdrop+sheet pattern as .css-sheet-backdrop/.css-sheet
+     above, under its own class names since ProfilePage's plan
+     switcher needs a wider, scrollable sheet rather than that one's
+     compact confirm-dialog size. */
+  .feat-panel-backdrop {
+    position: fixed; inset: 0; z-index: 2200;
+    background: rgba(20, 18, 14, 0.42);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding: 0;
+  }
+  @media (min-width: 640px) {
+    .feat-panel-backdrop { align-items: center; padding: 20px; }
+  }
+  .feat-panel-sheet {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    max-height: min(86vh, 760px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cream);
+    border-radius: 22px 22px 0 0;
+    padding: 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  @media (min-width: 640px) {
+    .feat-panel-sheet { border-radius: 22px; }
+  }
+  .prof-plan-sheet-inner { padding-top: 6px; }
+  .prof-plan-sheet-inner h3 {
+    margin: 0 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -0.01em;
+  }
+  .prof-plan-sheet-sub {
+    margin: 0 0 18px;
+    font-family: -apple-system, sans-serif; font-size: 13px; color: #6b655c;
+  }
+  .prof-plan-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 560px) {
+    .prof-plan-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .prof-plan-card {
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .prof-plan-card.is-featured { border-color: var(--ink); }
+  .prof-plan-card.is-current { background: var(--cream-deep); }
+  .prof-plan-card-badge {
+    position: absolute; top: -10px; left: 14px;
+    background: var(--ink); color: #fff;
+    font-family: -apple-system, sans-serif; font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.02em;
+    border-radius: 999px; padding: 3px 10px;
+  }
+  .prof-plan-card-badge.is-current { background: var(--lime); color: var(--lime-ink); }
+  .prof-plan-card-name {
+    margin: 4px 0 0; font-size: 15px; font-weight: 700; color: var(--ink);
+  }
+  .prof-plan-card-price {
+    margin: 0; font-size: 24px; font-weight: 800; color: var(--ink);
+  }
+  .prof-plan-card-price span {
+    font-size: 13px; font-weight: 600; color: #8a8477; margin-left: 2px;
+  }
+  .prof-plan-card-features {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 6px;
+    flex: 1 1 auto;
+  }
+  .prof-plan-card-features li {
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: #4a453d;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.4;
+  }
+  .prof-plan-card-features li::before {
+    content: "";
+    position: absolute; left: 0; top: 6px;
+    width: 10px; height: 10px;
+    background: var(--lime);
+    border-radius: 3px;
+  }
+  .prof-plan-card-btn {
+    margin-top: auto;
+    background: var(--ink); color: #fff;
+    border: none; border-radius: 100px;
+    padding: 10px 14px;
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+  }
+  .prof-plan-card-btn:disabled { opacity: 0.55; cursor: default; }
+  .prof-plan-card-btn.is-current { background: var(--cream-deep); color: var(--ink); }
+  .prof-plan-sheet-foot {
+    margin: 18px 0 0;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: #8a8477; text-align: center;
+  }
+  .prof-plan-sheet-foot a { color: var(--ink); font-weight: 700; }
