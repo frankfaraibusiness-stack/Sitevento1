@@ -6,13 +6,13 @@
 // sidebar + detail-panel layout, mobile list/panel toggle, scroll-reset
 // on panel switch. Reuses sitevento's own Header/Sidebar (same as every
 // other dashboard route) instead of siterifty's AnnouncementBar/Header,
-// and its own BootSplash for the loading state.
+// and the app's shared AppSkeleton for the loading state.
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import '@/styles/settings-page.css';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import type { SettingsPanelId } from '@/components/settings/SettingsSidebar';
 import { useSettingsState } from '@/hooks/useSettingsState';
@@ -109,7 +109,7 @@ export default function SettingsPageClient({ initialPanel }: { initialPanel: Set
     }
   }
 
-  if (!authReady) return <BootSplash />;
+  if (!authReady) return <AppSkeleton fullScreen label="Loading settings" />;
 
   if (!user) {
     return null;
