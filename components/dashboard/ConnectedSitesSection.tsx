@@ -18,9 +18,10 @@ interface ConnectedSitesSectionProps {
   onSelect: (siteId: string) => void;
   onAddSite: () => void;
   onDisconnect: (siteId: string) => Promise<void> | void;
+  onManageSite?: (siteId: string) => void;
 }
 
-export function ConnectedSitesSection({ sites, activeSiteId, onSelect, onAddSite, onDisconnect }: ConnectedSitesSectionProps) {
+export function ConnectedSitesSection({ sites, activeSiteId, onSelect, onAddSite, onDisconnect, onManageSite }: ConnectedSitesSectionProps) {
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -61,36 +62,45 @@ export function ConnectedSitesSection({ sites, activeSiteId, onSelect, onAddSite
               aria-selected={isActive}
               className={`css-card${isActive ? ' is-active' : ''}${isPending ? ' is-pending' : ''}`}
             >
-              <span className="css-card-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" />
-                </svg>
-              </span>
-              <button type="button" className="css-card-main" onClick={() => onSelect(s.id)}>
-                <span className="css-card-top">
-                  <span className="css-card-name">{s.name || s.url || 'Untitled site'}</span>
+              <span className="css-card-row">
+                <span className="css-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" />
+                  </svg>
                 </span>
-                <span className={`css-card-meta${isPending ? ' is-pending' : ''}${isLive ? ' is-live' : ''}`}>
-                  <span className={`css-status-dot${isPending ? ' is-pending' : ''}${isLive ? ' is-live' : ''}`} />
-                  {isPending ? 'UNVERIFIED' : isLive ? 'BANNER LIVE' : 'VERIFIED'}
+                <button type="button" className="css-card-main" onClick={() => onSelect(s.id)}>
+                  <span className="css-card-top">
+                    <span className="css-card-name">{s.name || s.url || 'Untitled site'}</span>
+                  </span>
+                  <span className={`css-card-meta${isPending ? ' is-pending' : ''}${isLive ? ' is-live' : ''}`}>
+                    <span className={`css-status-dot${isPending ? ' is-pending' : ''}${isLive ? ' is-live' : ''}`} />
+                    {isPending ? 'UNVERIFIED' : isLive ? 'BANNER LIVE' : 'VERIFIED'}
+                  </span>
+                  <span className="css-card-url">{s.url}</span>
+                </button>
+                <span className={`css-connected-pill${isPending ? ' is-pending' : ''}`}>
+                  {isPending ? 'Pending' : 'Connected'}
                 </span>
-                <span className="css-card-url">{s.url}</span>
-              </button>
-              <span className={`css-connected-pill${isPending ? ' is-pending' : ''}`}>
-                {isPending ? 'Pending' : 'Connected'}
+                <button
+                  type="button"
+                  className="css-disconnect-btn"
+                  onClick={() => setConfirmId(s.id)}
+                  aria-label={`Disconnect ${s.name || s.url}`}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+                    <circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none" />
+                    <circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
+                  </svg>
+                </button>
               </span>
               <button
                 type="button"
-                className="css-disconnect-btn"
-                onClick={() => setConfirmId(s.id)}
-                aria-label={`Disconnect ${s.name || s.url}`}
+                className="css-manage-btn"
+                onClick={() => onManageSite?.(s.id)}
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
-                  <circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none" />
-                  <circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
-                </svg>
+                Manage site
               </button>
             </div>
           );
