@@ -21,7 +21,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,12 +36,12 @@ export default function DashboardPage() {
   // DashboardClient reads the ?connect=1 query param (useSearchParams),
   // which Next.js requires to sit under a Suspense boundary even on a
   // force-dynamic route — otherwise `next build` warns/fails about a
-  // deoptimized client reference. BootSplash is already the app's
-  // existing full-screen loading state, so reusing it here means no
+  // deoptimized client reference. AppSkeleton is the app's
+  // shared loading state, so reusing it here means no
   // double-boot flash; it clears the instant DashboardClient's own
   // useAuth/authReady is ready and renders.
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading your dashboard" />}>
       <DashboardClient />
     </Suspense>
   );
