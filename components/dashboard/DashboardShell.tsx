@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import { useSites } from '@/hooks/useSites';
 import { useActiveSiteData } from '@/hooks/useActiveSiteData';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { DashEmptyState } from './DashEmptyState';
 import { ConnectedSitesSection } from './ConnectedSitesSection';
 import { OverviewStats } from './OverviewStats';
@@ -90,38 +91,16 @@ export function DashboardShell({
   const showLoadingSkeleton = dashState === 'loading' || (!minHoldElapsed && dashState !== 'error');
 
   if (showLoadingSkeleton) {
-    // Same shaped shimmer skeleton as app/loading.tsx (route-skeleton.css's
-    // .skel-* classes), reused here so the dashboard's own in-place loading
-    // state (sites/stats still fetching after the route has already
-    // mounted) matches the route-transition skeleton instead of falling
-    // back to plain "Loading…" text.
+    // Shared <AppSkeleton> (components/AppSkeleton.tsx), reused here so
+    // the dashboard's own in-place loading state (sites/stats still
+    // fetching after the route has already mounted) matches every
+    // other loading state in the app instead of its own bespoke
+    // shimmer shape.
     return (
       <section>
         <div className="dashboard-empty">
-          <div className="dash-empty-inner" role="status" aria-label="Loading your dashboard">
-            <div className="skel-head">
-              <div className="skel-block skel-title" />
-              <div className="skel-block skel-pill" />
-            </div>
-
-            <div className="skel-grid">
-              <div className="skel-block skel-card" />
-              <div className="skel-block skel-card" />
-              <div className="skel-block skel-card" />
-              <div className="skel-block skel-card" />
-            </div>
-
-            <div className="skel-panel">
-              <div className="skel-panel-head">
-                <div className="skel-block skel-panel-title" />
-                <div className="skel-block skel-panel-sub" />
-              </div>
-              <div className="skel-panel-body">
-                <div className="skel-block skel-row" />
-                <div className="skel-block skel-row" />
-                <div className="skel-block skel-row" />
-              </div>
-            </div>
+          <div className="dash-empty-inner">
+            <AppSkeleton label="Loading your dashboard" rows={4} />
           </div>
         </div>
       </section>
