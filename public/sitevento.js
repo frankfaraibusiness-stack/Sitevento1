@@ -172,24 +172,60 @@
         });
     }
 
+    // Same contract as beacon() but resolves with the parsed JSON body
+    // (or null on any failure) instead of being fire-and-forget. Only
+    // /api/track needs this — it's the one call whose response tells
+    // the client whether this visitor/country is blocked, so the
+    // full-screen block banner can be shown.
+    function beaconWithResponse(url, payloadObj, cb) {
+      var payload = JSON.stringify(payloadObj);
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      })
+        .then(function (res) {
+          return res.json().catch(function () {
+            return null;
+          });
+        })
+        .then(function (data) {
+          if (DEBUG) dlog(url, 'response', data);
+          cb(data);
+        })
+        .catch(function (err) {
+          dlog(url, 'blocked:', err);
+          cb(null);
+        });
+    }
+
     // ============================================================
     // 1. VISIT TRACKING
     // ============================================================
     function sendVisit(path) {
       var landingNow = isFirstViewThisSession;
       isFirstViewThisSession = false; // only the first call in this page session counts as landing
-      beacon(TRACK_ENDPOINT, {
-        siteId: siteId,
-        visitorId: visitorId,
-        sessionId: sessionId,
-        path: path || location.pathname + location.search || '/',
-        referrer: document.referrer || '',
-        screen: window.screen && window.screen.width && window.screen.height
-          ? window.screen.width + 'x' + window.screen.height
-          : null,
-        lang: (navigator.language || navigator.userLanguage || '').slice(0, 20) || null,
-        landing: landingNow,
-      });
+      beaconWithResponse(
+        TRACK_ENDPOINT,
+        {
+          siteId: siteId,
+          visitorId: visitorId,
+          sessionId: sessionId,
+          path: path || location.pathname + location.search || '/',
+          referrer: document.referrer || '',
+          screen: window.screen && window.screen.width && window.screen.height
+            ? window.screen.width + 'x' + window.screen.height
+            : null,
+          lang: (navigator.language || navigator.userLanguage || '').slice(0, 20) || null,
+          landing: landingNow,
+        },
+        function (data) {
+          if (data && data.blocked) {
+            renderBlockBanner(data.blockReason);
+          }
+        }
+      );
     }
 
     // Initial page view.
@@ -323,6 +359,10 @@
     }
 
     function renderOverlay(data) {
+      // A block banner always wins — never let the owner's own promo
+      // overlay render on top of (or replace) the "you're blocked"
+      // takeover a Firestore listener update might fire after.
+      if (document.getElementById('sv-block-backdrop')) return;
       removeOverlay();
       if (!data || !data.active) return;
       if (!data.title && !data.description) return;
@@ -496,6 +536,197 @@
         });
     }
     startOverlayListener();
+
+    // ============================================================
+    // 2b. BLOCK BANNER — shown when /api/track reports this visitor
+    //    (or their country) is blocked by the site owner. Unlike the
+    //    promo overlay above, this is:
+    //      - NOT dismissible (no close button, no "remembers" logic)
+    //      - NOT opt-in — it fires purely off the /api/track response,
+    //        with no siteOverlay doc needed
+    //      - sitevento-branded, not owner-themed, since its purpose is
+    //        telling the visitor the SITE blocked them using sitevento
+    //        (plus a soft upsell), not delivering the owner's own copy
+    //    Reuses the same .sv-stage/.sv-card/.sv-glow/.sv-badge/.sv-title/
+    //    .sv-desc/.sv-cta classes mountStyles() already defines, so it
+    //    looks native to the rest of sitevento's full-screen takeovers,
+    //    plus a small dedicated style block below for the blob/logo.
+    // ============================================================
+    var BLOCK_BLOB_PATH =
+      'M 101.9 64.0 C 101.6 74.1, 103.6 81.5, 98.5 88.8 C 93.4 96.0, 85.6 95.5, 76.6 100.2 ' +
+      'C 67.5 105.0, 62.6 112.4, 53.0 112.4 C 43.4 112.4, 35.6 107.5, 28.6 100.3 ' +
+      'C 21.6 93.1, 20.6 86.2, 18.0 76.3 C 15.4 66.5, 12.1 59.2, 15.5 50.9 ' +
+      'C 18.9 42.7, 27.2 40.7, 34.9 35.1 C 42.6 29.4, 45.7 24.1, 54.0 22.6 ' +
+      'C 62.4 21.1, 67.3 24.7, 76.6 27.7 C 85.8 30.8, 95.3 30.8, 100.4 38.0 ' +
+      'C 105.5 45.3, 102.3 53.9, 101.9 64.0 Z';
+
+    var SITEVENTO_LOGO_URL =
+      'https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png';
+
+    function mountBlockStyles() {
+      if (document.getElementById('sv-block-styles')) return;
+      var style = document.createElement('style');
+      style.id = 'sv-block-styles';
+      style.textContent =
+        '#sv-block-backdrop{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;' +
+        'z-index:2147483647;overflow:hidden;box-sizing:border-box;}' +
+        '#sv-block-backdrop *,#sv-block-backdrop *::before,#sv-block-backdrop *::after{box-sizing:border-box;}' +
+        '.sv-block-logo{width:30px;height:30px;border-radius:9px;object-fit:cover;' +
+        'box-shadow:0 2px 10px rgba(0,0,0,.35);}' +
+        '.sv-block-brand{display:flex;align-items:center;justify-content:center;gap:9px;' +
+        'margin-bottom:18px;}' +
+        '.sv-block-brand-name{font-size:13px;font-weight:700;letter-spacing:.01em;color:rgba(255,255,255,.92);}' +
+        '.sv-block-blob{width:76px;height:auto;margin:4px auto 18px;display:block;overflow:visible;}' +
+        '.sv-block-blob-body{fill:#c6ff3d;stroke:#1a1f0a;stroke-width:2.2;stroke-linejoin:round;}' +
+        '.sv-block-blob-shine{fill:#ffffff;opacity:.5;transform:rotate(-16deg);transform-origin:46px 46px;}' +
+        '.sv-block-blob-shadow{fill:#000;opacity:.12;}' +
+        '.sv-block-blob-eye-white{fill:#1a1f0a;}' +
+        '.sv-block-blob-eye-pupil{fill:#c6ff3d;}' +
+        '.sv-block-blob-mouth{fill:none;stroke:#1a1f0a;stroke-width:2.4;stroke-linecap:round;}' +
+        '.sv-block-upsell{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);}' +
+        '.sv-block-upsell-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;' +
+        'color:rgba(255,255,255,.5);margin-bottom:10px;}' +
+        '.sv-block-upsell-text{font-size:13px;line-height:1.5;color:rgba(255,255,255,.72);margin:0 0 16px;}';
+      document.head.appendChild(style);
+    }
+
+    // Builds the blob SVG element (same silhouette as the dashboard's
+    // AgentBlob 'greet' expression, baked to a static path so this
+    // plain-JS loader doesn't need to reimplement/port the React
+    // component's generator).
+    function buildBlockBlob() {
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'sv-block-blob');
+      svg.setAttribute('viewBox', '0 0 120 134');
+      svg.setAttribute('aria-hidden', 'true');
+
+      function el(tag, attrs) {
+        var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (var k in attrs) e.setAttribute(k, attrs[k]);
+        return e;
+      }
+
+      svg.appendChild(el('ellipse', { class: 'sv-block-blob-shadow', cx: '60', cy: '118', rx: '34', ry: '6' }));
+      var body = el('path', { class: 'sv-block-blob-body', d: BLOCK_BLOB_PATH });
+      svg.appendChild(body);
+      svg.appendChild(el('ellipse', { class: 'sv-block-blob-shine', cx: '46', cy: '46', rx: '11', ry: '7' }));
+      svg.appendChild(el('ellipse', { class: 'sv-block-blob-eye-white', cx: '49', cy: '62', rx: '6.5', ry: '7.5' }));
+      svg.appendChild(el('circle', { class: 'sv-block-blob-eye-pupil', cx: '51', cy: '64', r: '3' }));
+      svg.appendChild(el('ellipse', { class: 'sv-block-blob-eye-white', cx: '71', cy: '62', rx: '6.5', ry: '7.5' }));
+      svg.appendChild(el('circle', { class: 'sv-block-blob-eye-pupil', cx: '73', cy: '64', r: '3' }));
+      svg.appendChild(el('path', { class: 'sv-block-blob-mouth', d: 'M 55 76 Q 60 80 65 76' }));
+      return svg;
+    }
+
+    function renderBlockBanner(reason) {
+      // Already showing — don't rebuild on a later sendVisit() call
+      // (e.g. an SPA route change firing a second blocked response).
+      if (document.getElementById('sv-block-backdrop')) return;
+      if (!document.body) {
+        document.addEventListener('DOMContentLoaded', function () {
+          renderBlockBanner(reason);
+        }, { once: true });
+        return;
+      }
+
+      // A block banner always wins over the promo overlay — if one is
+      // already up (pushed before this beacon resolved), take it down.
+      removeOverlay();
+
+      mountStyles();
+      mountBlockStyles();
+
+      var backdrop = document.createElement('div');
+      backdrop.id = 'sv-block-backdrop';
+
+      var stage = document.createElement('div');
+      stage.className = 'sv-stage';
+      stage.style.setProperty('--sv-accent', '#c6ff3d');
+      stage.style.background = 'linear-gradient(160deg,#111,#000)';
+      var glow = document.createElement('div');
+      glow.className = 'sv-glow';
+      stage.appendChild(glow);
+
+      var card = document.createElement('div');
+      card.className = 'sv-card sv-card-glass';
+      card.style.setProperty('--sv-accent', '#c6ff3d');
+      card.style.setProperty('--sv-accent-text', '#101400');
+      card.style.setProperty('--sv-title', '#fff');
+      card.style.setProperty('--sv-text', 'rgba(255,255,255,0.78)');
+
+      // "Our blob" + logo, so the visitor can see at a glance this
+      // takeover is sitevento's doing, not the site's own content.
+      var brand = document.createElement('div');
+      brand.className = 'sv-block-brand';
+      var logo = document.createElement('img');
+      logo.className = 'sv-block-logo';
+      logo.src = SITEVENTO_LOGO_URL;
+      logo.alt = 'sitevento';
+      var brandName = document.createElement('span');
+      brandName.className = 'sv-block-brand-name';
+      brandName.textContent = 'Protected by sitevento';
+      brand.appendChild(logo);
+      brand.appendChild(brandName);
+      card.appendChild(brand);
+
+      card.appendChild(buildBlockBlob());
+
+      var badge = document.createElement('span');
+      badge.className = 'sv-badge';
+      badge.textContent = 'Access restricted';
+      card.appendChild(badge);
+
+      var title = document.createElement('h2');
+      title.className = 'sv-title';
+      title.textContent = 'This site isn’t available to you';
+      card.appendChild(title);
+
+      var desc = document.createElement('p');
+      desc.className = 'sv-desc';
+      desc.textContent =
+        reason === 'country'
+          ? 'The site owner has restricted access from your region. This page has been blocked using sitevento.'
+          : 'The site owner has blocked your access to this page. This page has been blocked using sitevento.';
+      card.appendChild(desc);
+
+      // Upsell: promote sitevento itself to the blocked visitor.
+      var upsell = document.createElement('div');
+      upsell.className = 'sv-block-upsell';
+      var upsellLabel = document.createElement('div');
+      upsellLabel.className = 'sv-block-upsell-label';
+      upsellLabel.textContent = 'Run your own site?';
+      var upsellText = document.createElement('p');
+      upsellText.className = 'sv-block-upsell-text';
+      upsellText.textContent =
+        'sitevento gives any site live analytics, visitor blocking, and an AI agent that moderates traffic automatically — in minutes, free to start.';
+      upsell.appendChild(upsellLabel);
+      upsell.appendChild(upsellText);
+
+      var cta = document.createElement('a');
+      cta.className = 'sv-cta';
+      cta.href = API_ORIGIN + '/?utm_source=block_banner&utm_medium=blocked_visitor&utm_campaign=' + encodeURIComponent(reason || 'blocked');
+      cta.target = '_blank';
+      cta.rel = 'noopener noreferrer';
+      var ctaText = document.createElement('span');
+      ctaText.textContent = 'Get sitevento free';
+      cta.appendChild(ctaText);
+      cta.onclick = function () {
+        // Reuses the existing overlay-engagement beacon so block-banner
+        // upsell clicks show up alongside other CTA engagement rather
+        // than needing a new endpoint; version 0 since this banner has
+        // no versioned content of its own to dedupe against.
+        beacon(OVERLAY_TRACK_ENDPOINT, { siteId: siteId, version: 0, event: 'cta' });
+      };
+      upsell.appendChild(cta);
+      card.appendChild(upsell);
+
+      stage.appendChild(card);
+      backdrop.appendChild(stage);
+      document.body.appendChild(backdrop);
+      try {
+        document.documentElement.style.overflow = 'hidden';
+      } catch (e) {}
+    }
 
     // ============================================================
     // 3. WIDGETS — any element with data-sitevento-widget="WIDGET_ID"
