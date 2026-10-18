@@ -17,10 +17,12 @@
 
 .settings-wrap {
   margin-top: 64px;
-  min-height: calc(100dvh - 64px);
+  height: calc(100dvh - 64px);
+  max-height: calc(100dvh - 64px);
   display: flex;
   flex-direction: column;
   background: var(--bg);
+  overflow: hidden;
 }
 
 .settings-topbar {
