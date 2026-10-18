@@ -123,11 +123,18 @@ export function FeatureOrbit() {
     return () => ro.disconnect();
   }, []);
 
-  // Orbit items are 60px (48px below the 640px breakpoint) — keep the
-  // ring comfortably inside the stage by sizing the radius as a
-  // fraction of the actual stage width rather than a fixed pixel value.
-  const itemHalf = stageSize <= 340 ? 24 : 30;
-  const radius = Math.max(stageSize / 2 - itemHalf - 6, 40);
+  // Orbit items are 60px (44px at/under the 360px breakpoint, 48px
+  // between that and 640px) — keep the ring comfortably inside the
+  // stage by sizing the radius as a fraction of the actual stage width
+  // rather than a fixed pixel value. The hub itself also shrinks at
+  // these widths (see feature-orbit.css), so its own radius has to be
+  // subtracted here too — otherwise, on real small phones (320px and
+  // up), the ring radius and the hub's edge land close enough that the
+  // orbit items clip the hub as they swing past it.
+  const itemHalf = stageSize <= 360 ? 22 : stageSize <= 480 ? 24 : 30;
+  const hubRadius = stageSize <= 360 ? stageSize * 0.23 : stageSize <= 480 ? stageSize * 0.26 : stageSize * 0.28;
+  const minClearance = stageSize <= 360 ? 14 : 10;
+  const radius = Math.max(stageSize / 2 - itemHalf - 6, hubRadius + itemHalf + minClearance, 40);
 
   // Stable positions around the ring — evenly spaced, same --dot-x/
   // --dot-y offset technique as BootSplash — recomputed whenever the
