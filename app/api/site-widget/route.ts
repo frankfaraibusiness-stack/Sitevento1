@@ -60,7 +60,8 @@ async function checkLiveStatus(
   db: FirebaseFirestore.Firestore,
   siteSnap: FirebaseFirestore.DocumentSnapshot,
   widgetId: string,
-  enabled: boolean
+  enabled: boolean,
+  origin: string
 ): Promise<LiveStatus> {
   if (!enabled) {
     return { state: 'saved_off', message: 'Turned off. Visitors will no longer see this widget.' };
@@ -85,13 +86,28 @@ async function checkLiveStatus(
     };
   }
 
-  const widgetSnap = await db.collection('widgets').doc(widgetId).get();
+  const widgetDocRef = db.collection('widgets').doc(widgetId);
+  let widgetSnap = await widgetDocRef.get();
   if (!widgetSnap.exists) {
-    return {
-      state: 'saved_but_blocked',
-      reason: 'WIDGET_NOT_FOUND',
-      message: 'Saved, but this widget is not yet in the global catalog — it will not render for visitors until an admin adds it.',
-    };
+    // Self-heal: same fix as /api/widget and /api/site-widgets — a
+    // shipped catalog id (lib/widgets.ts's WIDGET_CATALOG) with no
+    // global doc yet is created right here, the moment the owner turns
+    // it on, instead of reporting a false "blocked" the first time and
+    // only fixing itself whenever a real visitor happens to hit it.
+    const expected = expectedCatalogDoc(widgetId, origin);
+    if (!expected) {
+      return {
+        state: 'saved_but_blocked',
+        reason: 'WIDGET_NOT_FOUND',
+        message: 'Saved, but this widget is not yet in the global catalog — it will not render for visitors until an admin adds it.',
+      };
+    }
+    console.warn('[site-widget] auto-seeding missing global catalog doc for', widgetId);
+    await widgetDocRef.set(
+      { ...expected, updatedAt: FieldValue.serverTimestamp() },
+      { merge: true }
+    );
+    widgetSnap = await widgetDocRef.get();
   }
   const widgetData = widgetSnap.data() || {};
   if (!widgetData.enabled) {
@@ -124,7 +140,7 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { allow } from '@/lib/rateLimit';
-import { isValidWidgetId, defaultConfigFor, getWidgetCatalogEntry } from '@/lib/widgets';
+import { isValidWidgetId, defaultConfigFor, getWidgetCatalogEntry, expectedCatalogDoc } from '@/lib/widgets';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -292,7 +308,7 @@ export async function POST(req: NextRequest) {
     // save's success.
     let liveStatus: LiveStatus;
     try {
-      liveStatus = await checkLiveStatus(db, siteSnap, widgetId, enabled);
+      liveStatus = await checkLiveStatus(db, siteSnap, widgetId, enabled, req.nextUrl.origin);
     } catch (err) {
       console.error('[site-widget] liveStatus check failed', err);
       liveStatus = enabled
