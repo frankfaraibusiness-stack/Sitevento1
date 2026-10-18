@@ -178,6 +178,83 @@
     50%      { transform: scale(1.035); }
   }
 
+  /* ---- Blob jump-scare -----------------------------------------------
+   * Pops in on top of the logo at the start of the holding phase: snaps
+   * in big and fast (startle), overshoots, then settles down to a smaller
+   * rest size before fading out — the logo stays visible underneath/
+   * behind it throughout, same shadow + eyes as the marketing hero slime,
+   * untouched. Only mounted during .is-holding (see component), so it
+   * never sits there as a static shape once its one-shot animation ends. */
+  .boot-splash-blob {
+    position: absolute;
+    z-index: 2;
+    width: min(60vw, 210px);
+    height: auto;
+    pointer-events: none;
+    animation: boot-blob-jumpscare 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .boot-splash-blob-shadow {
+    fill: rgba(0, 0, 0, 0.16);
+    filter: blur(1px);
+  }
+
+  .boot-splash-blob-body {
+    fill: var(--lime);
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+  }
+
+  .boot-splash-blob-shine {
+    fill: rgba(255, 255, 255, 0.55);
+  }
+
+  .boot-splash-blob-eyes .eye-white {
+    fill: var(--lime-ink);
+  }
+
+  .boot-splash-blob-eyes .eye-pupil {
+    fill: var(--lime);
+  }
+
+  .boot-splash-blob-mouth {
+    fill: none;
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  @keyframes boot-blob-jumpscare {
+    0%   { opacity: 0; transform: scale(0.1) rotate(-6deg); }
+    12%  { opacity: 1; transform: scale(1.35) rotate(3deg); }
+    22%  { transform: scale(0.92) rotate(-2deg); }
+    32%  { transform: scale(1.06) rotate(1deg); }
+    42%  { opacity: 1; transform: scale(1) rotate(0deg); }
+    78%  { opacity: 1; transform: scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: scale(0.85) rotate(0deg); }
+  }
+
+  /* ---- "Still alive" spinner -------------------------------------------
+   * A small ring under the logo, visible through the whole holding phase,
+   * so the screen keeps reading as active rather than frozen for the
+   * few seconds the logo just sits there. */
+  .boot-splash-spinner {
+    position: absolute;
+    bottom: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2.5px solid color-mix(in srgb, var(--lime-ink) 20%, transparent);
+    border-top-color: var(--lime-ink);
+    animation: boot-spinner-spin 0.8s linear infinite;
+  }
+
+  @keyframes boot-spinner-spin {
+    to { transform: translateX(-50%) rotate(360deg); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .boot-splash-ring {
       animation: none;
@@ -210,5 +287,13 @@
     @keyframes boot-logo-fade-in {
       from { opacity: 0; }
       to   { opacity: 1; }
+    }
+
+    .boot-splash-blob {
+      animation: boot-logo-fade-in 300ms ease-out forwards;
+    }
+
+    .boot-splash-spinner {
+      animation-duration: 1.6s;
     }
   }
