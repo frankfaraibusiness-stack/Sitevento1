@@ -9,21 +9,25 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import {
-  addDoc,
-  collection,
-  doc,
-  onSnapshot,
-  serverTimestamp,
-  setDoc,
-  type Unsubscribe,
-} from 'firebase/firestore';
-import { getFirebaseDb } from '@/lib/firebase';
-import { overlayFromTemplate } from '@/lib/siteAlert';
+import { doc, onSnapshot, type Unsubscribe } from 'firebase/firestore';
+import { getFirebaseDb, getFirebaseAuth } from '@/lib/firebase';
 import { useDomainLookup } from '@/hooks/useDomainLookup';
 
 export type ConnectStep = 'domain' | 'tag' | 'success';
 export type VerifyStatusKind = 'pending' | 'checking' | 'ok' | 'fail';
+
+// Mirrors app/api/connect-site/route.ts's SITE_LIMIT_REACHED response.
+// `idle` = nothing to report; `reached` = the server just refused to
+// create a site because the account is at its plan's cap — the UI
+// (ConnectSiteWizard -> DashboardClient) reacts to this by swapping to
+// the UpsellOverlay instead of showing a plain form error, since this
+// is a "upgrade to continue" moment, not a transient failure.
+export interface LimitStatus {
+  state: 'idle' | 'reached';
+  planId?: string;
+  limit?: number;
+  used?: number;
+}
 
 // Accepts a bare domain ("yourbusiness.com") as happily as a full URL
 // ("https://yourbusiness.com/landing") — the step-1 field no longer
@@ -62,6 +66,8 @@ export function useConnectSiteWizard(uid: string | null) {
 
   const [copyLabel, setCopyLabel] = useState('Copy tag');
 
+  const [limitStatus, setLimitStatus] = useState<LimitStatus>({ state: 'idle' });
+
   const unsubRef = useRef<Unsubscribe | null>(null);
 
   // Cosmetic "domain intel" lookup shown under the step-1 field — see
@@ -96,6 +102,7 @@ export function useConnectSiteWizard(uid: string | null) {
     setVerifyStatus('pending');
     setVerifyMessage('Waiting for you to add the tag');
     setVerifySubmitting(false);
+    setLimitStatus({ state: 'idle' });
     domainLookup.reset();
   }, [teardownWatch, domainLookup]);
 
@@ -140,6 +147,7 @@ export function useConnectSiteWizard(uid: string | null) {
     async (e: React.FormEvent) => {
       e.preventDefault();
       setDomainError('');
+      setLimitStatus({ state: 'idle' });
       const normalized = normalizeUrl(domainInput);
       if (!normalized) {
         setDomainError("That doesn't look like a valid URL.");
@@ -149,38 +157,42 @@ export function useConnectSiteWizard(uid: string | null) {
 
       setDomainSubmitting(true);
       try {
-        let h = normalized;
-        try {
-          h = new URL(normalized).hostname;
-        } catch {
-          /* leave h as-is */
+        const auth = getFirebaseAuth();
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          setDomainError('Your session expired. Please sign in again.');
+          return;
+        }
+        const idToken = await currentUser.getIdToken();
+
+        // Site creation goes through the server now instead of a direct
+        // client-side addDoc()/setDoc() — this is what actually enforces
+        // the plan's connected-site limit (atomically, so it can't be
+        // bypassed by calling Firestore directly either). See
+        // app/api/connect-site/route.ts.
+        const res = await fetch('/api/connect-site', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, url: normalized }),
+        });
+        const result = await res.json().catch(() => ({}));
+
+        if (!res.ok || !result.ok) {
+          if (result.code === 'SITE_LIMIT_REACHED') {
+            setLimitStatus({ state: 'reached', planId: result.planId, limit: result.limit, used: result.used });
+            return;
+          }
+          setDomainError(result.error || 'Could not save that site. Please try again.');
+          return;
         }
 
-        const db = getFirebaseDb();
-        const docRef = await addDoc(collection(db, 'users', uid, 'sites'), {
-          name: h,
-          url: normalized,
-          status: 'pending',
-          overlay: overlayFromTemplate('announcement'),
-          createdAt: serverTimestamp(),
-        });
-
-        // Flat lookup doc so the stateless tracking endpoint (api/track)
-        // can resolve "which user owns this siteId" with one cheap read.
-        // siteId is already non-secret (it's pasted into the public page
-        // as the meta tag / script attribute), so this index is safe.
-        await setDoc(doc(db, 'siteIndex', docRef.id), {
-          uid,
-          createdAt: serverTimestamp(),
-        });
-
-        setSiteId(docRef.id);
-        setSiteUrl(normalized);
-        setHostname(h);
+        setSiteId(result.siteId);
+        setSiteUrl(result.url);
+        setHostname(result.hostname || '');
         setVerifyStatus('pending');
         setVerifyMessage('Waiting for you to add the tag');
         setStep('tag');
-        watchSiteStatus(uid, docRef.id);
+        watchSiteStatus(uid, result.siteId);
       } catch (err) {
         console.error('create site error', err);
         setDomainError('Could not save that site. Please try again.');
@@ -267,5 +279,6 @@ export function useConnectSiteWizard(uid: string | null) {
     teardownWatch,
     domainLookupStatus: domainLookup.status,
     domainLookupResult: domainLookup.result,
+    limitStatus,
   };
 }
