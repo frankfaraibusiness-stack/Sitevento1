@@ -2,7 +2,8 @@
 
 // components/dashboard/WidgetConfigPanel.tsx
 //
-// Opens when a WidgetsPanel card is clicked. One generic form driven by
+// Opens when a card on /widgets (components/widgets/WidgetsPageClient.tsx)
+// is clicked. One generic form driven by
 // lib/widgets.ts's WIDGET_CATALOG[].configFields, rather than 10
 // hand-written forms — a field's `type` picks the input, `saved`/`draft`
 // + enable/disable/saveConfig come from useSiteWidget (same draft/saved/
