@@ -113,6 +113,20 @@ function FieldInput({ field, value, onChange }: { field: WidgetFieldDef; value: 
           onChange={(e) => onChange(e.target.value)}
         />
       );
+    case 'select':
+      return (
+        <select
+          className="bcp-input bcp-select"
+          value={strValue}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          {(field.options || []).map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      );
     default:
       return (
         <input
@@ -225,7 +239,10 @@ export function WidgetConfigPanel({ uid, activeSite, widgetId, onClose }: Widget
                     <div className="bcp-group">
                       {entry.configFields.map((field) => (
                         <label key={field.key} className="bcp-row bcp-row-top">
-                          <span className="bcp-row-label">{field.label}</span>
+                          <span className="bcp-row-stack">
+                            <span className="bcp-row-label">{field.label}</span>
+                            {field.help && <span className="bcp-row-note">{field.help}</span>}
+                          </span>
                           <FieldInput
                             field={field}
                             value={draft.config[field.key]}
