@@ -8,11 +8,28 @@
 // what's being edited. Enabling and editing config are independent —
 // you can fill in config before turning a widget on, or turn it off
 // without losing what you'd set up.
+//
+// ── Reads vs. writes ──────────────────────────────────────────────────
+// READS still use the client Firestore SDK's onSnapshot — that's a
+// live, read-only listener, already safe under the existing
+// users/{uid}/{document=**} rule (owner-only), and keeping it
+// client-side means the panel reflects changes instantly with no
+// polling.
+//
+// WRITES go through POST /api/site-widget (Admin SDK, server-side)
+// instead of a direct client setDoc(). The route re-verifies the
+// caller's Firebase ID token and confirms they own the target site
+// before writing anything — see that route's comments for why this
+// check has to live in code once the write itself bypasses Firestore
+// rules. This hook's job is just to attach the current user's ID
+// token to every write call; getIdToken() returns the already-cached
+// token instantly unless it's within ~5 minutes of expiry, in which
+// case the SDK refreshes it first — either way this stays fast.
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { getFirebaseDb } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { getFirebaseDb, getFirebaseAuth } from '@/lib/firebase';
 import { defaultConfigFor } from '@/lib/widgets';
 import type { Site } from '@/lib/types';
 
@@ -21,6 +38,16 @@ export interface SiteWidgetState {
   config: Record<string, unknown>;
   version: number;
 }
+
+// Mirrors the LiveStatus union in app/api/site-widget/route.ts. A
+// successful save (persist() returning true) no longer implies the
+// widget is actually visible to visitors — this is the honest,
+// separate signal for that. null means "no save has happened yet in
+// this session" (not the same as "unknown failure").
+export type LiveStatus =
+  | { state: 'live'; message: string }
+  | { state: 'saved_but_blocked'; reason: string; message: string }
+  | { state: 'saved_off'; message: string };
 
 function emptyState(widgetId: string): SiteWidgetState {
   return { enabled: false, config: defaultConfigFor(widgetId), version: 1 };
@@ -31,6 +58,7 @@ export function useSiteWidget(uid: string | null, activeSite: Site | null, widge
   const [draft, setDraft] = useState<SiteWidgetState>(() => emptyState(widgetId || ''));
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus | null>(null);
 
   useEffect(() => {
     if (!uid || !activeSite || !widgetId) {
@@ -73,21 +101,76 @@ export function useSiteWidget(uid: string | null, activeSite: Site | null, widge
     setDraft((d) => ({ ...d, config: { ...d.config, ...p } }));
   }, []);
 
-  async function persist(next: SiteWidgetState) {
-    if (!uid || !activeSite || !widgetId) return false;
+  // Posts a write to the server route instead of writing Firestore
+  // directly. Always attaches a fresh ID token — this is the piece
+  // that lets the server route recover the real, unforgeable uid.
+  //
+  // Returns { ok, liveStatus } rather than a plain boolean: `ok` means
+  // "the save request completed", liveStatus is the separate, honest
+  // answer to "will a visitor actually see this" — a caller must not
+  // collapse these into one "success" message, since a save can
+  // succeed while the widget stays invisible to visitors (unverified
+  // site, disabled catalog entry, etc. — see the route for the full
+  // list of gates this reflects).
+  async function persist(
+    nextEnabled: boolean,
+    nextConfig: Record<string, unknown>
+  ): Promise<{ ok: boolean; liveStatus: LiveStatus | null }> {
+    if (!uid || !activeSite || !widgetId) return { ok: false, liveStatus: null };
     setBusy(true);
     try {
-      const db = getFirebaseDb();
-      await setDoc(
-        doc(db, 'users', uid, 'sites', activeSite.id, 'widgets', widgetId),
-        next,
-        { merge: true }
-      );
-      return true;
+      const auth = getFirebaseAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        console.error('site widget persist error: no signed-in user');
+        window.alert('Your session has expired. Please sign in again.');
+        return { ok: false, liveStatus: null };
+      }
+      const idToken = await user.getIdToken();
+
+      const res = await fetch('/api/site-widget', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idToken,
+          siteId: activeSite.id,
+          widgetId,
+          enabled: nextEnabled,
+          config: nextConfig,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({ ok: false, error: 'Malformed server response.' }));
+
+      if (!res.ok || !data.ok) {
+        console.error('site widget persist error', data.error || res.status);
+        window.alert(data.error || 'Could not save that widget right now.');
+        setLiveStatus(null);
+        return { ok: false, liveStatus: null };
+      }
+
+      // The onSnapshot listener above will also pick up this change,
+      // but updating local state immediately keeps the toggle feeling
+      // instant rather than waiting a round trip for Firestore's own
+      // push to arrive.
+      if (data.widget) {
+        const next: SiteWidgetState = {
+          enabled: !!data.widget.enabled,
+          config: { ...defaultConfigFor(widgetId), ...(data.widget.config || {}) },
+          version: typeof data.widget.version === 'number' ? data.widget.version : 1,
+        };
+        setSaved(next);
+        setDraft(next);
+      }
+
+      const status: LiveStatus | null = data.liveStatus || null;
+      setLiveStatus(status);
+      return { ok: true, liveStatus: status };
     } catch (err) {
       console.error('site widget persist error', err);
       window.alert('Could not save that widget right now.');
-      return false;
+      setLiveStatus(null);
+      return { ok: false, liveStatus: null };
     } finally {
       setBusy(false);
     }
@@ -95,26 +178,26 @@ export function useSiteWidget(uid: string | null, activeSite: Site | null, widge
 
   // Save config without necessarily turning the widget on.
   const saveConfig = useCallback(async () => {
-    return persist({ ...draft });
-  }, [draft, uid, activeSite?.id, widgetId]);
-
-  // Turn the widget on for this site, bumping version so the loader's
-  // ETag (see app/api/widget/route.ts) reflects the change immediately.
-  const enable = useCallback(async () => {
-    const nextVersion = (saved?.version ?? 0) + 1;
-    const next = { ...draft, enabled: true, version: nextVersion };
-    const ok = await persist(next);
-    return ok;
+    return persist(saved?.enabled ?? false, draft.config);
   }, [draft, saved, uid, activeSite?.id, widgetId]);
 
+  const enable = useCallback(async () => {
+    return persist(true, draft.config);
+  }, [draft, uid, activeSite?.id, widgetId]);
+
   const disable = useCallback(async () => {
-    const base = saved || draft;
-    const ok = await persist({ ...base, enabled: false });
-    return ok;
+    const base = saved?.config || draft.config;
+    return persist(false, base);
   }, [saved, draft, uid, activeSite?.id, widgetId]);
 
   const dirty = saved ? JSON.stringify(saved.config) !== JSON.stringify(draft.config) : true;
-  const isLive = !!saved?.enabled;
+  // isLive now reflects the server's confirmed liveStatus, not just the
+  // enabled flag — a widget that's "enabled" in Firestore but blocked
+  // by an unverified site / missing catalog entry is NOT live, and the
+  // UI should not claim it is. Falls back to the enabled flag only
+  // before any liveStatus has been reported yet (e.g. right after
+  // load, before the user has toggled anything in this session).
+  const isLive = liveStatus ? liveStatus.state === 'live' : !!saved?.enabled;
 
-  return { draft, saved, loading, busy, dirty, isLive, patchConfig, saveConfig, enable, disable };
+  return { draft, saved, loading, busy, dirty, isLive, liveStatus, patchConfig, saveConfig, enable, disable };
 }
