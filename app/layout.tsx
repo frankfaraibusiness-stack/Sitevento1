@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { GlobalNav } from '@/components/layout/GlobalNav';
 
 // Central place for the handful of values SEO metadata below needs
 // more than once (title, OG/Twitter image, theme color). Swapping in
@@ -63,7 +64,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <GlobalNav />
+      </body>
     </html>
   );
 }
