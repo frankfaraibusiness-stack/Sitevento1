@@ -1,0 +1,211 @@
+/* ============================================================
+ * styles/agent-page.css
+ *
+ * Stylesheet for /dashboard/agent (components/agent/AgentPageClient.tsx).
+ * Own `agt-` prefix, same convention as `wgp-`/`wdg-` — reuses the
+ * app's base --ink/--line/--bg/--cream variables, owns its own layout.
+ *
+ * This pass only covers the shell: back nav + page head. The builder
+ * itself (model picker, permission toggles, country blocker, upsell)
+ * lands in a follow-up pass and will extend this file rather than
+ * replace it.
+ * ============================================================ */
+
+.agt-main {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 104px 16px 120px;
+  display: flex;
+  justify-content: center;
+}
+
+.agt-wrap {
+  width: 100%;
+  max-width: 980px;
+}
+
+.agt-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 10px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+.agt-back svg { width: 16px; height: 16px; flex-shrink: 0; }
+.agt-back:hover { background: var(--cream); box-shadow: 0 1px 2px rgba(34, 32, 28, 0.06); }
+.agt-back:active { transform: scale(0.98); }
+
+.agt-head { margin-bottom: 22px; }
+.agt-head h1 {
+  margin: 0 0 6px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.agt-head p {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #5c6a72;
+  max-width: 56ch;
+}
+
+p.agt-row-note {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #6b655c;
+}
+
+/* ── Permissions section ──────────────────────────────────────────── */
+.agt-section { margin-bottom: 8px; }
+
+.agt-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.agt-section-title {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9a948a;
+}
+.agt-feature-count {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--walnut);
+  white-space: nowrap;
+}
+
+.agt-feat-group { margin-bottom: 22px; }
+.agt-feat-group-title {
+  margin: 0 0 8px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.agt-group {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.agt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.agt-row:last-child { border-bottom: none; }
+.agt-row-top { align-items: flex-start; }
+.agt-row.is-locked { background: rgba(255, 255, 255, 0.35); }
+
+.agt-row-stack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.agt-row-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.agt-row-stack .agt-row-note {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b655c;
+  max-width: 440px;
+}
+
+.agt-cost-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #efeaff;
+  color: #6d3df0;
+  font-family: -apple-system, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.agt-lock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px 2px 7px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-family: -apple-system, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.agt-lock-pill svg { width: 11px; height: 11px; }
+.agt-lock-pill:hover { background: var(--walnut); }
+
+/* ── Switch (re-themed, own agt- prefix) ──────────────────────────── */
+.agt-switch {
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  padding: 3px;
+  background: #d8d2c5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s ease;
+}
+.agt-switch.is-on { background: var(--lime); }
+.agt-switch:disabled { cursor: not-allowed; opacity: 0.55; }
+.agt-switch-knob {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+.agt-switch.is-on .agt-switch-knob { transform: translateX(18px); }
+
+@media (max-width: 420px) {
+  .agt-main { padding: 96px 12px 110px; }
+  .agt-head h1 { font-size: 23px; }
+  .agt-row { padding: 12px 14px; }
+}
