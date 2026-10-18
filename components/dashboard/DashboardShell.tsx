@@ -267,7 +267,9 @@ export function DashboardShell({
         </div>
       )}
 
-      {widgetsOpen && <WidgetsPanel onClose={() => setWidgetsOpen(false)} />}
+      {widgetsOpen && (
+        <WidgetsPanel uid={user.uid} activeSite={activeSite} onClose={() => setWidgetsOpen(false)} />
+      )}
     </section>
   );
 }
