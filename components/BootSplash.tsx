@@ -156,6 +156,44 @@ export function BootSplash({ onDone }: BootSplashProps) {
             alt="sitevento"
           />
         )}
+
+        {/* Blob character: pops in on top of the logo the moment it lands,
+            startle/"jump-scare" style (fast overshoot scale-in from
+            nothing), then settles and fades back out — same shadow + eyes
+            as the hero slime, kept as-is. Purely decorative (aria-hidden),
+            mounted only for the window it animates in so it never lingers
+            as a static shape sitting over the logo. */}
+        {phase === 'holding' && (
+          <svg className="boot-splash-blob" viewBox="0 0 200 220" aria-hidden="true">
+            <ellipse className="boot-splash-blob-shadow" cx="100" cy="196" rx="58" ry="10" />
+            <g className="boot-splash-blob-body-wrap">
+              <path
+                className="boot-splash-blob-body"
+                d="M100.0 36.0 C122.3 36.9, 140.5 42.3, 152.9 61.9 C167.1 75.9, 169.8 95.4, 169.6 108.0 C170.4 123.8, 163.6 139.6, 150.1 151.9 C139.2 166.9, 119.1 175.4, 100.0 180.0 C80.5 174.6, 61.6 168.4, 48.9 152.9 C33.6 142.3, 29.0 123.6, 30.4 108.0 C28.4 92.9, 33.6 74.9, 47.0 62.9 C58.7 44.8, 79.5 37.3, 100.0 36.0 Z"
+              />
+              <ellipse className="boot-splash-blob-shine" cx="76" cy="78" rx="18" ry="11" />
+              <g className="boot-splash-blob-eyes">
+                <g>
+                  <ellipse className="eye-white" cx="82" cy="104" rx="11" ry="13" />
+                  <circle className="eye-pupil" cx="84" cy="106" r="5" />
+                </g>
+                <g>
+                  <ellipse className="eye-white" cx="118" cy="104" rx="11" ry="13" />
+                  <circle className="eye-pupil" cx="120" cy="106" r="5" />
+                </g>
+              </g>
+              <path className="boot-splash-blob-mouth" d="M 92 126 Q 100 132 108 126" />
+            </g>
+          </svg>
+        )}
+
+        {/* Keeps the screen visibly alive for the whole holding phase —
+            without this, once the logo settles there are a few seconds of
+            total stillness that read as the site having frozen rather than
+            the boot animation just finishing up. */}
+        {phase === 'holding' && (
+          <span className="boot-splash-spinner" role="status" aria-label="Loading" />
+        )}
       </div>
     </div>
   );
