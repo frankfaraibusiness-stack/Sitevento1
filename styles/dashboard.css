@@ -1370,6 +1370,7 @@
   }
   .prof-site-status-verified { background: var(--dash-green-surface, #e9f5ee); color: var(--dash-green-ink, #2f7a4f); }
   .prof-site-status-pending { background: var(--dash-orange-surface, #fdf1df); color: var(--dash-orange-ink, #8a5a1a); }
+  .prof-site-status-warn { background: var(--dash-orange-surface, #fdf1df); color: var(--dash-orange-ink, #8a5a1a); cursor: help; }
   .prof-site-disconnect { flex-shrink: 0; }
   .prof-limit-note {
     margin: 14px 0 0;
