@@ -8,10 +8,13 @@
 // lower tiers first, heavy (live-model-call / high-trust) features are
 // what's actually locked behind an upgrade, not an arbitrary split.
 //
-// This pass: display + local toggle state only, no persistence/API
-// wiring yet (see lib/agent.ts's header comment — that's a follow-up
-// pass). `enabled`/`onToggle` are controlled from the parent so that
-// wiring can drop in later without this component changing.
+// `enabled`/`onToggle` are controlled from the parent
+// (AgentPageClient, via hooks/useSiteAgent.ts) — this component stays
+// pure display + plan-gating logic, with no knowledge of persistence.
+// Also shows an upsell banner naming how many (and what kind of)
+// features are locked when the current plan doesn't unlock all 20 —
+// see lib/agent.ts's cost comment for why 'heavy' features are what's
+// actually gated, not an arbitrary split.
 import { AGENT_FEATURES, agentFeatureLimit, isFeatureAllowedForPlan, type AgentFeatureDef } from '@/lib/agent';
 import type { PlanId } from '@/lib/plans';
 
@@ -41,6 +44,7 @@ interface AgentFeatureGridProps {
 export function AgentFeatureGrid({ plan, enabledIds, onToggle, onUpgradeClick }: AgentFeatureGridProps) {
   const limit = agentFeatureLimit(plan);
   const enabledCount = enabledIds.length;
+  const lockedCount = AGENT_FEATURES.length - limit;
 
   const grouped = CATEGORY_ORDER.map((cat) => ({
     category: cat,
@@ -55,6 +59,16 @@ export function AgentFeatureGrid({ plan, enabledIds, onToggle, onUpgradeClick }:
           {enabledCount}/{limit} enabled on your plan
         </span>
       </div>
+
+      {lockedCount > 0 && (
+        <button type="button" className="agt-upsell-banner" onClick={onUpgradeClick}>
+          <span className="agt-upsell-copy">
+            <strong>{lockedCount} more feature{lockedCount === 1 ? '' : 's'}</strong> — live model calls and
+            continuous monitoring, like AI content moderation and full site autopilot — unlock on a higher plan.
+          </span>
+          <span className="agt-upsell-cta">Upgrade</span>
+        </button>
+      )}
 
       {grouped.map((group) => (
         <div key={group.category} className="agt-feat-group">
