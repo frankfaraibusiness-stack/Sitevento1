@@ -30,14 +30,14 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Widgets — Drop-in On-Site Widgets',
   description:
-    'Support chat, spin-the-wheel, exit-intent popups, countdown timers, social proof, reviews, and more — powerful widgets to make your site more interactive and engaging. No code, no redeploy.',
+    'Support chat and a countdown timer — drop-in widgets to make your site more interactive and engaging. No code, no redeploy.',
   alternates: { canonical: '/widgets' },
   openGraph: {
     type: 'website',
     url: `${SITE_URL}/widgets`,
     title: 'Widgets — sitevento',
     description:
-      'Powerful widgets to make your site more interactive and engaging — support chat, spin-the-wheel, exit-intent popups, and more.',
+      'Powerful widgets to make your site more interactive and engaging — support chat and a countdown timer.',
   },
   twitter: {
     card: 'summary_large_image',
