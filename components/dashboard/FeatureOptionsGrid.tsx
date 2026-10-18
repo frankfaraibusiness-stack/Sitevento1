@@ -147,7 +147,8 @@ const FEATURE_OPTIONS: FeatureOption[] = [
     id: 'ai-agent',
     name: 'AI Support Agent',
     description: 'An always-on AI agent trained on your business that replies to customers instantly, day or night.',
-    href: null,
+    href: '/dashboard/agent',
+    live: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
         <rect x="4" y="7" width="16" height="12" rx="3" />
@@ -190,17 +191,17 @@ interface FeatureOptionsGridProps {
 // full remaining-tile grid underneath — nothing from the original
 // lineup is removed, just collapsed by default so the page reads
 // cleanly.
-const QUICK_TOOL_IDS = ['site-alert', 'widgets', 'visitor-api', 'crm-sync'] as const;
+const QUICK_TOOL_IDS = ['site-alert', 'widgets', 'ai-agent', 'crm-sync'] as const;
 const QUICK_TOOL_TONES: Record<(typeof QUICK_TOOL_IDS)[number], 'green' | 'purple' | 'blue' | 'orange'> = {
   'site-alert': 'green',
   widgets: 'orange',
-  'visitor-api': 'purple',
+  'ai-agent': 'purple',
   'crm-sync': 'blue',
 };
 const QUICK_TOOL_SUBTITLES: Record<(typeof QUICK_TOOL_IDS)[number], string> = {
   'site-alert': 'Push live banners',
   widgets: 'Add on-site widgets',
-  'visitor-api': 'Get your data',
+  'ai-agent': 'Automate replies',
   'crm-sync': 'Auto lead sync',
 };
 
