@@ -136,6 +136,52 @@ async function putSiteWidget(db, args) {
   );
 }
 
+// The 10 widget ids this project ships UI/content for (see lib/widgets.ts
+// WIDGET_CATALOG and app/w/[widgetId]/ for the actual rendered content).
+// Every one is served from THIS deployment's own /w/{id} route — no
+// separate CDN/hosting needed — so seeding the catalog is just pointing
+// each widgetId at https://<your-deployment>/w/{id}.
+const SHIPPED_WIDGET_IDS = [
+  'support-chat',
+  'spin-wheel',
+  'exit-intent',
+  'countdown-timer',
+  'social-proof',
+  'reviews-widget',
+  'video-popup',
+  'feedback-widget',
+  'referral-widget',
+  'announcement-bar',
+];
+
+async function seedCatalog(db, args) {
+  if (!args.baseUrl) {
+    throw new Error(
+      '--baseUrl is required, e.g. --baseUrl https://your-app.vercel.app (no trailing slash)'
+    );
+  }
+  if (!args.baseUrl.startsWith('https://')) {
+    throw new Error('--baseUrl must be an https:// URL');
+  }
+  const base = args.baseUrl.replace(/\/$/, '');
+
+  for (const id of SHIPPED_WIDGET_IDS) {
+    const ref = db.collection('widgets').doc(id);
+    const existing = await ref.get();
+    const data = {
+      name: existing.data()?.name ?? id,
+      type: 'iframe',
+      enabled: true,
+      version: existing.data()?.version ?? 1,
+      bundleUrl: `${base}/w/${id}`,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    await ref.set(data, { merge: true });
+    console.log(`widgets/${id} ${existing.exists ? 'updated' : 'created'} -> ${data.bundleUrl}`);
+  }
+  console.log(`\nSeeded ${SHIPPED_WIDGET_IDS.length} widgets. Each site must still be granted access with put-site-widget before it can use one.`);
+}
+
 async function main() {
   const [, , command, ...rest] = process.argv;
   const args = parseArgs(rest);
@@ -145,11 +191,16 @@ async function main() {
     await putWidget(db, args);
   } else if (command === 'put-site-widget') {
     await putSiteWidget(db, args);
+  } else if (command === 'seed-catalog') {
+    await seedCatalog(db, args);
   } else {
     console.error(
       'Usage:\n' +
         '  node scripts/manage-widget.mjs put-widget --id <id> --name <name> --type iframe --bundleUrl <https url> [--version N] [--enabled true|false]\n' +
-        '  node scripts/manage-widget.mjs put-site-widget --uid <uid> --siteId <siteId> --widgetId <id> [--enabled true|false] [--config \'<json>\'] [--version N]'
+        '  node scripts/manage-widget.mjs put-site-widget --uid <uid> --siteId <siteId> --widgetId <id> [--enabled true|false] [--config \'<json>\'] [--version N]\n' +
+        '  node scripts/manage-widget.mjs seed-catalog --baseUrl https://your-app.vercel.app\n' +
+        '      (creates/updates all 10 shipped widgets in the global catalog, pointing\n' +
+        '       each bundleUrl at this deployment\'s own /w/{id} route)'
     );
     process.exit(1);
   }
