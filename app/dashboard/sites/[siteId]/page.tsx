@@ -9,7 +9,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 // Scoped to this route only — deliberately NOT added to
 // app/globals.css's @import list (unlike every other styles/*.css
@@ -35,7 +35,7 @@ interface SiteManageRouteProps {
 
 export default function SiteManageRoutePage({ params }: SiteManageRouteProps) {
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading site" />}>
       <DashboardClient view="site-manage" siteId={params.siteId} />
     </Suspense>
   );
