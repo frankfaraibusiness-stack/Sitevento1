@@ -55,12 +55,21 @@
 .smp-back:active { transform: translateY(0) scale(0.98); box-shadow: none; }
 
 /* ── Loading / not-found ─────────────────────────────────────── */
-.smp-loading { padding: 12px 0; }
-.smp-skel { border-radius: 16px; background: linear-gradient(90deg, var(--line) 0%, #f3f0e8 50%, var(--line) 100%); background-size: 200% 100%; animation: smp-shimmer 1.4s ease infinite; margin-bottom: 14px; }
+/* Page-level loading now uses the shared <AppSkeleton> (see
+   components/AppSkeleton.tsx / styles/app-skeleton.css) instead of a
+   page-specific shimmer. This small inline bar is just for the
+   "Widgets" meta-value cell, which loads slightly after the rest of
+   the page (see useSiteWidgetsList in SiteManagePage.tsx). */
+.smp-meta-skel {
+  display: inline-block;
+  width: 64px;
+  height: 13px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--line) 0%, #f3f0e8 50%, var(--line) 100%);
+  background-size: 200% 100%;
+  animation: smp-shimmer 1.4s ease infinite;
+}
 @keyframes smp-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.smp-skel-back { width: 160px; height: 32px; border-radius: 999px; }
-.smp-skel-head { width: 100%; height: 180px; }
-.smp-skel-row { width: 100%; height: 64px; }
 
 .smp-notfound { padding: 48px 24px; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 20px; }
 .smp-notfound h2 { margin: 0 0 8px; font-size: 20px; }
