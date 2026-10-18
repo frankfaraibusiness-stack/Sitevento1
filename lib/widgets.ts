@@ -208,30 +208,6 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
     ],
   },
   {
-    id: 'spin-wheel',
-    name: 'Spin-the-Wheel',
-    description: 'A playful discount wheel visitors spin once to unlock a coupon or offer in exchange for their email.',
-    position: 'corner-bottom-right',
-    configFields: [
-      { key: 'prizes', label: 'Prizes (comma-separated)', type: 'text', default: '10% OFF,Free Shipping,15% OFF,Try Again,20% OFF,5% OFF', maxLength: 300 },
-      { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
-      { key: 'height', label: 'Frame height', type: 'text', default: '420px' },
-    ],
-  },
-  {
-    id: 'exit-intent',
-    name: 'Exit-Intent Popup',
-    description: 'Catches a visitor the moment their cursor heads for the tab bar, with one last offer or message.',
-    position: 'corner-bottom-right',
-    configFields: [
-      { key: 'headline', label: 'Headline', type: 'text', default: 'Wait — before you go!', maxLength: 80 },
-      { key: 'message', label: 'Message', type: 'textarea', default: 'Here\u2019s 10% off if you stay.', maxLength: 200 },
-      { key: 'ctaLabel', label: 'Button label', type: 'text', default: 'Claim offer', maxLength: 40 },
-      { key: 'ctaUrl', label: 'Button link', type: 'url', default: '' },
-      { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
-    ],
-  },
-  {
     id: 'countdown-timer',
     name: 'Countdown Timer',
     description: 'A sticky bar or badge counting down to a sale, launch, or deadline to create urgency on-page.',
@@ -241,78 +217,6 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
       { key: 'endsAt', label: 'Ends at', type: 'datetime', default: '' },
       { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
       { key: 'height', label: 'Frame height', type: 'text', default: '64px' },
-    ],
-  },
-  {
-    id: 'social-proof',
-    name: 'Social Proof Popups',
-    description: 'Small "Someone just signed up" toasts that build trust from real-time activity.',
-    position: 'corner-bottom-left',
-    configFields: [
-      { key: 'messages', label: 'Messages (one per line)', type: 'textarea', default: 'Someone in Cape Town just signed up\nSomeone in London just bought a plan\nSomeone in Austin just joined', maxLength: 500 },
-      { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
-    ],
-  },
-  {
-    id: 'reviews-widget',
-    name: 'Reviews & Ratings',
-    description: 'Show off your star rating and recent reviews right on the page.',
-    // Inline content, not chrome — only makes sense where the owner
-    // places it in their own page content, so it isn't auto-mounted.
-    position: 'manual-only',
-    configFields: [
-      { key: 'rating', label: 'Overall rating (1-5)', type: 'number', default: 4.8 },
-      { key: 'reviewCount', label: 'Review count', type: 'number', default: 128 },
-      { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
-      { key: 'height', label: 'Frame height', type: 'text', default: '140px' },
-    ],
-  },
-  {
-    id: 'video-popup',
-    name: 'Video Popup',
-    description: 'An auto-play or click-to-play video overlay for product demos, welcome messages, or promos.',
-    // Inline content, not chrome — only makes sense where the owner
-    // places it in their own page content, so it isn't auto-mounted.
-    position: 'manual-only',
-    configFields: [
-      { key: 'videoUrl', label: 'Video URL (mp4 or YouTube embed)', type: 'url', default: '' },
-      { key: 'autoplay', label: 'Autoplay (1 or 0)', type: 'number', default: 0 },
-      { key: 'height', label: 'Frame height', type: 'text', default: '360px' },
-    ],
-  },
-  {
-    id: 'feedback-widget',
-    name: 'Feedback Tab',
-    description: 'A small side tab visitors can click to leave quick feedback or report a bug.',
-    position: 'corner-bottom-left',
-    configFields: [
-      { key: 'prompt', label: 'Prompt', type: 'text', default: 'Got feedback?', maxLength: 80 },
-      { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
-      { key: 'height', label: 'Frame height', type: 'text', default: '420px' },
-    ],
-  },
-  {
-    id: 'referral-widget',
-    name: 'Referral Program',
-    description: 'A built-in "Invite a friend, get a reward" panel.',
-    position: 'corner-bottom-right',
-    configFields: [
-      { key: 'reward', label: 'Reward text', type: 'text', default: 'Give 10%, Get 10%', maxLength: 80 },
-      { key: 'accent', label: 'Accent color', type: 'color', default: '#8a5a3c' },
-      { key: 'height', label: 'Frame height', type: 'text', default: '260px' },
-    ],
-  },
-  {
-    id: 'announcement-bar',
-    name: 'Announcement Bar',
-    description: 'A slim bar pinned to the top of the page for ongoing promos or news.',
-    position: 'fixed-top',
-    configFields: [
-      { key: 'message', label: 'Message', type: 'text', default: 'Free shipping on all orders this week!', maxLength: 140 },
-      { key: 'ctaLabel', label: 'Button label (optional)', type: 'text', default: '', maxLength: 40 },
-      { key: 'ctaUrl', label: 'Button link (optional)', type: 'url', default: '' },
-      { key: 'accent', label: 'Bar color', type: 'color', default: '#8a5a3c' },
-      { key: 'height', label: 'Frame height', type: 'text', default: '44px' },
     ],
   },
 ];
