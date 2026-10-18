@@ -18,6 +18,7 @@ import { DashFooter } from '@/components/layout/DashFooter';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { ProfilePage } from '@/components/dashboard/ProfilePage';
 import { PlansPage } from '@/components/dashboard/PlansPage';
+import { SiteManagePage } from '@/components/dashboard/SiteManagePage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { UpsellOverlay } from '@/components/dashboard/UpsellOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
@@ -32,10 +33,17 @@ import type { PlanId } from '@/lib/plans';
 interface DashboardClientProps {
   // Defaults to the main dashboard. "profile" renders the account page
   // instead (see app/dashboard/profile/page.tsx), "plans" renders the
-  // plan-switch/compare page (see app/dashboard/plans/page.tsx) —
-  // both while still sharing this component's single auth gate, header
-  // and sidebar.
-  view?: 'dashboard' | 'profile' | 'plans';
+  // plan-switch/compare page (see app/dashboard/plans/page.tsx),
+  // "site-manage" renders the standalone per-site management page (see
+  // app/dashboard/sites/[siteId]/page.tsx and SiteManagePage.tsx) —
+  // all three while still sharing this component's single auth gate,
+  // header and sidebar.
+  view?: 'dashboard' | 'profile' | 'plans' | 'site-manage';
+  // Required when view="site-manage" — the [siteId] route param,
+  // passed straight through to SiteManagePage so it can look the site
+  // up out of useSites() itself rather than this component owning a
+  // second sites subscription just to find one site by id.
+  siteId?: string;
 }
 
 const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
@@ -45,15 +53,16 @@ const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
   overlay: 'panelOverlay',
 };
 
-export default function DashboardClient({ view = 'dashboard' }: DashboardClientProps) {
+export default function DashboardClient({ view = 'dashboard', siteId }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
   // Only the profile/plans views need the sites list at this level —
   // DashboardShell already owns its own useSites call for the main
-  // dashboard view. "plans" only needs the list itself (for the usage
-  // banner), not disconnectSite.
+  // dashboard view, and SiteManagePage owns its own for "site-manage".
+  // "plans" only needs the list itself (for the usage banner), not
+  // disconnectSite.
   const { sites, disconnectSite } = useSites(view === 'profile' || view === 'plans' ? (user?.uid ?? null) : null);
 
   const [authOpen, setAuthOpen] = useState(false);
@@ -205,6 +214,8 @@ export default function DashboardClient({ view = 'dashboard' }: DashboardClientP
             />
           ) : view === 'plans' ? (
             <PlansPage user={user} sites={sites} />
+          ) : view === 'site-manage' && siteId ? (
+            <SiteManagePage user={user} siteId={siteId} />
           ) : (
             <DashboardShell
               user={user}
