@@ -189,54 +189,59 @@ export function WidgetConfigPanel({ uid, activeSite, widgetId, onClose }: Widget
         ) : (
           <div className="bcp-root">
             <div className="bcp-body">
-              <section className="bcp-section">
-                <h4 className="bcp-section-title">Status</h4>
-                <div className="bcp-group">
-                  <div className="bcp-row">
-                    <span className="bcp-row-stack">
-                      <span className="bcp-row-label">Live on {activeSite.name}</span>
-                      <span className="bcp-row-note">
-                        {isLive
-                          ? entry.position === 'manual-only'
-                            ? 'Live — visible wherever you\u2019ve placed it on your page.'
-                            : 'Visitors see this widget now.'
-                          : 'Not shown to visitors yet.'}
-                      </span>
-                    </span>
-                    <Toggle on={isLive} onChange={handleToggle} label={`Enable ${entry.name}`} />
-                  </div>
-                </div>
-              </section>
-
-              {entry.configFields.length > 0 && (
+              <div className="bcp-main">
                 <section className="bcp-section">
-                  <h4 className="bcp-section-title">Settings</h4>
+                  <h4 className="bcp-section-title">Status</h4>
                   <div className="bcp-group">
-                    {entry.configFields.map((field) => (
-                      <label key={field.key} className="bcp-row bcp-row-top">
-                        <span className="bcp-row-label">{field.label}</span>
-                        <FieldInput
-                          field={field}
-                          value={draft.config[field.key]}
-                          onChange={(v) => patchConfig({ [field.key]: v })}
-                        />
-                      </label>
-                    ))}
+                    <div className="bcp-row">
+                      <span className="bcp-row-stack">
+                        <span className="bcp-row-label">Live on {activeSite.name}</span>
+                        <span className="bcp-row-note">
+                          {isLive
+                            ? entry.position === 'manual-only'
+                              ? 'Live — visible wherever you\u2019ve placed it on your page.'
+                              : 'Visitors see this widget now.'
+                            : 'Not shown to visitors yet.'}
+                        </span>
+                      </span>
+                      <Toggle on={isLive} onChange={handleToggle} label={`Enable ${entry.name}`} />
+                    </div>
                   </div>
                 </section>
-              )}
 
-              <div className="bcp-bar">
-                <button type="button" className="ghost-btn" onClick={handleSave} disabled={busy || !dirty}>
-                  Save settings
-                </button>
+                {entry.configFields.length > 0 && (
+                  <section className="bcp-section">
+                    <h4 className="bcp-section-title">Settings</h4>
+                    <div className="bcp-group">
+                      {entry.configFields.map((field) => (
+                        <label key={field.key} className="bcp-row bcp-row-top">
+                          <span className="bcp-row-label">{field.label}</span>
+                          <FieldInput
+                            field={field}
+                            value={draft.config[field.key]}
+                            onChange={(v) => patchConfig({ [field.key]: v })}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                <section className="bcp-section">
+                  <h4 className="bcp-section-title">Placement</h4>
+                  <p className="bcp-row-note">
+                    {entry.position === 'manual-only' ? MANUAL_ONLY_NOTE : AUTO_MOUNT_NOTE}
+                    <code>&lt;div data-sitevento-widget=&quot;{widgetId}&quot;&gt;&lt;/div&gt;</code>
+                    {' '}wherever you want it on the page.
+                  </p>
+                </section>
+
+                <div className="bcp-bar">
+                  <button type="button" className="ghost-btn live" onClick={handleSave} disabled={busy || !dirty}>
+                    Save settings
+                  </button>
+                </div>
               </div>
-
-              <p className="bcp-row-note">
-                {entry.position === 'manual-only' ? MANUAL_ONLY_NOTE : AUTO_MOUNT_NOTE}
-                <code>&lt;div data-sitevento-widget=&quot;{widgetId}&quot;&gt;&lt;/div&gt;</code>
-                {' '}wherever you want it on the page.
-              </p>
             </div>
           </div>
         )}
