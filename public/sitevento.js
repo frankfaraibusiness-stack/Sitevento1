@@ -536,9 +536,25 @@
         // backend returned, so a compromised/misconfigured widget can
         // at most affect its own frame, never read the host page's
         // cookies/DOM/storage or make requests as the host origin.
+        //
+        // bundleUrl is the same for every site (it's the generic widget
+        // page, e.g. https://app/w/support-chat) — per-site config is
+        // layered on as a #hash fragment (never sent to the server in
+        // the request line, unlike a query string) so the generic page
+        // can read its own site's settings via location.hash on load.
         var iframe = document.createElement('iframe');
         iframe.className = 'sv-widget-frame';
-        iframe.src = widget.bundleUrl;
+        var cfgParam = '';
+        try {
+          cfgParam = '#cfg=' + encodeURIComponent(JSON.stringify({
+            siteId: siteId,
+            widgetId: widget.id,
+            config: widget.config || {},
+          }));
+        } catch (e) {
+          cfgParam = '';
+        }
+        iframe.src = widget.bundleUrl + cfgParam;
         iframe.loading = 'lazy';
         iframe.referrerPolicy = 'no-referrer';
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
