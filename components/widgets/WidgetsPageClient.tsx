@@ -15,19 +15,22 @@
 // section instead of scrolling in place, since this page lives outside
 // that tree.
 //
-// Tapping a card opens WidgetConfigPanel — unchanged, still the one
-// place that actually turns a widget on/off and edits its config,
-// which needs a signed-in uid + an active site. Signed-out visitors
-// (exactly the audience this page's SEO traffic brings in) see the
-// full catalog and copy, and are prompted to sign in only once they
-// tap a card, so the page itself stays fully crawlable and readable
-// with no auth gate up front.
+// Tapping a card now navigates to /widgets/[widgetId] — its own
+// indexable route rendering the shared WidgetDesigner (see
+// app/widgets/[widgetId]/page.tsx) — instead of swapping in an
+// in-place overlay. That designer is the one place that actually
+// turns a widget on/off and edits its config, which needs a signed-in
+// uid + an active site. Signed-out visitors (exactly the audience
+// this page's SEO traffic brings in) see the full catalog and copy,
+// and are prompted to sign in only once they tap a card; WidgetDesigner
+// itself repeats that same prompt for anyone who lands on a widget's
+// URL directly without being signed in, so the gate isn't bypassable
+// by just visiting the link.
 import { useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
-import { WidgetConfigPanel } from '@/components/dashboard/WidgetConfigPanel';
 import { WIDGET_CATALOG, type WidgetCatalogEntry } from '@/lib/widgets';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
@@ -139,12 +142,11 @@ export default function WidgetsPageClient() {
   const router = useRouter();
   const { user } = useAuth();
   const sidebar = useSidebar();
-  const { activeSiteId, activeSite } = useSites(user?.uid ?? null);
+  const { activeSiteId } = useSites(user?.uid ?? null);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
   const [query, setQuery] = useState('');
-  const [openWidgetId, setOpenWidgetId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -164,18 +166,7 @@ export default function WidgetsPageClient() {
       setAuthOpen(true);
       return;
     }
-    setOpenWidgetId(widget.id);
-  }
-
-  if (openWidgetId && user) {
-    return (
-      <WidgetConfigPanel
-        uid={user.uid}
-        activeSite={activeSite}
-        widgetId={openWidgetId}
-        onClose={() => setOpenWidgetId(null)}
-      />
-    );
+    router.push(`/widgets/${widget.id}`);
   }
 
   return (
