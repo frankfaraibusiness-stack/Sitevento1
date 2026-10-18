@@ -51,61 +51,10 @@ const WIDGET_ICONS: Record<string, ReactNode> = {
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
     </svg>
   ),
-  'spin-wheel': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="3.2" />
-      <path d="M12 3v6M12 15v6M3 12h6M15 12h6" />
-    </svg>
-  ),
-  'exit-intent': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <rect x="3" y="5" width="18" height="14" rx="2.5" />
-      <path d="M14 9l4 4-4 4M18 13H9" />
-    </svg>
-  ),
   'countdown-timer': (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <circle cx="12" cy="13" r="8" />
       <path d="M12 9v4l2.5 2.5M9.5 1.5h5" />
-    </svg>
-  ),
-  'social-proof': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <circle cx="9" cy="8.5" r="3.2" />
-      <path d="M2.8 19.5c0-3 2.8-5.4 6.2-5.4s6.2 2.4 6.2 5.4" />
-      <circle cx="17" cy="8" r="2.4" />
-      <path d="M14.6 14.4a4.6 4.6 0 0 1 6.6 4.1" />
-    </svg>
-  ),
-  'reviews-widget': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.9L12 3.5z" />
-    </svg>
-  ),
-  'video-popup': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <rect x="3" y="5" width="18" height="14" rx="2.5" />
-      <path d="M10 9.3v5.4l5-2.7-5-2.7z" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  'feedback-widget': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <path d="M4 5h13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-5 4V5z" />
-      <path d="M8 9h7M8 12h4" />
-    </svg>
-  ),
-  'referral-widget': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <circle cx="7" cy="8" r="2.8" />
-      <circle cx="17" cy="8" r="2.8" />
-      <path d="M2.3 19.5c0-2.8 2.1-5 4.7-5s4.7 2.2 4.7 5M12.3 19.5c0-2.8 2.1-5 4.7-5s4.7 2.2 4.7 5" />
-    </svg>
-  ),
-  'announcement-bar': (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-      <rect x="3" y="4" width="18" height="4.5" rx="1.4" />
-      <path d="M3 13h18M3 17h12" />
     </svg>
   ),
 };
