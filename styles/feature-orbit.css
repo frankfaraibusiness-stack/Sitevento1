@@ -214,8 +214,8 @@
     }
 
     .orbit-hub {
-      width: min(52vw, 170px);
-      height: min(52vw, 170px);
+      width: min(50vw, 160px);
+      height: min(50vw, 160px);
       padding: 14px;
     }
 
@@ -225,6 +225,46 @@
 
     .orbit-hub-body {
       display: none; /* keep the small hub readable; full copy stays reachable via nav dots + hover */
+    }
+  }
+
+  /* Smallest phones (iPhone SE-class, 320–360px viewports): the 640px
+     breakpoint's sizes alone aren't enough margin here — hub and orbit
+     items were landing close enough to clip on true 320px screens.
+     Shrink both further and let .orbit-stage use the real small-width
+     vw so the ring radius JS computes (components/marketing/
+     FeatureOrbit.tsx) has more room to work with. */
+  @media (max-width: 360px) {
+    .orbit-stage {
+      width: min(84vw, 280px);
+      height: min(84vw, 280px);
+    }
+
+    .orbit-item {
+      width: 44px;
+      height: 44px;
+    }
+
+    .orbit-item-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .orbit-hub {
+      width: min(46vw, 128px);
+      height: min(46vw, 128px);
+      padding: 10px;
+    }
+
+    .orbit-hub-icon {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 0;
+    }
+
+    .orbit-hub-title {
+      font-size: 12.5px;
+      line-height: 1.25;
     }
   }
 
