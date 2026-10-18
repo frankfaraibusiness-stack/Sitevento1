@@ -181,8 +181,8 @@ export async function GET(req: NextRequest) {
       const widgetId = doc.id;
       const entry = getWidgetCatalogEntry(widgetId);
       // Catalog entries only ever auto-mount the positioned ones —
-      // 'manual-only' widgets (e.g. Reviews, Video Popup) are left for
-      // the site owner to place inline themselves, same as before.
+      // any 'manual-only' widget is left for the site owner to place
+      // inline themselves, same as before.
       if (!entry || entry.position === 'manual-only') continue;
 
       // Pull the global catalog doc for bundleUrl/version, same source
