@@ -156,11 +156,20 @@ export function WidgetConfigPanel({ uid, activeSite, widgetId, onClose }: Widget
 
   async function handleToggle(next: boolean) {
     const ok = next ? await enable() : await disable();
+    // TS can't carry the `if (!entry) return null;` narrowing above
+    // into this nested function declaration — a closure could in
+    // principle run after `entry` changed, so the compiler treats it
+    // as possibly undefined again here even though render-time it
+    // can't be (the whole component already returned null otherwise).
+    // Re-narrow locally instead of using a non-null assertion, so a
+    // genuinely-missing catalog entry still fails safe rather than
+    // throwing on a toggle.
+    const isManualOnly = entry?.position === 'manual-only';
     flash(
       ok ? 'ok' : 'error',
       ok
         ? next
-          ? entry.position === 'manual-only'
+          ? isManualOnly
             ? 'Turned on — add it to your page to show it (see below).'
             : 'Widget is live on your site.'
           : 'Widget turned off.'
