@@ -200,6 +200,16 @@ export async function POST(req: NextRequest) {
         { status: 200, headers: CORS_HEADERS }
       );
     }
+    if (site.paused === true) {
+      // Owner-level pause (components/dashboard/SiteManagePage.tsx ->
+      // hooks/useSites.ts's pauseSite) — distinct from verification.
+      // A paused site keeps its tag installed and its history intact,
+      // it just stops accumulating new visits until resumed.
+      return NextResponse.json(
+        { ok: false, reason: 'site paused' },
+        { status: 200, headers: CORS_HEADERS }
+      );
+    }
 
     // Vercel populates these geo headers at the edge from the request
     // IP — no external geo-IP API call (and no extra latency/cost)
