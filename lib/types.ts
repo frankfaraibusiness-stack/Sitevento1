@@ -21,11 +21,42 @@ export type OverlayType = 'announcement' | 'maintenance' | 'message';
 
 export type SiteStatus = 'pending' | 'verified';
 
+// Snapshot of app/api/domain-lookup's RDAP result, captured once at
+// connect time (app/api/connect-site/route.ts) and persisted onto the
+// site doc — the same "domain intel" the connect wizard shows live
+// while the owner is typing (components/connect/DomainIntelCard.tsx),
+// but kept permanently instead of discarded once the wizard closes, so
+// the site-manage page (components/dashboard/SiteManagePage.tsx) can
+// show it later without re-querying RDAP. Best-effort by nature — a
+// registry that returns nothing useful (redacted record, unsupported
+// TLD, RDAP proxy miss) just means this stays undefined/found:false;
+// it never blocks or affects connecting the site.
+export interface SiteDomainInfo {
+  found: boolean;
+  registrar: string | null;
+  createdAt: string | null; // ISO date string (domain registration date, not Sitevento's)
+  updatedAt: string | null; // ISO date string
+  expiresAt: string | null; // ISO date string
+  ageDays: number | null;
+  status: string[];
+  nameserverCount: number | null;
+}
+
 export interface Site {
   id: string;
   name: string;
   url: string;
   status: SiteStatus;
+  // Owner-level pause: distinct from `status` (which only tracks tag
+  // verification). A paused site stays verified/connected but the
+  // owner has asked tracking/widgets/banners to stop temporarily
+  // without fully disconnecting it (see hooks/useSites.ts's pauseSite
+  // and app/api/track + app/api/site-widgets, which both read this to
+  // decide whether to record/serve anything for the site). Missing or
+  // false reads as "not paused" so every pre-existing site keeps
+  // working unchanged.
+  paused?: boolean;
+  domainInfo?: SiteDomainInfo;
   overlay?: SiteOverlay;
   overlayStats?: OverlayStats;
   createdAt?: { toDate: () => Date } | null;
