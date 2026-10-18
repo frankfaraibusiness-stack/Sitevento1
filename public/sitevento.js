@@ -146,42 +146,30 @@
       } catch (e) {}
     }
 
+    // DEBUG BUILD: sendBeacon forced off — it fails silently on a
+    // blocked/CORS-rejected request, which is exactly what made "is it
+    // even firing?" unanswerable from the embedding page's own console.
+    // fetch() surfaces a real .then/.catch outcome instead, and in debug
+    // mode logs it. Revert to the sendBeacon-first version only once
+    // delivery is confirmed working end-to-end on real embedding sites.
     function beacon(url, payloadObj) {
       var payload = JSON.stringify(payloadObj);
-      if (DEBUG) {
-        // Use fetch (not sendBeacon) in debug mode so the response body
-        // can actually be read and logged — sendBeacon never exposes one.
-        fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload,
-          keepalive: true,
-        })
-          .then(function (res) {
-            return res.text().then(function (text) {
-              dlog(url, 'status', res.status, 'body', text);
-            });
-          })
-          .catch(function (err) {
-            dlog(url, 'request failed', err);
-          });
-        return;
-      }
-      if (navigator.sendBeacon) {
-        try {
-          var blob = new Blob([payload], { type: 'application/json' });
-          var ok = navigator.sendBeacon(url, blob);
-          if (ok) return;
-        } catch (e) {
-          // fall through to fetch
-        }
-      }
       fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: payload,
         keepalive: true,
-      }).catch(function () {});
+      })
+        .then(function (res) {
+          if (DEBUG) {
+            return res.text().then(function (text) {
+              dlog(url, 'status', res.status, 'body', text);
+            });
+          }
+        })
+        .catch(function (err) {
+          dlog(url, 'blocked:', err);
+        });
     }
 
     // ============================================================
