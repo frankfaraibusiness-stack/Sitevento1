@@ -145,8 +145,16 @@
     animation: marquee-scroll 28s linear infinite;
   }
 
-  .marquee-wrap:hover .marquee-track {
-    animation-play-state: paused;
+  /* Pause-on-hover only for devices that actually have hover (mouse/
+     trackpad). Without the (hover: hover) guard, a tap on a touchscreen
+     can leave the element "stuck" in :hover (iOS Safari in particular
+     keeps it active until something else is tapped), which reads as the
+     marquee permanently freezing the moment it's touched. Touch devices
+     never pause it this way. */
+  @media (hover: hover) {
+    .marquee-wrap:hover .marquee-track {
+      animation-play-state: paused;
+    }
   }
 
   @keyframes marquee-scroll {
@@ -483,8 +491,12 @@
     padding: 0 24px;
   }
 
-  .testi-marquee-wrap:hover .testi-track {
-    animation-play-state: paused;
+  /* Same (hover: hover) guard as .marquee-wrap above — a touch tap
+     must never leave this stuck mid-pause. */
+  @media (hover: hover) {
+    .testi-marquee-wrap:hover .testi-track {
+      animation-play-state: paused;
+    }
   }
 
   @keyframes testi-scroll {
