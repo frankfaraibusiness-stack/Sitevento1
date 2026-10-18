@@ -33,6 +33,7 @@ import { AgentFeatureGrid } from './AgentFeatureGrid';
 import { AgentModelPicker } from './AgentModelPicker';
 import { AgentCountryBlocker } from './AgentCountryBlocker';
 import { AgentVerifyPanel } from './AgentVerifyPanel';
+import { AgentBlob } from './AgentBlob';
 
 export default function AgentPageClient() {
   const router = useRouter();
@@ -124,6 +125,7 @@ export default function AgentPageClient() {
           </button>
 
           <div className="agt-head">
+            <AgentBlob variant="greet" className="agt-head-blob" />
             <div className="agt-head-top">
               <h1>AI Agent</h1>
               {activeSite && !loading && (
