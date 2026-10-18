@@ -24,7 +24,7 @@
   width: 100%;
   min-height: 100vh;
   background: var(--cream);
-  padding: 104px 16px 120px;
+  padding: 80px 16px 120px;
   display: flex;
   justify-content: center;
 }
@@ -283,7 +283,7 @@
 .smp-sheet-btn-danger { border-color: #f3c9c3; background: #fdf0ee; color: #a03c30; }
 
 @media (max-width: 560px) {
-  .smp-main { padding: 92px 12px 100px; }
+  .smp-main { padding: 80px 12px 100px; }
   .smp-head { padding: 22px 18px 20px; }
   .smp-site-name { font-size: 22px; max-width: 100%; }
   .smp-head-blob { width: 56px; top: 8px; right: 12px; }
