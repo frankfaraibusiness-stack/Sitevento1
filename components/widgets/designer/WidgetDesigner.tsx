@@ -123,7 +123,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 
 export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
   const sidebar = useSidebar();
   const { activeSiteId, activeSite } = useSites(user?.uid ?? null);
   const entry = getWidgetCatalogEntry(widgetId);
@@ -139,12 +139,19 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const [toast, setToast] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(true);
 
+  // Gated on authReady (see hooks/useAuth.ts) — not just !user. Firebase
+  // restores a persisted session from storage asynchronously, so user
+  // is briefly null on every load even for someone who's already
+  // signed in. Popping the sign-in overlay off that initial null
+  // (before authReady flips true) is exactly why this page used to
+  // "ask to log in" / "lose the session" on a plain refresh — it
+  // never actually lost the session, it just didn't wait to check.
   useEffect(() => {
-    if (!user) {
+    if (authReady && !user) {
       setAuthPane('signin');
       setAuthOpen(true);
     }
-  }, [user]);
+  }, [authReady, user]);
 
   function flash(kind: 'ok' | 'error', text: string) {
     setToast({ kind, text });
@@ -240,7 +247,9 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
             <p>{entry.description}</p>
           </div>
 
-          {!user ? (
+          {!authReady ? (
+            <p className="wdg-row-note">{'Loading\u2026'}</p>
+          ) : !user ? (
             <p className="wdg-row-note">Sign in to design and turn on this widget.</p>
           ) : !activeSiteId ? (
             <p className="wdg-row-note">Connect a site from your dashboard to turn widgets on.</p>
