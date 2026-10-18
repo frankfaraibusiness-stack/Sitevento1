@@ -21,7 +21,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import WidgetsPageClient from '@/components/widgets/WidgetsPageClient';
-import { BootSplash } from '@/components/BootSplash';
+import { AppSkeleton } from '@/components/AppSkeleton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://sitevento12.vercel.app';
 
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 
 export default function WidgetsPage() {
   return (
-    <Suspense fallback={<BootSplash />}>
+    <Suspense fallback={<AppSkeleton fullScreen label="Loading widgets" />}>
       <WidgetsPageClient />
     </Suspense>
   );
