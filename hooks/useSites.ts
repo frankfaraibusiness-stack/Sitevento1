@@ -15,6 +15,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  updateDoc,
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import type { Site } from '@/lib/types';
@@ -94,5 +95,23 @@ export function useSites(uid: string | null) {
     }
   }, [uid]);
 
-  return { sites, activeSiteId, setActiveSiteId, activeSite, dashState, errorMessage, disconnectSite };
+  // Owner-level pause/resume (components/dashboard/SiteManagePage.tsx).
+  // Distinct from disconnecting: the site doc, its tag, and its
+  // history all stay put — this just flips the `paused` flag that
+  // app/api/track and app/api/site-widgets both check before
+  // recording/serving anything for the site (see lib/types.ts's
+  // Site['paused'] comment). Plain client-side update() rather than a
+  // server route: firestore.rules' users/{uid}/{document=**} rule
+  // already allows the owner to update(), the same way
+  // BannerComposer's overlay field and ConnectedSitesSection's
+  // disconnect already write directly from the client, and nothing
+  // about pausing needs the atomicity/limit-checking that forced site
+  // *creation* server-side.
+  const pauseSite = useCallback(async (siteId: string, paused: boolean) => {
+    if (!uid) return;
+    const db = getFirebaseDb();
+    await updateDoc(doc(db, 'users', uid, 'sites', siteId), { paused });
+  }, [uid]);
+
+  return { sites, activeSiteId, setActiveSiteId, activeSite, dashState, errorMessage, disconnectSite, pauseSite };
 }
