@@ -36,7 +36,7 @@ import { AgentVerifyPanel } from './AgentVerifyPanel';
 
 export default function AgentPageClient() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
   const sidebar = useSidebar();
   const { activeSite } = useSites(user?.uid ?? null);
 
@@ -135,7 +135,9 @@ export default function AgentPageClient() {
             <p>Build your own agent, personalize what it does, and grant it permission over your site — it runs on its own, on your schedule.</p>
           </div>
 
-          {!user ? (
+          {!authReady ? (
+            <p className="agt-row-note">{'Loading\u2026'}</p>
+          ) : !user ? (
             <p className="agt-row-note">Sign in to build and run your agent.</p>
           ) : !activeSite ? (
             <p className="agt-row-note">Connect a site from your dashboard to build an agent for it.</p>
