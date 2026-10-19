@@ -291,6 +291,11 @@
   .dash-scroll-list .lead-row:first-child {
     padding-top: 2px;
   }
+  .dash-view-all-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
 
   /* ============================================================
    * Connected sites — scrollable row of real cards replacing the old
