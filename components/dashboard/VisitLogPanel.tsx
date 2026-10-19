@@ -176,27 +176,29 @@ export function VisitLogPanel({ visits, onToggleBlock }: VisitLogPanelProps) {
         {visits.length === 0 ? (
           <div className="empty-row">No visits logged yet for this site.</div>
         ) : (
-          visits.map((v) => (
-            <div key={v.id} className={`visit-row${v.blocked ? ' blocked' : ''}`}>
-              <span className="v-path">
-                {v.landing && <span className="v-landing-badge" title="Landing page">Entry</span>}
-                {v.path || '/'}
-              </span>
-              <span className="v-meta">
-                {v.referrer || 'Direct'} &middot; {v.device || 'Unknown device'}
-                {v.browser ? ` (${v.browser}${v.os ? ' / ' + v.os : ''})` : ''} &middot; {v.country || 'Unknown'}
-                {v.city ? `, ${v.city}` : ''}
-              </span>
-              <span className="v-meta">{formatTs(v.ts)}</span>
-              <span className="v-status">
-                <span className="vdot" />
-                {v.blocked ? 'Blocked' : 'Allowed'}
-              </span>
-              <button className="v-block" onClick={() => onToggleBlock(v.id, !v.blocked, v.visitorId || '')}>
-                {v.blocked ? 'Unblock' : 'Block'}
-              </button>
-            </div>
-          ))
+          <div className="dash-scroll-list">
+            {visits.map((v) => (
+              <div key={v.id} className={`visit-row${v.blocked ? ' blocked' : ''}`}>
+                <span className="v-path">
+                  {v.landing && <span className="v-landing-badge" title="Landing page">Entry</span>}
+                  {v.path || '/'}
+                </span>
+                <span className="v-meta">
+                  {v.referrer || 'Direct'} &middot; {v.device || 'Unknown device'}
+                  {v.browser ? ` (${v.browser}${v.os ? ' / ' + v.os : ''})` : ''} &middot; {v.country || 'Unknown'}
+                  {v.city ? `, ${v.city}` : ''}
+                </span>
+                <span className="v-meta">{formatTs(v.ts)}</span>
+                <span className="v-status">
+                  <span className="vdot" />
+                  {v.blocked ? 'Blocked' : 'Allowed'}
+                </span>
+                <button className="v-block" onClick={() => onToggleBlock(v.id, !v.blocked, v.visitorId || '')}>
+                  {v.blocked ? 'Unblock' : 'Block'}
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
