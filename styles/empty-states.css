@@ -1,0 +1,81 @@
+/* ============================================================
+ * empty-states.css — premium empty-state (no sites connected yet)
+ * Split from app/globals.css for maintainability.
+ * ============================================================ */
+
+
+  /* ============ Premium empty-state ============ */
+  .empty-hero {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 36px 20px 0;
+    width: 100%;
+  }
+  .empty-hero-inner {
+    text-align: center;
+    max-width: 520px;
+    margin: 0 auto 36px;
+  }
+  .empty-hero-inner h2 { font-size: 26px; margin: 8px 0 10px; }
+  .empty-hero-inner p { font-family: -apple-system, sans-serif; font-size: 14.5px; color: #6b6558; margin: 0 0 22px; line-height: 1.6; }
+
+  .empty-cta-btn {
+    background: var(--ink); color: #fff; border: none; border-radius: 100px;
+    padding: 14px 28px; font-family: inherit; font-size: 15px; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 10px 24px -10px rgba(34,32,28,0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .empty-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 28px -10px rgba(34,32,28,0.45); }
+  .empty-cta-btn:active { transform: scale(0.98); }
+  .empty-cta-btn svg { width: 16px; height: 16px; }
+  .empty-cta-note {
+    margin-top: 12px; font-family: -apple-system, sans-serif; font-size: 12px; color: #8a8477;
+  }
+
+  .empty-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    max-width: 760px;
+    margin: 0 auto 48px;
+  }
+  @media (max-width: 640px) {
+    .empty-preview-grid { grid-template-columns: 1fr; }
+  }
+  .empty-preview-card {
+    position: relative;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 18px 20px;
+    overflow: hidden;
+  }
+  .empty-preview-card .epc-badge {
+    position: absolute; top: 14px; right: 14px;
+    font-family: -apple-system, sans-serif; font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: #8a8477; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 100px; padding: 3px 9px;
+  }
+  .empty-preview-card .epc-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--walnut); margin-bottom: 12px;
+  }
+  .empty-preview-card .epc-icon svg { width: 17px; height: 17px; }
+  .empty-preview-card h4 {
+    margin: 0 0 4px; font-size: 14.5px; font-family: -apple-system, sans-serif; font-weight: 700;
+  }
+  .empty-preview-card p {
+    margin: 0; font-family: -apple-system, sans-serif; font-size: 12.5px; color: #6b6558; line-height: 1.5;
+  }
+  .empty-preview-card .epc-fake {
+    margin-top: 14px; display: flex; flex-direction: column; gap: 6px; opacity: 0.55;
+  }
+  .empty-preview-card .epc-fake-row {
+    height: 7px; border-radius: 4px; background: var(--line);
+  }
+  .empty-preview-card .epc-fake-row.short { width: 60%; }
+
