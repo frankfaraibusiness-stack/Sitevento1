@@ -255,13 +255,13 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
           </div>
 
           {!authReady ? (
-            <AppSkeleton label="Loading widget" rows={2} />
+            <AppSkeleton label="Loading widget" />
           ) : !user ? (
             <p className="wdg-row-note">Sign in to design and turn on this widget.</p>
           ) : !activeSiteId ? (
             <p className="wdg-row-note">Connect a site from your dashboard to turn widgets on.</p>
           ) : loading ? (
-            <AppSkeleton label="Loading widget" rows={2} />
+            <AppSkeleton label="Loading widget" />
           ) : (
             <div className="wdg-layout">
               <div className="wdg-preview-col">
