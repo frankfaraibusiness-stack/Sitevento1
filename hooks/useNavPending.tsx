@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 interface NavPendingContextValue {
   isPending: boolean;
   push: (href: string) => void;
+  replace: (href: string) => void;
 }
 
 const NavPendingContext = createContext<NavPendingContextValue | null>(null);
@@ -47,7 +48,16 @@ export function NavPendingProvider({ children }: { children: ReactNode }) {
     [router]
   );
 
-  const value = useMemo(() => ({ isPending, push }), [isPending, push]);
+  const replace = useMemo(
+    () => (href: string) => {
+      startTransition(() => {
+        router.replace(href);
+      });
+    },
+    [router]
+  );
+
+  const value = useMemo(() => ({ isPending, push, replace }), [isPending, push, replace]);
 
   return <NavPendingContext.Provider value={value}>{children}</NavPendingContext.Provider>;
 }
@@ -61,11 +71,11 @@ function useNavPendingContext(): NavPendingContextValue {
 }
 
 // Drop-in replacement for next/navigation's useRouter() at call sites
-// that only ever call `.push(...)`. Swap the import and the rest of
-// the call site is unchanged.
+// that call `.push(...)` and/or `.replace(...)`. Swap the import and
+// the rest of the call site is unchanged.
 export function useNavRouter() {
-  const { push } = useNavPendingContext();
-  return { push };
+  const { push, replace } = useNavPendingContext();
+  return { push, replace };
 }
 
 // Read-only access to the pending flag, for the overlay itself.
