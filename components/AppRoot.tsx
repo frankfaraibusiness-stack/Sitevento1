@@ -28,9 +28,11 @@ import { MarketingPage } from '@/components/marketing/MarketingPage';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
+import { InstallPromptOverlay } from '@/components/InstallPromptOverlay';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppView } from '@/hooks/useAppView';
 import { useSidebar } from '@/hooks/useSidebar';
+import { useInstallPrompt } from '@/hooks/useInstallPrompt';
 import type { AuthPane } from '@/hooks/useAuthForms';
 
 export default function AppRoot() {
@@ -65,6 +67,14 @@ export default function AppRoot() {
   const closeConnectModal = useCallback(() => setConnectOpen(false), []);
 
   const [leadsCount, setLeadsCount] = useState(0);
+
+  // Install-the-app upsell — only worth showing once someone is signed
+  // in and looking at their dashboard (not over the marketing site or
+  // mid-auth/boot), and only if the platform actually told us it's
+  // installable (canInstall) and it isn't already installed.
+  const { canInstall, installed } = useInstallPrompt();
+  const [installDismissed, setInstallDismissed] = useState(false);
+  const installOpen = view === 'dashboard' && !!user && canInstall && !installed && !installDismissed;
 
   // Escape closes whichever modal (connect wizard) is currently open —
   // mirrors the original's global keydown listener targeting
@@ -174,6 +184,8 @@ export default function AppRoot() {
           goToDashboard('overview');
         }}
       />
+
+      <InstallPromptOverlay open={installOpen} onClose={() => setInstallDismissed(true)} />
     </>
   );
 }
