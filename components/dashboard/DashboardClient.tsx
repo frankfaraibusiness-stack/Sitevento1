@@ -164,6 +164,21 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // Sidebar's "Dashboard"/"Visit logs"/"Email capture"/etc. links only
+  // make sense as in-page scrolls when the main dashboard view is
+  // already mounted (those section ids only exist there). From any
+  // other view (profile, plans, site-manage) navigate to /dashboard
+  // first — the section can't be scrolled to until that view mounts,
+  // so land on the plain dashboard rather than silently doing nothing.
+  function goToSection(section: DashSection) {
+    sidebar.setOpen(false);
+    if (view !== 'dashboard') {
+      router.push('/dashboard');
+      return;
+    }
+    scrollToSection(section);
+  }
+
   if (!authReady) return <AppSkeleton fullScreen label="Loading your dashboard" />;
 
   if (authError) {
@@ -183,7 +198,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
         user={user}
         onLogoClick={() => router.push('/')}
         onSignupClick={() => openAuth('signup')}
-        onProfileClick={() => scrollToSection('overview')}
+        onProfileClick={() => goToSection('overview')}
         onHamburgerClick={() => sidebar.setOpen(true)}
       />
 
@@ -193,10 +208,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
         leadsCount={leadsCount}
         onClose={() => sidebar.setOpen(false)}
         onSignIn={() => openAuth('signin')}
-        onNavigate={(section) => {
-          sidebar.setOpen(false);
-          scrollToSection(section);
-        }}
+        onNavigate={goToSection}
         onOpenProfile={() => {
           sidebar.setOpen(false);
           router.push('/dashboard/profile');
