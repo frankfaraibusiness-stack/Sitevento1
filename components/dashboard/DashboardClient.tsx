@@ -10,7 +10,8 @@
 // no longer needs a 'dashboard' branch at all (see its own updated
 // comment).
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import { AppSkeleton } from '@/components/AppSkeleton';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -54,7 +55,7 @@ const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
 };
 
 export default function DashboardClient({ view = 'dashboard', siteId }: DashboardClientProps) {
-  const router = useRouter();
+  const router = useNavRouter();
   const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
