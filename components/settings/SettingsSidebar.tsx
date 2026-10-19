@@ -16,7 +16,7 @@
 // render their controls with no live data wired up yet.
 import { signOut } from 'firebase/auth';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import { getFirebaseAuth } from '@/lib/firebase';
 
 export type SettingsPanelId =
@@ -201,7 +201,7 @@ interface SettingsSidebarProps {
 }
 
 export default function SettingsSidebar({ activePanel, onSelectPanel }: SettingsSidebarProps) {
-  const router = useRouter();
+  const router = useNavRouter();
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
