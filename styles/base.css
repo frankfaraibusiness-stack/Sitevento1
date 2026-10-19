@@ -84,6 +84,21 @@
        than the viewport and push other sections/scroll sideways. */
     max-width: 100%;
     overflow-x: hidden;
+    transition: background-color 450ms ease;
+  }
+
+  /* While BootSplash is in its lime phase (see components/BootSplash.tsx
+     and .boot-splash.is-lime in boot-splash.css), mirror that same
+     color onto html itself so mobile rubber-band overscroll — which
+     bounces past the fixed, viewport-covering splash and reveals
+     html/body underneath — shows lime instead of flashing back to
+     the default background. BootSplash adds/removes this class itself
+     and always removes it on unmount, so once boot finishes html goes
+     straight back to the var(--bg) rule above. Same transition timing
+     as the splash's own fade for a matched handoff. */
+  html.is-boot-lime,
+  html.is-boot-lime body {
+    background: var(--lime);
   }
 
   body {
