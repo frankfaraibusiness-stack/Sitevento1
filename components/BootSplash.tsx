@@ -107,14 +107,16 @@ export function BootSplash({ onDone }: BootSplashProps) {
     return () => clearTimeout(t3);
   }, [phase, holdMs, onDone]);
 
-  // Background swap to brand lime: driven from this same phase state
-  // (not left to CSS :has()) so it works in any browser, not just ones
-  // with :has() support — this is the very first screen every visitor
-  // sees, so it can't silently stay cream on an older browser. Lands
-  // as soon as we leave "spinning", i.e. right as convergence begins /
-  // the logo starts popping in, and the CSS transition below (see
-  // boot-splash.css) handles the smooth fade itself.
-  const isLime = phase !== 'spinning';
+  // Lime from the very first frame — no more cream-then-lime swap.
+  // Previously this was `phase !== 'spinning'`, so the whole ~3s spin
+  // phase rendered on cream and only flipped to lime once convergence
+  // began; now the splash (and the mirrored html background below)
+  // are lime for its entire lifecycle, so there's nothing to visually
+  // jump partway through. Kept as its own variable (rather than just
+  // inlining `true`) since boot-splash.css still keys off the
+  // `.is-lime` class name and the html mirror below reads this same
+  // value — this is the one place that state lives.
+  const isLime = true;
 
   // Mirror the same lime state onto <html> itself, not just the fixed
   // .boot-splash overlay. The overlay covers the viewport, but mobile
