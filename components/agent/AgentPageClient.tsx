@@ -18,7 +18,7 @@
 // for widgets, so Save is one explicit action rather than every toggle
 // writing immediately.
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
@@ -36,7 +36,7 @@ import { AgentVerifyPanel } from './AgentVerifyPanel';
 import { AgentBlob } from './AgentBlob';
 
 export default function AgentPageClient() {
-  const router = useRouter();
+  const router = useNavRouter();
   const { user, authReady } = useAuth();
   const sidebar = useSidebar();
   const { activeSite } = useSites(user?.uid ?? null);
