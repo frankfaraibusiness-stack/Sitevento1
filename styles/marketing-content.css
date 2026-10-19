@@ -396,31 +396,15 @@
      it reads as part of the same brand surface as the rest of the
      page, with dark-ink-edged cards that "pop" off lime via an offset
      shadow — same raised-card language as .testi-card and .price-card
-     — instead of flat white tiles with a pale cream hairline. A small
-     static blob peeks from the corner (counterpart to testi-blob-peek
-     on the marquee section above it) for a bit of character without
-     repeating the exact same motion twice on one page. */
+     — instead of flat white tiles with a pale cream hairline. Corner
+     blob mascot (.testi-grid-blob-peek, the dark colorway of the mini
+     blob) is styled further down alongside .testi-blob-peek so both
+     testimonial sections share one definition. */
   .testimonials-wrap {
     position: relative;
     padding: 72px 0 80px;
     margin-top: 16px;
     overflow: hidden;
-  }
-
-  .testi-grid-blob-peek {
-    position: absolute;
-    top: -22px;
-    left: 7%;
-    width: 64px;
-    height: 64px;
-    opacity: 0.9;
-    animation: testi-grid-blob-bob 4.2s ease-in-out infinite;
-    filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.12));
-  }
-
-  @keyframes testi-grid-blob-bob {
-    0%, 100% { transform: translateY(0) rotate(4deg); }
-    50%      { transform: translateY(6px) rotate(-4deg); }
   }
 
   .testimonials {
@@ -627,29 +611,118 @@
   /* ---- Auto-scrolling testimonials ----
      Cartoonic lime section instead of a hardcoded black band, with a
      small blob mascot peeking in from the top corner (same brand
-     "jelly" look as HeroSlime/BootSplash). */
+     "jelly" look as HeroSlime/BootSplash). Background is a plain,
+     explicit hex (not color-mix()) — color-mix() support is spotty on
+     some mobile browsers/webviews and falls back to an unstyled
+     background there, which can read as black against this dark-ink
+     page chrome. #f2ffd4 is the same pale lime-white color-mix(in
+     srgb, var(--lime) 22%, #fff) resolves to, just pre-computed. */
   .testi-marquee-wrap {
     position: relative;
-    background: color-mix(in srgb, var(--lime) 22%, var(--bg));
+    background: #f2ffd4;
     border-top: 1.5px solid var(--lime-ink);
     border-bottom: 1.5px solid var(--lime-ink);
     padding: 56px 0;
     overflow: hidden;
   }
 
-  .testi-blob-peek {
+  /* ---- Mini blob mascot (corner peek, both testimonial sections) ----
+     Same jelly body/eyes/mouth as HeroSlime, scaled down to a small
+     fixed-size corner character. Width/height are set in px (not %),
+     so it can never inflate to fill its wrapper. Breathing (squash/
+     stretch) + bob run continuously via CSS; blinking is driven by
+     real timed React state (see MiniBlob), same as HeroSlime, so it
+     reads as alive rather than a static sticker with a CSS wiggle. */
+  .testi-blob-peek,
+  .testi-grid-blob-peek {
     position: absolute;
-    top: -34px;
-    right: 6%;
-    width: 84px;
-    height: 84px;
-    animation: testi-blob-bob 3.6s ease-in-out infinite;
+    width: 72px;
+    height: 72px;
+    max-width: 72px;
+    max-height: 72px;
+    pointer-events: none;
+    animation: mini-blob-bob 3.6s ease-in-out infinite;
     filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.1));
   }
 
-  @keyframes testi-blob-bob {
+  .testi-blob-peek {
+    top: -26px;
+    right: 6%;
+  }
+
+  .testi-grid-blob-peek {
+    top: -22px;
+    left: 7%;
+  }
+
+  .mini-blob-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .mini-blob-body-wrap {
+    transform-origin: 60px 60px;
+    animation: mini-blob-idle 3.6s ease-in-out infinite;
+  }
+
+  .mini-blob-body {
+    fill: var(--lime);
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+
+  .testi-grid-blob-peek .mini-blob-body {
+    fill: var(--ink);
+    stroke: var(--ink);
+  }
+
+  .mini-blob-eye {
+    fill: var(--lime-ink);
+    transform-origin: center;
+    transition: transform 120ms ease-out;
+  }
+
+  .testi-grid-blob-peek .mini-blob-eye {
+    fill: var(--lime);
+  }
+
+  .mini-blob-eyes.is-blinking .mini-blob-eye {
+    transform: scaleY(0.08);
+  }
+
+  .mini-blob-mouth {
+    fill: none;
+    stroke: var(--lime-ink);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+  }
+
+  .testi-grid-blob-peek .mini-blob-mouth {
+    stroke: var(--lime);
+  }
+
+  @keyframes mini-blob-bob {
     0%, 100% { transform: translateY(0) rotate(-3deg); }
     50%      { transform: translateY(5px) rotate(3deg); }
+  }
+
+  @keyframes mini-blob-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.03, 0.96); }
+    50%  { transform: scale(0.975, 1.035); }
+    75%  { transform: scale(1.02, 0.98); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testi-blob-peek,
+    .testi-grid-blob-peek,
+    .mini-blob-body-wrap {
+      animation: none !important;
+    }
   }
 
   .testi-marquee-wrap .section-heading h2,
