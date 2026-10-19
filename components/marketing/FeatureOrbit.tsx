@@ -1,23 +1,22 @@
 'use client';
 
-// components/marketing/FeatureOrbit.tsx — new homepage section: an
-// animated, cartoon-like "feature wheel". A ring of real product
-// feature icons orbits a pulsing center hub (reusing the same
-// rotating-ring / per-item --dot-x,--dot-y offset technique as
-// BootSplash, see styles/boot-splash.css), auto-advancing through the
-// features one at a time. Hovering or clicking an orbit item jumps the
-// hub straight to that feature; otherwise it auto-rotates on its own
-// timer.
+// components/marketing/FeatureOrbit.tsx — homepage "feature wheel"
+// section, rebuilt as a safe layout: a row of cartoonic lime "blob"
+// cards (one per feature) plus a featured panel showing whichever one
+// is active, auto-advancing on a timer. Clicking a card jumps the
+// featured panel straight to it.
 //
-// Items counter-rotate against the ring's own rotation (via an inline
-// --spin-duration-synced counter-animation) so icons stay upright while
-// the ring turns, same "clock hands, not tumbling dice" approach as the
-// boot splash dots.
+// The previous version positioned items with trigonometry around a
+// rotating ring, which clipped/overlapped on real small-phone
+// viewports (the maths assumed more clearance than those viewports
+// actually had). This version uses plain flex/grid flow instead —
+// nothing is ever absolutely positioned on top of anything else, so
+// there is no viewport width at which items can overlap.
 //
 // Feature copy/icons are pulled 1:1 from the real product surfaces —
 // four from CapabilitiesAndStats.tsx's TOP_CAPS, plus visitor blocking
 // (BlockedVisitorsPanel.tsx) — not invented copy.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 interface OrbitFeature {
   id: string;
@@ -87,7 +86,6 @@ const FEATURES: OrbitFeature[] = [
 
 const ITEM_COUNT = FEATURES.length;
 const AUTO_ADVANCE_MS = 3200;
-const RING_SPIN_S = 26; // slow, full rotation period for the whole ring
 
 export function FeatureOrbit() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -114,59 +112,13 @@ export function FeatureOrbit() {
     };
   }, [isPaused]);
 
-  // Stage width varies responsively via CSS (min(92vw,420px) desktop,
-  // min(88vw,320px) at the 640px breakpoint — see feature-orbit.css),
-  // so the orbit radius is derived from the *actual rendered* stage
-  // size rather than a fixed JS constant — otherwise a fixed radius
-  // sized for the 420px desktop stage would push items past the edge
-  // of the smaller mobile stage. Recomputed on resize.
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const [stageSize, setStageSize] = useState(420);
-
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const update = () => setStageSize(el.offsetWidth);
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  // Orbit items are 60px (44px at/under the 360px breakpoint, 48px
-  // between that and 640px) — keep the ring comfortably inside the
-  // stage by sizing the radius as a fraction of the actual stage width
-  // rather than a fixed pixel value. The hub itself also shrinks at
-  // these widths (see feature-orbit.css), so its own radius has to be
-  // subtracted here too — otherwise, on real small phones (320px and
-  // up), the ring radius and the hub's edge land close enough that the
-  // orbit items clip the hub as they swing past it.
-  const itemHalf = stageSize <= 360 ? 22 : stageSize <= 480 ? 24 : 30;
-  const hubRadius = stageSize <= 360 ? stageSize * 0.23 : stageSize <= 480 ? stageSize * 0.26 : stageSize * 0.28;
-  const minClearance = stageSize <= 360 ? 14 : 10;
-  const radius = Math.max(stageSize / 2 - itemHalf - 6, hubRadius + itemHalf + minClearance, 40);
-
-  // Stable positions around the ring — evenly spaced, same --dot-x/
-  // --dot-y offset technique as BootSplash — recomputed whenever the
-  // measured stage radius changes.
-  const positions = useMemo(() => {
-    return FEATURES.map((_, i) => {
-      const angleDeg = (360 / ITEM_COUNT) * i;
-      const rad = (angleDeg * Math.PI) / 180;
-      const x = Math.sin(rad) * radius;
-      const y = -Math.cos(rad) * radius;
-      return { x, y };
-    });
-  }, [radius]);
-
   const active = FEATURES[activeIndex];
 
   return (
     <section className="section-heading feature-orbit-heading" style={{ marginTop: 8 }}>
       <h2>Everything orbiting one dashboard</h2>
       <p>
-        <span className="mark">Five moving parts</span>, one simple hub — watch them circle, or tap one to jump
-        straight to it.
+        <span className="mark">Five moving parts</span>, one simple hub — tap one to jump straight to it.
       </p>
 
       <div
@@ -174,55 +126,32 @@ export function FeatureOrbit() {
         onMouseEnter={() => canHoverRef.current && setIsPaused(true)}
         onMouseLeave={() => canHoverRef.current && setIsPaused(false)}
       >
-        <div
-          className="orbit-stage"
-          ref={stageRef}
-          style={{ ['--ring-spin-duration' as string]: `${RING_SPIN_S}s` }}
-        >
-          <div className={`orbit-ring${isPaused ? ' is-paused' : ''}`}>
-            {FEATURES.map((f, i) => {
-              const { x, y } = positions[i];
-              const isActive = i === activeIndex;
-              return (
-                <button
-                  key={f.id}
-                  type="button"
-                  className={`orbit-item${isActive ? ' is-active' : ''}`}
-                  style={{
-                    ['--dot-x' as string]: `${x}px`,
-                    ['--dot-y' as string]: `${y}px`,
-                  }}
-                  onClick={() => setActiveIndex(i)}
-                  onFocus={() => setIsPaused(true)}
-                  onBlur={() => setIsPaused(false)}
-                  aria-pressed={isActive}
-                  aria-label={f.title}
-                >
-                  <span className="orbit-item-icon">{f.icon}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="orbit-hub" key={active.id}>
-            <span className="orbit-hub-icon">{active.icon}</span>
-            <h3 className="orbit-hub-title">{active.title}</h3>
-            <p className="orbit-hub-body">{active.body}</p>
-          </div>
+        <div className="orbit-hub" key={active.id}>
+          <span className="orbit-hub-icon">{active.icon}</span>
+          <h3 className="orbit-hub-title">{active.title}</h3>
+          <p className="orbit-hub-body">{active.body}</p>
         </div>
 
-        <div className="orbit-dots-nav" role="tablist" aria-label="Features">
-          {FEATURES.map((f, i) => (
-            <button
-              key={f.id}
-              type="button"
-              role="tab"
-              aria-selected={i === activeIndex}
-              aria-label={f.title}
-              className={`orbit-nav-dot${i === activeIndex ? ' is-active' : ''}`}
-              onClick={() => setActiveIndex(i)}
-            />
-          ))}
+        <div className="orbit-row" role="tablist" aria-label="Features">
+          {FEATURES.map((f, i) => {
+            const isActive = i === activeIndex;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                role="tab"
+                className={`orbit-item${isActive ? ' is-active' : ''}`}
+                onClick={() => setActiveIndex(i)}
+                onFocus={() => setIsPaused(true)}
+                onBlur={() => setIsPaused(false)}
+                aria-selected={isActive}
+                aria-label={f.title}
+              >
+                <span className="orbit-item-icon">{f.icon}</span>
+                <span className="orbit-item-label">{f.title}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>
