@@ -18,8 +18,9 @@
 // param DashboardClient already watches for (see hooks/useAppView.ts's
 // handleConnectCTA) — so no new wiring is needed there; signed-out
 // users land on /dashboard, which itself opens the sign-in pane.
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavRouter } from '@/hooks/useNavPending';
 
 type NavItem = {
   id: string;
@@ -78,7 +79,7 @@ const RIGHT_ITEMS: NavItem[] = [
 ];
 
 export function GlobalNav() {
-  const router = useRouter();
+  const router = useNavRouter();
   const pathname = usePathname() || '/';
   const { user } = useAuth();
 
