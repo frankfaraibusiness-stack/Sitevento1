@@ -132,7 +132,7 @@ export function SiteManagePage({ user, siteId }: SiteManagePageProps) {
     return (
       <div className="smp-main">
         <div className="smp-wrap">
-          <AppSkeleton label="Loading site" rows={4} />
+          <AppSkeleton label="Loading site" />
         </div>
       </div>
     );
