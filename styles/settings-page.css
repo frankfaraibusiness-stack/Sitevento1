@@ -227,6 +227,17 @@
   min-width: 0;
 }
 
+/* .settings-wrap is its own height: calc(100dvh - 64px); overflow: hidden
+   box (see above), so it scrolls internally rather than through <body> —
+   the global bottom-nav clearance reserved on <body> in base.css never
+   reaches in here. Without this, the last settings content sits behind
+   GlobalNav's fixed mobile bottom bar. Same 70px nav height body uses. */
+@media (max-width: 859px) {
+  .settings-detail-panel {
+    padding-bottom: calc(70px + 2rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .settings-panel-header {
   display: flex;
   align-items: center;
