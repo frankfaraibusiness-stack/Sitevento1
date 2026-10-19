@@ -18,7 +18,7 @@
 // WidgetsPageClient.tsx uses, so the designer carries the same top bar
 // as the picker and the rest of the app.
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
@@ -123,7 +123,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 }
 
 export function WidgetDesigner({ widgetId }: { widgetId: string }) {
-  const router = useRouter();
+  const router = useNavRouter();
   // This route is reached by a client-side router.push from /widgets
   // (same tab, no reload), straight into a brand-new mount of this
   // component — and a plain useAuth() here used to re-run Firebase's
