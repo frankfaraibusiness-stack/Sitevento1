@@ -83,13 +83,22 @@ export function TestimonialsGrid() {
   const shown = TESTIMONIALS.slice(0, 3);
   return (
     <div className="testimonials-wrap">
+      <svg className="testi-grid-blob-peek" viewBox="0 0 120 120" aria-hidden="true">
+        <path
+          d="M22,6 C45,-4 86,0 104,22 C119,41 116,70 98,90 C80,110 44,118 22,100 C2,84 -2,60 4,40 C8,27 12,14 22,6 Z"
+          fill="var(--ink)"
+        />
+        <circle cx="46" cy="52" r="6" fill="var(--lime)" />
+        <circle cx="72" cy="52" r="6" fill="var(--lime)" />
+        <path d="M46 68 Q 59 78 72 68" stroke="var(--lime)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      </svg>
       <section className="section-heading">
         <h2>What teams are saying</h2>
         <p>A few words from people running their sites through the dashboard.</p>
       </section>
       <div className="testimonials">
-        {shown.map((t) => (
-          <div className="testimonial-card" key={t.name}>
+        {shown.map((t, i) => (
+          <div className="testimonial-card" key={t.name} style={{ animationDelay: `${i * 90}ms` }}>
             <p className="quote">&quot;{t.quote}&quot;</p>
             <div className="person">
               <span className="avatar">{t.initials}</span>
