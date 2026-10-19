@@ -100,7 +100,7 @@ export function DashboardShell({
       <section>
         <div className="dashboard-empty">
           <div className="dash-empty-inner">
-            <AppSkeleton label="Loading your dashboard" rows={4} />
+            <AppSkeleton label="Loading your dashboard" />
           </div>
         </div>
       </section>
