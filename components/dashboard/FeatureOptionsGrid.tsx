@@ -30,7 +30,7 @@
 //   9. AI Support Agent      — 24/7 AI agent that replies to customers automatically
 //   10. Automation Workflows — simple if-this-then-that rules ("new lead → tag + notify")
 import { useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 
 interface FeatureOption {
   id: string;
@@ -206,7 +206,7 @@ const QUICK_TOOL_SUBTITLES: Record<(typeof QUICK_TOOL_IDS)[number], string> = {
 };
 
 export function FeatureOptionsGrid({ onOpenSiteAlert }: FeatureOptionsGridProps) {
-  const router = useRouter();
+  const router = useNavRouter();
   const [expanded, setExpanded] = useState(false);
   const quickTools = QUICK_TOOL_IDS.map((id) => FEATURE_OPTIONS.find((o) => o.id === id)!);
   const restTools = FEATURE_OPTIONS.filter((o) => !QUICK_TOOL_IDS.includes(o.id as (typeof QUICK_TOOL_IDS)[number]));
