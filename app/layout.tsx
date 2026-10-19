@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { GlobalNav } from '@/components/layout/GlobalNav';
+import { NavPendingProvider } from '@/hooks/useNavPending';
+import { NavPendingOverlay } from '@/components/layout/NavPendingOverlay';
 
 // Central place for the handful of values SEO metadata below needs
 // more than once (title, OG/Twitter image, theme color). Swapping in
@@ -65,8 +67,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        {children}
-        <GlobalNav />
+        <NavPendingProvider>
+          {children}
+          <GlobalNav />
+          <NavPendingOverlay />
+        </NavPendingProvider>
       </body>
     </html>
   );
