@@ -391,11 +391,36 @@
     max-width: 62ch;
   }
 
-  /* ---- Testimonials ---- */
+  /* ---- Testimonials (grid) ----
+     Lives directly on the page's lime background (no cream patch) so
+     it reads as part of the same brand surface as the rest of the
+     page, with dark-ink-edged cards that "pop" off lime via an offset
+     shadow — same raised-card language as .testi-card and .price-card
+     — instead of flat white tiles with a pale cream hairline. A small
+     static blob peeks from the corner (counterpart to testi-blob-peek
+     on the marquee section above it) for a bit of character without
+     repeating the exact same motion twice on one page. */
   .testimonials-wrap {
-    background: var(--cream);
-    padding: 72px 0;
+    position: relative;
+    padding: 72px 0 80px;
     margin-top: 16px;
+    overflow: hidden;
+  }
+
+  .testi-grid-blob-peek {
+    position: absolute;
+    top: -22px;
+    left: 7%;
+    width: 64px;
+    height: 64px;
+    opacity: 0.9;
+    animation: testi-grid-blob-bob 4.2s ease-in-out infinite;
+    filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.12));
+  }
+
+  @keyframes testi-grid-blob-bob {
+    0%, 100% { transform: translateY(0) rotate(4deg); }
+    50%      { transform: translateY(6px) rotate(-4deg); }
   }
 
   .testimonials {
@@ -404,24 +429,41 @@
     padding: 0 24px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 20px;
   }
 
   .testimonial-card {
-    background: #fff;
-    border: 1px solid var(--cream-deep);
-    border-radius: 14px;
+    background: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
     padding: 24px 22px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    color: var(--cream);
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.3);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: testimonial-card-in 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  @keyframes testimonial-card-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (hover: hover) {
+    .testimonial-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.3);
+    }
   }
 
   .testimonial-card p.quote {
     font-size: 15px;
     line-height: 1.6;
     margin: 0;
-    color: var(--ink);
+    color: var(--cream);
   }
 
   .testimonial-card .person {
@@ -449,16 +491,21 @@
   .testimonial-card .person .name {
     font-size: 14px;
     font-weight: 600;
-    color: var(--ink);
+    color: var(--cream);
   }
 
   .testimonial-card .person .role {
     font-size: 13px;
-    color: #8a8477;
+    color: rgba(246, 242, 231, 0.6);
   }
 
   @media (max-width: 760px) {
     .testimonials { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testimonial-card { animation: none; opacity: 1; transform: none; }
+    .testi-grid-blob-peek { animation: none; }
   }
 
   /* ---- Stats: light-lime "live scanner" card ----
@@ -737,7 +784,35 @@
     .steps { grid-template-columns: 1fr; }
   }
 
-  /* ---- Pricing ---- */
+  /* ---- Pricing ----
+     Sits on the page's lime background. Cards get a solid dark-ink
+     edge plus an offset drop-shadow "pop" (same raised-card language
+     used by .testi-card / .testimonial-card above) instead of a pale
+     cream hairline, so they read as deliberate cut-out cards on lime
+     rather than flat panels waiting on a cream section to sit in. A
+     small blob accent and a staggered rise-in give the section the
+     same bit of life the testimonial sections have. */
+  .pricing-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pricing-blob-peek {
+    position: absolute;
+    top: -20px;
+    right: 8%;
+    width: 60px;
+    height: 60px;
+    opacity: 0.9;
+    animation: pricing-blob-bob 4s ease-in-out infinite;
+    filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.12));
+  }
+
+  @keyframes pricing-blob-bob {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(6px) rotate(4deg); }
+  }
+
   .pricing {
     max-width: 1180px;
     margin: 0 auto;
@@ -748,11 +823,28 @@
   }
 
   .price-card {
-    border: 1.5px solid var(--line);
+    border: 1.5px solid var(--ink);
     border-radius: 16px;
     padding: 26px 22px;
     display: flex;
     flex-direction: column;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.3);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: price-card-in 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  @keyframes price-card-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (hover: hover) {
+    .price-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.3);
+    }
   }
 
   .price-card.featured {
@@ -760,6 +852,13 @@
     background: var(--ink);
     color: var(--cream);
     position: relative;
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.45);
+  }
+
+  @media (hover: hover) {
+    .price-card.featured:hover {
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.45);
+    }
   }
 
   .price-card .plan-name {
@@ -841,5 +940,10 @@
 
   @media (max-width: 560px) {
     .pricing { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .price-card { animation: none; opacity: 1; transform: none; }
+    .pricing-blob-peek { animation: none; }
   }
 
