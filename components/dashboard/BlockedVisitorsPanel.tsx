@@ -7,6 +7,15 @@ interface BlockedVisitorsPanelProps {
 }
 
 export function BlockedVisitorsPanel({ blocked, onUnblock }: BlockedVisitorsPanelProps) {
+  // `blocked` is a list of blocked *visit rows*, and the same visitor can
+  // have several of those (one per past visit). Collapse down to one row
+  // per visitorId so a repeat visitor doesn't show up multiple times —
+  // Unblock still clears every row for that visitor via onUnblock's
+  // batch update in useActiveSiteData.
+  const uniqueBlocked = Array.from(
+    new Map(blocked.map((v) => [v.visitorId || v.id, v])).values()
+  );
+
   return (
     <div className="dash-panel" id="panelBlocked">
       <div className="dash-panel-head">
@@ -16,17 +25,19 @@ export function BlockedVisitorsPanel({ blocked, onUnblock }: BlockedVisitorsPane
         </div>
       </div>
       <div className="dash-panel-body">
-        {blocked.length === 0 ? (
+        {uniqueBlocked.length === 0 ? (
           <div className="empty-row">Nobody&apos;s blocked right now.</div>
         ) : (
-          blocked.map((v) => (
-            <div key={v.id} className="lead-row">
-              <span className="l-email">{v.visitorId || v.id}</span>
-              <button className="ghost-btn" onClick={() => onUnblock(v.id, v.visitorId || '')}>
-                Unblock
-              </button>
-            </div>
-          ))
+          <div className="dash-scroll-list">
+            {uniqueBlocked.map((v) => (
+              <div key={v.visitorId || v.id} className="lead-row">
+                <span className="l-email">{v.visitorId || v.id}</span>
+                <button className="ghost-btn" onClick={() => onUnblock(v.id, v.visitorId || '')}>
+                  Unblock
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
