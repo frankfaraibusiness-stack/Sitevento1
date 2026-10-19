@@ -3,6 +3,7 @@
 // components/layout/Sidebar.tsx — replaces the <aside class="sidebar">
 // block + renderGuestSidebar/renderSignedInSidebar. Nav links call
 // goToDashboard(section) via props instead of global functions.
+import { useEffect } from 'react';
 import { signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
@@ -24,6 +25,21 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
   const name = user ? user.displayName || (user.email ? user.email.split('@')[0] : 'Account') : '';
   const email = user?.email || '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
+
+  // Lock the main page's own scroll while the sidebar is open, so
+  // scrolling inside the sidebar (or over the dimmed overlay) never
+  // moves the page behind it. Restored on close and on unmount so a
+  // navigation away never leaves scrolling stuck off.
+  useEffect(() => {
+    if (!open) return;
+    const { overflow, touchAction } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    return () => {
+      document.body.style.overflow = overflow;
+      document.body.style.touchAction = touchAction;
+    };
+  }, [open]);
 
   function navigate(section: DashSection) {
     onClose();
