@@ -120,12 +120,14 @@ export function PricingTablePage() {
           </table>
         </div>
 
-        <div className="pricing-table-ctas">
-          {PLANS.map((p) => (
-            <a key={p.id} href="/" className={`pricing-table-cta${p.featured ? ' featured' : ''}`}>
-              {p.cta}
-            </a>
-          ))}
+        <div className="pricing-table-ctas-scroll">
+          <div className="pricing-table-ctas">
+            {PLANS.map((p) => (
+              <a key={p.id} href="/" className={`pricing-table-cta${p.featured ? ' featured' : ''}`}>
+                {p.cta}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
