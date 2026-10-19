@@ -14,6 +14,16 @@
     --lime: #c6ff3d;
     --lime-ink: #1a1f0a;
 
+    /* Card/panel surface used for in-page sections that sit on top of
+       the lime page background (dashboard panels, site cards, profile
+       cards, pill buttons). A soft near-white instead of pure white so
+       these surfaces read as "on lime" rather than as leftover white
+       boxes from the pre-lime theme. Modals/bottom-sheets intentionally
+       keep --bg (pure white) since those float above the page, not in
+       it. */
+    --surface: #fbfdf2;
+    --surface-border: #dde8c2;
+
     /* Dashboard accent set — four tones used to colour-code the stat
        cards, Quick Tools tiles, and status banners on /dashboard. Each
        has a soft tinted surface + border for card backgrounds and a
