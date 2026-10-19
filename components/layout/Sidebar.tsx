@@ -5,9 +5,9 @@
 // goToDashboard(section) via props instead of global functions.
 import { signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
 import { getFirebaseAuth } from '@/lib/firebase';
 import type { DashSection } from '@/hooks/useAppView';
+import { useNavRouter } from '@/hooks/useNavPending';
 
 interface SidebarProps {
   open: boolean;
@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate, onOpenProfile }: SidebarProps) {
-  const router = useRouter();
+  const router = useNavRouter();
   const name = user ? user.displayName || (user.email ? user.email.split('@')[0] : 'Account') : '';
   const email = user?.email || '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
