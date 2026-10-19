@@ -3,6 +3,16 @@
  * Split from app/globals.css for maintainability.
  * ============================================================ */
 
+  /* Homepage sits on solid brand lime instead of --cream/--bg. Scoped to
+     #marketingView only (not the dashboard/app shell) — sections that
+     need a different backdrop (ink, cream, white cards) set their own
+     background and simply paint over this. Replaces the old blurred
+     lime glow that used to sit behind the hero slime (see .hero below):
+     same color, used as a flat field instead of a soft vignette. */
+  #marketingView {
+    background: var(--lime);
+  }
+
   .dashboard-empty {
     min-height: calc(100vh - 52px - env(safe-area-inset-top, 0px));
     display: flex;
@@ -60,34 +70,6 @@
     text-align: left;
     isolation: isolate;
     overflow: hidden;
-  }
-
-  /* Soft lime glow seated behind the blob's column — same radial-glow
-     trick as .agt-head::before on the agent page, just bigger and
-     lower-opacity since it's sitting on cream instead of ink. Pure
-     ambience: never intercepts clicks, never visible on its own. */
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -8%;
-    right: -6%;
-    width: min(560px, 60vw);
-    height: min(560px, 60vw);
-    background: radial-gradient(circle, var(--lime) 0%, transparent 70%);
-    opacity: 0.35;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  @media (max-width: 959px) {
-    .hero::before {
-      top: -4%;
-      right: 50%;
-      transform: translateX(50%);
-      width: 90vw;
-      height: 90vw;
-      opacity: 0.3;
-    }
   }
 
   /* Entrance: hero content rises + fades in on load (not scroll-gated —
