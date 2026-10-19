@@ -1,6 +1,10 @@
+'use client';
+
 // components/marketing/Testimonials.tsx — replaces .testi-marquee-wrap
 // (scrolling loop, list intentionally duplicated x2 in the source) and
 // .testimonials-wrap (static 3-card grid).
+import { useEffect, useRef, useState } from 'react';
+
 interface Testimonial {
   quote: string;
   initials: string;
@@ -42,21 +46,56 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
+// A compact version of HeroSlime's "jelly" character — same blob
+// silhouette, same blink/breathe/bob idea — scaled down to sit as a
+// corner mascot rather than a hero-sized centerpiece. Blinking is
+// driven by real React state on an irregular cadence (not just a CSS
+// wiggle) so it reads as a living thing, not a static sticker; sizing
+// is fixed in CSS (.testi-blob-peek has explicit width/height) so it
+// can never render larger than intended regardless of its container.
+function MiniBlob({ className }: { className: string }) {
+  const [blinking, setBlinking] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    function scheduleBlink() {
+      const next = 2200 + Math.random() * 3000;
+      timeoutRef.current = setTimeout(() => {
+        setBlinking(true);
+        setTimeout(() => setBlinking(false), 140);
+        scheduleBlink();
+      }, next);
+    }
+    scheduleBlink();
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
+
+  return (
+    <div className={className} aria-hidden="true">
+      <svg className="mini-blob-svg" viewBox="0 0 120 120">
+        <g className="mini-blob-body-wrap">
+          <path
+            className="mini-blob-body"
+            d="M22,6 C45,-4 86,0 104,22 C119,41 116,70 98,90 C80,110 44,118 22,100 C2,84 -2,60 4,40 C8,27 12,14 22,6 Z"
+          />
+          <g className={`mini-blob-eyes${blinking ? ' is-blinking' : ''}`}>
+            <circle className="mini-blob-eye" cx="46" cy="52" r="6" />
+            <circle className="mini-blob-eye" cx="72" cy="52" r="6" />
+          </g>
+          <path className="mini-blob-mouth" d="M46 68 Q 59 78 72 68" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 export function TestimonialsMarquee() {
   // Duplicated on purpose — same reason as LogoMarquee — so the CSS
   // scroll-loop animation has no visible seam.
   const doubled = [...TESTIMONIALS, ...TESTIMONIALS];
   return (
     <div className="testi-marquee-wrap">
-      <svg className="testi-blob-peek" viewBox="0 0 120 120" aria-hidden="true">
-        <path
-          d="M22,6 C45,-4 86,0 104,22 C119,41 116,70 98,90 C80,110 44,118 22,100 C2,84 -2,60 4,40 C8,27 12,14 22,6 Z"
-          fill="var(--lime)"
-        />
-        <circle cx="46" cy="52" r="6" fill="var(--lime-ink)" />
-        <circle cx="72" cy="52" r="6" fill="var(--lime-ink)" />
-        <path d="M46 68 Q 59 78 72 68" stroke="var(--lime-ink)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-      </svg>
+      <MiniBlob className="testi-blob-peek" />
       <section className="section-heading" aria-hidden="true">
         <h2>Loved by teams everywhere</h2>
         <p>A rolling look at what people are saying right now.</p>
@@ -83,15 +122,7 @@ export function TestimonialsGrid() {
   const shown = TESTIMONIALS.slice(0, 3);
   return (
     <div className="testimonials-wrap">
-      <svg className="testi-grid-blob-peek" viewBox="0 0 120 120" aria-hidden="true">
-        <path
-          d="M22,6 C45,-4 86,0 104,22 C119,41 116,70 98,90 C80,110 44,118 22,100 C2,84 -2,60 4,40 C8,27 12,14 22,6 Z"
-          fill="var(--ink)"
-        />
-        <circle cx="46" cy="52" r="6" fill="var(--lime)" />
-        <circle cx="72" cy="52" r="6" fill="var(--lime)" />
-        <path d="M46 68 Q 59 78 72 68" stroke="var(--lime)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-      </svg>
+      <MiniBlob className="testi-grid-blob-peek" />
       <section className="section-heading">
         <h2>What teams are saying</h2>
         <p>A few words from people running their sites through the dashboard.</p>
