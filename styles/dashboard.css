@@ -195,8 +195,8 @@
   }
 
   .dash-panel {
-    background: var(--bg);
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
     border-radius: 18px;
     margin-bottom: 18px;
     overflow: hidden;
@@ -214,7 +214,7 @@
 
   .ghost-btn {
     display: inline-flex; align-items: center; gap: 6px;
-    background: var(--bg); border: 1px solid var(--line); border-radius: 100px;
+    background: var(--surface); border: 1px solid var(--surface-border); border-radius: 100px;
     padding: 9px 15px; font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 600;
     color: var(--ink); cursor: pointer; white-space: nowrap;
     box-shadow: 0 1px 0 rgba(34, 32, 28, 0.08);
@@ -277,6 +277,21 @@
   .lead-row .l-email { font-weight: 600; }
   .lead-row .l-time { color: #8a8477; font-size: 12px; }
 
+  /* Scroll container for any list of rows that can grow large (visit
+     log, blocked visitors) — caps the panel's height instead of letting
+     it push the whole dashboard page down as more rows come in. Rows
+     scroll inside this box; the panel itself stays a fixed height. */
+  .dash-scroll-list {
+    max-height: 420px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dash-scroll-list .visit-row:first-child,
+  .dash-scroll-list .lead-row:first-child {
+    padding-top: 2px;
+  }
+
   /* ============================================================
    * Connected sites — scrollable row of real cards replacing the old
    * thin tab strip. Each card is "well thick": status dot, name, URL,
@@ -321,8 +336,8 @@
   .css-card {
     width: 100%;
     border-radius: 18px;
-    border: 1px solid var(--line);
-    background: var(--bg);
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
     box-shadow: 0 1px 2px rgba(20, 18, 14, 0.04);
     padding: 14px 16px;
     display: flex;
@@ -438,14 +453,14 @@
     box-sizing: border-box;
     width: 100%;
     border-radius: 18px;
-    border: 1.5px dashed var(--line);
+    border: 1.5px dashed var(--surface-border);
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
     gap: 8px;
     cursor: pointer;
-    color: #8a8477;
+    color: #6b655c;
     font-family: -apple-system, sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -464,12 +479,13 @@
   }
   .css-sheet {
     width: 100%; max-width: 420px;
-    background: var(--bg);
+    background: var(--surface);
+    border: 1px solid var(--surface-border); border-bottom: none;
     border-radius: 20px 20px 0 0;
     padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   }
   @media (min-width: 560px) {
-    .css-sheet { border-radius: 20px; }
+    .css-sheet { border-radius: 20px; border-bottom: 1px solid var(--surface-border); }
   }
   .css-sheet-title { font-size: 16.5px; font-weight: 700; margin-bottom: 8px; }
   .css-sheet-msg { font-family: -apple-system, sans-serif; font-size: 13.5px; color: #6b6558; line-height: 1.5; margin: 0 0 18px; }
@@ -751,11 +767,11 @@
   }
   @media (min-width: 560px) { .bcp-sheet-backdrop { align-items: center; } }
   .bcp-sheet {
-    width: 100%; max-width: 420px; background: var(--bg); color: var(--ink);
+    width: 100%; max-width: 420px; background: var(--surface); color: var(--ink);
     border-radius: 20px 20px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-    border: 1px solid var(--line); border-bottom: none;
+    border: 1px solid var(--surface-border); border-bottom: none;
   }
-  @media (min-width: 560px) { .bcp-sheet { border-radius: 20px; border-bottom: 1px solid var(--line); } }
+  @media (min-width: 560px) { .bcp-sheet { border-radius: 20px; border-bottom: 1px solid var(--surface-border); } }
   .bcp-sheet-title { font-size: 16.5px; font-weight: 700; margin-bottom: 8px; }
   .bcp-sheet-msg { font-size: 13.5px; color: #6b655c; line-height: 1.5; margin: 0 0 18px; }
   .bcp-sheet-actions { display: flex; gap: 10px; justify-content: flex-end; }
@@ -1099,15 +1115,15 @@
   .ac-panel .dash-panel-head { flex-wrap: wrap; }
 
   .ac-range-switch {
-    display: inline-flex; gap: 2px; background: var(--cream); border: 1px solid var(--line);
+    display: inline-flex; gap: 2px; background: var(--surface-border); border: 1px solid var(--surface-border);
     border-radius: 100px; padding: 3px;
   }
   .ac-range-btn {
     all: unset; box-sizing: border-box; cursor: pointer;
     font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600;
-    color: #8a8477; padding: 5px 12px; border-radius: 100px;
+    color: #6b655c; padding: 5px 12px; border-radius: 100px;
   }
-  .ac-range-btn.is-active { background: var(--bg); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .ac-range-btn.is-active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
   /* ---- KPI row ---- */
   .ac-kpi-grid {
@@ -1268,8 +1284,8 @@
 
   /* ── Identity card ─────────────────────────────────────────── */
   .prof-card {
-    background: var(--bg);
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
     border-radius: 18px;
     padding: 20px;
     /* No margin-bottom here — .prof-rail's own `gap` spaces this
@@ -1497,14 +1513,14 @@
   }
   .prof-plan-card {
     position: relative;
-    background: var(--bg);
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
     border-radius: 16px;
     padding: 16px;
     display: flex; flex-direction: column; gap: 10px;
   }
   .prof-plan-card.is-featured { border-color: var(--ink); }
-  .prof-plan-card.is-current { background: var(--cream-deep); }
+  .prof-plan-card.is-current { background: color-mix(in srgb, var(--lime) 18%, var(--surface)); border-color: var(--lime-ink); }
   .prof-plan-card-badge {
     position: absolute; top: -10px; left: 14px;
     background: var(--ink); color: #fff;
