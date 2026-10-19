@@ -1,6 +1,10 @@
 // components/marketing/CapabilitiesAndStats.tsx — replaces .status-strip,
 // both .capabilities sections, the "What sitevento actually does"
 // .section-heading, and .stats.
+'use client';
+
+import { useScrollReveal } from '@/hooks/useScrollReveal';
+
 export function StatusStrip() {
   return (
     <div className="status-strip">
@@ -14,24 +18,76 @@ export function StatusStrip() {
   );
 }
 
+function IconEye() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function IconMail() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  );
+}
+
+function IconBolt() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2 3 14h8l-1 8 10-12h-8l1-8Z" />
+    </svg>
+  );
+}
+
+function IconGrid() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </svg>
+  );
+}
+
 const TOP_CAPS = [
-  { title: 'Visit logs', body: 'Every visit to your site, logged and searchable — pages, timing, referrers.' },
+  {
+    title: 'Visit logs',
+    body: 'Every visit to your site, logged and searchable — pages, timing, referrers.',
+    Icon: IconEye,
+  },
   {
     title: 'Email capture widgets',
     body: 'Drop in onboarding flows and lead-capture forms without touching your codebase.',
+    Icon: IconMail,
   },
   {
     title: 'Live overlays',
     body: 'Push a banner, announcement, or full-site maintenance mode instantly, no redeploy.',
+    Icon: IconBolt,
   },
-  { title: 'One dashboard', body: 'Manage every connected site — leads, logs, and live state — from one place.' },
+  {
+    title: 'One dashboard',
+    body: 'Manage every connected site — leads, logs, and live state — from one place.',
+    Icon: IconGrid,
+  },
 ];
 
 export function TopCapabilities() {
+  const reveal = useScrollReveal<HTMLDivElement>();
+
   return (
     <section className="capabilities">
       {TOP_CAPS.map((c) => (
-        <div className="cap" key={c.title}>
+        <div className="cap" key={c.title} ref={reveal}>
+          <div className="cap-icon">
+            <c.Icon />
+          </div>
           <h3>{c.title}</h3>
           <p>{c.body}</p>
         </div>
