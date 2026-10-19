@@ -1,0 +1,120 @@
+/* ============================================================
+ * base.css — CSS variables, reset, html/body/header/main base layout
+ * Split from app/globals.css for maintainability.
+ * ============================================================ */
+
+  :root {
+    --bg: #ffffff;
+    --cream: #f6f2e7;
+    --cream-deep: #efe7d3;
+    --ink: #22201c;
+    --walnut: #6b4a34;
+    --walnut-dark: #4f3626;
+    --line: #e8e4de;
+    --lime: #c6ff3d;
+    --lime-ink: #1a1f0a;
+
+    /* Dashboard accent set — four tones used to colour-code the stat
+       cards, Quick Tools tiles, and status banners on /dashboard. Each
+       has a soft tinted surface + border for card backgrounds and a
+       deeper "ink" shade for icons/text on that tint. */
+    --dash-green: #16a34a;
+    --dash-green-ink: #0f5c2e;
+    --dash-green-surface: #eafaf0;
+    --dash-green-border: #c3ecd3;
+
+    --dash-purple: #7c5cfc;
+    --dash-purple-ink: #4a2fd1;
+    --dash-purple-surface: #f1edff;
+    --dash-purple-border: #ded3fe;
+
+    --dash-blue: #2f8fe0;
+    --dash-blue-ink: #175a92;
+    --dash-blue-surface: #eaf5ff;
+    --dash-blue-border: #cbe6fb;
+
+    --dash-orange: #e5832c;
+    --dash-orange-ink: #9a5313;
+    --dash-orange-surface: #fff1e4;
+    --dash-orange-border: #fad9b8;
+
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Site-wide: no text selection (no drag-select highlight, no
+     long-press "Copy" callout on touch). Form fields are explicitly
+     exempted below so typing, selecting, and copying out of an actual
+     input/textarea still works the normal way — this only blocks
+     selecting the surrounding UI copy/labels. */
+  html {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  a, button, summary, input {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a:focus,
+  button:focus,
+  summary:focus,
+  input:focus {
+    outline: none;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--bg);
+    /* Safety net: no single section (long unbroken text, a fixed-width
+       child, etc.) should ever be able to force the whole page wider
+       than the viewport and push other sections/scroll sideways. */
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+    width: 100%;
+  }
+
+  /* Clearance for GlobalNav's fixed bottom bar (styles/global-nav.css),
+     applied globally (not just on the dashboard) so marketing-page
+     content — including its footer — never sits underneath the nav on
+     phones. Desktop's GlobalNav floats near the top instead, so no
+     bottom padding is needed there. */
+  @media (max-width: 859px) {
+    body {
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  header {
+    position: fixed;
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+  }
+
+  main {
+    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+  }
+
