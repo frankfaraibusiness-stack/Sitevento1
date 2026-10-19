@@ -15,12 +15,14 @@ export function LeadsPanel({ leads }: { leads: Lead[] }) {
         {leads.length === 0 ? (
           <div className="empty-row">No emails captured yet.</div>
         ) : (
-          leads.map((l) => (
-            <div key={l.id} className="lead-row">
-              <span className="l-email">{l.email || '—'}</span>
-              <span className="l-time">{formatTs(l.ts)}</span>
-            </div>
-          ))
+          <div className="dash-scroll-list">
+            {leads.map((l) => (
+              <div key={l.id} className="lead-row">
+                <span className="l-email">{l.email || '—'}</span>
+                <span className="l-time">{formatTs(l.ts)}</span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
