@@ -47,8 +47,17 @@ export function TestimonialsMarquee() {
   // scroll-loop animation has no visible seam.
   const doubled = [...TESTIMONIALS, ...TESTIMONIALS];
   return (
-    <div className="testi-marquee-wrap" aria-hidden="true">
-      <section className="section-heading">
+    <div className="testi-marquee-wrap">
+      <svg className="testi-blob-peek" viewBox="0 0 120 120" aria-hidden="true">
+        <path
+          d="M22,6 C45,-4 86,0 104,22 C119,41 116,70 98,90 C80,110 44,118 22,100 C2,84 -2,60 4,40 C8,27 12,14 22,6 Z"
+          fill="var(--lime)"
+        />
+        <circle cx="46" cy="52" r="6" fill="var(--lime-ink)" />
+        <circle cx="72" cy="52" r="6" fill="var(--lime-ink)" />
+        <path d="M46 68 Q 59 78 72 68" stroke="var(--lime-ink)" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      </svg>
+      <section className="section-heading" aria-hidden="true">
         <h2>Loved by teams everywhere</h2>
         <p>A rolling look at what people are saying right now.</p>
       </section>
