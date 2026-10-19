@@ -8,7 +8,8 @@
 // other dashboard route) instead of siterifty's AnnouncementBar/Header,
 // and the app's shared AppSkeleton for the loading state.
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import '@/styles/settings-page.css';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -46,7 +47,7 @@ const PANEL_PATHS: Partial<Record<SettingsPanelId, string>> = {
 };
 
 export default function SettingsPageClient({ initialPanel }: { initialPanel: SettingsPanelId }) {
-  const router = useRouter();
+  const router = useNavRouter();
   const pathname = usePathname();
   const { user, authReady } = useAuth();
   const sidebarNav = useSidebar();
