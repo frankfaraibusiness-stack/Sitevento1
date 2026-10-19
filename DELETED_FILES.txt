@@ -1,1 +1,0 @@
-components/dashboard/WidgetsPanel.tsx was DELETED (no longer used)
