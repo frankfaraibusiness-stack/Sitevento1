@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 
 export default function BillingPanel() {
-  const router = useRouter();
+  const router = useNavRouter();
   return (
     <>
       <div className="settings-panel-header">
