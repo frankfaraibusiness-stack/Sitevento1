@@ -73,8 +73,8 @@ const LEFT_ITEMS: NavItem[] = [
 ];
 
 const RIGHT_ITEMS: NavItem[] = [
-  { id: 'settings', label: 'Settings', href: '/dashboard/profile#settings', isMatch: (p) => p.startsWith('/dashboard/profile'), icon: SettingsIcon },
-  { id: 'profile', label: 'Profile', href: '/dashboard/profile', isMatch: () => false, icon: ProfileIcon },
+  { id: 'settings', label: 'Settings', href: '/settings', isMatch: (p) => p.startsWith('/settings'), icon: SettingsIcon },
+  { id: 'profile', label: 'Profile', href: '/dashboard/profile', isMatch: (p) => p.startsWith('/dashboard/profile'), icon: ProfileIcon },
 ];
 
 export function GlobalNav() {
