@@ -17,7 +17,7 @@
 // copy) all comes from lib/plans.ts so nothing here can drift from the
 // /pricing page, the homepage pricing cards, or the plans page.
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import type { User } from 'firebase/auth';
 import type { Site } from '@/lib/types';
 import { PLANS, getPlan, type PlanId } from '@/lib/plans';
@@ -40,7 +40,7 @@ function nextPlan(id: PlanId) {
 }
 
 export function ProfilePage({ user, sites, onDisconnectSite, onAddSite }: ProfilePageProps) {
-  const router = useRouter();
+  const router = useNavRouter();
   const { planId, updateDisplayName } = useUserProfile(user);
   const plan = getPlan(planId);
   const upgrade = nextPlan(planId);
