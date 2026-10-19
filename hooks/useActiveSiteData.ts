@@ -16,7 +16,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
-  updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import type { Lead, Visit } from '@/lib/types';
@@ -76,12 +76,30 @@ export function useActiveSiteData(uid: string | null, siteId: string | null) {
     if (!uid || !siteId) return;
     try {
       const db = getFirebaseDb();
-      await updateDoc(doc(db, 'users', uid, 'sites', siteId, 'visits', visitId), {
-        blocked: blockedValue,
-      });
+      // Flip `blocked` on every visit row that belongs to this visitorId,
+      // not just the one the person clicked — a visitor with several past
+      // visits previously only had the clicked row update, leaving the
+      // rest showing the old Blocked/Allowed status until they happened to
+      // be clicked too. One batch keeps all of that visitor's rows (and
+      // the row that was actually clicked, which may have no visitorId on
+      // very old records) consistent in a single atomic write.
+      const batch = writeBatch(db);
+      const idsToUpdate = new Set<string>([visitId]);
+      if (visitorId) {
+        for (const v of visits) {
+          if (v.visitorId === visitorId) idsToUpdate.add(v.id);
+        }
+      }
+      for (const id of idsToUpdate) {
+        batch.update(doc(db, 'users', uid, 'sites', siteId, 'visits', id), {
+          blocked: blockedValue,
+        });
+      }
+      await batch.commit();
+
       // Also (un)block the visitorId going forward, so the tracker on the
       // customer's site stops/resumes logging this visitor rather than
-      // just flagging their past visit in the dashboard.
+      // just flagging their past visits in the dashboard.
       if (visitorId) {
         const blockRef = doc(db, 'users', uid, 'sites', siteId, 'blockedVisitors', visitorId);
         if (blockedValue) {
@@ -96,5 +114,5 @@ export function useActiveSiteData(uid: string | null, siteId: string | null) {
     }
   }
 
-  return { visits: visits.slice(0, 50), leads, stats, toggleBlockVisit };
+  return { visits: visits.slice(0, 50), leads: leads.slice(0, 50), stats, toggleBlockVisit };
 }
