@@ -14,11 +14,16 @@ export function LogoMarquee() {
   const doubled = [...LOGOS, ...LOGOS];
   return (
     <div className="marquee-wrap" aria-hidden="true">
-      <p className="marquee-label">Trusted by teams running on</p>
-      <div className="marquee-track">
-        {doubled.map((name, i) => (
-          <span key={i}>{name}</span>
-        ))}
+      <p className="marquee-label">Trusted by teams running on sitevento</p>
+      <div className="marquee-fade">
+        <div className="marquee-track">
+          {doubled.map((name, i) => (
+            <span className="marquee-chip" key={i}>
+              <span className="marquee-chip-dot" />
+              {name}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
