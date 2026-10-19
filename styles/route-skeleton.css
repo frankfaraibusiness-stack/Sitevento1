@@ -1,0 +1,137 @@
+/* ============================================================
+ * route-skeleton.css — app/loading.tsx route-transition skeleton.
+ * Reuses the .dashboard-empty / .dash-empty-inner wrapper (see
+ * marketing-hero.css) for outer spacing, then lays out shaped
+ * shimmering placeholder blocks inside it, loosely matching the
+ * dashboard's header / stat-card / panel structure from
+ * dashboard.css (.dash-head, .dash-grid, .dash-card, .dash-panel).
+ * Same border-radius and border-color conventions as the rest of the
+ * UI — no generic gray skeleton look.
+ * ============================================================ */
+
+  .route-skeleton-inner {
+    max-width: 1080px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .skel-block {
+    background: var(--cream-deep);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Shimmer sweep */
+  .skel-block::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.55) 50%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    transform: translateX(-100%);
+    animation: skel-shimmer 1.6s ease-in-out infinite;
+  }
+
+  .skel-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .skel-title {
+    width: clamp(160px, 32vw, 240px);
+    height: 26px;
+    border-radius: 8px;
+  }
+
+  .skel-pill {
+    width: 148px;
+    height: 40px;
+    border-radius: 100px;
+  }
+
+  .skel-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 720px) {
+    .skel-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .skel-card {
+    height: 78px;
+    border-radius: 16px;
+  }
+
+  .skel-panel {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .skel-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .skel-panel-title {
+    width: 140px;
+    height: 16px;
+    border-radius: 6px;
+    background: var(--line);
+  }
+
+  .skel-panel-sub {
+    width: 90px;
+    height: 12px;
+    border-radius: 6px;
+    background: var(--line);
+  }
+
+  .skel-panel-body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .skel-row {
+    height: 36px;
+    border-radius: 10px;
+  }
+  .skel-row:nth-child(2) { opacity: 0.8; }
+  .skel-row:nth-child(3) { opacity: 0.6; }
+
+  @keyframes skel-shimmer {
+    100% { transform: translateX(100%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skel-block::after {
+      animation: none;
+      display: none;
+    }
+    .skel-block {
+      animation: skel-pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes skel-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  }
