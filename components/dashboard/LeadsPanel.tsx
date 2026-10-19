@@ -15,14 +15,25 @@ export function LeadsPanel({ leads }: { leads: Lead[] }) {
         {leads.length === 0 ? (
           <div className="empty-row">No emails captured yet.</div>
         ) : (
-          <div className="dash-scroll-list">
-            {leads.map((l) => (
-              <div key={l.id} className="lead-row">
-                <span className="l-email">{l.email || '—'}</span>
-                <span className="l-time">{formatTs(l.ts)}</span>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="dash-scroll-list">
+              {leads.map((l) => (
+                <div key={l.id} className="lead-row">
+                  <span className="l-email">{l.email || '—'}</span>
+                  <span className="l-time">{formatTs(l.ts)}</span>
+                </div>
+              ))}
+            </div>
+            {leads.length >= 50 && (
+              // Capped to the most recent 50 leads upstream (see
+              // useActiveSiteData). A dedicated "all leads" page/route
+              // isn't built yet, so this is a placeholder CTA only —
+              // wire it up once that view exists.
+              <button type="button" className="ghost-btn dash-view-all-btn" onClick={() => {}}>
+                View all
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
