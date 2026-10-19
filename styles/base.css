@@ -13,6 +13,13 @@
     --line: #e8e4de;
     --lime: #c6ff3d;
     --lime-ink: #1a1f0a;
+    /* --lime at ~10% strength mixed into white. Not the cream used
+       elsewhere (that's a warm beige tint) — this is a cool, barely-
+       there lime tint, so the page keeps the brand color in its
+       resting background without reading as green: a hint, not a
+       hue. Used as the post-boot html/body background below so the
+       page doesn't drop back to flat white once BootSplash unmounts. */
+    --lime-mist: #f9ffec;
 
     /* Dashboard accent set — four tones used to colour-code the stat
        cards, Quick Tools tiles, and status banners on /dashboard. Each
@@ -78,7 +85,11 @@
     margin: 0;
     padding: 0;
     min-height: 100%;
-    background: var(--bg);
+    /* Was var(--bg) (flat white). Using --lime-mist instead so the
+       resting page keeps a faint trace of the brand lime rather than
+       dropping to plain white the instant boot ends — still reads as
+       an off-white, professional surface, not a green page. */
+    background: var(--lime-mist);
     /* Safety net: no single section (long unbroken text, a fixed-width
        child, etc.) should ever be able to force the whole page wider
        than the viewport and push other sections/scroll sideways. */
@@ -89,13 +100,14 @@
 
   /* While BootSplash is in its lime phase (see components/BootSplash.tsx
      and .boot-splash.is-lime in boot-splash.css), mirror that same
-     color onto html itself so mobile rubber-band overscroll — which
-     bounces past the fixed, viewport-covering splash and reveals
-     html/body underneath — shows lime instead of flashing back to
-     the default background. BootSplash adds/removes this class itself
-     and always removes it on unmount, so once boot finishes html goes
-     straight back to the var(--bg) rule above. Same transition timing
-     as the splash's own fade for a matched handoff. */
+     full-strength color onto html itself so mobile rubber-band
+     overscroll — which bounces past the fixed, viewport-covering
+     splash and reveals html/body underneath — shows lime instead of
+     flashing back to whatever's underneath. BootSplash adds/removes
+     this class itself and always removes it on unmount, so once boot
+     finishes html settles back to the var(--lime-mist) rule above —
+     not back to white. Same transition timing as the splash's own
+     fade for a matched handoff. */
   html.is-boot-lime,
   html.is-boot-lime body {
     background: var(--lime);
