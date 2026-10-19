@@ -44,6 +44,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
       <div className={`sidebar-overlay${open ? ' open' : ''}`} onClick={onClose} />
 
       <aside className={`sidebar${open ? ' open' : ''}`} aria-hidden={!open}>
+      <div className="sidebar-inner">
         <div className="sidebar-head">
           <img
             className="sidebar-logo"
@@ -171,7 +172,6 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
             </span>
             Connected sites
           </a>
-
           <div className="sidebar-divider" />
 
           <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); goToSettings(); }}>
@@ -203,6 +203,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
             Sign out
           </button>
         </div>
+      </div>
       </aside>
     </>
   );
