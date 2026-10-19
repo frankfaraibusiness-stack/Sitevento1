@@ -33,16 +33,17 @@ export function generateStaticParams() {
 }
 
 // app/layout.tsx (shared by every route) imports globals.css, which
-// sets `html, body { background: var(--bg); }` (styles/base.css) —
-// solid white. WidgetRenderer's own WRAP_STYLE already sets
-// `background: 'transparent'` on its content wrapper, as intended for
-// a widget meant to blend into whatever page it's embedded on, but
-// that transparency has nothing to show through to as long as <body>
-// itself — one level up, owned by the shared root layout, outside
-// this page's control — is painted solid white underneath it. That
-// white fill is what shows as a solid block around/behind a widget
-// like the iframe-isolated spin wheel instead of the customer's own
-// page background.
+// sets `html, body { background: var(--lime-mist); }` (styles/base.css)
+// — a faint brand-tinted off-white, not transparent. WidgetRenderer's
+// own WRAP_STYLE already sets `background: 'transparent'` on its
+// content wrapper, as intended for a widget meant to blend into
+// whatever page it's embedded on, but that transparency has nothing
+// to show through to as long as <body> itself — one level up, owned
+// by the shared root layout, outside this page's control — is
+// painted underneath it. That fill is what would show as a solid
+// tinted block around/behind a widget like the iframe-isolated spin
+// wheel instead of the customer's own page background, which is why
+// TransparentBodyStyle below overrides it for this route specifically.
 //
 // Scoped here (not in globals.css) so this touches only `/w/*`
 // requests — every other route keeps the white page background it
