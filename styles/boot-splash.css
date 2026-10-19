@@ -23,12 +23,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--cream);
-    /* Smooth fade from cream to lime as the splash enters its
-       converging/holding phases (see .is-lime below) — not an
-       abrupt snap. Timed to land around when the dots finish
-       converging / the logo lands (the convergence phase itself
-       runs ~480-550ms, so this is intentionally a touch shorter). */
+    background: var(--lime);
+    /* Kept for any brief instant before React hydrates/applies
+       .is-lime (see below) — the base background is lime now too, so
+       there's no cream flash on first paint. transition stays in case
+       isLime is ever driven back to false by a future change. */
     transition: background-color 450ms ease;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -36,11 +35,11 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Driven directly from the component's `phase` state (toggled
-     whenever phase !== 'spinning') rather than inferred purely via a
-     CSS :has() selector, so the background swap also works on older
-     browsers without :has() support — this is the first screen every
-     visitor sees, so it must not silently stay cream there. */
+  /* Driven directly from the component's `isLime` state, which is now
+     true for the splash's entire lifecycle (see BootSplash.tsx) —
+     this is the first screen every visitor sees, so it renders lime
+     immediately rather than starting cream and swapping partway
+     through the spin phase. */
   .boot-splash.is-lime {
     background: var(--lime);
   }
@@ -188,7 +187,7 @@
   .boot-splash-blob {
     position: absolute;
     z-index: 2;
-    width: min(60vw, 210px);
+    width: min(82vw, 300px);
     height: auto;
     pointer-events: none;
     animation: boot-blob-jumpscare 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
