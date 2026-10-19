@@ -35,7 +35,7 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    color: #8a8477;
+    color: var(--ink);
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -104,20 +104,22 @@
       width: 100%;
       max-width: 560px;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(16px) saturate(160%);
-      -webkit-backdrop-filter: blur(16px) saturate(160%);
-      border-top: 1px solid rgba(34, 32, 28, 0.35);
-      padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+      padding: 6px 10px calc(10px + env(safe-area-inset-bottom, 0px));
       justify-content: space-between;
     }
 
     .gnav-item {
       flex-direction: column;
       gap: 3px;
-      padding: 7px 6px 8px;
+      padding: 7px 10px 8px;
+      border-radius: 16px;
       flex: 1;
       min-width: 0;
+      transition: background-color 160ms ease;
+    }
+
+    .gnav-item.is-active {
+      background: color-mix(in srgb, var(--lime) 55%, transparent);
     }
 
     .gnav-item-icon {
@@ -188,13 +190,7 @@
 
     .gnav-pill {
       gap: 2px;
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(16px) saturate(170%);
-      -webkit-backdrop-filter: blur(16px) saturate(170%);
-      border: 1px solid rgba(34, 32, 28, 0.35);
-      border-radius: 999px;
       padding: 6px;
-      box-shadow: 0 8px 24px rgba(34, 32, 28, 0.08);
     }
 
     .gnav-item {
@@ -229,13 +225,13 @@
     }
 
     .gnav-item:hover {
-      background: rgba(255, 255, 255, 0.5);
+      background: color-mix(in srgb, var(--lime) 35%, transparent);
       color: var(--ink);
       transform: translateY(-1px);
     }
 
     .gnav-item.is-active {
-      background: rgba(255, 255, 255, 0.7);
+      background: color-mix(in srgb, var(--lime) 55%, transparent);
       color: var(--ink);
     }
 
