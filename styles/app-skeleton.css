@@ -22,7 +22,13 @@
 .app-skel-full {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  /* Below the sticky header (z-index: 10 in base.css) and the bottom
+     nav (z-index: 30 in global-nav.css) so both stay visible above
+     this full-screen loader instead of it covering them — this used
+     to sit at z-index: 9999, well above both, which is what made the
+     header/bottom nav look squeezed or overlapped during a full-page
+     load. Still well above ordinary page content. */
+  z-index: 5;
   min-height: 100dvh;
   background: var(--lime-mist);
   padding-top: calc(3rem + env(safe-area-inset-top, 0px));
