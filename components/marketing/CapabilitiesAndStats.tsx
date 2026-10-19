@@ -4,6 +4,7 @@
 'use client';
 
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { useCountUp } from '@/hooks/useCountUp';
 
 export function StatusStrip() {
   return (
@@ -137,21 +138,47 @@ export function DetailCapabilities() {
 }
 
 const STATS = [
-  { num: '2,400+', label: 'Sites connected' },
-  { num: '48M', label: 'Visits logged monthly' },
-  { num: '99.98%', label: 'Script uptime' },
-  { num: '<2 min', label: 'Avg. setup time' },
+  { value: 2400, prefix: '', suffix: '+', decimals: 0, label: 'Sites connected' },
+  { value: 48, prefix: '', suffix: 'M', decimals: 0, label: 'Visits logged monthly' },
+  { value: 99.98, prefix: '', suffix: '%', decimals: 2, label: 'Script uptime' },
+  { value: 2, prefix: '<', suffix: ' min', decimals: 0, label: 'Avg. setup time' },
 ];
+
+function StatCard({ s }: { s: (typeof STATS)[number] }) {
+  // useCountUp animates whole numbers; scale decimal stats up, then
+  // divide back down for display so e.g. 99.98% still counts smoothly.
+  const scale = s.decimals > 0 ? Math.pow(10, s.decimals) : 1;
+  const { ref, value } = useCountUp(Math.round(s.value * scale));
+  const display = (value / scale).toLocaleString('en-US', {
+    minimumFractionDigits: s.decimals,
+    maximumFractionDigits: s.decimals,
+  });
+
+  return (
+    <div className="stat" ref={ref}>
+      <span className="stat-num">
+        {s.prefix}
+        {display}
+        {s.suffix}
+      </span>
+      <span className="stat-label">{s.label}</span>
+    </div>
+  );
+}
 
 export function Stats() {
   return (
-    <section className="stats">
-      {STATS.map((s) => (
-        <div className="stat" key={s.label}>
-          <span className="stat-num">{s.num}</span>
-          <span className="stat-label">{s.label}</span>
-        </div>
-      ))}
+    <section className="stats-scanner">
+      <div className="stats-scanner-head">
+        <span className="stats-scanner-dot" />
+        <span>Live network status</span>
+      </div>
+      <div className="stats-scanner-sweep" aria-hidden="true" />
+      <div className="stats">
+        {STATS.map((s) => (
+          <StatCard s={s} key={s.label} />
+        ))}
+      </div>
     </section>
   );
 }
