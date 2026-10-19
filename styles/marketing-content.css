@@ -577,20 +577,41 @@
     .stats-scanner-dot::after { animation: none; display: none; }
   }
 
-  /* ---- Auto-scrolling testimonials ---- */
+  /* ---- Auto-scrolling testimonials ----
+     Cartoonic lime section instead of a hardcoded black band, with a
+     small blob mascot peeking in from the top corner (same brand
+     "jelly" look as HeroSlime/BootSplash). */
   .testi-marquee-wrap {
-    background: var(--ink);
+    position: relative;
+    background: color-mix(in srgb, var(--lime) 22%, var(--bg));
+    border-top: 1.5px solid var(--lime-ink);
+    border-bottom: 1.5px solid var(--lime-ink);
     padding: 56px 0;
     overflow: hidden;
   }
 
+  .testi-blob-peek {
+    position: absolute;
+    top: -34px;
+    right: 6%;
+    width: 84px;
+    height: 84px;
+    animation: testi-blob-bob 3.6s ease-in-out infinite;
+    filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.1));
+  }
+
+  @keyframes testi-blob-bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(5px) rotate(3deg); }
+  }
+
   .testi-marquee-wrap .section-heading h2,
   .testi-marquee-wrap .section-heading p {
-    color: var(--cream);
+    color: var(--lime-ink);
   }
 
   .testi-marquee-wrap .section-heading p {
-    color: #b8b2a4;
+    opacity: 0.7;
   }
 
   .testi-track {
@@ -620,22 +641,23 @@
   }
 
   .testi-card {
-    background: #2a2822;
-    border: 1px solid #3a372f;
-    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1.5px solid var(--lime-ink);
+    border-radius: 18px;
     padding: 22px 20px;
     width: 320px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    box-shadow: 0 4px 0 rgba(26, 31, 10, 0.18);
   }
 
   .testi-card p.quote {
     font-size: 14px;
     line-height: 1.6;
     margin: 0;
-    color: var(--cream);
+    color: var(--lime-ink);
   }
 
   .testi-card .person {
@@ -650,6 +672,7 @@
     height: 32px;
     border-radius: 50%;
     background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -662,13 +685,14 @@
   .testi-card .person .name {
     font-size: 13px;
     font-weight: 600;
-    color: var(--cream);
+    color: var(--lime-ink);
     display: block;
   }
 
   .testi-card .person .role {
     font-size: 12px;
-    color: #8a8477;
+    color: var(--lime-ink);
+    opacity: 0.6;
   }
 
   /* ---- How it works ---- */
