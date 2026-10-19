@@ -116,6 +116,28 @@ export function BootSplash({ onDone }: BootSplashProps) {
   // boot-splash.css) handles the smooth fade itself.
   const isLime = phase !== 'spinning';
 
+  // Mirror the same lime state onto <html> itself, not just the fixed
+  // .boot-splash overlay. The overlay covers the viewport, but mobile
+  // rubber-band overscroll (bouncing past the top/bottom edge) reveals
+  // whatever color html/body are painted underneath it — without this,
+  // that overscroll flashes white/cream while the splash is lime,
+  // which reads as a mismatch/flicker. Toggled via a class rather than
+  // writing html's inline style directly so base.css stays the single
+  // source of truth for the actual color value. Always cleaned up on
+  // unmount/phase change so a page navigated to after boot never
+  // inherits a stuck lime html background.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isLime) {
+      root.classList.add('is-boot-lime');
+    } else {
+      root.classList.remove('is-boot-lime');
+    }
+    return () => {
+      root.classList.remove('is-boot-lime');
+    };
+  }, [isLime]);
+
   return (
     <div className={`boot-splash${isLime ? ' is-lime' : ''}`} role="status" aria-label="Loading sitevento">
       <div className={`boot-splash-stage is-${phase}`}>
