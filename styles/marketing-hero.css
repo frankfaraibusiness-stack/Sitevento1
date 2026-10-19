@@ -53,10 +53,75 @@
   }
 
   .hero {
+    position: relative;
     max-width: 900px;
     margin: 0 auto;
     padding: 28px 24px 48px;
     text-align: left;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  /* Soft lime glow seated behind the blob's column — same radial-glow
+     trick as .agt-head::before on the agent page, just bigger and
+     lower-opacity since it's sitting on cream instead of ink. Pure
+     ambience: never intercepts clicks, never visible on its own. */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -8%;
+    right: -6%;
+    width: min(560px, 60vw);
+    height: min(560px, 60vw);
+    background: radial-gradient(circle, var(--lime) 0%, transparent 70%);
+    opacity: 0.35;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  @media (max-width: 959px) {
+    .hero::before {
+      top: -4%;
+      right: 50%;
+      transform: translateX(50%);
+      width: 90vw;
+      height: 90vw;
+      opacity: 0.3;
+    }
+  }
+
+  /* Entrance: hero content rises + fades in on load (not scroll-gated —
+     it's above the fold, so it should greet rather than wait), each
+     piece staggered slightly so it reads as a sequence rather than one
+     flat fade. Targets the specific known children rather than a
+     blanket `> *` so nested elements (e.g. inside .hero-top) don't
+     pick up a second, redundant animation. */
+  .hero-main > .hero-top,
+  .hero-main > p.sub,
+  .hero-main > .actions,
+  .hero-main > .snippet,
+  .hero-grid > .hero-side {
+    animation: hero-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .hero-main > .hero-top   { animation-delay: 0.02s; }
+  .hero-main > p.sub       { animation-delay: 0.1s; }
+  .hero-main > .actions    { animation-delay: 0.18s; }
+  .hero-main > .snippet    { animation-delay: 0.26s; }
+  .hero-grid > .hero-side  { animation-delay: 0.16s; }
+
+  @keyframes hero-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-main > .hero-top,
+    .hero-main > p.sub,
+    .hero-main > .actions,
+    .hero-main > .snippet,
+    .hero-grid > .hero-side {
+      animation: none !important;
+    }
   }
 
   /* Mobile/tablet (below 960px): single column — .hero-main (which now
@@ -189,10 +254,21 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
     box-shadow: 0 3px 0 rgba(34, 32, 28, 0.9);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+  }
+
+  .hero .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 rgba(34, 32, 28, 0.9);
+  }
+
+  .hero .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
   }
 
   .hero .btn-secondary {
-    background: transparent;
+    background: var(--bg);
     color: var(--ink);
     border: 1.5px solid var(--line);
     border-radius: 999px;
@@ -200,6 +276,16 @@
     font-size: 15px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .hero .btn-secondary:hover {
+    transform: translateY(-2px);
+    border-color: var(--ink);
+  }
+
+  .hero .btn-secondary:active {
+    transform: translateY(0);
   }
 
   @media (max-width: 380px) {
@@ -215,7 +301,8 @@
   }
 
   .snippet {
-    background: #22201c;
+    position: relative;
+    background: var(--ink);
     color: #e8e4de;
     border-radius: 14px;
     padding: 20px 22px;
@@ -224,36 +311,81 @@
     line-height: 1.7;
     overflow-x: auto;
     max-width: 640px;
+    box-shadow: 0 10px 32px -16px rgba(34, 32, 28, 0.5);
   }
 
-  .snippet .tag-name { color: #c6ff3d; }
+  .snippet .tag-name { color: var(--lime); }
   .snippet .attr { color: #9cc4ff; }
   .snippet .val { color: #f3b088; }
   .snippet .comment { color: #827d74; }
 
+  /* ---- Capabilities: premium card treatment ----
+     Individual cards instead of a flat shared-gridline grid, each with
+     the same hard ink "sticker" shadow used on the agent page, a lime
+     icon chip, and a hover lift. Section sits directly on --bg/--cream
+     (no separate grid background color showing through) so there's
+     nothing left to clash with the page background. */
   .capabilities {
-    max-width: 900px;
+    max-width: 1040px;
     margin: 0 auto;
     padding: 8px 24px 80px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
-    background: var(--cream-deep);
-    border: 1px solid var(--cream-deep);
-    border-radius: 16px;
-    overflow: hidden;
+    gap: 16px;
   }
 
   .capabilities .cap {
-    background: var(--cream);
+    position: relative;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
     padding: 26px 24px;
+    box-shadow: 0 3px 0 var(--ink);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+  }
+
+  /* Only cards wired to useScrollReveal (which adds [data-reveal] via
+     the ref callback below) start hidden — any .cap rendered without
+     the hook (e.g. DetailCapabilities further down the page) just
+     shows normally, no JS dependency required. */
+  .capabilities .cap[data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  .capabilities .cap[data-reveal].is-visible {
+    animation: cap-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .capabilities .cap:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 0 var(--ink);
+  }
+
+  .capabilities .cap-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 14px;
+    border-radius: 11px;
+    background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
+    color: var(--lime-ink);
+  }
+
+  .capabilities .cap-icon svg {
+    width: 19px;
+    height: 19px;
   }
 
   .capabilities .cap h3 {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 15.5px;
+    font-weight: 700;
     margin: 0 0 8px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
   }
 
   .capabilities .cap p {
@@ -264,7 +396,21 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
+  @keyframes cap-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   @media (max-width: 640px) {
-    .capabilities { grid-template-columns: 1fr; }
+    .capabilities { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .capabilities .cap {
+      opacity: 1;
+      transform: none;
+      animation: none !important;
+      transition: none;
+    }
   }
 
