@@ -227,11 +227,11 @@
     position: fixed;
     inset: 0;
     background: rgba(26, 31, 10, 0.45);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
     z-index: 40;
   }
 
@@ -479,11 +479,19 @@
     transition: background 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
     background: none;
     border: none;
+    border-bottom: 1px solid rgba(26, 31, 10, 0.1);
     cursor: pointer;
     width: 100%;
     text-align: left;
     opacity: 0;
     animation: sidebar-stagger-in 0.45s ease both;
+  }
+
+  /* No trailing line directly above the divider or at the very end of
+     the list — the divider/footer already mark that boundary. */
+  .sidebar-nav .sidebar-link:last-of-type,
+  .sidebar-nav .sidebar-link:has(+ .sidebar-divider) {
+    border-bottom: none;
   }
 
   /* Stagger each nav link's entrance slightly after the last, so the
