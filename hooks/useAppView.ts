@@ -18,7 +18,7 @@
 
 import { useCallback } from 'react';
 import type { User } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 
 export type AppView = 'marketing' | 'dashboard';
 export type DashSection = 'overview' | 'logs' | 'leads' | 'overlay';
@@ -31,7 +31,7 @@ const SECTION_ANCHORS: Record<DashSection, string> = {
 };
 
 export function useAppView(user: User | null, openAuth: (pane: 'signin' | 'signup') => void) {
-  const router = useRouter();
+  const router = useNavRouter();
 
   const goToDashboard = useCallback(
     (section?: DashSection) => {
