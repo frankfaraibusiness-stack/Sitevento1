@@ -37,7 +37,7 @@
 // reuses AgentBlob (the small lime mascot) rather than inventing a
 // second character.
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavRouter } from '@/hooks/useNavPending';
 import type { User } from 'firebase/auth';
 import { useSites } from '@/hooks/useSites';
 import { useActiveSiteData } from '@/hooks/useActiveSiteData';
@@ -80,7 +80,7 @@ function formatAge(days: number | null): string | null {
 }
 
 export function SiteManagePage({ user, siteId }: SiteManagePageProps) {
-  const router = useRouter();
+  const router = useNavRouter();
   const { sites, dashState, disconnectSite, pauseSite } = useSites(user.uid);
   const { visits, stats } = useActiveSiteData(user.uid, siteId);
   const { enabledWidgets, widgets, hasAnyEnabled, loading: widgetsLoading } = useSiteWidgetsList(user.uid, siteId);
