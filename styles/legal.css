@@ -360,13 +360,26 @@
     text-transform: capitalize;
   }
 
+  /* The CTA row has to line up with the table's columns above it, so
+     it needs the same min-width as .pricing-table and its own scroll
+     container — otherwise on narrow screens this row overflows the
+     page itself (nothing to grab to scroll it back into view) instead
+     of scrolling politely inside pricing-table-wrap like the table
+     does. overflow-x here, not on pricing-table-ctas directly: a grid
+     with overflow-x:auto on itself still lets its own content push the
+     page wider first on some mobile browsers; wrapping it in a plain
+     block parent avoids that. */
+  .pricing-table-ctas-scroll {
+    overflow-x: auto;
+    margin-top: 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .pricing-table-ctas {
     display: grid;
     grid-template-columns: 180px repeat(4, 1fr);
     gap: 10px;
-    margin-top: 18px;
     min-width: 640px;
-    overflow-x: auto;
   }
 
   .pricing-table-ctas a:first-child {
