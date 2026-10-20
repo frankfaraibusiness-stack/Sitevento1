@@ -1,18 +1,30 @@
 /* styles/settings-page.css
  *
- * /settings — ported from siterifty's settings.css (same two-pane
- * sidebar + detail-panel layout, same section/nav-item/toggle/input
- * patterns), retokened to sitevento's own design system:
- *   --mp-bg/--mp-surface/--mp-accent/--mp-text (siterifty)
- *     -> --bg/--cream/--walnut/--ink/--lime (sitevento, from base.css)
- * sitevento has a single fixed light palette — no light/dark switch —
- * so unlike the source file there is no html.theme-light override
- * block here; these rules just use sitevento's existing tokens
- * directly.
+ * /settings — full redesign on top of the real sitevento design
+ * language (matches styles/dashboard.css / styles/site-manage-page.css /
+ * ProfilePage.tsx), not the old flat cream/white picker shell:
+ *   - the page itself sits on var(--lime), the actual app background
+ *     (see base.css — html/body are lime), instead of a plain white
+ *     page with no lime anywhere.
+ *   - panels/cards are var(--surface) + var(--surface-border) — the
+ *     "on lime" surface tone used by .dash-panel/.prof-card — not
+ *     plain #fff boxes.
+ *   - buttons reuse the app's .ghost-btn shape (pill, surface bg, hard
+ *     1px "pressed" shadow, .live variant in solid lime with the thick
+ *     ink shadow) instead of a bespoke walnut button.
+ *   - the sidebar is a dark var(--ink) rail (matching SiteManagePage's
+ *     .smp-head hero treatment) with a lime active state, instead of a
+ *     plain var(--cream) list.
+ *   - UI chrome uses -apple-system (the same sans stack every other
+ *     dashboard surface uses for labels/buttons/meta text) rather than
+ *     the page body's serif, which is reserved for marketing copy.
  *
- * Panels in this pass are pickers/toggles only (per the current scope:
- * wire up the real settings surface and its controls, not the backing
- * content/data for each one yet).
+ * Every panel's controls now read/write real data (see hooks/
+ * useUserSettings.ts) — this file adds a couple of purely-visual hooks
+ * for that: an inline toast (.settings-toast) and the Appearance
+ * panel's actual effect, [data-font-size]/[data-compact] on <html>,
+ * applied in SettingsPageClient.tsx and consumed by base.css + the
+ * two blocks near the bottom of this file.
  */
 
 .settings-wrap {
@@ -23,6 +35,7 @@
   flex-direction: column;
   background: var(--lime);
   overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .settings-topbar {
@@ -30,37 +43,44 @@
   align-items: center;
   gap: 0.6rem;
   padding: 1rem 1.2rem;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(34, 32, 28, 0.12);
   flex-shrink: 0;
 }
 
 .settings-topbar h1 {
   font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--ink);
+  font-weight: 800;
+  color: var(--lime-ink);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .settings-back-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  background: transparent;
-  border: 1px solid var(--line);
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
   color: var(--ink);
-  padding: 0.45rem 0.9rem;
-  border-radius: 50px;
+  padding: 9px 15px;
+  border-radius: 100px;
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 12.5px;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  box-shadow: 0 1px 0 rgba(34, 32, 28, 0.08);
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
 
 .settings-back-btn:hover {
-  background: var(--cream);
-  border-color: var(--walnut);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(34, 32, 28, 0.1);
+}
+
+.settings-back-btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .settings-back-btn svg {
@@ -79,12 +99,16 @@
   min-height: 0;
 }
 
-/* ── Sidebar (left) ──────────────────────────── */
+/* ── Sidebar (left) — dark rail, matches SiteManagePage's .smp-head
+   ink-card treatment, with a soft lime glow in the corner ─────────── */
 .settings-sidebar {
   width: 280px;
   min-width: 240px;
-  background: var(--cream);
-  border-right: 1px solid var(--line);
+  background: var(--ink);
+  color: var(--cream);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 1.1rem 0.7rem;
@@ -94,12 +118,25 @@
   flex-shrink: 0;
 }
 
+.settings-sidebar::before {
+  content: '';
+  position: absolute;
+  top: -90px;
+  right: -70px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, var(--lime) 0%, transparent 68%);
+  opacity: 0.5;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .sidebar-section-label {
   font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.9px;
-  color: #948a7c;
+  color: #a79f8e;
   padding: 0.55rem 0.75rem 0.3rem;
   margin-top: 0.35rem;
 }
@@ -113,10 +150,10 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.68rem 0.8rem;
-  border-radius: 0.65rem;
+  border-radius: 0.7rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
-  color: #5c5448;
+  color: #cfc9bd;
   font-size: 0.86rem;
   font-weight: 500;
   border: none;
@@ -130,14 +167,15 @@
 }
 
 .settings-nav-item:hover {
-  background: var(--cream-deep);
-  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .settings-nav-item.active {
-  background: var(--walnut);
-  color: #fff;
+  background: var(--lime);
+  color: var(--lime-ink);
   font-weight: 700;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 .settings-nav-item svg {
@@ -152,8 +190,8 @@
 .settings-nav-item .nav-badge {
   margin-left: auto;
   flex-shrink: 0;
-  background: var(--lime);
-  color: var(--lime-ink);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   font-size: 0.63rem;
   font-weight: 800;
   padding: 2px 7px;
@@ -162,14 +200,14 @@
 }
 
 .settings-nav-item.active .nav-badge {
-  background: #fff;
-  color: var(--walnut-dark);
+  background: rgba(26, 31, 10, 0.18);
+  color: var(--lime-ink);
 }
 
 .sidebar-footer {
   margin-top: auto;
   padding-top: 0.6rem;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -190,7 +228,7 @@
   border: none;
   background: transparent;
   transition: background 0.15s;
-  color: #5c5448;
+  color: #cfc9bd;
 }
 
 .sidebar-footer-btn svg {
@@ -203,75 +241,124 @@
 }
 
 .sidebar-footer-btn:hover {
-  background: var(--cream-deep);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .sidebar-footer-btn.logout {
-  color: #b64b3a;
+  color: #ffb0a0;
 }
 
 .sidebar-footer-btn.logout:hover {
-  background: rgba(182, 75, 58, 0.08);
+  background: rgba(232, 132, 122, 0.14);
+  color: #ffcabe;
 }
 
-/* ── Detail panel (right) ────────────────────── */
+/* ── Detail panel (right) — sits directly on the lime page bg,
+   individual sections are their own var(--surface) cards ──────────── */
 .settings-detail-panel {
   flex: 1;
   background: var(--lime);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 1.6rem 1.8rem 2rem;
+  padding: 1.8rem 2rem 2.4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.3rem;
+  gap: 1.2rem;
   min-width: 0;
 }
 
-/* .settings-wrap is its own height: calc(100dvh - 64px); overflow: hidden
-   box (see above), so it scrolls internally rather than through <body> —
-   the global bottom-nav clearance reserved on <body> in base.css never
-   reaches in here. Without this, the last settings content sits behind
-   GlobalNav's fixed mobile bottom bar. Same 70px nav height body uses. */
 @media (max-width: 859px) {
   .settings-detail-panel {
     padding-bottom: calc(70px + 2rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
+/* The whole panel body (header + description + controls) rendered by
+   each panel component sits inside one surface card, so every panel
+   reads as a card floating on lime rather than bare controls on raw
+   lime background. */
+.settings-detail-panel {
+  position: relative;
+}
+
+.settings-detail-panel > .settings-panel-header {
+  margin-top: 0;
+}
+
+.settings-panel-header,
+.settings-panel-desc,
+.settings-divider,
+.settings-input-group,
+.settings-toggle-item,
+.settings-kv-row,
+.settings-placeholder-note,
+.settings-save-btn,
+.settings-danger-btn,
+.settings-toast {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card wrapper: implemented as a ::before-less real box around the
+   detail panel's content by giving the detail panel itself the card
+   treatment (surface bg/border/radius/shadow) and letting the
+   scroll/padding live one level out via .settings-main. This keeps
+   every existing panel component (which render a flat list of
+   .settings-* elements with no wrapping <div>) working unchanged. */
+.settings-main .settings-detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(20, 18, 14, 0.04);
+  margin: 1.1rem 1.3rem 1.3rem 0;
+}
+
+@media (max-width: 640px) {
+  .settings-main .settings-detail-panel {
+    margin: 0.7rem 0.7rem calc(70px + 0.9rem + env(safe-area-inset-bottom, 0px));
+    border-radius: 16px;
+  }
+}
+
 .settings-panel-header {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.6rem;
   margin-bottom: 0.2rem;
 }
 
 .settings-panel-header svg {
   width: 20px;
   height: 20px;
-  stroke: var(--walnut);
+  stroke: var(--lime-ink);
   fill: none;
   stroke-width: 2;
+  background: var(--lime);
+  border-radius: 9px;
+  padding: 7px;
+  box-sizing: content-box;
 }
 
 .settings-panel-header h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: var(--ink);
   letter-spacing: -0.2px;
   margin: 0;
 }
 
 .settings-panel-desc {
-  font-size: 0.82rem;
-  color: #7a7265;
-  margin-top: -0.7rem;
+  font-size: 0.84rem;
+  color: #6b655c;
+  margin-top: -0.4rem;
   margin-bottom: 0.1rem;
   line-height: 1.45;
 }
 
 .settings-divider {
   border: none;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--surface-border);
   margin: 0.25rem 0 0.6rem;
 }
 
@@ -279,8 +366,8 @@
   display: none;
   align-items: center;
   gap: 0.35rem;
-  background: transparent;
-  border: 1px solid var(--line);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
   color: var(--ink);
   padding: 0.45rem 0.9rem;
   border-radius: 50px;
@@ -333,6 +420,12 @@
   line-height: 1.3;
 }
 
+.settings-field-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 /* Picker buttons (used by Appearance's font-size / density choices,
    and anywhere else a short list of mutually-exclusive options needs
    to render as a button row rather than a <select>). */
@@ -343,9 +436,9 @@
 
 .settings-picker-btn {
   padding: 0.7rem 0.6rem;
-  border-radius: 0.65rem;
-  border: 1.5px solid var(--line);
-  background: #fff;
+  border-radius: 0.8rem;
+  border: 1.5px solid var(--surface-border);
+  background: var(--cream);
   color: #5c5448;
   font-family: inherit;
   cursor: pointer;
@@ -355,24 +448,25 @@
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 
 .settings-picker-btn:hover {
-  border-color: var(--walnut);
+  border-color: var(--ink);
 }
 
 .settings-picker-btn.active {
-  border-color: var(--walnut);
-  background: var(--cream);
-  color: var(--walnut-dark);
+  border-color: var(--lime-ink);
+  background: var(--lime);
+  color: var(--lime-ink);
+  box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
 }
 
 /* Select dropdown, matches sitevento's existing input look-and-feel */
 .settings-select {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 0.65rem;
+  background: var(--cream);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
   padding: 0.65rem 2.3rem 0.65rem 0.85rem;
   font-size: 0.86rem;
   color: var(--ink);
@@ -390,13 +484,18 @@
 }
 
 .settings-select:focus {
-  border-color: var(--walnut);
+  border-color: var(--ink);
+}
+
+.settings-select:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .settings-text-input {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 0.65rem;
+  background: var(--cream);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
   padding: 0.65rem 0.85rem;
   font-size: 0.86rem;
   color: var(--ink);
@@ -407,7 +506,12 @@
 }
 
 .settings-text-input:focus {
-  border-color: var(--walnut);
+  border-color: var(--ink);
+}
+
+.settings-text-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .settings-text-input::placeholder {
@@ -419,9 +523,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
+  background: var(--cream);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.85rem;
   padding: 0.8rem 1.1rem;
   width: 100%;
   max-width: 480px;
@@ -437,7 +541,7 @@
 .settings-toggle-label {
   font-size: 0.86rem;
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .settings-toggle-sublabel {
@@ -451,6 +555,10 @@
   width: 42px;
   height: 23px;
   flex-shrink: 0;
+}
+
+.settings-toggle-switch.is-disabled {
+  opacity: 0.5;
 }
 
 .settings-toggle-switch input {
@@ -471,6 +579,10 @@
   border-radius: 24px;
 }
 
+.settings-toggle-switch input:disabled + .slider {
+  cursor: default;
+}
+
 .settings-toggle-switch .slider::before {
   position: absolute;
   content: '';
@@ -485,44 +597,50 @@
 }
 
 .settings-toggle-switch input:checked + .slider {
-  background-color: var(--walnut);
+  background-color: var(--lime);
 }
 
 .settings-toggle-switch input:checked + .slider::before {
+  background-color: var(--lime-ink);
   transform: translateX(19px);
 }
 
-/* ── Buttons ─────────────────────────────────── */
+/* ── Buttons — same pill/shadow language as .ghost-btn everywhere
+   else in the dashboard ─────────────────────────────────────────── */
 .settings-save-btn {
-  background: var(--walnut);
-  border: none;
-  color: #fff;
+  background: var(--lime);
+  border: 1px solid var(--lime-ink);
+  color: var(--lime-ink);
   font-weight: 700;
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  font-size: 0.86rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 100px;
+  font-size: 0.84rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  transition: background 0.15s, transform 0.15s;
+  box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
+  transition: transform 140ms ease, box-shadow 140ms ease;
   font-family: inherit;
   align-self: flex-start;
   white-space: nowrap;
 }
 
-.settings-save-btn:hover {
-  background: var(--walnut-dark);
+.settings-save-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 rgba(34, 32, 28, 0.9);
 }
 
-.settings-save-btn:active {
-  transform: scale(0.97);
+.settings-save-btn:not(:disabled):active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .settings-save-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: default;
+  box-shadow: none;
 }
 
 .settings-save-btn svg {
@@ -532,13 +650,35 @@
   fill: none;
 }
 
+/* Secondary (non-"live") action — e.g. the inline Save next to the
+   Display Name field — uses the plain surface pill instead of the
+   solid-lime "primary" treatment, same distinction .ghost-btn vs
+   .ghost-btn.live makes elsewhere. */
+.settings-save-btn-inline,
+.settings-save-btn-ghost {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  color: var(--ink);
+  box-shadow: 0 1px 0 rgba(34, 32, 28, 0.08);
+}
+
+.settings-save-btn-inline:not(:disabled):hover,
+.settings-save-btn-ghost:not(:disabled):hover {
+  box-shadow: 0 3px 0 rgba(34, 32, 28, 0.1);
+}
+
+.settings-save-btn-inline {
+  flex-shrink: 0;
+  padding: 0.65rem 1.1rem;
+}
+
 .settings-danger-btn {
   background: transparent;
-  border: 1px solid #b64b3a;
-  color: #b64b3a;
+  border: 1px solid #e9c9bd;
+  color: #b3432b;
   font-weight: 600;
   padding: 0.65rem 1.3rem;
-  border-radius: 50px;
+  border-radius: 100px;
   font-size: 0.84rem;
   cursor: pointer;
   display: inline-flex;
@@ -551,8 +691,36 @@
 }
 
 .settings-danger-btn:hover {
-  background: #b64b3a;
+  background: #b3432b;
   color: #fff;
+  border-color: #b3432b;
+}
+
+/* ── Inline toast — success/error feedback right under the control
+   that triggered a real write (password email sent, name saved, a
+   settings write that failed) ───────────────────────────────────── */
+.settings-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.65rem;
+  width: fit-content;
+  max-width: 480px;
+}
+
+.settings-toast.is-ok {
+  background: var(--dash-green-surface, #eafaf0);
+  color: var(--dash-green-ink, #0f5c2e);
+  border: 1px solid var(--dash-green-border, #c3ecd3);
+}
+
+.settings-toast.is-error {
+  background: #fdeeea;
+  color: #b3432b;
+  border: 1px solid #f3c9bc;
 }
 
 /* API key / webhook row — picker-only for now: shows the field shape
@@ -563,9 +731,9 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 0.7rem;
+  background: var(--cream);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
   padding: 0.75rem 1rem;
   width: 100%;
   max-width: 480px;
@@ -593,8 +761,8 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
   color: #5c5448;
   cursor: pointer;
   flex-shrink: 0;
@@ -603,7 +771,7 @@
 
 .settings-icon-btn:hover {
   background: var(--cream);
-  border-color: var(--walnut);
+  border-color: var(--ink);
 }
 
 .settings-icon-btn svg {
@@ -618,7 +786,7 @@
   font-size: 0.78rem;
   color: #948a7c;
   background: var(--cream);
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--surface-border);
   border-radius: 0.65rem;
   padding: 0.8rem 1rem;
   max-width: 480px;
@@ -638,7 +806,7 @@
     gap: 0.5rem;
   }
   .settings-detail-panel {
-    padding: 1.2rem 1rem 1.5rem;
+    padding: 1.3rem 1.1rem 1.6rem;
   }
 }
 
@@ -654,7 +822,6 @@
     height: 100%;
     flex-shrink: 1;
     padding: 0.8rem 0.6rem calc(70px + 0.8rem + env(safe-area-inset-bottom, 0px));
-    border-right: none;
   }
   .settings-main[data-mobile-view='panel'] .settings-sidebar {
     display: none;
@@ -669,7 +836,7 @@
   .settings-detail-panel {
     width: 100%;
     height: 100%;
-    padding: 1.1rem 1rem 1.5rem;
+    padding: 1.2rem 1.1rem 1.6rem;
   }
   .settings-main[data-mobile-view='list'] .settings-detail-panel {
     display: none;
@@ -692,3 +859,16 @@
     display: flex;
   }
 }
+
+/* ── Appearance panel's live effects ─────────────────────────────
+   Applied via <html data-font-size="…"> / <html data-compact> in
+   SettingsPageClient.tsx, read here (scoped to the settings page
+   itself) and in base.css (scoped globally) so the choice visibly
+   changes the dashboard instead of being a saved value nothing reads. */
+html[data-font-size='small'] .settings-wrap { font-size: 13.5px; }
+html[data-font-size='large'] .settings-wrap { font-size: 16.5px; }
+
+html[data-compact] .settings-detail-panel { gap: 0.8rem; padding-top: 1.2rem; }
+html[data-compact] .settings-toggle-item,
+html[data-compact] .settings-kv-row { padding: 0.55rem 0.85rem; }
+html[data-compact] .settings-divider { margin: 0.1rem 0 0.4rem; }
