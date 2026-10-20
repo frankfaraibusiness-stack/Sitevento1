@@ -2,60 +2,61 @@
 
 // components/widgets/designer/useWidgetDesignerAuth.ts
 //
-// Rebuilt auth gate for app/widgets/[widgetId]/page.tsx only.
+// Auth gate for app/widgets/[widgetId]/page.tsx only. Rebuilt from
+// scratch — the previous version still asked signed-in visitors to
+// sign in on every visit to a widget page.
 //
-// Why this exists instead of reusing hooks/useAuth.ts here: this route
-// is landed on almost exclusively via a client-side router.push from
-// /widgets (components/widgets/WidgetsPageClient.tsx's card click) —
+// Why this route needs its own hook instead of reusing hooks/useAuth.ts:
+// this page is landed on almost exclusively via a client-side
+// router.push from /widgets (WidgetsPageClient.tsx's card click) —
 // same tab, same already-initialized Firebase app, no reload. A plain
 // useAuth() call still starts completely over on every one of those
-// mounts: new local user/authReady state, a fresh setPersistence()
-// call, and a fresh onAuthStateChanged subscription that doesn't fire
-// synchronously. Depending on how that first callback lands relative
-// to the click, authReady could flip true with user still null for a
-// moment — and WidgetDesigner would take that at face value and pop
-// the sign-in overlay, even though the visitor was signed in one
-// screen ago. That's the "logs me out every time I open a widget"
-// report.
+// mounts: fresh local state and a fresh onAuthStateChanged
+// subscription that doesn't fire synchronously, so there's a brief
+// window where authReady can read true with user still null even
+// though the visitor was signed in one screen ago. WidgetDesigner
+// takes authReady+!user at face value and pops the sign-in overlay —
+// that's the "asks for sign in on every visit" report.
 //
-// Fix, specific to this route: seed state synchronously from
-// auth.currentUser (Firebase keeps this populated in memory the moment
-// a session exists, no async wait needed once the app's been used once
-// in this tab) instead of starting from null, and only ever treat the
-// visitor as signed-out once BOTH an onAuthStateChanged callback has
-// actually fired AND a short settle window has passed — so a slow
-// first callback can't momentarily masquerade as "confirmed logged
-// out."
+// Root cause this rewrite fixes: the previous version raced a fixed
+// SETTLE_MS timeout against onAuthStateChanged, but seeded the
+// timeout's fallback value from auth.currentUser read once when the
+// effect first ran — not re-read when the timeout actually fired.
+// auth.currentUser is frequently still null at that moment (Firebase
+// hasn't finished restoring the persisted session from storage yet);
+// on anything slower than the fixed timeout, the timer fired first,
+// locked in authReady=true/user=null, and popped the sign-in overlay
+// — and then onAuthStateChanged would resolve a moment later with the
+// real user, but nothing ever closed the overlay that had already
+// opened. A fixed timeout racing an inherently variable restore time
+// is the wrong shape for this regardless of the duration picked, so
+// this version doesn't use one: it seeds synchronously from
+// auth.currentUser same as before (instant for anyone already
+// resolved in this tab), and otherwise simply waits for
+// onAuthStateChanged's first callback — which Firebase guarantees
+// fires exactly once with the settled state, null or a real user —
+// before ever treating the visitor as signed out.
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase';
 
-// How long to give onAuthStateChanged to deliver its first callback
-// before trusting a null user. Generous on purpose — this only delays
-// the sign-in overlay for a genuinely signed-out visitor by a few
-// hundred ms; it does not block rendering the rest of the page.
-const SETTLE_MS = 600;
+function currentUserSafe(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return getFirebaseAuth().currentUser;
+  } catch {
+    return null;
+  }
+}
 
 export function useWidgetDesignerAuth() {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      return getFirebaseAuth().currentUser;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<User | null>(currentUserSafe);
   // If we already found a current user synchronously, there's nothing
   // to wait on — start ready immediately instead of flashing a loading
-  // state for someone who was already signed in.
-  const [authReady, setAuthReady] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      return getFirebaseAuth().currentUser !== null;
-    } catch {
-      return false;
-    }
-  });
+  // state (or, worse, a sign-in prompt) for someone who was already
+  // signed in. Otherwise wait for onAuthStateChanged's first callback
+  // to actually confirm signed-out before treating it as such.
+  const [authReady, setAuthReady] = useState(() => currentUserSafe() !== null);
 
   useEffect(() => {
     let auth;
@@ -68,31 +69,23 @@ export function useWidgetDesignerAuth() {
     }
 
     // Covers the case the synchronous seed above missed (e.g. this is
-    // genuinely the first load in this tab and persistence is still
-    // being restored from storage).
+    // genuinely the first load in this tab and the seed ran before
+    // Firebase's module-level init finished).
     if (auth.currentUser) {
       setUser(auth.currentUser);
       setAuthReady(true);
     }
 
-    let settled = false;
-    let latestUser = auth.currentUser;
-    const settleTimer = window.setTimeout(() => {
-      settled = true;
-      setUser(latestUser);
-      setAuthReady(true);
-    }, SETTLE_MS);
-
+    // The only source of truth for "signed out" is onAuthStateChanged
+    // actually firing with null — never a timer. Firebase fires this
+    // exactly once with the restored session state (possibly null)
+    // even if that takes a while on a slow connection/device, and
+    // again on every subsequent sign-in/sign-out.
     const unsubscribe = onAuthStateChanged(
       auth,
       (nextUser: User | null) => {
-        latestUser = nextUser;
         setUser(nextUser);
         setAuthReady(true);
-        if (!settled) {
-          settled = true;
-          window.clearTimeout(settleTimer);
-        }
       },
       (err: Error) => {
         console.error('onAuthStateChanged error', err);
@@ -100,10 +93,7 @@ export function useWidgetDesignerAuth() {
       }
     );
 
-    return () => {
-      window.clearTimeout(settleTimer);
-      unsubscribe();
-    };
+    return unsubscribe;
   }, []);
 
   return { user, authReady };
