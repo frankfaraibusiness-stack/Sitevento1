@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useAuthForms, type AuthPane, type SuccessKind } from '@/hooks/useAuthForms';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { GoogleIcon } from './GoogleIcon';
+import { AuthBlob } from './AuthBlob';
 
 interface AuthOverlayProps {
   open: boolean;
@@ -97,6 +98,8 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
             />
           </div>
 
+          <AuthBlob className="showcase-blob" />
+
           <div className="showcase-copy">
             <h1>One script tag. A control panel for your whole site.</h1>
             <p>Join the teams tracking visits, pushing live overlays, and capturing leads without a single redeploy.</p>
@@ -137,6 +140,7 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
               {/* SIGN IN */}
               <div className={`pane${pane === 'signin' ? ' active' : ''}`}>
                 <div className="form-header">
+                  <AuthBlob className="form-blob" />
                   <h2>Welcome back</h2>
                   <p>
                     New here? <a onClick={() => { clearErrors(); setPane('signup'); }}>Create an account</a>
@@ -214,6 +218,7 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
               {/* SIGN UP */}
               <div className={`pane${pane === 'signup' ? ' active' : ''}`}>
                 <div className="form-header">
+                  <AuthBlob className="form-blob" />
                   <h2>Create your account</h2>
                   <p>
                     Already have one? <a onClick={() => { clearErrors(); setPane('signin'); }}>Sign in</a>
