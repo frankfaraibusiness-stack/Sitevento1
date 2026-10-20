@@ -20,6 +20,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { AppSkeleton } from '@/components/AppSkeleton';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import type { SettingsPanelId } from '@/components/settings/SettingsSidebar';
+import { SettingsBlob } from '@/components/settings/SettingsBlob';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useAppliedAppearance } from '@/hooks/useAppliedAppearance';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -178,6 +179,7 @@ export default function SettingsPageClient({ initialPanel }: { initialPanel: Set
             Dashboard
           </button>
           <h1>Settings</h1>
+          <SettingsBlob className="settings-topbar-blob" />
         </div>
 
         <div className="settings-main" data-mobile-view={mobileView}>
