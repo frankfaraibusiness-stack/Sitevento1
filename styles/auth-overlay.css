@@ -1,6 +1,16 @@
 /* ============================================================
  * auth-overlay.css — sign in / sign up / forgot password overlay
  * Split from app/globals.css for maintainability.
+ *
+ * Redesign note: the overlay no longer paints its own white/--bg
+ * backdrop. It sits directly on the page's lime body background
+ * (var(--lime), same as html/body in base.css), so opening it never
+ * feels like a different surface sliding on top — it's the same
+ * lime the rest of the brand lives on. Inputs, cards and buttons
+ * are the things that get a surface color now (var(--bg)/var(--surface)),
+ * not the overlay itself. The brand's lime "slime" character
+ * (AuthBlob, same body-path technique as HeroSlime/AgentBlob) greets
+ * the visitor at the top of the form column.
  * ============================================================ */
 
   /* ============ Auth overlay (sign in / sign up / forgot) ============ */
@@ -8,7 +18,7 @@
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: var(--bg);
+    background: var(--lime);
     opacity: 0;
     pointer-events: none;
     transform: translateY(14px);
@@ -35,19 +45,25 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1.5px solid var(--line);
-    background: var(--bg);
+    border: 1.5px solid var(--lime-ink);
+    background: var(--lime);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(34,32,28,0.08);
+    box-shadow: 0 2px 10px rgba(26,31,10,0.14);
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1), background 0.15s ease;
+  }
+
+  .auth-overlay .auth-exit:hover {
+    background: var(--bg);
+    transform: scale(1.06);
   }
 
   .auth-overlay .auth-exit svg {
     width: 16px;
     height: 16px;
-    stroke: var(--ink);
+    stroke: var(--lime-ink);
   }
 
   @supports (padding: max(0px)) {
@@ -66,11 +82,10 @@
     .auth-overlay .stage { grid-template-columns: 1fr; }
   }
 
-  /* ---- Left: visual / brand panel ---- */
+  /* ---- Left: visual / brand panel (lives on the same lime, no card) ---- */
   .auth-overlay .showcase {
     position: relative;
-    background: var(--ink);
-    color: var(--cream);
+    color: var(--lime-ink);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -82,6 +97,9 @@
     .auth-overlay .showcase { display: none; }
   }
 
+  /* Soft depth instead of the old dark-panel radial blobs — just two
+     faint ink/white washes so the lime still has some life behind the
+     blob character without competing with it. */
   .auth-overlay .showcase::before {
     content: "";
     position: absolute;
@@ -89,7 +107,7 @@
     width: 560px;
     height: 560px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(198,255,61,0.18), transparent 70%);
+    background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 70%);
     animation: float-blob 14s ease-in-out infinite;
   }
 
@@ -100,7 +118,7 @@
     width: 480px;
     height: 480px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(107,74,52,0.35), transparent 70%);
+    background: radial-gradient(circle, rgba(26,31,10,0.1), transparent 70%);
     animation: float-blob 18s ease-in-out infinite reverse;
   }
 
@@ -127,13 +145,21 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--lime);
+    background: var(--lime-ink);
     animation: pulse-dot 1.8s ease-in-out infinite;
   }
 
   @keyframes pulse-dot {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(198,255,61,0.45); }
-    50% { box-shadow: 0 0 0 6px rgba(198,255,61,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(26,31,10,0.35); }
+    50% { box-shadow: 0 0 0 6px rgba(26,31,10,0); }
+  }
+
+  /* ---- Blob character (greets the visitor) ---- */
+  .auth-overlay .showcase-blob {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 180px);
+    margin: 4px 0 -8px;
   }
 
   .auth-overlay .showcase-copy {
@@ -148,12 +174,13 @@
     font-weight: 400;
     margin: 0 0 16px;
     letter-spacing: -0.01em;
+    color: var(--lime-ink);
   }
 
   .auth-overlay .showcase-copy p {
     font-size: 15px;
     line-height: 1.6;
-    color: #b8b2a4;
+    color: rgba(26,31,10,0.72);
     margin: 0;
   }
 
@@ -168,19 +195,19 @@
     font-size: 24px;
     font-weight: 600;
     display: block;
-    color: var(--lime);
+    color: var(--lime-ink);
   }
 
   .auth-overlay .showcase-stats .s-label {
     font-size: 12.5px;
-    color: #b8b2a4;
+    color: rgba(26,31,10,0.68);
   }
 
   .auth-overlay .showcase-card {
     position: relative;
     z-index: 1;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(26,31,10,0.12);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 18px 20px;
@@ -200,7 +227,7 @@
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: var(--lime);
+    background: var(--lime-ink);
     position: relative;
     flex-shrink: 0;
   }
@@ -210,8 +237,8 @@
     position: absolute;
     inset: -5px;
     border-radius: 50%;
-    background: var(--lime);
-    opacity: 0.5;
+    background: var(--lime-ink);
+    opacity: 0.4;
     animation: pulse-ring 1.6s ease-out infinite;
   }
 
@@ -220,9 +247,10 @@
     100% { transform: scale(2); opacity: 0; }
   }
 
-  .showcase-card .ctext { font-size: 13px; color: #d9d4c8; font-family: "SFMono-Regular", Consolas, monospace; }
+  .showcase-card .ctext { font-size: 13px; color: var(--lime-ink); font-family: "SFMono-Regular", Consolas, monospace; }
 
-  /* ---- Right: form panel ---- */
+  /* ---- Right: form column — lives on the lime too; inputs/buttons
+     get their own surface color rather than a wrapping card. ---- */
   .auth-overlay .form-wrap {
     display: flex;
     align-items: center;
@@ -245,12 +273,12 @@
     gap: 9px;
     font-weight: 700;
     font-size: 15px;
-    margin: -32px -24px 36px;
+    margin: -32px -24px 20px;
     padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 14px;
     position: sticky;
     top: -32px;
     z-index: 5;
-    background: var(--bg);
+    background: var(--lime);
   }
 
   @media (max-width: 920px) {
@@ -262,7 +290,6 @@
     height: 7px;
     border-radius: 50%;
     background: var(--lime-ink);
-    border: 1px solid var(--walnut);
   }
 
   .auth-overlay .mobile-brand .brand-logo,
@@ -272,27 +299,42 @@
     display: block;
   }
 
+  /* Small blob next to the headline on mobile, where the showcase
+     column (and its larger greeting blob) is hidden. */
+  .auth-overlay .form-blob {
+    display: none;
+    width: 64px;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 920px) {
+    .auth-overlay .form-blob { display: block; }
+  }
+
   .auth-overlay .form-header h2 {
     font-size: clamp(24px, 4vw, 30px);
     font-weight: 400;
     margin: 0 0 8px;
     letter-spacing: -0.01em;
+    color: var(--lime-ink);
   }
 
   .auth-overlay .form-header p {
     font-size: 14.5px;
-    color: #6b665e;
+    color: rgba(26,31,10,0.68);
     margin: 0;
   }
 
   .auth-overlay .form-header p a, .auth-overlay .switcher-link {
-    color: var(--walnut-dark);
-    font-weight: 600;
-    text-decoration: none;
+    color: var(--lime-ink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(26,31,10,0.3);
+    text-underline-offset: 2px;
     cursor: pointer;
   }
 
-  .form-header p a:hover, .switcher-link:hover { text-decoration: underline; }
+  .form-header p a:hover, .switcher-link:hover { text-decoration-color: var(--lime-ink); }
 
   /* panel transition */
   .auth-overlay .panes { position: relative; }
@@ -317,18 +359,18 @@
     gap: 10px;
     padding: 13px 16px;
     border-radius: 12px;
-    border: 1.5px solid var(--line);
+    border: 1.5px solid var(--lime-ink);
     background: var(--bg);
     color: var(--ink);
     font-size: 14.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
   }
 
   .auth-overlay .oauth-btn:hover {
-    border-color: var(--walnut);
-    box-shadow: 0 4px 14px rgba(34,32,28,0.08);
+    box-shadow: 0 4px 14px rgba(26,31,10,0.18);
+    transform: translateY(-1px);
   }
 
   .auth-overlay .oauth-btn:active { transform: scale(0.98); }
@@ -340,7 +382,7 @@
     align-items: center;
     gap: 14px;
     margin: 22px 0;
-    color: #8a8477;
+    color: rgba(26,31,10,0.6);
     font-size: 12.5px;
   }
 
@@ -348,7 +390,7 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: var(--line);
+    background: rgba(26,31,10,0.18);
   }
 
   .auth-overlay .field {
@@ -360,7 +402,7 @@
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 7px;
-    color: var(--ink);
+    color: var(--lime-ink);
   }
 
   .auth-overlay .input-shell {
@@ -372,8 +414,8 @@
     padding: 13px 14px;
     font-size: 14.5px;
     border-radius: 12px;
-    border: 1.5px solid var(--line);
-    background: var(--cream);
+    border: 1.5px solid rgba(26,31,10,0.22);
+    background: var(--bg);
     color: var(--ink);
     transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   }
@@ -381,9 +423,9 @@
   .field input::placeholder { color: #a8a295; }
 
   .auth-overlay .field input:focus {
-    border-color: var(--walnut);
+    border-color: var(--lime-ink);
     background: var(--bg);
-    box-shadow: 0 0 0 4px rgba(107,74,52,0.1);
+    box-shadow: 0 0 0 4px rgba(26,31,10,0.12);
   }
 
   .auth-overlay .field.has-error input {
@@ -426,7 +468,7 @@
     align-items: center;
     gap: 9px;
     font-size: 13.5px;
-    color: #6b665e;
+    color: rgba(26,31,10,0.68);
     cursor: pointer;
     user-select: none;
   }
@@ -436,7 +478,7 @@
     width: 17px;
     height: 17px;
     border-radius: 5px;
-    border: 1.5px solid var(--line);
+    border: 1.5px solid rgba(26,31,10,0.28);
     background: var(--bg);
     cursor: pointer;
     position: relative;
@@ -445,8 +487,8 @@
   }
 
   .auth-overlay .check-row input[type="checkbox"]:checked {
-    background: var(--lime);
-    border-color: var(--lime-ink);
+    background: var(--ink);
+    border-color: var(--ink);
   }
 
   .auth-overlay .check-row input[type="checkbox"]:checked::after {
@@ -456,15 +498,17 @@
     top: 1.5px;
     width: 4px;
     height: 8px;
-    border: solid var(--lime-ink);
+    border: solid var(--lime);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
 
   .auth-overlay .forgot-link {
     font-size: 13.5px;
-    color: var(--walnut-dark);
-    text-decoration: none;
+    color: var(--lime-ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(26,31,10,0.3);
+    text-underline-offset: 2px;
     font-weight: 600;
     background: none;
     border: none;
@@ -472,19 +516,19 @@
     padding: 0;
   }
 
-  .auth-overlay .forgot-link:hover { text-decoration: underline; }
+  .auth-overlay .forgot-link:hover { text-decoration-color: var(--lime-ink); }
 
   .auth-overlay .submit-btn {
     width: 100%;
-    background: var(--lime);
-    color: var(--lime-ink);
+    background: var(--ink);
+    color: var(--lime);
     border: 1.5px solid var(--ink);
     border-radius: 999px;
     padding: 14px 20px;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 3px 0 rgba(34,32,28,0.9);
+    box-shadow: 0 3px 0 rgba(26,31,10,0.5);
     transition: transform 0.08s ease, box-shadow 0.08s ease;
     display: flex;
     align-items: center;
@@ -493,9 +537,14 @@
     position: relative;
   }
 
+  .auth-overlay .submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 rgba(26,31,10,0.5);
+  }
+
   .auth-overlay .submit-btn:active {
     transform: translateY(2px);
-    box-shadow: 0 1px 0 rgba(34,32,28,0.9);
+    box-shadow: 0 1px 0 rgba(26,31,10,0.5);
   }
 
   .submit-btn.loading .btn-text { opacity: 0; }
@@ -505,8 +554,8 @@
     position: absolute;
     width: 18px;
     height: 18px;
-    border: 2.5px solid rgba(26,31,10,0.25);
-    border-top-color: var(--lime-ink);
+    border: 2.5px solid rgba(198,255,61,0.25);
+    border-top-color: var(--lime);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
@@ -523,7 +572,7 @@
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: var(--lime);
+    background: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -540,7 +589,7 @@
   .auth-overlay .success-check svg {
     width: 28px;
     height: 28px;
-    stroke: var(--lime-ink);
+    stroke: var(--lime);
   }
 
   .auth-overlay .success-pane {
@@ -548,8 +597,8 @@
     padding: 20px 0;
   }
 
-  .success-pane h2 { margin-bottom: 10px; }
-  .success-pane p { color: #6b665e; font-size: 14.5px; margin: 0 0 24px; }
+  .success-pane h2 { color: var(--lime-ink); margin-bottom: 10px; }
+  .success-pane p { color: rgba(26,31,10,0.68); font-size: 14.5px; margin: 0 0 24px; }
 
   .auth-overlay .back-link {
     display: inline-flex;
@@ -557,7 +606,7 @@
     gap: 7px;
     font-size: 13.5px;
     font-weight: 600;
-    color: var(--walnut-dark);
+    color: var(--lime-ink);
     text-decoration: none;
     margin-bottom: 20px;
     background: none;
@@ -570,14 +619,14 @@
 
   .auth-overlay .terms-note {
     font-size: 12.5px;
-    color: #8a8477;
+    color: rgba(26,31,10,0.6);
     text-align: center;
     margin-top: 22px;
     line-height: 1.6;
   }
 
-  .terms-note a { color: var(--walnut-dark); text-decoration: none; font-weight: 600; }
-  .terms-note a:hover { text-decoration: underline; }
+  .terms-note a { color: var(--lime-ink); text-decoration: underline; text-decoration-color: rgba(26,31,10,0.3); font-weight: 600; }
+  .terms-note a:hover { text-decoration-color: var(--lime-ink); }
 
   .auth-overlay .strength-meter {
     display: flex;
@@ -589,6 +638,67 @@
     height: 4px;
     flex: 1;
     border-radius: 2px;
-    background: var(--line);
+    background: rgba(26,31,10,0.15);
     transition: background 0.2s ease;
+  }
+
+  /* ============================================================
+   * Blob character (AuthBlob component) — same brand "slime" as
+   * HeroSlime/AgentBlob, inlined here so AuthOverlay stays fully
+   * self-contained (auth-overlay.css is imported globally via
+   * globals.css; agent-page.css is not, so we don't depend on it).
+   * Sits on the lime background itself, so body fill is ink (not
+   * lime-on-lime) with a lime face, mirroring how the character
+   * reads on the (white) agent page in reverse.
+   * ============================================================ */
+  .auth-blob {
+    display: block;
+    line-height: 0;
+  }
+  .auth-blob-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .auth-blob-wrap {
+    transform-origin: 60px 100px;
+    animation: auth-blob-idle 3.8s ease-in-out infinite;
+  }
+  .auth-blob-body {
+    fill: var(--ink);
+    stroke: var(--ink);
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+  }
+  .auth-blob-shine {
+    fill: #ffffff;
+    opacity: 0.16;
+    transform: rotate(-16deg);
+    transform-origin: 46px 46px;
+  }
+  .auth-blob-shadow {
+    fill: #000;
+    opacity: 0.1;
+  }
+  .auth-blob-eye-white { fill: var(--lime); }
+  .auth-blob-eye-pupil { fill: var(--ink); }
+  .auth-blob-eye { transform-origin: center; transition: transform 120ms ease-out; }
+  .auth-blob-eyes.is-blinking .auth-blob-eye { transform: scaleY(0.08); }
+  .auth-blob-mouth {
+    fill: none;
+    stroke: var(--lime);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  @keyframes auth-blob-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.02, 0.97); }
+    50%  { transform: scale(0.985, 1.02); }
+    75%  { transform: scale(1.012, 0.99); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-blob-wrap { animation: none !important; }
   }
