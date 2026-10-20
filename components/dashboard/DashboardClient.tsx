@@ -26,6 +26,7 @@ import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/co
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
+import { useAppliedAppearance } from '@/hooks/useAppliedAppearance';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { DashSection } from '@/hooks/useAppView';
 import type { LimitStatus } from '@/hooks/useConnectSiteWizard';
@@ -54,11 +55,26 @@ const SECTION_ELEMENT_IDS: Record<DashSection, string> = {
   overlay: 'panelOverlay',
 };
 
+// Appearance panel's landingView values -> DashSection. 'sites' has no
+// dedicated in-page section on the main dashboard scroll (Connected
+// Sites lives inline under Overview), so it maps to 'overview' too.
+const LANDING_VIEW_SECTION: Record<string, DashSection> = {
+  overview: 'overview',
+  visits: 'logs',
+  leads: 'leads',
+  sites: 'overview',
+};
+
 export default function DashboardClient({ view = 'dashboard', siteId }: DashboardClientProps) {
   const router = useNavRouter();
   const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
+  // Settings > Appearance, applied app-wide (Font Size / Compact Mode —
+  // see hooks/useAppliedAppearance.ts) and read here for Dashboard
+  // Landing View: which section the main dashboard view auto-scrolls to
+  // right after it mounts.
+  const { settings: userSettings, loaded: userSettingsLoaded } = useAppliedAppearance(user);
   // Only the profile/plans views need the sites list at this level —
   // DashboardShell already owns its own useSites call for the main
   // dashboard view, and SiteManagePage owns its own for "site-manage".
@@ -164,6 +180,46 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     const el = document.getElementById(SECTION_ELEMENT_IDS[section] || 'dashMain');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  // On landing on the main dashboard view (not profile/plans/site-manage,
+  // and not already mid-connect-flow), jump straight to the section the
+  // user picked in Appearance > Dashboard Landing View, once per mount.
+  // DashboardShell's child panels (and the Firestore-backed landingView
+  // value itself) can both still be loading on the first paint, so this
+  // polls briefly for the target element instead of assuming one
+  // requestAnimationFrame is enough.
+  const [landedOnSection, setLandedOnSection] = useState(false);
+  useEffect(() => {
+    if (landedOnSection) return;
+    if (view !== 'dashboard' || !user) return;
+    if (!userSettingsLoaded) return; // wait for the real saved value — don't act on the 'overview' default
+    if (searchParams.get('connect') === '1') return; // let the connect-wizard effect above take this mount instead
+    const target = LANDING_VIEW_SECTION[userSettings.landingView] || 'overview';
+    if (target === 'overview') {
+      setLandedOnSection(true);
+      return;
+    }
+    let attempts = 0;
+    let raf: number;
+    const tryScroll = () => {
+      const el = document.getElementById(SECTION_ELEMENT_IDS[target]);
+      if (el) {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        setLandedOnSection(true);
+        return;
+      }
+      attempts += 1;
+      if (attempts > 60) {
+        // ~1s at 60fps — panel never showed up (e.g. still loading
+        // sites); give up quietly rather than polling forever.
+        setLandedOnSection(true);
+        return;
+      }
+      raf = requestAnimationFrame(tryScroll);
+    };
+    raf = requestAnimationFrame(tryScroll);
+    return () => cancelAnimationFrame(raf);
+  }, [landedOnSection, view, user, userSettingsLoaded, searchParams, userSettings.landingView]);
 
   // Sidebar's "Dashboard"/"Visit logs"/"Email capture"/etc. links only
   // make sense as in-page scrolls when the main dashboard view is
