@@ -1,14 +1,20 @@
 'use client';
 
-import type { SettingsState } from '@/hooks/useSettingsState';
+// components/settings/panels/NotificationsPanel.tsx
+//
+// Real functions, not placeholders: every toggle here persists to
+// Firestore at users/{uid}.settings via useUserSettings, and reloads
+// correctly on every page load/refresh (onSnapshot-backed, not local
+// state).
+import type { UserSettings } from '@/hooks/useUserSettings';
 
-export default function NotificationsPanel({
-  state,
-  setState,
-}: {
-  state: SettingsState;
-  setState: React.Dispatch<React.SetStateAction<SettingsState>>;
-}) {
+interface NotificationsPanelProps {
+  settings: UserSettings;
+  settingsLoaded: boolean;
+  updateSettings: (patch: Partial<UserSettings>) => Promise<boolean>;
+}
+
+export default function NotificationsPanel({ settings, settingsLoaded, updateSettings }: NotificationsPanelProps) {
   return (
     <>
       <div className="settings-panel-header">
@@ -29,8 +35,9 @@ export default function NotificationsPanel({
         <label className="settings-toggle-switch">
           <input
             type="checkbox"
-            checked={state.visitAlerts}
-            onChange={(e) => setState((p) => ({ ...p, visitAlerts: e.target.checked }))}
+            checked={settings.visitAlerts}
+            disabled={!settingsLoaded}
+            onChange={(e) => updateSettings({ visitAlerts: e.target.checked })}
           />
           <span className="slider" />
         </label>
@@ -44,8 +51,9 @@ export default function NotificationsPanel({
         <label className="settings-toggle-switch">
           <input
             type="checkbox"
-            checked={state.leadAlerts}
-            onChange={(e) => setState((p) => ({ ...p, leadAlerts: e.target.checked }))}
+            checked={settings.leadAlerts}
+            disabled={!settingsLoaded}
+            onChange={(e) => updateSettings({ leadAlerts: e.target.checked })}
           />
           <span className="slider" />
         </label>
@@ -59,8 +67,9 @@ export default function NotificationsPanel({
         <label className="settings-toggle-switch">
           <input
             type="checkbox"
-            checked={state.weeklySummary}
-            onChange={(e) => setState((p) => ({ ...p, weeklySummary: e.target.checked }))}
+            checked={settings.weeklySummary}
+            disabled={!settingsLoaded}
+            onChange={(e) => updateSettings({ weeklySummary: e.target.checked })}
           />
           <span className="slider" />
         </label>
@@ -74,8 +83,9 @@ export default function NotificationsPanel({
         <label className="settings-toggle-switch">
           <input
             type="checkbox"
-            checked={state.marketingEmails}
-            onChange={(e) => setState((p) => ({ ...p, marketingEmails: e.target.checked }))}
+            checked={settings.marketingEmails}
+            disabled={!settingsLoaded}
+            onChange={(e) => updateSettings({ marketingEmails: e.target.checked })}
           />
           <span className="slider" />
         </label>
