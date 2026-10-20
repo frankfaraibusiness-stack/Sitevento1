@@ -1,0 +1,315 @@
+/* ============================================================
+ * styles/widgets-page.css
+ *
+ * Standalone stylesheet for the /widgets route
+ * (components/widgets/WidgetsPageClient.tsx). Deliberately its own
+ * file with its own `wgp-` class prefix rather than reusing the old
+ * dashboard-only `.wg-*` / `.feat-*` tokens (removed from
+ * styles/dashboard.css) — this page is public/indexable, not part of
+ * the signed-in dashboard tree, so it shouldn't be coupled to that
+ * stylesheet's lifecycle. Shares the app's base --ink/--line/--bg
+ * variables from styles/base.css for visual consistency (card
+ * typography, borders) but every layout/color rule specific to this
+ * picker lives only here.
+ * ============================================================ */
+
+.wgp-main {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 104px 16px 120px;
+  display: flex;
+  justify-content: center;
+}
+
+.wgp-wrap {
+  width: 100%;
+  max-width: 760px;
+}
+
+/* ── Page head: icon tile + title + subtitle ─────────────────────── */
+.wgp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.wgp-head-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wgp-head-icon svg { width: 26px; height: 26px; }
+
+.wgp-head-text h1 {
+  margin: 2px 0 6px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.wgp-head-text p {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #5c6a72;
+  max-width: 44ch;
+}
+
+/* ── Search bar ───────────────────────────────────────────────────── */
+.wgp-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  margin-bottom: 20px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(34, 32, 28, 0.04);
+}
+
+.wgp-search-icon {
+  flex-shrink: 0;
+  display: flex;
+  color: #9a948a;
+}
+.wgp-search-icon svg { width: 18px; height: 18px; }
+
+.wgp-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: -apple-system, sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+.wgp-search input::placeholder { color: #9a948a; }
+
+.wgp-note {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  color: #6b655c;
+}
+
+.wgp-empty {
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  color: #6b655c;
+  padding: 24px 4px;
+  text-align: center;
+}
+
+/* ── Card grid ────────────────────────────────────────────────────── */
+/* Always 2-up, even on a 320px-wide phone — gap and card padding below
+   are sized so two columns fit without overflow at that width (320 -
+   2*16 wrap padding = 288 content; 288 = 2*134 + 1*20 gap). Was 1fr
+   (single column) below 640px; widened back out at >=640px only for
+   roomier cards, not because narrower viewports need to drop to one. */
+.wgp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 420px) {
+  .wgp-grid { gap: 14px; }
+}
+
+@media (min-width: 640px) {
+  .wgp-grid { gap: 16px; }
+}
+
+.wgp-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+@media (min-width: 420px) {
+  .wgp-card { gap: 10px; padding: 18px; border-radius: 20px; }
+}
+.wgp-card:hover { box-shadow: 0 6px 18px rgba(34, 32, 28, 0.08); }
+.wgp-card:active { transform: scale(0.99); }
+
+.wgp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.wgp-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.wgp-card-icon svg { width: 18px; height: 18px; }
+@media (min-width: 420px) {
+  .wgp-card-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .wgp-card-icon svg { width: 22px; height: 22px; }
+}
+
+.wgp-card-arrow {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wgp-card-arrow svg { width: 14px; height: 14px; }
+@media (min-width: 420px) {
+  .wgp-card-arrow { width: 32px; height: 32px; }
+  .wgp-card-arrow svg { width: 16px; height: 16px; }
+}
+
+.wgp-card-name {
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  word-break: break-word;
+}
+@media (min-width: 420px) {
+  .wgp-card-name { font-size: 17px; }
+}
+
+.wgp-card-desc {
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #4b5a62;
+  /* Keep card heights sane in a 2-up grid at narrow widths — the full
+     description is still in the title attr / on the designer page
+     this card now links to. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (min-width: 420px) {
+  .wgp-card-desc { font-size: 13px; -webkit-line-clamp: 4; }
+}
+
+/* ── Six-tone palette, cycled across the grid ────────────────────── */
+.wgp-tone-green   { background: #e4f7ec; border-color: #c9ecd8; }
+.wgp-tone-green   .wgp-card-icon { background: #1fae63; }
+.wgp-tone-green   .wgp-card-arrow { background: #c9ecd8; color: #1a8a50; }
+
+.wgp-tone-purple  { background: #efeaff; border-color: #ddd3fb; }
+.wgp-tone-purple  .wgp-card-icon { background: #8b5cf6; }
+.wgp-tone-purple  .wgp-card-arrow { background: #ddd3fb; color: #6d3df0; }
+
+.wgp-tone-blue    { background: #e6f2fe; border-color: #cce3fb; }
+.wgp-tone-blue    .wgp-card-icon { background: #2f8fe0; }
+.wgp-tone-blue    .wgp-card-arrow { background: #cce3fb; color: #1e6fb8; }
+
+.wgp-tone-orange  { background: #fdf1e2; border-color: #fadfbb; }
+.wgp-tone-orange  .wgp-card-icon { background: #f08b1d; }
+.wgp-tone-orange  .wgp-card-arrow { background: #fadfbb; color: #c76c10; }
+
+.wgp-tone-pink    { background: #fbe9f0; border-color: #f6d2e1; }
+.wgp-tone-pink    .wgp-card-icon { background: #e8558f; }
+.wgp-tone-pink    .wgp-card-arrow { background: #f6d2e1; color: #d2366f; }
+
+.wgp-tone-teal    { background: #e3f7f5; border-color: #c7eeea; }
+.wgp-tone-teal    .wgp-card-icon { background: #19b3a6; }
+.wgp-tone-teal    .wgp-card-arrow { background: #c7eeea; color: #128a80; }
+
+/* ── "More widgets coming soon" footer row ───────────────────────── */
+.wgp-soon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  background: #f1edff;
+  border: 1px solid #ded3fe;
+  border-radius: 18px;
+}
+
+.wgp-soon-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #8b5cf6;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wgp-soon-icon svg { width: 19px; height: 19px; }
+
+.wgp-soon-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wgp-soon-text strong {
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+.wgp-soon-text span {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  color: #5c6a72;
+}
+
+.wgp-soon-arrow {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ddd3fb;
+  color: #6d3df0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wgp-soon-arrow svg { width: 16px; height: 16px; }
+
+@media (max-width: 420px) {
+  .wgp-main { padding: 96px 12px 110px; }
+  .wgp-head-text h1 { font-size: 24px; }
+}
