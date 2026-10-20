@@ -33,11 +33,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAppView } from '@/hooks/useAppView';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
+import { useAppliedAppearance } from '@/hooks/useAppliedAppearance';
 import type { AuthPane } from '@/hooks/useAuthForms';
 
 export default function AppRoot() {
   const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
+  // Settings > Appearance (Font Size / Compact Mode) applied app-wide —
+  // see hooks/useAppliedAppearance.ts.
+  useAppliedAppearance(user);
 
   // The boot splash now runs its own full randomized lifecycle (form
   // for ~3s, splash, hold for a random 3-5s) rather than just
