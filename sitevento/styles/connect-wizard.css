@@ -1,0 +1,534 @@
+/* ============================================================
+ * connect-wizard.css — full-screen "connect your site" modal
+ * Split from app/globals.css for maintainability.
+ * ============================================================ */
+
+  /* ============ Connect-site full-screen modal ============ */
+  .connect-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg);
+    opacity: 0; pointer-events: none;
+    transform: translateY(14px);
+    transition: opacity 0.35s cubic-bezier(0.22,1,0.36,1), transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .connect-overlay.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .connect-overlay { transition: opacity 0.2s ease; transform: none !important; }
+  }
+
+  .connect-exit {
+    position: fixed; top: 18px; right: 18px; z-index: 210;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1.5px solid var(--line); background: var(--bg); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(34,32,28,0.08);
+  }
+  .connect-exit svg { width: 16px; height: 16px; stroke: var(--ink); }
+  @supports (padding: max(0px)) {
+    .connect-exit { top: max(18px, env(safe-area-inset-top, 0px)); }
+  }
+
+  .connect-stage {
+    min-height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px 24px 56px;
+  }
+
+  .connect-card {
+    width: 100%; max-width: 480px;
+  }
+  /* Step 1 and step 3 carry a lot more than a single form field now
+     (permissions grid / two-panel success layout) — they get more
+     breathing room than the narrow step-2 tag form. */
+  .connect-step:has(.cwz-perm-section),
+  .connect-success-step {
+    max-width: none;
+  }
+  .connect-card:has(.cwz-perm-section),
+  .connect-card:has(.connect-success-step) {
+    max-width: 640px;
+  }
+
+  .connect-step-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
+    color: var(--walnut-dark); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 13px; margin-bottom: 20px;
+  }
+  .connect-step-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime-ink); }
+
+  .connect-card h2 {
+    font-size: clamp(24px, 4.5vw, 30px); font-weight: 400; margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  .connect-card .connect-sub {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14.5px; color: #6b665e; margin: 0 0 28px; line-height: 1.55; max-width: 44ch;
+  }
+
+  .connect-field label {
+    display: block; font-family: -apple-system, sans-serif; font-size: 13px;
+    font-weight: 600; color: var(--ink); margin-bottom: 7px;
+  }
+  .connect-field input[type="text"], .connect-field input[type="url"] {
+    width: 100%; padding: 13px 14px; font-size: 14.5px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: var(--cream); color: var(--ink);
+    font-family: -apple-system, sans-serif;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .connect-field input::placeholder { color: #a8a295; }
+  .connect-field input:focus {
+    border-color: var(--walnut); background: var(--bg);
+    box-shadow: 0 0 0 4px rgba(107,74,52,0.1); outline: none;
+  }
+  .connect-field .err-msg {
+    display: none; font-size: 12.5px; color: #b3432b; margin-top: 6px;
+    font-family: -apple-system, sans-serif;
+  }
+  .connect-field.has-error input { border-color: #b3432b; }
+  .connect-field.has-error .err-msg { display: block; }
+  .connect-field { margin-bottom: 20px; }
+
+  .connect-submit {
+    width: 100%; background: var(--lime); color: var(--lime-ink);
+    border: 1.5px solid var(--ink); border-radius: 999px; padding: 14px 20px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 3px 0 rgba(34,32,28,0.9);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    position: relative; font-family: -apple-system, sans-serif;
+  }
+  .connect-submit:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(34,32,28,0.9); }
+  .connect-submit:disabled { opacity: 0.6; cursor: default; }
+  /* Loading state now also covers "still waiting on the domain lookup",
+     not just the post-click Firestore write — see ConnectSiteWizard.tsx.
+     Button content blurs + dims instead of just hiding the label, so the
+     CTA visibly reads as busy rather than looking identical to its
+     normal clickable state while it's actually disabled underneath. */
+  .connect-submit.loading .btn-text {
+    opacity: 0.35;
+    filter: blur(2.5px);
+  }
+  .connect-submit.loading { cursor: progress; }
+  .connect-submit .spinner {
+    display: none; position: absolute; width: 18px; height: 18px;
+    border: 2.5px solid rgba(26,31,10,0.25); border-top-color: var(--lime-ink);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  .connect-submit.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .connect-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13.5px; font-weight: 600; color: var(--walnut-dark);
+    text-decoration: none; margin-bottom: 20px; background: none; border: none;
+    cursor: pointer; padding: 0; font-family: -apple-system, sans-serif;
+  }
+  .connect-back:hover { text-decoration: underline; }
+
+  .connect-tag-box {
+    background: var(--ink); color: #f6f2e7; border-radius: 14px; padding: 18px 20px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px; line-height: 1.7;
+    margin-bottom: 10px; word-break: break-all; position: relative;
+  }
+  .connect-tag-box .tag-name { color: #c6ff3d; }
+  .connect-tag-box .attr { color: #9cc4ff; }
+  .connect-tag-box .val { color: #f3b088; }
+
+  .connect-copy-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: transparent; border: 1.5px solid var(--line); border-radius: 999px;
+    padding: 8px 15px; font-size: 13px; font-weight: 600; color: var(--ink);
+    cursor: pointer; font-family: -apple-system, sans-serif; margin-bottom: 22px;
+  }
+  .connect-copy-btn:hover { border-color: var(--walnut); }
+  .connect-copy-btn svg { width: 14px; height: 14px; }
+
+  .connect-note {
+    display: flex; gap: 10px; background: var(--cream); border: 1px solid var(--line);
+    border-radius: 12px; padding: 13px 15px; margin-bottom: 24px;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: #6b665e; line-height: 1.55;
+  }
+  .connect-note svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--walnut); margin-top: 1px; }
+  .connect-note strong { color: var(--ink); }
+
+  .connect-verify-status {
+    display: flex; align-items: center; gap: 9px; font-family: -apple-system, sans-serif;
+    font-size: 13.5px; color: #8a8477; margin-bottom: 20px; min-height: 20px;
+  }
+  .connect-verify-status .vdot2 {
+    width: 8px; height: 8px; border-radius: 50%; background: #d99a2b; flex-shrink: 0;
+    position: relative;
+  }
+  .connect-verify-status.pending .vdot2::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    background: #d99a2b; opacity: 0.5; animation: pulse-ring 1.6s ease-out infinite;
+  }
+  .connect-verify-status.ok { color: #4f3626; font-weight: 600; }
+  .connect-verify-status.ok .vdot2 { background: #6ba84f; }
+  .connect-verify-status.fail { color: #b3432b; font-weight: 600; }
+  .connect-verify-status.fail .vdot2 { background: #b3432b; }
+
+  .connect-success-check {
+    width: 64px; height: 64px; border-radius: 50%; background: var(--lime);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    animation: pop-in 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .connect-success-check svg { width: 28px; height: 28px; stroke: var(--lime-ink); }
+
+  /* ============ Domain intel reveal (step 1, under the URL field) ============
+   * Deliberately a loud, highlighted banner now (lime-tinted border +
+   * wash, left accent bar) rather than a quiet gray inline row — this
+   * block is meant to stand out as "look, we found something about your
+   * domain", not blend into the surrounding help text.
+   *
+   * It also sits directly above the Continue button, and used to be
+   * able to grow/shrink (loading -> found, rows staggering in one at a
+   * time) WHILE the button was still clickable right below it — a click
+   * aimed at the button could land on the banner mid-reflow instead and
+   * silently do nothing. pointer-events is now locked off on the
+   * loading/transitioning states so a click never gets intercepted by
+   * this block; only the finished .domain-intel-card can be interacted
+   * with (it has no actionable content anyway, but this keeps the
+   * contract explicit for future additions). The actual anti-layout-
+   * shift fix is the submit button itself being disabled/loading
+   * whenever a lookup is in flight (see .connect-submit.loading above).
+   */
+  .domain-intel {
+    margin: -6px 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .domain-intel-loading,
+  .domain-intel-plain {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--walnut-dark); font-weight: 600;
+    background: var(--cream); border: 1.5px solid var(--line);
+    border-left: 4px solid var(--lime);
+    border-radius: 12px; padding: 12px 14px;
+    pointer-events: none;
+  }
+
+  .domain-intel-scan-dot,
+  .domain-intel-ok-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; position: relative;
+  }
+  .domain-intel-scan-dot { background: #d99a2b; }
+  .domain-intel-scan-dot::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    background: #d99a2b; opacity: 0.5; animation: pulse-ring 1.6s ease-out infinite;
+  }
+  .domain-intel-ok-dot { background: #6ba84f; }
+
+  .domain-intel-card {
+    border: 1.5px solid var(--lime); border-radius: 14px;
+    background: linear-gradient(180deg, rgba(198,255,61,0.16), rgba(198,255,61,0.05)), var(--cream);
+    box-shadow: 0 2px 0 rgba(34,32,28,0.06);
+    padding: 16px 18px 14px;
+    animation: domain-intel-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .domain-intel-head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
+  }
+  .domain-intel-domain {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+    font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
+  }
+
+  .domain-intel-age {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;
+  }
+  .domain-intel-age-num {
+    font-family: "Georgia", serif; font-size: 30px; font-weight: 400; color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+  }
+  .domain-intel-age-unit {
+    font-size: 12.5px; color: #8a8477;
+  }
+
+  .domain-intel-rows {
+    margin: 0; display: flex; flex-direction: column; gap: 7px;
+  }
+  .domain-intel-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    font-size: 12.5px; padding-bottom: 7px; border-bottom: 1px solid var(--line);
+    animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+    pointer-events: none;
+  }
+  .domain-intel-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .domain-intel-row dt { margin: 0; color: #8a8477; }
+  .domain-intel-row dd {
+    margin: 0; color: var(--ink); font-weight: 600; text-align: right;
+    max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .domain-intel-pills {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  }
+  .domain-intel-pill {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; font-weight: 600;
+    color: var(--walnut-dark); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 10px;
+    animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  @keyframes domain-intel-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes domain-intel-row-in {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .domain-intel-card,
+    .domain-intel-row,
+    .domain-intel-pill { animation: none !important; }
+    .domain-intel-scan-dot::after { animation: none !important; }
+  }
+
+  /* ============ Progress rail (3 steps) ============ */
+  .connect-rail {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 205;
+    display: flex; gap: 4px; padding: 0;
+  }
+  .connect-rail-seg {
+    flex: 1; height: 3px; background: var(--line);
+    transition: background 0.3s ease;
+  }
+  .connect-rail-seg.is-current { background: var(--walnut); }
+  .connect-rail-seg.is-done { background: var(--lime); }
+
+  /* ============ Step 1: permissions grid ============ */
+  .cwz-perm-section { margin: 4px 0 24px; }
+  .cwz-perm-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .cwz-perm-title {
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--ink);
+  }
+  .cwz-perm-count {
+    font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--walnut); white-space: nowrap;
+  }
+  .cwz-perm-intro {
+    margin: 0 0 16px; font-family: -apple-system, sans-serif; font-size: 12.5px;
+    line-height: 1.55; color: #6b665e; max-width: 56ch;
+  }
+
+  .cwz-perm-upsell {
+    position: relative; display: flex; align-items: center; gap: 12px;
+    width: 100%; padding: 12px 16px; margin-bottom: 18px;
+    border: 1.5px solid var(--ink); border-radius: 16px;
+    background: linear-gradient(120deg, var(--cream) 0%, var(--bg) 55%, var(--cream) 100%);
+    box-shadow: 0 2px 0 var(--ink);
+    cursor: pointer; text-align: left;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .cwz-perm-upsell:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+  .cwz-perm-upsell:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--ink); }
+  .cwz-perm-upsell-icon {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--lime); color: var(--lime-ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cwz-perm-upsell-icon svg { width: 17px; height: 17px; }
+  .cwz-perm-upsell-copy {
+    flex: 1; font-family: -apple-system, sans-serif; font-size: 12.5px;
+    line-height: 1.5; color: #51493e;
+  }
+  .cwz-perm-upsell-copy strong { color: var(--ink); }
+  .cwz-perm-upsell-cta {
+    flex-shrink: 0; padding: 7px 14px; border-radius: 999px;
+    background: var(--lime); color: var(--lime-ink); border: 1px solid var(--lime-ink);
+    font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 700; white-space: nowrap;
+  }
+  @media (max-width: 560px) {
+    .cwz-perm-upsell { flex-wrap: wrap; padding: 14px; }
+    .cwz-perm-upsell-cta { margin-left: 46px; }
+  }
+
+  .cwz-perm-group { margin-bottom: 18px; }
+  .cwz-perm-group-title {
+    margin: 0 0 8px; font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: 14px; font-weight: 700; color: var(--ink);
+  }
+  .cwz-perm-rows {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 0 rgba(34,32,28,0.04);
+  }
+  .cwz-perm-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 12px 15px; border-bottom: 1px solid var(--line);
+    transition: background 0.12s ease;
+  }
+  .cwz-perm-row:last-child { border-bottom: none; }
+  .cwz-perm-row:not(.is-locked):hover { background: var(--cream); }
+  .cwz-perm-row.is-locked { background: rgba(154,148,138,0.06); }
+  .cwz-perm-row-stack { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .cwz-perm-row-label {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .cwz-perm-row-note {
+    font-family: -apple-system, sans-serif; font-size: 11.5px; line-height: 1.45;
+    color: #6b655c; max-width: 440px;
+  }
+  .cwz-perm-lock-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 9px 2px 7px; border: none; border-radius: 999px;
+    background: var(--ink); color: #fff;
+    font-family: -apple-system, sans-serif; font-size: 10px; font-weight: 700;
+    cursor: pointer; transition: background 0.12s ease;
+  }
+  .cwz-perm-lock-pill svg { width: 10px; height: 10px; }
+  .cwz-perm-lock-pill:hover { background: var(--walnut); }
+
+  .cwz-perm-switch {
+    flex-shrink: 0; width: 40px; height: 24px; border-radius: 999px;
+    border: none; padding: 3px; background: #d8d2c5; cursor: pointer;
+    display: flex; align-items: center; transition: background 0.18s ease;
+  }
+  .cwz-perm-switch.is-on { background: var(--lime); box-shadow: inset 0 0 0 1px var(--lime-ink); }
+  .cwz-perm-switch:disabled { cursor: not-allowed; opacity: 0.55; }
+  .cwz-perm-switch-knob {
+    width: 18px; height: 18px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .cwz-perm-switch.is-on .cwz-perm-switch-knob { transform: translateX(16px); }
+
+  /* ============ Full-screen pass/fail flash ============ */
+  .connect-flash {
+    position: fixed; inset: 0; z-index: 220;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; border: none; cursor: pointer; text-align: center;
+    padding: 24px;
+    animation: connect-flash-in 0.4s cubic-bezier(0.22,1,0.36,1) both, connect-flash-out 0.35s ease 1.3s forwards;
+  }
+  .connect-flash.is-success {
+    background: radial-gradient(circle at 50% 42%, rgba(107,168,79,0.22), rgba(107,168,79,0.08) 55%, var(--bg) 85%);
+  }
+  .connect-flash.is-fail {
+    background: radial-gradient(circle at 50% 42%, rgba(179,67,43,0.2), rgba(179,67,43,0.07) 55%, var(--bg) 85%);
+    animation-delay: 0s, 1.8s;
+  }
+  .connect-flash-blob { width: 120px; margin-bottom: 4px; }
+  .connect-flash-title {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: clamp(22px, 5vw, 30px); font-weight: 700;
+  }
+  .connect-flash.is-success .connect-flash-title { color: #2f5c1d; }
+  .connect-flash.is-fail .connect-flash-title { color: #7a2c18; }
+  .connect-flash-sub {
+    font-family: -apple-system, sans-serif; font-size: 13.5px; color: #6b665e; max-width: 40ch;
+  }
+
+  @keyframes connect-flash-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes connect-flash-out {
+    from { opacity: 1; }
+    to { opacity: 0; pointer-events: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .connect-flash { animation: connect-flash-in 0.15s ease both, connect-flash-out 0.15s ease 1.3s forwards; }
+  }
+
+  /* ── Tintable blob (components/connect/ConnectBlob.tsx) — idle reads
+     as the brand lime, success/fail tones swap the fill/stroke/eye
+     colors so the same character reacts rather than being replaced by
+     a different icon. ──────────────────────────────────────────────── */
+  .cnb { display: block; line-height: 0; }
+  .cnb-svg { width: 100%; height: auto; overflow: visible; }
+  .cnb-wrap { transform-origin: 60px 100px; animation: cnb-idle 3.8s ease-in-out infinite; }
+  .cnb-body { fill: var(--lime); stroke: var(--lime-ink); stroke-width: 2.2; stroke-linejoin: round; }
+  .cnb-shine { fill: #ffffff; opacity: 0.5; transform: rotate(-16deg); transform-origin: 46px 46px; }
+  .cnb-shadow { fill: #000; opacity: 0.12; }
+  .cnb-eye-white { fill: var(--lime-ink); }
+  .cnb-eye-pupil { fill: var(--lime); }
+  .cnb-eye { transform-origin: center; transition: transform 120ms ease-out; }
+  .cnb-eyes.is-blinking .cnb-eye { transform: scaleY(0.08); }
+  .cnb-happy-eye, .cnb-mouth, .cnb-brow {
+    fill: none; stroke: var(--lime-ink); stroke-width: 2.4; stroke-linecap: round;
+  }
+
+  .cnb-success .cnb-body { fill: #8fd66a; stroke: #2f5c1d; }
+  .cnb-success .cnb-eye-white { fill: #2f5c1d; }
+  .cnb-success .cnb-eye-pupil { fill: #8fd66a; }
+  .cnb-success .cnb-happy-eye,
+  .cnb-success .cnb-mouth,
+  .cnb-success .cnb-brow { stroke: #2f5c1d; }
+
+  .cnb-fail .cnb-body { fill: #e6947e; stroke: #7a2c18; }
+  .cnb-fail .cnb-eye-white { fill: #7a2c18; }
+  .cnb-fail .cnb-eye-pupil { fill: #e6947e; }
+  .cnb-fail .cnb-happy-eye,
+  .cnb-fail .cnb-mouth,
+  .cnb-fail .cnb-brow { stroke: #7a2c18; }
+
+  @keyframes cnb-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.02, 0.97); }
+    50%  { transform: scale(0.985, 1.02); }
+    75%  { transform: scale(1.012, 0.99); }
+    100% { transform: scale(1, 1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cnb-wrap { animation: none !important; }
+  }
+
+  /* ============ Step 3: redesigned success ============ */
+  .connect-success-step { text-align: center; }
+  .connect-success-step .connect-sub { margin-left: auto; margin-right: auto; text-align: center; }
+
+  .connect-success-hero {
+    position: relative; width: 120px; height: 120px; margin: 4px auto 18px;
+  }
+  .connect-success-blob { width: 100%; }
+  .connect-success-hero .connect-success-check {
+    position: absolute; right: -6px; bottom: -4px; margin: 0;
+    width: 40px; height: 40px;
+    animation: pop-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.15s both;
+  }
+  .connect-success-hero .connect-success-check svg { width: 18px; height: 18px; }
+
+  .connect-success-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin: 22px 0 26px; text-align: left;
+  }
+  @media (max-width: 620px) { .connect-success-grid { grid-template-columns: 1fr; } }
+
+  .connect-success-panel {
+    border: 1.5px solid var(--line); border-radius: 18px; padding: 16px;
+    background: var(--bg);
+  }
+  .connect-success-panel-ai {
+    border-color: var(--lime); background: linear-gradient(180deg, rgba(198,255,61,0.1), rgba(198,255,61,0.02)), var(--bg);
+  }
+  .connect-success-panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;
+  }
+  .connect-success-panel-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--ink);
+  }
+  .connect-success-panel-label svg { width: 14px; height: 14px; color: var(--walnut); }
+  .connect-success-panel-note {
+    margin: 0 0 10px; font-family: -apple-system, sans-serif; font-size: 11.5px;
+    line-height: 1.5; color: #6b665e;
+  }
+  .connect-copy-btn-sm { margin-bottom: 0; padding: 6px 12px; font-size: 11.5px; }
+
+  .connect-tag-box-sm { font-size: 11px; padding: 14px 15px; margin-bottom: 0; }
+  .connect-prompt-box {
+    background: var(--cream); border: 1px solid var(--line); border-radius: 12px;
+    padding: 13px 14px; font-family: -apple-system, sans-serif; font-size: 11.5px;
+    line-height: 1.6; color: #4f3626; white-space: pre-wrap; word-break: break-word;
+    max-height: 180px; overflow-y: auto;
+  }
