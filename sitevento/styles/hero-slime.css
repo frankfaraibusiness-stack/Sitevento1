@@ -1,0 +1,115 @@
+/* ============================================================
+ * hero-slime.css — the jelly "slime" character filling the desktop
+ * hero's right column (components/marketing/HeroSlime.tsx).
+ *
+ * Only ever rendered where .hero-side is display:flex (>=960px, see
+ * marketing-hero.css), so no separate visibility gating is needed here.
+ *
+ * Two animation layers running continuously at rest, same "jelly, not
+ * static" idea as the boot splash:
+ *   - hero-slime-idle   on .hero-slime-body-wrap: a slow non-uniform
+ *     squash/stretch breathing cycle (scaleX/scaleY offset from each
+ *     other) so the body never looks like a frozen sticker.
+ *   - hero-slime-bob    on .hero-slime: a gentle vertical float, offset
+ *     in time from the squash/stretch so they don't read as one
+ *     mechanical loop.
+ * Eyes blink via a React-driven class toggle (is-blinking) rather than
+ * a CSS timer, so the cadence can be irregular/human instead of a fixed
+ * interval — see the component for the scheduling.
+ * ============================================================ */
+
+  .hero-slime {
+    width: min(100%, 320px);
+    animation: hero-slime-bob 4.2s ease-in-out infinite;
+  }
+
+  .hero-slime-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .hero-slime-shadow {
+    fill: var(--ink);
+    opacity: 0.08;
+    animation: hero-slime-shadow-pulse 4.2s ease-in-out infinite;
+  }
+
+  .hero-slime-body-wrap {
+    transform-origin: 100px 160px;
+    animation: hero-slime-idle 3.6s ease-in-out infinite;
+  }
+
+  .hero-slime-body {
+    fill: var(--lime);
+    stroke: var(--lime-ink);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  .hero-slime-shine {
+    fill: #ffffff;
+    opacity: 0.5;
+    transform: rotate(-18deg);
+    transform-origin: 76px 78px;
+  }
+
+  /* ---- Idle jelly breathing -------------------------------------- */
+  /* scaleX and scaleY are offset from each other throughout the cycle
+     (never move together) so volume appears to shift inside the blob —
+     the same squash/stretch logic as the boot splash's wobble, just
+     slower and calmer since this one has to sit on screen for a while,
+     not just play once. */
+  @keyframes hero-slime-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.025, 0.965); }
+    50%  { transform: scale(0.98, 1.03); }
+    75%  { transform: scale(1.015, 0.985); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @keyframes hero-slime-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  @keyframes hero-slime-shadow-pulse {
+    0%, 100% { transform: scale(1, 1); opacity: 0.08; }
+    50%      { transform: scale(0.92, 1); opacity: 0.05; }
+  }
+
+  /* ---- Eyes -------------------------------------------------------- */
+  .eye-white {
+    fill: var(--lime-ink);
+  }
+
+  .eye-pupil {
+    fill: var(--lime);
+  }
+
+  .hero-slime-eye {
+    transform-origin: center;
+    transition: transform 120ms ease-out;
+  }
+
+  /* Blink: scale the whole eye group flat on the vertical axis rather
+     than swapping to a closed-eye path, so it stays a single smooth
+     squash instead of a shape swap/flicker. */
+  .hero-slime-eyes.is-blinking .hero-slime-eye {
+    transform: scaleY(0.08);
+  }
+
+  .hero-slime-mouth {
+    fill: none;
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slime,
+    .hero-slime-body-wrap,
+    .hero-slime-shadow {
+      animation: none !important;
+    }
+  }
