@@ -608,8 +608,16 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /* Drop the open/close slide animation and per-item stagger, but
+       never force .sidebar's own transform: that's what keeps it
+       parked off-screen (translateX(105%)) until .open is added. An
+       unscoped `transform: none !important` here used to win over
+       that base rule for every .sidebar, open or not — so with
+       reduced motion on, the panel rendered fully visible on page
+       load and couldn't be closed. Only .sidebar.open (which wants
+       translateX(0) anyway) gets its transform normalized; everything
+       else just loses its animation/opacity transition. */
     .sidebar,
-    .sidebar.open,
     .sidebar-head,
     .sidebar-profile,
     .sidebar-profile .avatar-ring,
@@ -618,7 +626,10 @@
     .sidebar-foot {
       animation: none !important;
       opacity: 1 !important;
-      transform: none !important;
+    }
+
+    .sidebar.open {
+      transform: translateX(0) !important;
     }
   }
 
