@@ -271,34 +271,13 @@ export default function SettingsSidebar({ activePanel, onSelectPanel }: Settings
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(34,32,28,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 200,
-          }}
+          className="settings-logout-backdrop"
           onClick={() => !loggingOut && setConfirmingLogout(false)}
         >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: '1rem',
-              padding: '1.6rem',
-              width: '90%',
-              maxWidth: 340,
-              textAlign: 'center',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--ink)', marginBottom: 6 }}>Sign out?</div>
-            <div style={{ fontSize: '0.84rem', color: '#7a7265', marginBottom: 18 }}>
-              You&apos;ll need to sign back in to access your account.
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <div className="settings-logout-card" onClick={(e) => e.stopPropagation()}>
+            <h4>Sign out?</h4>
+            <p>You&apos;ll need to sign back in to access your account.</p>
+            <div className="settings-logout-actions">
               <button className="settings-save-btn" style={{ justifyContent: 'center', width: '100%' }} onClick={handleLogout} disabled={loggingOut}>
                 {loggingOut ? 'Signing out…' : 'Sign Out'}
               </button>
