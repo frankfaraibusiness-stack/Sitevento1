@@ -7,6 +7,10 @@
 // on panel switch. Reuses sitevento's own Header/Sidebar (same as every
 // other dashboard route) instead of siterifty's AnnouncementBar/Header,
 // and the app's shared AppSkeleton for the loading state.
+//
+// Settings are now real: useUserSettings backs every panel with a live
+// Firestore subscription on users/{uid}.settings (see that hook for the
+// full shape/write path), replacing the old local-only useSettingsState.
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useNavRouter } from '@/hooks/useNavPending';
@@ -16,7 +20,9 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { AppSkeleton } from '@/components/AppSkeleton';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import type { SettingsPanelId } from '@/components/settings/SettingsSidebar';
-import { useSettingsState } from '@/hooks/useSettingsState';
+import { useUserSettings } from '@/hooks/useUserSettings';
+import { useAppliedAppearance } from '@/hooks/useAppliedAppearance';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import AccountPanel from '@/components/settings/panels/AccountPanel';
@@ -51,7 +57,13 @@ export default function SettingsPageClient({ initialPanel }: { initialPanel: Set
   const pathname = usePathname();
   const { user, authReady } = useAuth();
   const sidebarNav = useSidebar();
-  const { state, setState } = useSettingsState();
+  const { settings, loaded: settingsLoaded, saving: settingsSaving, updateSettings } = useUserSettings(user);
+  const { updateDisplayName } = useUserProfile(user);
+  // Applies fontSize/compactMode to <html> globally (not a /settings-only
+  // effect) — see hooks/useAppliedAppearance.ts. Called here too (in
+  // addition to AppRoot.tsx / DashboardClient.tsx) so the live preview
+  // is instant while actually sitting on this panel.
+  useAppliedAppearance(user);
 
   const [activePanel, setActivePanel] = useState<SettingsPanelId>(initialPanel);
   const [mobileView, setMobileView] = useState<'list' | 'panel'>(initialPanel === 'account' ? 'list' : 'panel');
@@ -82,13 +94,28 @@ export default function SettingsPageClient({ initialPanel }: { initialPanel: Set
   function renderPanel() {
     switch (activePanel) {
       case 'account':
-        return <AccountPanel user={user} />;
+        return (
+          <AccountPanel
+            user={user}
+            settings={settings}
+            settingsLoaded={settingsLoaded}
+            updateSettings={updateSettings}
+            updateDisplayName={updateDisplayName}
+          />
+        );
       case 'security':
-        return <SecurityPanel />;
+        return <SecurityPanel user={user} settings={settings} updateSettings={updateSettings} />;
       case 'notifications':
-        return <NotificationsPanel state={state} setState={setState} />;
+        return <NotificationsPanel settings={settings} settingsLoaded={settingsLoaded} updateSettings={updateSettings} />;
       case 'appearance':
-        return <AppearancePanel state={state} setState={setState} />;
+        return (
+          <AppearancePanel
+            settings={settings}
+            settingsLoaded={settingsLoaded}
+            settingsSaving={settingsSaving}
+            updateSettings={updateSettings}
+          />
+        );
       case 'billing':
         return <BillingPanel />;
       case 'api':
