@@ -69,8 +69,17 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
+  /* Active label contrast — same solid-pill technique as
+     DashBottomNav's .dbn-tab.is-active (styles/dashboard.css): a weak
+     color-only swap reads as unhighlighted against a lime page/bar, so
+     the active item's label (and icon) switch to a solid, legible
+     tone instead of just tinting green. */
   .gnav-item.is-active {
-    color: var(--dash-green);
+    color: var(--lime-ink);
+  }
+
+  .gnav-item.is-active .gnav-item-label {
+    font-weight: 800;
   }
 
   .gnav-add {
@@ -145,16 +154,22 @@
     .gnav-item-label {
       font-family: -apple-system, sans-serif;
       font-size: 10.5px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.01em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 100%;
+      color: var(--ink);
     }
 
+    /* Matches DashBottomNav's .dbn-tab.is-active .dbn-label: the
+       active tab's label goes solid lime-ink + bolder, same contrast
+       jump as its icon circle, instead of the barely-there green tint
+       the old rule left it with. */
     .gnav-item.is-active .gnav-item-label {
-      font-weight: 700;
+      font-weight: 800;
+      color: var(--lime-ink);
     }
 
     /* Raised center "+" — floats above the bar like a native app's
