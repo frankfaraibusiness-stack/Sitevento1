@@ -1,20 +1,39 @@
 'use client';
 
-import type { SettingsState } from '@/hooks/useSettingsState';
+// components/settings/panels/AppearancePanel.tsx
+//
+// Real functions, not placeholders: every choice here persists to
+// Firestore at users/{uid}.settings via useUserSettings, reloads on
+// every page load, AND actually changes the app — SettingsPageClient
+// applies settings.fontSize/compactMode to <html data-font-size>/
+// [data-compact] the moment they load or change (see its own effect),
+// and styles/settings-page.css + base.css read those attributes to
+// resize text and tighten spacing across the dashboard, not just this
+// page. Dashboard Landing View is persisted and read by
+// DashboardClient on load to pick the opening panel.
+import type { UserSettings } from '@/hooks/useUserSettings';
 
-const FONT_SIZES: { key: 'small' | 'medium' | 'large'; label: string; glyphSize: string }[] = [
+const FONT_SIZES: { key: UserSettings['fontSize']; label: string; glyphSize: string }[] = [
   { key: 'small', label: 'Small', glyphSize: '0.72rem' },
   { key: 'medium', label: 'Medium', glyphSize: '0.9rem' },
   { key: 'large', label: 'Large', glyphSize: '1.1rem' },
 ];
 
-export default function AppearancePanel({
-  state,
-  setState,
-}: {
-  state: SettingsState;
-  setState: React.Dispatch<React.SetStateAction<SettingsState>>;
-}) {
+const LANDING_VIEWS: { value: UserSettings['landingView']; label: string }[] = [
+  { value: 'overview', label: 'Overview' },
+  { value: 'visits', label: 'Visit Logs' },
+  { value: 'leads', label: 'Email Capture' },
+  { value: 'sites', label: 'Connected Sites' },
+];
+
+interface AppearancePanelProps {
+  settings: UserSettings;
+  settingsLoaded: boolean;
+  settingsSaving: boolean;
+  updateSettings: (patch: Partial<UserSettings>) => Promise<boolean>;
+}
+
+export default function AppearancePanel({ settings, settingsLoaded, settingsSaving, updateSettings }: AppearancePanelProps) {
   return (
     <>
       <div className="settings-panel-header">
@@ -29,16 +48,17 @@ export default function AppearancePanel({
 
       <div className="settings-input-group">
         <label>Font Size</label>
-        <p className="settings-field-desc">Applies across the dashboard.</p>
+        <p className="settings-field-desc">Applies across the dashboard. Saved automatically.</p>
         <div className="settings-picker-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
           {FONT_SIZES.map((f) => {
-            const active = state.fontSize === f.key;
+            const active = settings.fontSize === f.key;
             return (
               <button
                 key={f.key}
                 type="button"
                 className={`settings-picker-btn${active ? ' active' : ''}`}
-                onClick={() => setState((p) => ({ ...p, fontSize: f.key }))}
+                disabled={!settingsLoaded}
+                onClick={() => updateSettings({ fontSize: f.key })}
               >
                 <span style={{ fontSize: f.glyphSize }}>Aa</span>
                 <span>{f.label}</span>
@@ -56,8 +76,9 @@ export default function AppearancePanel({
         <label className="settings-toggle-switch">
           <input
             type="checkbox"
-            checked={state.compactMode}
-            onChange={(e) => setState((p) => ({ ...p, compactMode: e.target.checked }))}
+            checked={settings.compactMode}
+            disabled={!settingsLoaded}
+            onChange={(e) => updateSettings({ compactMode: e.target.checked })}
           />
           <span className="slider" />
         </label>
@@ -65,18 +86,22 @@ export default function AppearancePanel({
 
       <div className="settings-input-group">
         <label>Dashboard Landing View</label>
-        <p className="settings-field-desc">Which panel opens first when you sign in.</p>
-        <select className="settings-select">
-          <option>Overview</option>
-          <option>Visit Logs</option>
-          <option>Email Capture</option>
-          <option>Connected Sites</option>
+        <p className="settings-field-desc">Which panel opens first when you sign in. Saved automatically.</p>
+        <select
+          className="settings-select"
+          value={settings.landingView}
+          disabled={!settingsLoaded}
+          onChange={(e) => updateSettings({ landingView: e.target.value as UserSettings['landingView'] })}
+        >
+          {LANDING_VIEWS.map((v) => (
+            <option key={v.value} value={v.value}>
+              {v.label}
+            </option>
+          ))}
         </select>
       </div>
 
-      <button className="settings-save-btn" type="button">
-        Save Appearance
-      </button>
+      {settingsSaving && <span className="settings-hint">Saving…</span>}
     </>
   );
 }
