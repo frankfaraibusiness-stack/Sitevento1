@@ -40,7 +40,7 @@
  *   - No hardcoded #fff / near-white literals left anywhere in this
  *     file — every fill is one of the app's own --ink/--lime/--cream
  *     tokens (at full or partial alpha) or a semantic status tone
- *     (--dash-green-*/error reds), same budget the rest of the app
+ *     (--dash-green-* / error reds), same budget the rest of the app
  *     already uses.
  *   - UI chrome stays on -apple-system (labels/buttons/meta text),
  *     matching every other dashboard surface; the page body's serif
