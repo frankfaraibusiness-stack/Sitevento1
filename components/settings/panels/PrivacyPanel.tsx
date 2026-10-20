@@ -35,7 +35,7 @@ export default function PrivacyPanel() {
 
       <div className="settings-input-group">
         <label>Export My Data</label>
-        <button className="settings-save-btn" type="button" style={{ background: '#fff', color: 'var(--ink)', border: '1px solid var(--line)' }}>
+        <button className="settings-save-btn settings-save-btn-ghost" type="button">
           Request Data Export
         </button>
       </div>
