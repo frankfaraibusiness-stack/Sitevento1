@@ -15,7 +15,6 @@ import type { User } from 'firebase/auth';
 import { useSites } from '@/hooks/useSites';
 import { useActiveSiteData } from '@/hooks/useActiveSiteData';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { AppSkeleton } from '@/components/AppSkeleton';
 import { DashEmptyState } from './DashEmptyState';
 import { SiteSwitcher } from './SiteSwitcher';
 import { ConnectedSitesSection } from './ConnectedSitesSection';
@@ -95,21 +94,16 @@ export function DashboardShell({
 
   const showLoadingSkeleton = dashState === 'loading' || (!minHoldElapsed && dashState !== 'error');
 
+  // Previously rendered its own in-place <AppSkeleton> here, which
+  // showed up as a second ("inline") spinner stacked right after the
+  // app-wide full-screen <AppSkeleton> (DashboardClient's auth gate /
+  // NavPendingOverlay) finished — two loaders back to back for one
+  // navigation. The full-screen one has already covered this same
+  // "still loading" window from the moment the route changed, so this
+  // render just stays empty until real data is ready instead of
+  // showing a second, redundant loading state.
   if (showLoadingSkeleton) {
-    // Shared <AppSkeleton> (components/AppSkeleton.tsx), reused here so
-    // the dashboard's own in-place loading state (sites/stats still
-    // fetching after the route has already mounted) matches every
-    // other loading state in the app instead of its own bespoke
-    // shimmer shape.
-    return (
-      <section>
-        <div className="dashboard-empty">
-          <div className="dash-empty-inner">
-            <AppSkeleton label="Loading your dashboard" />
-          </div>
-        </div>
-      </section>
-    );
+    return <section aria-busy="true" aria-label="Loading your dashboard" />;
   }
 
   if (dashState === 'error') {
