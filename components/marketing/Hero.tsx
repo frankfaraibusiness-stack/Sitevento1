@@ -33,7 +33,6 @@ function HeroBackdrop() {
   return (
     <div className="hero-backdrop" aria-hidden="true">
       <div className="hero-backdrop-grid" />
-      <div className="hero-backdrop-sweep" />
       <div className="hero-backdrop-orb hero-backdrop-orb-a" />
       <div className="hero-backdrop-orb hero-backdrop-orb-b" />
     </div>
