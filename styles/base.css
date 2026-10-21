@@ -21,8 +21,11 @@
        boxes from the pre-lime theme. Modals/bottom-sheets intentionally
        keep --bg (pure white) since those float above the page, not in
        it. */
-    --surface: #fbfdf2;
-    --surface-border: #dde8c2;
+    /* Was a near-white #fbfdf2, which read as a plain white box on the
+       lime page. Pulled toward --cream with a visible lime tint so it
+       stands out as its own surface the same way --dnx-glass does. */
+    --surface: color-mix(in srgb, var(--lime) 26%, var(--cream) 74%);
+    --surface-border: #c7dba0;
 
     /* Dashboard accent set — four tones used to colour-code the stat
        cards, Quick Tools tiles, and status banners on /dashboard. Each
@@ -140,8 +143,14 @@
     justify-content: center;
   }
 
+  /* Must clear the fixed header (styles/base.css `header`): it sits
+     at top: 20px and is 56px tall (.pill-nav, marketing-content.css),
+     so content needs 20 + 56 = 76px of top padding, plus a small gap,
+     before the safe-area inset shared by both. Previously only 52px,
+     which left the dashboard/profile content tucked a couple dozen
+     pixels under the header pill. */
   main {
-    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+    padding-top: calc(76px + 16px + env(safe-area-inset-top, 0px));
   }
 
   /* Settings > Appearance ("Font Size" / "Compact Mode") — applied
