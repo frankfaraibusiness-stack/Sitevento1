@@ -1,584 +1,304 @@
 /* ============================================================
- * marketing-hero.css — dashboard-empty block, hero section, code snippet, capabilities grid
- * Split from app/globals.css for maintainability.
+ * marketing-hero.css — new app-feel hero (see components/marketing/Hero.tsx)
+ *
+ * Redesign: flat page background (no lime field, no animated backdrop),
+ * logo-left/signup+hamburger-right header that blends into that same
+ * background, big two-line headline with a lime highlight behind the
+ * second line, two CTAs, a mascot placeholder, and a "connected site"
+ * preview card underneath — matching the new reference design exactly.
  * ============================================================ */
 
-  /* Homepage sits on solid brand lime instead of --cream/--bg. Scoped to
-     #marketingView only (not the dashboard/app shell) — sections that
-     need a different backdrop (ink, cream, white cards) set their own
-     background and simply paint over this. Replaces the old blurred
-     lime glow that used to sit behind the hero slime (see .hero below):
-     same color, used as a flat field instead of a soft vignette. */
   #marketingView {
-    background: var(--lime);
-  }
-
-  .dashboard-empty {
-    min-height: calc(100vh - 52px - env(safe-area-inset-top, 0px));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-  }
-
-  .dash-empty-inner {
-    max-width: 380px;
-    text-align: center;
-  }
-
-  .dash-empty-icon {
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 20px;
-    border-radius: 16px;
-    background: var(--cream);
-    border: 1px solid var(--line);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--walnut);
-  }
-
-  .dash-empty-icon svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  .dash-empty-inner h2 {
-    font-size: 22px;
-    font-weight: 400;
-    margin: 0 0 10px;
-  }
-
-  .dash-empty-inner p {
-    font-size: 15px;
-    line-height: 1.55;
-    color: #6b665e;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0 0 24px;
-  }
-
-  .dash-empty-inner .btn-primary {
-    display: inline-flex;
+    background: var(--app-bg);
   }
 
   .hero {
     position: relative;
-    max-width: 900px;
+    max-width: 640px;
     margin: 0 auto;
-    /* `main` already reserves 76+16px to clear the fixed header pill
-       (see styles/base.css) — that's app-wide clearance, not hero
-       breathing room, so this starts at a small top pad instead of
-       stacking another 28px on top of it (previously ~120px of dead
-       air above the H1 on every screen size). */
-    padding: 4px 24px 48px;
+    padding: 4px 24px 56px;
     text-align: left;
-    isolation: isolate;
-    overflow: visible;
-  }
-
-  @media (min-width: 960px) {
-    .hero {
-      padding-top: 0;
-    }
-  }
-
-  /* ---- Premium backdrop: animated tech grid + two drifting glow orbs,
-     sitting behind the hero content on the flat lime #marketingView
-     background. Purely decorative (aria-hidden, no pointer-events), so
-     it reads as "high-tech" ambience without competing with the slime
-     or copy for attention. ---- */
-  /* Anchored to the viewport's true top-left (not .hero's own box, and
-     not clipped to it), so the backdrop starts above the header
-     instead of appearing to begin underneath it. 100vh tall covers the
-     full first screen; width matches the viewport regardless of where
-     .hero itself is centered/padded. Negative z-index (rather than
-     overflow:hidden + inset trick) keeps it from ever clipping or
-     affecting layout while still painting behind the fixed header. */
-  .hero-backdrop {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .hero-backdrop-grid {
-    position: absolute;
-    inset: -5%;
-    /* Richer two-layer grid: a fine line lattice plus a second, bolder
-       set of major lines every 3rd cell, so it reads as detailed
-       technical graph paper rather than a single flat crosshatch. */
-    background-image:
-      linear-gradient(color-mix(in srgb, var(--lime-ink) 28%, transparent) 1.5px, transparent 1.5px),
-      linear-gradient(90deg, color-mix(in srgb, var(--lime-ink) 28%, transparent) 1.5px, transparent 1.5px),
-      linear-gradient(color-mix(in srgb, var(--lime-ink) 14%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in srgb, var(--lime-ink) 14%, transparent) 1px, transparent 1px);
-    background-size: 126px 126px, 126px 126px, 42px 42px, 42px 42px;
-    mask-image: radial-gradient(ellipse 85% 75% at 50% 25%, #000 45%, transparent 90%);
-    -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 25%, #000 45%, transparent 90%);
-    animation: hero-grid-drift 30s linear infinite;
-    will-change: background-position;
-  }
-
-  @keyframes hero-grid-drift {
-    0%   { background-position: 0 0, 0 0, 0 0, 0 0; }
-    100% { background-position: 126px 126px, 126px 126px, 42px 42px, 42px 42px; }
-  }
-
-  .hero-backdrop-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(44px);
-    opacity: 0.8;
-    will-change: transform;
-  }
-
-  .hero-backdrop-orb-a {
-    width: 340px;
-    height: 340px;
-    top: -6%;
-    right: 2%;
-    /* Dark ink-based glow (was near-white-on-lime, almost invisible) —
-       reads as a real vignette against the bright lime field. */
-    background: radial-gradient(circle, color-mix(in srgb, var(--lime-ink) 38%, transparent) 0%, transparent 72%);
-    animation: hero-orb-drift-a 14s ease-in-out infinite;
-  }
-
-  .hero-backdrop-orb-b {
-    width: 300px;
-    height: 300px;
-    bottom: -10%;
-    left: 2%;
-    background: radial-gradient(circle, #ffffff 0%, transparent 70%);
-    opacity: 0.9;
-    animation: hero-orb-drift-b 18s ease-in-out infinite;
-  }
-
-  @keyframes hero-orb-drift-a {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(-28px, 22px) scale(1.12); }
-  }
-
-  @keyframes hero-orb-drift-b {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(24px, -20px) scale(1.08); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-backdrop-grid,
-    .hero-backdrop-orb-a,
-    .hero-backdrop-orb-b {
-      animation: none !important;
-    }
-  }
-
-  /* Hero content sits above the backdrop. */
-  .hero-grid {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ---- Eyebrow badge, above the H1 ---- */
-  .hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(34, 32, 28, 0.35);
-    color: var(--lime-ink);
-    border-radius: 999px;
-    padding: 5px 12px 5px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    backdrop-filter: blur(10px) saturate(160%);
-    -webkit-backdrop-filter: blur(10px) saturate(160%);
-    margin-bottom: 12px;
-  }
-
-  .hero-eyebrow .live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--lime-ink);
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  .hero-eyebrow .live-dot::after {
-    content: "";
-    position: absolute;
-    inset: -5px;
-    border-radius: 50%;
-    background: var(--lime-ink);
-    opacity: 0.45;
-    animation: pulse-ring 1.6s ease-out infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-eyebrow .live-dot::after {
-      animation: none !important;
-    }
-  }
-
-  /* Entrance: hero content rises + fades in on load (not scroll-gated —
-     it's above the fold, so it should greet rather than wait), each
-     piece staggered slightly so it reads as a sequence rather than one
-     flat fade. Targets the specific known children rather than a
-     blanket `> *` so nested elements (e.g. inside .hero-top) don't
-     pick up a second, redundant animation. */
-  .hero-main > .hero-top,
-  .hero-main > p.sub,
-  .hero-main > .actions,
-  .hero-main > .snippet,
-  .hero-grid > .hero-side {
-    animation: hero-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  .hero-main > .hero-top   { animation-delay: 0.02s; }
-  .hero-main > p.sub       { animation-delay: 0.1s; }
-  .hero-main > .actions    { animation-delay: 0.18s; }
-  .hero-main > .snippet    { animation-delay: 0.26s; }
-  .hero-grid > .hero-side  { animation-delay: 0.16s; }
-
-  @keyframes hero-rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-main > .hero-top,
-    .hero-main > p.sub,
-    .hero-main > .actions,
-    .hero-main > .snippet,
-    .hero-grid > .hero-side {
-      animation: none !important;
-    }
-  }
-
-  /* Mobile/tablet (below 960px): single column — .hero-main (which now
-     contains .hero-top, then sub/actions/snippet below it) stacked
-     above the standalone .hero-side, which stays hidden at this
-     breakpoint (see further down). Inside .hero-top, a small second
-     slime instance (.hero-top-slime) sits beside the eyebrow+heading
-     via flexbox, so the character is visible without needing a
-     full-height side column — see Hero.tsx for why there are two
-     HeroSlime render sites instead of one repositioned element.
-     Desktop (>=960px) flips which slime instance is visible and
-     restores the original full-height two-column split. */
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    align-items: center;
-    gap: 32px;
   }
 
   .hero-top {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 24px;
   }
 
   .hero-top-copy {
-    min-width: 0;
     flex: 1 1 auto;
-  }
-
-  /* .hero-top-copy's own h1 keeps its normal bottom margin from the
-     .hero h1 rule further down (24px) — that's fine both as the gap
-     above .sub on desktop and as internal spacing here, since
-     .hero-top's own margin-bottom (above) is what actually separates
-     this row from .sub on mobile. */
-
-  .hero-top-slime {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Smaller on mobile so it reads as a companion beside the heading,
-     not a second hero — HeroSlime itself is unsized (fills its
-     wrapper), so this caps it. */
-  .hero-top-slime .hero-slime {
-    width: min(28vw, 110px);
-  }
-
-  .hero-side {
-    display: none;
-  }
-
-  @media (min-width: 960px) {
-    .hero {
-      /* Same fluid-cap approach as .dash-wrap (styles/dashboard.css),
-         scaled up slightly since this is the full-bleed marketing
-         hero rather than an app shell. .hero-grid's text column below
-         stays capped at 620px regardless, so copy never stretches
-         into unreadable line lengths even as this container grows. */
-      max-width: clamp(1120px, 76vw, 1680px);
-    }
-
-    .hero-grid {
-      grid-template-columns: minmax(0, 620px) 1fr;
-      gap: 24px;
-    }
-
-    /* On desktop .hero-top goes back to a plain block stacked with the
-       rest of .hero-main's children — its own margin-bottom (set on
-       mobile, above) is no longer needed since .hero h1's normal 24px
-       margin already provides that spacing — and its small companion
-       slime is hidden in favor of the full-height .hero-side instance. */
-    .hero-top {
-      display: block;
-      margin-bottom: 0;
-    }
-
-    .hero-top-slime {
-      display: none;
-    }
-
-    .hero-side {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 420px;
-    }
+    min-width: 0;
   }
 
   .hero h1 {
-    font-size: clamp(34px, 6vw, 56px);
-    line-height: 1.08;
-    margin: 0 0 24px;
-    font-weight: 400;
+    font-size: clamp(34px, 9vw, 52px);
+    line-height: 1.05;
+    margin: 0 0 20px;
+    font-weight: 800;
     letter-spacing: -0.01em;
-    max-width: 15ch;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+  }
+
+  .hero-highlight {
+    display: inline-block;
+    background: var(--lime);
+    padding: 2px 10px 6px;
+    border-radius: 14px 14px 14px 2px;
   }
 
   .hero p.sub {
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: 17px;
+    line-height: 1.55;
     color: #514d47;
-    max-width: 54ch;
-    margin: 0 0 36px;
+    max-width: 40ch;
+    margin: 0 0 28px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .hero .actions {
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 14px;
-    flex-wrap: nowrap;
-    margin-bottom: 56px;
+    max-width: 360px;
+    margin-bottom: 40px;
   }
 
   .hero .btn-primary,
   .hero .btn-secondary {
-    flex: 1 1 0;
-    min-width: 0;
-    white-space: nowrap;
+    width: 100%;
     text-align: center;
+    font-size: 16px;
   }
 
   .hero .btn-primary {
-    background: linear-gradient(180deg, #ffffff 0%, #f3ffd8 55%, var(--lime) 100%);
-    color: var(--lime-ink);
-    border: 2px solid var(--lime-ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--ink);
+    color: var(--lime);
+    border: none;
     border-radius: 999px;
-    padding: 13px 26px;
-    font-size: 15px;
+    padding: 17px 26px;
     font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
-    box-shadow: 0 3px 0 var(--lime-ink);
-    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+  }
+
+  .hero .btn-primary .btn-arrow {
+    font-size: 17px;
+    line-height: 1;
   }
 
   .hero .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 0 var(--lime-ink);
+    opacity: 0.92;
   }
 
   .hero .btn-primary:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 0 var(--lime-ink);
+    transform: translateY(0);
   }
 
   .hero .btn-secondary {
-    background: var(--bg);
+    background: transparent;
     color: var(--ink);
-    border: 1.5px solid var(--line);
+    border: 1.5px solid var(--ink);
     border-radius: 999px;
-    padding: 13px 26px;
-    font-size: 15px;
+    padding: 16px 26px;
+    font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.15s ease, background-color 0.15s ease;
   }
 
   .hero .btn-secondary:hover {
     transform: translateY(-2px);
-    border-color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 5%, transparent);
   }
 
   .hero .btn-secondary:active {
     transform: translateY(0);
   }
 
-  @media (max-width: 380px) {
-    .hero .actions {
-      gap: 8px;
-    }
-
-    .hero .btn-primary,
-    .hero .btn-secondary {
-      padding: 11px 10px;
-      font-size: 12.5px;
-    }
-  }
-
-  .snippet {
-    position: relative;
-    background: var(--ink);
-    color: #e8e4de;
-    border-radius: 14px;
-    padding: 30px 22px 20px;
-    font-family: "SFMono-Regular", Consolas, monospace;
-    font-size: 13px;
-    line-height: 1.7;
-    overflow-x: auto;
-    max-width: 640px;
-    box-shadow: 0 16px 40px -16px rgba(34, 32, 28, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  }
-
-  /* Tiny traffic-light dots at the top — reads as a real "code window"
-     rather than a plain dark box, reinforcing the high-tech feel. */
-  .snippet-dots {
-    position: absolute;
-    top: 12px;
-    left: 18px;
-    display: flex;
-    gap: 6px;
-  }
-
-  .snippet-dots span {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #55504a;
-  }
-
-  .snippet-dots span:first-child { background: #e8716b; }
-  .snippet-dots span:nth-child(2) { background: #e8c56b; }
-  .snippet-dots span:nth-child(3) { background: var(--lime); }
-
-  .snippet .tag-name { color: var(--lime); }
-  .snippet .attr { color: #9cc4ff; }
-  .snippet .val { color: #f3b088; }
-  .snippet .comment { color: #827d74; }
-
-  /* ---- Capabilities: premium card treatment ----
-     Individual cards instead of a flat shared-gridline grid, each with
-     the same hard ink "sticker" shadow used on the agent page, a lime
-     icon chip, and a hover lift. Section sits directly on --bg/--cream
-     (no separate grid background color showing through) so there's
-     nothing left to clash with the page background. */
-  .capabilities {
-    /* Same fluid-cap approach as .dash-wrap (styles/dashboard.css). */
-    max-width: clamp(1040px, 72vw, 1600px);
-    margin: 0 auto;
-    padding: 8px 24px 80px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-  .capabilities .cap {
-    position: relative;
-    background: var(--bg);
-    border: 1.5px solid var(--ink);
-    border-radius: 18px;
-    padding: 26px 24px;
-    box-shadow: 0 3px 0 var(--ink);
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
-  }
-
-  /* Only cards wired to useScrollReveal (which adds [data-reveal] via
-     the ref callback below) start hidden — any .cap rendered without
-     the hook (e.g. DetailCapabilities further down the page) just
-     shows normally, no JS dependency required. */
-  .capabilities .cap[data-reveal] {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  .capabilities .cap[data-reveal].is-visible {
-    animation: cap-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .capabilities .cap:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 0 var(--ink);
-  }
-
-  .capabilities .cap-icon {
+  /* ---- Mascot placeholder ----
+     Stands in for the character art, which will be supplied later and
+     dropped into CharacterPlaceholder without touching layout here. */
+  .hero-character-placeholder {
+    flex: 0 0 auto;
+    width: clamp(110px, 30vw, 220px);
+    aspect-ratio: 1 / 1.1;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+  }
+
+  .hero-character-blob {
+    width: 70%;
+    height: 70%;
+    border-radius: 48% 52% 55% 45% / 55% 48% 52% 45%;
+    background: color-mix(in srgb, var(--lime) 55%, var(--ink) 6%);
+    border: 2px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+  }
+
+  /* ---- Connected-site preview card ---- */
+  .hero-preview {
+    position: relative;
+    max-width: 420px;
+    margin: 0 0 56px;
+  }
+
+  .hero-preview-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 18px 18px 22px;
+    box-shadow: 0 20px 44px -18px rgba(34, 32, 28, 0.28), 0 0 0 1px rgba(34, 32, 28, 0.04);
+  }
+
+  .hero-preview-browser {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .hero-preview-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line);
+  }
+
+  .hero-preview-dot:nth-child(1) { background: #c9b8ff; }
+  .hero-preview-dot:nth-child(2) { background: #ffd8a8; }
+  .hero-preview-dot:nth-child(3) { background: var(--lime); }
+
+  .hero-preview-thumb {
+    height: 110px;
+    border-radius: 12px;
     margin-bottom: 14px;
-    border-radius: 11px;
-    background: var(--lime);
-    border: 1.5px solid var(--lime-ink);
-    color: var(--lime-ink);
+    background: linear-gradient(135deg, #cdb8ff 0%, #9a8af0 100%);
   }
 
-  .capabilities .cap-icon svg {
-    width: 19px;
-    height: 19px;
+  .hero-preview-site {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
   }
 
-  .capabilities .cap h3 {
-    font-size: 15.5px;
+  .hero-preview-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2fbf5c;
+    flex-shrink: 0;
+  }
+
+  .hero-preview-site-name {
     font-weight: 700;
-    margin: 0 0 8px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15.5px;
     color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  .capabilities .cap p {
+  .hero-preview-connected {
+    margin: 0 0 14px 17px;
+    font-size: 13px;
+    color: #928c80;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .hero-preview-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-preview-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--line);
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .hero-preview-toggle.is-on {
+    background: #2fbf5c;
+  }
+
+  .hero-preview-toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease;
+  }
+
+  .hero-preview-toggle.is-on .hero-preview-toggle-knob {
+    transform: translateX(18px);
+  }
+
+  .hero-preview-toggle-label {
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .hero-preview-snippet {
+    position: relative;
+    margin: -20px 0 0 28px;
+    background: var(--ink);
+    color: #e8e4de;
+    border-radius: 14px;
+    padding: 14px 18px 14px 44px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    box-shadow: 0 14px 32px -14px rgba(34, 32, 28, 0.45);
+  }
+
+  .hero-preview-snippet-icon {
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    color: var(--lime);
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .hero-preview-snippet-code .attr { color: #9cc4ff; }
+  .hero-preview-snippet-code .val { color: var(--lime); }
+
+  .hero-tagline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
     font-size: 14px;
-    line-height: 1.55;
-    color: #6b665e;
+    color: #928c80;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  @keyframes cap-rise {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .hero-tagline-sparkle {
+    color: var(--lime-ink);
+    opacity: 0.6;
   }
 
-  @media (max-width: 640px) {
-    .capabilities { padding-left: 14px; padding-right: 14px; gap: 10px; }
-  }
-
-  @media (max-width: 480px) {
-    .capabilities .cap { padding: 18px 14px; }
-    .capabilities .cap h3 { font-size: 14px; }
-    .capabilities .cap p { font-size: 12.5px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .capabilities .cap {
-      opacity: 1;
-      transform: none;
-      animation: none !important;
-      transition: none;
+  @media (min-width: 640px) {
+    .hero {
+      max-width: 720px;
+      padding-top: 24px;
     }
   }
-
