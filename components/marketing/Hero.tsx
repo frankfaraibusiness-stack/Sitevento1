@@ -2,22 +2,21 @@
 
 // components/marketing/Hero.tsx
 //
-// New stripped-down app-feel hero, replacing the previous lime-field +
-// backdrop-grid + side-column slime layout. Per the new reference design:
-// headline, subcopy, the two CTAs, then a single "connected site" preview
-// card directly beneath — no side column, no animated backdrop. The
-// bunny/character art is a placeholder (CharacterPlaceholder) until the
-// real character asset is supplied; swap that one component out later
-// without touching the rest of the layout.
+// App-feel hero matching the reference design: bold two-line headline
+// with a hand-drawn-looking highlight blob behind the second line,
+// subcopy, two CTAs (full-width stacked on narrow screens, side-by-side
+// width capped once there's room), a "connected site" preview card, and
+// small decorative sparkle/squiggle accents scattered around — all
+// static/illustrative. The mascot is a placeholder (CharacterPlaceholder)
+// until the real character art is supplied.
 
 interface HeroProps {
   onConnectClick: () => void;
 }
 
 function CharacterPlaceholder() {
-  // Placeholder for the mascot character (see reference design) — a
-  // simple soft blob standing in for it so the layout/spacing is final
-  // now and only this one component needs to change later.
+  // Stands in for the mascot (see reference) — only this component
+  // needs to change later when the real art is supplied.
   return (
     <div className="hero-character-placeholder" aria-hidden="true">
       <div className="hero-character-blob" />
@@ -25,11 +24,50 @@ function CharacterPlaceholder() {
   );
 }
 
+function Sparkle({ className }: { className: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 0c0 5-1 9-3 11s-6 3-9 3c3 0 7 1 9 3s3 6 3 11c0-5 1-9 3-11s6-3 9-3c-3 0-7-1-9-3s-3-6-3-11z" />
+    </svg>
+  );
+}
+
+function Squiggle({ className }: { className: string }) {
+  return (
+    <svg className={className} viewBox="0 0 60 20" fill="none" aria-hidden="true">
+      <path d="M2 14c6 0 6-10 12-10s6 12 12 12 6-9 12-9 6 7 12 7" strokeLinecap="round" strokeWidth="3.5" />
+    </svg>
+  );
+}
+
+function Crystal({ className }: { className: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M20 2 36 14l-6 24H10L4 14z" />
+      <path d="M20 2 14 14h12z" opacity="0.5" />
+      <path d="M4 14h32l-6 24H10z" opacity="0.15" />
+    </svg>
+  );
+}
+
+function HeroDecor() {
+  // Scattered sparkles/crystal/squiggle accents around the headline and
+  // preview card, matching the reference's playful "juice splash" feel.
+  return (
+    <div className="hero-decor" aria-hidden="true">
+      <Sparkle className="hero-decor-sparkle hero-decor-sparkle-a" />
+      <Crystal className="hero-decor-crystal" />
+      <Sparkle className="hero-decor-sparkle hero-decor-sparkle-b" />
+      <Squiggle className="hero-decor-squiggle hero-decor-squiggle-a" />
+      <Squiggle className="hero-decor-squiggle hero-decor-squiggle-b" />
+    </div>
+  );
+}
+
 function ConnectedSitePreview() {
-  // The card beneath the CTAs in the reference: a mini browser-window
-  // thumbnail, a "Connected" status line with site name, a live toggle,
-  // and the meta-tag snippet underneath, overlapping the card's bottom
-  // edge. Static/illustrative — not wired to any real site yet.
+  // The card beneath the CTAs: a mini browser-window thumbnail,
+  // "Connected" status + site name, a live toggle, and the meta-tag
+  // snippet overlapping the card's bottom edge.
   return (
     <div className="hero-preview">
       <div className="hero-preview-card">
@@ -73,14 +111,18 @@ export function Hero({ onConnectClick }: HeroProps) {
           <h1>
             Your website.
             <br />
-            <span className="hero-highlight">Your rules.</span>
+            <span className="hero-highlight-wrap">
+              <span className="hero-highlight-shape" aria-hidden="true" />
+              <span className="hero-highlight-text">Your rules.</span>
+            </span>
           </h1>
           <p className="sub">
             Connect once. Change what visitors see, anytime — without rebuilding your site.
           </p>
           <div className="actions">
             <button className="btn-primary" onClick={onConnectClick}>
-              Connect your site
+              <span className="btn-primary-full">Connect your site</span>
+              <span className="btn-primary-short">Connect site</span>
               <span className="btn-arrow" aria-hidden="true">
                 →
               </span>
@@ -95,15 +137,16 @@ export function Hero({ onConnectClick }: HeroProps) {
             </button>
           </div>
         </div>
-        <CharacterPlaceholder />
+        <div className="hero-character-col">
+          <CharacterPlaceholder />
+          <HeroDecor />
+        </div>
       </div>
 
       <ConnectedSitePreview />
 
       <p className="hero-tagline">
-        <span className="hero-tagline-sparkle" aria-hidden="true">
-          ✦
-        </span>
+        <Sparkle className="hero-tagline-sparkle" />
         One tiny snippet. Live control.
       </p>
     </section>
