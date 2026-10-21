@@ -19,14 +19,74 @@
  * ============================================================ */
 
   .hero-slime {
+    position: relative;
     width: min(100%, 320px);
     animation: hero-slime-bob 4.2s ease-in-out infinite;
   }
 
   .hero-slime-svg {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: auto;
     overflow: visible;
+  }
+
+  /* ---- Ambient glow + orbiting particles: the "premium/high-tech"
+     accent layer around the character, independent of the SVG so it
+     can blur/orbit cheaply without touching the blob's own paths. ---- */
+  .hero-slime-glow {
+    position: absolute;
+    inset: 8% 10%;
+    z-index: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--lime) 55%, white) 0%, transparent 72%);
+    filter: blur(28px);
+    opacity: 0.75;
+    animation: hero-slime-glow-pulse 4.2s ease-in-out infinite;
+  }
+
+  @keyframes hero-slime-glow-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%      { opacity: 0.85; transform: scale(1.06); }
+  }
+
+  .hero-slime-orbits {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .hero-slime-particle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    box-shadow: 0 0 8px 1px color-mix(in srgb, var(--lime) 70%, white);
+    transform: translate(-50%, -50%);
+    animation: hero-slime-orbit var(--orbit-duration, 12s) linear infinite;
+  }
+
+  /* CSS can't branch animation-direction on a numeric custom property,
+     so clockwise vs. counter-clockwise is baked directly into the
+     keyframe's rotate() angle via calc(var(--orbit-dir) * 360deg)
+     instead — --orbit-dir is just 1 or -1 per particle. */
+  @keyframes hero-slime-orbit {
+    from { transform: translate(-50%, -50%) rotate(0deg) translateX(var(--orbit-radius, 100px)) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(calc(var(--orbit-dir, 1) * 360deg)) translateX(var(--orbit-radius, 100px)) rotate(calc(var(--orbit-dir, 1) * -360deg)); }
+  }
+
+  @media (max-width: 959px) {
+    /* Smaller companion instance beside the heading on mobile — orbit
+       ring/glow would overflow or crowd the heading text at that size,
+       so they're kept desktop-only; the blink/shine/gradient upgrades
+       still apply everywhere. */
+    .hero-slime-glow,
+    .hero-slime-orbits {
+      display: none;
+    }
   }
 
   .hero-slime-shadow {
@@ -41,7 +101,11 @@
   }
 
   .hero-slime-body {
-    fill: var(--lime);
+    /* fill intentionally left to the SVG's own fill="url(#...)"
+       attribute (set in HeroSlime.tsx) — the radial gradient that
+       gives the body real dimension instead of a flat color. A CSS
+       `fill` declaration here would win over that attribute and flatten
+       it back out. */
     stroke: var(--lime-ink);
     stroke-width: 2;
     stroke-linejoin: round;
@@ -52,6 +116,17 @@
     opacity: 0.5;
     transform: rotate(-18deg);
     transform-origin: 76px 78px;
+  }
+
+  .hero-slime-shine-sm {
+    opacity: 0.65;
+    transform: rotate(10deg);
+    transform-origin: 128px 92px;
+  }
+
+  .eye-sparkle {
+    fill: #ffffff;
+    opacity: 0.9;
   }
 
   /* ---- Idle jelly breathing -------------------------------------- */
@@ -109,7 +184,9 @@
   @media (prefers-reduced-motion: reduce) {
     .hero-slime,
     .hero-slime-body-wrap,
-    .hero-slime-shadow {
+    .hero-slime-shadow,
+    .hero-slime-glow,
+    .hero-slime-particle {
       animation: none !important;
     }
   }
