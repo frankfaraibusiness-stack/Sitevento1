@@ -54,10 +54,10 @@ const BODY_PATH = makeBlobPath(100, 108, 72, 11, 11, 4242);
 // without being randomized (so the silhouette stays consistent between
 // visits, same philosophy as BODY_PATH's fixed seed above).
 const ORBIT_PARTICLES = [
-  { radius: 118, size: 7, duration: 11, delay: 0, dir: 1 },
-  { radius: 100, size: 5, duration: 9, delay: -3, dir: -1 },
-  { radius: 132, size: 4.5, duration: 14, delay: -6, dir: 1 },
-  { radius: 108, size: 6, duration: 16, delay: -2, dir: -1 },
+  { radius: 108, size: 10, duration: 11, delay: 0, dir: 1 },
+  { radius: 90, size: 7, duration: 9, delay: -3, dir: -1 },
+  { radius: 118, size: 6.5, duration: 14, delay: -6, dir: 1 },
+  { radius: 98, size: 8.5, duration: 16, delay: -2, dir: -1 },
 ];
 
 export function HeroSlime() {
