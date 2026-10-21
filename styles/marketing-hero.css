@@ -1,11 +1,5 @@
 /* ============================================================
- * marketing-hero.css — new app-feel hero (see components/marketing/Hero.tsx)
- *
- * Redesign: flat page background (no lime field, no animated backdrop),
- * logo-left/signup+hamburger-right header that blends into that same
- * background, big two-line headline with a lime highlight behind the
- * second line, two CTAs, a mascot placeholder, and a "connected site"
- * preview card underneath — matching the new reference design exactly.
+ * marketing-hero.css — app-feel hero (see components/marketing/Hero.tsx)
  * ============================================================ */
 
   #marketingView {
@@ -16,15 +10,17 @@
     position: relative;
     max-width: 640px;
     margin: 0 auto;
-    padding: 4px 24px 56px;
+    padding: 4px 20px 56px;
     text-align: left;
+    overflow: visible;
   }
 
   .hero-top {
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
+    gap: 8px;
   }
 
   .hero-top-copy {
@@ -32,32 +28,66 @@
     min-width: 0;
   }
 
+  /* ---- Headline ----
+     Very heavy/chunky display weight (900, tight tracking) to match the
+     reference, which reads much bolder than a normal 700/800 weight.
+     Font-size uses a steep clamp so "Your website." keeps reading as one
+     line down to a 320px viewport instead of wrapping mid-phrase. */
   .hero h1 {
-    font-size: clamp(34px, 9vw, 52px);
-    line-height: 1.05;
+    font-size: clamp(26px, 9.6vw, 52px);
+    line-height: 1.04;
     margin: 0 0 20px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    font-weight: 900;
+    letter-spacing: -0.02em;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--ink);
+    /* The clamp above keeps "Your website." fitting on one line down to
+       a 320px viewport in practice; this is just a safety net so an
+       unusually wide font fallback wraps instead of clipping/
+       overflowing the viewport. */
+    overflow-wrap: break-word;
   }
 
-  .hero-highlight {
+  .hero-highlight-wrap {
+    position: relative;
     display: inline-block;
-    background: var(--lime);
-    padding: 2px 10px 6px;
-    border-radius: 14px 14px 14px 2px;
+  }
+
+  /* Hand-drawn "marker" splotch behind "Your rules." — an irregular
+     blob (asymmetric border-radius + slight rotation) rather than a
+     clean pill, with a deeper, more saturated mid-lime fill than the
+     bright --lime used elsewhere, matching the reference. */
+  .hero-highlight-shape {
+    position: absolute;
+    inset: -6% -5% -10% -4%;
+    background: #d2f376;
+    border-radius: 42% 46% 44% 48% / 60% 55% 62% 50%;
+    transform: rotate(-1deg);
+    z-index: 0;
+  }
+
+  .hero-highlight-text {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    padding: 0 4px;
   }
 
   .hero p.sub {
-    font-size: 17px;
-    line-height: 1.55;
+    font-size: 16.5px;
+    line-height: 1.5;
     color: #514d47;
-    max-width: 40ch;
+    max-width: 30ch;
     margin: 0 0 28px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
+  /* ---- CTAs ----
+     Stacked full-width by default (phones). At 400px+ there's enough
+     room for "Connect your site" to sit on one line inside the pill, so
+     the full label shows there and up; below 400px a shorter label
+     ("Connect site") is shown instead, via the two-span swap below, so
+     the button never wraps to two lines. */
   .hero .actions {
     display: flex;
     flex-direction: column;
@@ -83,16 +113,36 @@
     color: var(--lime);
     border: none;
     border-radius: 999px;
-    padding: 17px 26px;
+    padding: 17px 20px;
     font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
+    white-space: nowrap;
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+  }
+
+  .btn-primary-full {
+    display: none;
+  }
+
+  .btn-primary-short {
+    display: inline;
+  }
+
+  @media (min-width: 400px) {
+    .btn-primary-full {
+      display: inline;
+    }
+
+    .btn-primary-short {
+      display: none;
+    }
   }
 
   .hero .btn-primary .btn-arrow {
     font-size: 17px;
     line-height: 1;
+    flex-shrink: 0;
   }
 
   .hero .btn-primary:hover {
@@ -109,10 +159,11 @@
     color: var(--ink);
     border: 1.5px solid var(--ink);
     border-radius: 999px;
-    padding: 16px 26px;
+    padding: 16px 20px;
     font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
+    white-space: nowrap;
     transition: transform 0.15s ease, background-color 0.15s ease;
   }
 
@@ -125,24 +176,90 @@
     transform: translateY(0);
   }
 
-  /* ---- Mascot placeholder ----
-     Stands in for the character art, which will be supplied later and
-     dropped into CharacterPlaceholder without touching layout here. */
-  .hero-character-placeholder {
+  /* ---- Mascot placeholder + decorations column ---- */
+  .hero-character-col {
+    position: relative;
     flex: 0 0 auto;
-    width: clamp(110px, 30vw, 220px);
+    width: clamp(78px, 24vw, 160px);
+  }
+
+  .hero-character-placeholder {
+    width: 100%;
     aspect-ratio: 1 / 1.1;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
   }
 
   .hero-character-blob {
-    width: 70%;
-    height: 70%;
+    width: 72%;
+    height: 72%;
     border-radius: 48% 52% 55% 45% / 55% 48% 52% 45%;
     background: color-mix(in srgb, var(--lime) 55%, var(--ink) 6%);
     border: 2px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+  }
+
+  /* ---- Scattered decorative sparkles/crystal/squiggles ----
+     Purely decorative, aria-hidden, positioned around the character
+     column — matching the little stars/crystal/motion-lines scattered
+     around the mascot in the reference. */
+  .hero-decor {
+    position: absolute;
+    inset: -14% -10% -10% -20%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-decor-sparkle {
+    position: absolute;
+    color: color-mix(in srgb, var(--ink) 80%, var(--lime) 20%);
+  }
+
+  .hero-decor-sparkle-a {
+    width: 16px;
+    height: 16px;
+    top: 2%;
+    left: 8%;
+    color: color-mix(in srgb, var(--ink) 55%, var(--lime) 45%);
+  }
+
+  .hero-decor-sparkle-b {
+    width: 20px;
+    height: 20px;
+    bottom: 22%;
+    left: -6%;
+    color: #8f6ff0;
+  }
+
+  .hero-decor-crystal {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: -4%;
+    right: 2%;
+    fill: #8f6ff0;
+  }
+
+  .hero-decor-squiggle {
+    position: absolute;
+    width: 46px;
+    height: 16px;
+    stroke: var(--lime-ink);
+    opacity: 0.55;
+  }
+
+  .hero-decor-squiggle-a {
+    top: 18%;
+    right: -8%;
+    transform: rotate(8deg);
+  }
+
+  .hero-decor-squiggle-b {
+    bottom: 6%;
+    right: 6%;
+    transform: rotate(-12deg) scale(0.85);
   }
 
   /* ---- Connected-site preview card ---- */
@@ -153,10 +270,11 @@
   }
 
   .hero-preview-card {
+    position: relative;
     background: #ffffff;
     border-radius: 20px;
     padding: 18px 18px 22px;
-    box-shadow: 0 20px 44px -18px rgba(34, 32, 28, 0.28), 0 0 0 1px rgba(34, 32, 28, 0.04);
+    box-shadow: 0 24px 50px -20px rgba(34, 32, 28, 0.32), 0 0 0 1px rgba(34, 32, 28, 0.04);
   }
 
   .hero-preview-browser {
@@ -292,8 +410,11 @@
   }
 
   .hero-tagline-sparkle {
+    width: 15px;
+    height: 15px;
     color: var(--lime-ink);
     opacity: 0.6;
+    flex-shrink: 0;
   }
 
   @media (min-width: 640px) {
