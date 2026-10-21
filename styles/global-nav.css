@@ -107,29 +107,48 @@
     /* Every tab (not just "Add site") now sits in its own lime
        container with a dark edge, matching .gnav-add's look, so the
        four other tabs don't read as bare icons floating on the bar.
-       No active/current-route highlight anymore — all tabs, including
-       whichever route you're on, look the same. */
+       Rounded RECTANGLE, not a circle/pill — border-radius: 50% on a
+       column-flex item whose width/height aren't equal produces an
+       egg shape, not a circle, which is why this uses a fixed, modest
+       corner radius instead. No active/current-route highlight —
+       all tabs, including whichever route you're on, look the same.
+       Icon + a small label stacked underneath; label and gaps are
+       tight enough that 4 of these plus the center Add button still
+       fit without wrapping down to a 320px-wide phone. */
     .gnav-item {
       flex-direction: column;
-      gap: 0;
+      gap: 2px;
       flex: 1;
       min-width: 0;
-      padding: 8px 4px;
-      border-radius: 50%;
+      padding: 6px 2px;
+      border-radius: 12px;
       background: var(--lime);
       border: 1.5px solid var(--lime-ink);
       transition: transform 160ms ease;
     }
 
     .gnav-item-icon {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       color: var(--lime-ink);
     }
 
     .gnav-item-icon svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .gnav-item-label {
+      display: block;
+      font-size: 10px;
+      line-height: 1.1;
+      font-weight: 600;
+      color: var(--lime-ink);
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     .gnav-item:active {
@@ -202,6 +221,11 @@
     .gnav-item-icon {
       width: 19px;
       height: 19px;
+    }
+
+    /* Desktop stays icon-only, same as before this change. */
+    .gnav-item-label {
+      display: none;
     }
 
     .gnav-avatar,
