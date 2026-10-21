@@ -37,24 +37,27 @@
      can blur/orbit cheaply without touching the blob's own paths. ---- */
   .hero-slime-glow {
     position: absolute;
-    inset: 8% 10%;
+    inset: 2% 4%;
     z-index: 0;
     border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--lime) 55%, white) 0%, transparent 72%);
-    filter: blur(28px);
-    opacity: 0.75;
+    /* Bright white-hot core against the lime page background (was a
+       lime-on-lime mix that all but disappeared) — this is what reads
+       as "glowing" rather than just a faint tint. */
+    background: radial-gradient(circle, #ffffff 0%, color-mix(in srgb, #ffffff 40%, var(--lime)) 45%, transparent 75%);
+    filter: blur(22px);
+    opacity: 0.85;
     animation: hero-slime-glow-pulse 4.2s ease-in-out infinite;
   }
 
   @keyframes hero-slime-glow-pulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50%      { opacity: 0.85; transform: scale(1.06); }
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.08); }
   }
 
   .hero-slime-orbits {
     position: absolute;
-    inset: 0;
-    z-index: 1;
+    inset: -6%;
+    z-index: 2;
     pointer-events: none;
   }
 
@@ -63,8 +66,12 @@
     top: 50%;
     left: 50%;
     border-radius: 50%;
-    background: var(--lime-ink);
-    box-shadow: 0 0 8px 1px color-mix(in srgb, var(--lime) 70%, white);
+    /* Bright white dot with a dark ink ring + strong glow — visible
+       against both the lime body and the lime page background, unlike
+       the previous ink-on-lime dot which blended into the backdrop. */
+    background: #ffffff;
+    border: 1.5px solid var(--lime-ink);
+    box-shadow: 0 0 10px 3px color-mix(in srgb, #ffffff 65%, var(--lime));
     transform: translate(-50%, -50%);
     animation: hero-slime-orbit var(--orbit-duration, 12s) linear infinite;
   }
