@@ -33,6 +33,7 @@ function HeroBackdrop() {
   return (
     <div className="hero-backdrop" aria-hidden="true">
       <div className="hero-backdrop-grid" />
+      <div className="hero-backdrop-sweep" />
       <div className="hero-backdrop-orb hero-backdrop-orb-a" />
       <div className="hero-backdrop-orb hero-backdrop-orb-b" />
     </div>
@@ -49,7 +50,7 @@ export function Hero({ onConnectClick }: HeroProps) {
             <div className="hero-top-copy">
               <span className="hero-eyebrow">
                 <span className="live-dot"></span>
-                Live on every connected site
+                Live on every site
               </span>
               <h1>Connect your site. Run it from here.</h1>
             </div>
