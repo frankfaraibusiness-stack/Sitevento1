@@ -33,9 +33,11 @@
   min-height: 100dvh;
   /* Match BootSplash's .boot-splash background (styles/boot-splash.css)
      exactly — this is the same "still loading" state continued, so it
-     shouldn't start on a different (cream-tinted) lime than the boot
-     screen it follows. */
-  background: var(--lime);
+     shouldn't start on a different background than the boot screen it
+     follows. Full-screen lime read as too loud/unprofessional, so both
+     now share the standard app background; lime stays only as a small
+     accent on the dots themselves. */
+  background: var(--app-bg);
   padding-top: calc(3rem + env(safe-area-inset-top, 0px));
 }
 
