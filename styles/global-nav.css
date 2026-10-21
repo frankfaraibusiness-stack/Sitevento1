@@ -104,6 +104,13 @@
    * "+" (unchanged in size/shape/shadow from before) is the only
    * strong shape — exactly the hierarchy being asked for. ---------- */
   @media (max-width: 859px) {
+    /* Temporarily removed on mobile entirely — see GlobalNav.tsx. */
+    .gnav-root {
+      display: none;
+    }
+  }
+
+  @media (max-width: 859px) {
     .gnav-root {
       bottom: 0;
       padding-bottom: env(safe-area-inset-bottom, 0px);
