@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 // components/marketing/Hero.tsx
 //
 // App-feel hero matching the reference design: bold two-line headline
@@ -7,8 +9,10 @@
 // subcopy, two CTAs (full-width stacked on narrow screens, side-by-side
 // width capped once there's room), a "connected site" preview card, and
 // small decorative sparkle/squiggle accents scattered around — all
-// static/illustrative. The mascot is a placeholder (CharacterPlaceholder)
-// until the real character art is supplied.
+// static/illustrative, except the preview card below which is a small
+// interactive demo of what a connected site looks like live. The mascot
+// is a placeholder (CharacterPlaceholder) until the real character art
+// is supplied.
 
 interface HeroProps {
   onConnectClick: () => void;
@@ -64,10 +68,106 @@ function HeroDecor() {
   );
 }
 
+// Pop labels cycled through for the live-activity demo — mirrors the
+// kind of events sitevento actually tracks on a connected site.
+const ACTIVITY_LABELS = ['+1 view', '+1 impression', '+1 click', '+1 visitor'];
+
+interface ActivityPop {
+  id: number;
+  label: string;
+  left: number; // percentage across the demo surface
+  top: number; // percentage down the demo surface
+}
+
+const POP_LIFETIME_MS = 1600;
+const BURST_WINDOW_MS = 5000; // ~5s of bursts, then a pause, like widgets rotating
+const BURST_PAUSE_MS = 1800;
+const POP_INTERVAL_MS = 420;
+
+function ActivityDemoSurface({ isOn }: { isOn: boolean }) {
+  // Illustrates what a connected site's banner does live: a steady drip
+  // of "+1 view / +1 impression / +1 click" chips popping up at random
+  // points across the surface, several at once, in ~5s bursts with a
+  // short pause between — the same rhythm widgets rotate through —
+  // rather than a single one-off pop. Purely a demo (nothing here is
+  // wired to real traffic); when the toggle is off, it goes idle and
+  // shows a hint instead.
+  const [pops, setPops] = useState<ActivityPop[]>([]);
+  const nextId = useRef(0);
+
+  useEffect(() => {
+    if (!isOn) {
+      setPops([]);
+      return;
+    }
+
+    let burstTimer: ReturnType<typeof setTimeout>;
+    let popTimer: ReturnType<typeof setInterval>;
+    let elapsed = 0;
+
+    const spawnPop = () => {
+      const id = nextId.current++;
+      const pop: ActivityPop = {
+        id,
+        label: ACTIVITY_LABELS[Math.floor(Math.random() * ACTIVITY_LABELS.length)],
+        left: 8 + Math.random() * 78,
+        top: 10 + Math.random() * 68,
+      };
+      setPops((prev) => [...prev, pop]);
+      setTimeout(() => {
+        setPops((prev) => prev.filter((p) => p.id !== id));
+      }, POP_LIFETIME_MS);
+    };
+
+    const runBurst = () => {
+      elapsed = 0;
+      popTimer = setInterval(() => {
+        spawnPop();
+        elapsed += POP_INTERVAL_MS;
+        if (elapsed >= BURST_WINDOW_MS) {
+          clearInterval(popTimer);
+          burstTimer = setTimeout(runBurst, BURST_PAUSE_MS);
+        }
+      }, POP_INTERVAL_MS);
+    };
+
+    // Kick off immediately so the demo doesn't sit empty on first paint.
+    spawnPop();
+    runBurst();
+
+    return () => {
+      clearInterval(popTimer);
+      clearTimeout(burstTimer);
+    };
+  }, [isOn]);
+
+  return (
+    <div className={`hero-preview-thumb${isOn ? '' : ' is-off'}`} aria-hidden="true">
+      {isOn ? (
+        pops.map((pop) => (
+          <span
+            key={pop.id}
+            className="hero-preview-pop"
+            style={{ left: `${pop.left}%`, top: `${pop.top}%` }}
+          >
+            {pop.label}
+          </span>
+        ))
+      ) : (
+        <p className="hero-preview-thumb-hint">Turn on to see live activity</p>
+      )}
+    </div>
+  );
+}
+
 function ConnectedSitePreview() {
-  // The card beneath the CTAs: a mini browser-window thumbnail,
-  // "Connected" status + site name, a live toggle, and the meta-tag
+  // The card beneath the CTAs: a mini browser-window chrome, a live
+  // activity demo standing in for the banner's real-time tracking,
+  // "Connected"/"Disconnected" status + site name, a working toggle
+  // (on by default) that switches the demo on/off, and the meta-tag
   // snippet overlapping the card's bottom edge.
+  const [isOn, setIsOn] = useState(true);
+
   return (
     <div className="hero-preview">
       <div className="hero-preview-card">
@@ -76,18 +176,25 @@ function ConnectedSitePreview() {
           <span className="hero-preview-dot" />
           <span className="hero-preview-dot" />
         </div>
-        <div className="hero-preview-thumb" aria-hidden="true" />
+        <ActivityDemoSurface isOn={isOn} />
         <div className="hero-preview-info">
           <div className="hero-preview-site">
-            <span className="hero-preview-status-dot" />
+            <span className={`hero-preview-status-dot${isOn ? '' : ' is-off'}`} />
             <span className="hero-preview-site-name">YourSite.com</span>
           </div>
-          <p className="hero-preview-connected">Connected</p>
+          <p className="hero-preview-connected">{isOn ? 'Connected' : 'Disconnected'}</p>
           <div className="hero-preview-toggle-row">
-            <span className="hero-preview-toggle is-on">
+            <button
+              type="button"
+              className={`hero-preview-toggle${isOn ? ' is-on' : ''}`}
+              role="switch"
+              aria-checked={isOn}
+              aria-label={isOn ? 'Turn off demo banner' : 'Turn on demo banner'}
+              onClick={() => setIsOn((v) => !v)}
+            >
               <span className="hero-preview-toggle-knob" />
-            </span>
-            <span className="hero-preview-toggle-label">Banner is live</span>
+            </button>
+            <span className="hero-preview-toggle-label">{isOn ? 'Connected' : 'Disconnected'}</span>
           </div>
         </div>
       </div>
