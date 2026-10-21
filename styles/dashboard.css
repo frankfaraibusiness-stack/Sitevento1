@@ -546,6 +546,28 @@
  * bolted-on second style.
  * ============================================================ */
 
+  /* Break the Analytics panel out of .dnx-wrap's max-width:1120px
+     column so it spans the full viewport edge-to-edge, wider than
+     every other card on the page, instead of sitting centered at the
+     same width as the stat tiles above it. Standard full-bleed trick:
+     100vw + pulling back by half the viewport minus half of .dnx-wrap's
+     own centered width undoes the parent's centering. .dash-panel
+     itself carries no padding (its .dash-panel-head/-body do that
+     internally, see above), so widening it here doesn't need any
+     padding compensation; border-radius comes off the two edges that
+     now meet the viewport sides so it reads as a true full-bleed strip
+     rather than a card with clipped corners. */
+  .ac-panel {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    box-sizing: border-box;
+  }
+
   .ac-panel .dash-panel-head { flex-wrap: wrap; }
 
   .ac-range-switch {
