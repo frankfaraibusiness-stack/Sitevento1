@@ -12,7 +12,7 @@
  * specific to the remaining routes: .dash-wrap (also used by
  * SiteManagePage), .dash-panel*, .visit-row/.v-*, .lead-row/.l-*,
  * .ghost-btn, .empty-row (VisitLogPanel/LeadsPanel/BlockedVisitorsPanel),
- * .bcp-*/.bc-* (BannerComposer + BannerCard), .feat-panel-* (the Site
+ * .bcp-* and .bc-* (BannerComposer + BannerCard), .feat-panel-* (the Site
  * Alert slide-over), and the SiteManagePage section below.
  * ============================================================ */
 
