@@ -3,12 +3,35 @@
  * Split from app/globals.css for maintainability.
  * ============================================================ */
 
-  /* ---- Site footer ---- */
+  /* ---- Site footer ----
+     Previously this had no background of its own, so it just sat
+     directly on whatever was behind it — the flat lime
+     (#marketingView) on the homepage, plain --bg/--cream everywhere
+     else — with a pale --line (#e8e4de, near-white) top border and
+     body text in mid-greys (#6b665e / #8a8477). On lime that border
+     read as invisible/"cream" instead of a clean divider, and the grey
+     text had poor contrast against the bright lime background.
+
+     Now the footer is its own dark "ink" surface/card, the same on
+     every route regardless of what's behind it — a real dark-mode
+     panel, not a transparent continuation of the page. That fixes
+     both complaints in one move: the divider above it is a solid,
+     high-contrast line (lime, not cream) instead of relying on a pale
+     border color to read against a bright backdrop, and every text
+     color inside is picked for contrast against --ink rather than
+     against --bg, so nothing is grey-on-lime anymore. */
   .site-footer {
-    max-width: 900px;
-    margin: 72px auto 0;
-    padding: 48px 24px 56px;
-    border-top: 1px solid var(--line);
+    margin: 72px 0 0;
+    padding: 0;
+    background: var(--ink);
+    color: #e8e4de;
+    border-top: 3px solid var(--lime);
+  }
+
+  .site-footer-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px 32px;
   }
 
   .footer-capture {
@@ -17,19 +40,22 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 48px;
+    margin-bottom: 44px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .footer-capture h3 {
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 400;
     margin: 0 0 6px;
     max-width: 30ch;
+    color: #fff;
   }
 
   .footer-capture p {
     font-size: 14px;
-    color: #6b665e;
+    color: #c9c4ba;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     max-width: 36ch;
@@ -44,66 +70,87 @@
   .email-form input[type="email"] {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 14px;
-    border: 1.5px solid var(--line);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
     border-radius: 999px;
     padding: 12px 18px;
     min-width: 220px;
-    color: var(--ink);
-    background: var(--cream);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .email-form input[type="email"]::placeholder {
+    color: #8d887f;
   }
 
   .email-form input[type="email"]:focus-visible {
-    outline: 2px solid var(--walnut-dark);
+    outline: 2px solid var(--lime);
     outline-offset: 2px;
+    border-color: var(--lime);
   }
 
   .email-form button {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     border-radius: 999px;
     padding: 12px 22px;
-    border: 1.5px solid var(--ink);
+    border: 1.5px solid var(--lime);
     background: var(--lime);
     color: var(--lime-ink);
     cursor: pointer;
     white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .email-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
   }
 
   .footer-note {
     font-size: 12px;
-    color: #8a8477;
+    color: #a6a195;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 10px 0 0;
   }
 
+  /* ---- Link columns ----
+     Grouped as a clear brand block + three evenly-sized nav groups,
+     with a visible divider between each group on mobile where they
+     stack — "nicely grouped" instead of just four loose lists running
+     together. */
   .footer-grid {
     display: grid;
     grid-template-columns: 1.4fr repeat(3, 1fr);
     gap: 24px;
-    margin-bottom: 48px;
+    margin-bottom: 40px;
   }
 
   .footer-col .brand {
     font-weight: 700;
-    font-size: 16px;
+    font-size: 17px;
     margin-bottom: 10px;
     display: block;
+    color: #fff;
   }
 
   .footer-col .tagline {
     font-size: 13px;
-    color: #6b665e;
+    color: #a6a195;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     max-width: 26ch;
     margin: 0;
+    line-height: 1.5;
   }
 
   .footer-col h4 {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    margin: 0 0 14px;
+    margin: 0 0 16px;
+    color: var(--lime);
   }
 
   .footer-col ul {
@@ -112,18 +159,19 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 11px;
+    gap: 12px;
   }
 
   .footer-col a {
     font-size: 13.5px;
-    color: #6b665e;
+    color: #d6d2c8;
     text-decoration: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transition: color 0.15s ease;
   }
 
   .footer-col a:hover {
-    color: var(--ink);
+    color: var(--lime);
     text-decoration: underline;
   }
 
@@ -133,44 +181,72 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-top: 28px;
-    border-top: 1px solid var(--line);
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
     font-size: 13px;
-    color: #8a8477;
+    color: #a6a195;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .footer-bottom a {
-    color: #8a8477;
+    color: #a6a195;
     text-decoration: none;
   }
 
   .footer-bottom a:hover {
-    color: var(--ink);
+    color: var(--lime);
     text-decoration: underline;
   }
 
   .footer-bottom .socials {
     display: flex;
-    gap: 16px;
+    gap: 18px;
   }
 
   .footer-bottom .socials a {
-    color: #8a8477;
+    color: #d6d2c8;
     text-decoration: none;
+    font-weight: 600;
   }
 
   .footer-bottom .socials a:hover {
-    color: var(--ink);
+    color: var(--lime);
   }
 
   @media (max-width: 760px) {
-    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .site-footer-inner { padding: 44px 20px 28px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; row-gap: 32px; }
     .footer-capture { align-items: flex-start; }
+    .email-form { width: 100%; }
+    .email-form input[type="email"] { flex: 1 1 auto; min-width: 0; }
   }
 
-  @media (max-width: 480px) {
-    .footer-grid { grid-template-columns: 1fr; }
+  @media (max-width: 560px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      row-gap: 0;
+    }
+
+    /* Each column becomes its own clearly separated group when
+       stacked, rather than four lists running together with no visual
+       break. */
+    .footer-col {
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-col:first-child {
+      padding-top: 0;
+    }
+
+    .footer-col:last-child {
+      border-bottom: none;
+    }
+
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 
   /* ============================================================
