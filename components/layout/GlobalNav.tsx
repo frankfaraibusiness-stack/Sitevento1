@@ -134,7 +134,6 @@ export function GlobalNav() {
             item.icon(active)
           )}
         </span>
-        <span className="gnav-item-label">{item.id === 'profile' ? (user ? name || 'Profile' : 'Sign in') : item.label}</span>
       </button>
     );
   }
