@@ -31,7 +31,11 @@
      AuthOverlay/ConnectSiteWizard/Sidebar/UpsellOverlay. */
   z-index: 9999;
   min-height: 100dvh;
-  background: var(--lime-mist);
+  /* Match BootSplash's .boot-splash background (styles/boot-splash.css)
+     exactly — this is the same "still loading" state continued, so it
+     shouldn't start on a different (cream-tinted) lime than the boot
+     screen it follows. */
+  background: var(--lime);
   padding-top: calc(3rem + env(safe-area-inset-top, 0px));
 }
 
