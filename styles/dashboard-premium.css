@@ -27,11 +27,14 @@
 :root {
   /* Frosted glass surfaces, all derived from --lime so every card reads
      as cut from the same lime material rather than a stray white box
-     dropped onto a lime page. */
-  --dnx-glass: color-mix(in srgb, var(--lime) 14%, #ffffff 86%);
-  --dnx-glass-strong: color-mix(in srgb, var(--lime) 22%, #ffffff 78%);
-  --dnx-glass-border: color-mix(in srgb, var(--lime-ink) 14%, transparent);
-  --dnx-glass-border-strong: color-mix(in srgb, var(--lime-ink) 24%, transparent);
+     dropped onto a lime page. Base is --cream (not pure white) and the
+     lime mix is strong enough that cards read as a distinct, slightly
+     deeper tone against the saturated lime page background instead of
+     blending into a flat white. */
+  --dnx-glass: color-mix(in srgb, var(--lime) 30%, var(--cream) 70%);
+  --dnx-glass-strong: color-mix(in srgb, var(--lime) 42%, var(--cream) 58%);
+  --dnx-glass-border: color-mix(in srgb, var(--lime-ink) 20%, transparent);
+  --dnx-glass-border-strong: color-mix(in srgb, var(--lime-ink) 32%, transparent);
   --dnx-ink-soft: color-mix(in srgb, var(--lime-ink) 62%, transparent);
   --dnx-ink-faint: color-mix(in srgb, var(--lime-ink) 44%, transparent);
   --dnx-shadow: 0 10px 28px color-mix(in srgb, var(--lime-ink) 16%, transparent), 0 2px 7px color-mix(in srgb, var(--lime-ink) 10%, transparent);
