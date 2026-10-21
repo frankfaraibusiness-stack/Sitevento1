@@ -25,13 +25,32 @@ interface HeroProps {
   onConnectClick: () => void;
 }
 
+function HeroBackdrop() {
+  // Purely decorative high-tech backdrop: a faint animated dot/grid
+  // field plus two soft drifting glow orbs. Sits behind everything
+  // else via CSS (absolute, negative z-index) so it never affects
+  // layout or interferes with the slime/copy hit areas.
+  return (
+    <div className="hero-backdrop" aria-hidden="true">
+      <div className="hero-backdrop-grid" />
+      <div className="hero-backdrop-orb hero-backdrop-orb-a" />
+      <div className="hero-backdrop-orb hero-backdrop-orb-b" />
+    </div>
+  );
+}
+
 export function Hero({ onConnectClick }: HeroProps) {
   return (
     <section className="hero">
+      <HeroBackdrop />
       <div className="hero-grid">
         <div className="hero-main">
           <div className="hero-top">
             <div className="hero-top-copy">
+              <span className="hero-eyebrow">
+                <span className="live-dot"></span>
+                Live on every connected site
+              </span>
               <h1>Connect your site. Run it from here.</h1>
             </div>
             <div className="hero-top-slime">
@@ -56,6 +75,11 @@ export function Hero({ onConnectClick }: HeroProps) {
             </button>
           </div>
           <div className="snippet">
+            <span className="snippet-dots" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
             &lt;<span className="tag-name">meta</span> <span className="attr">name</span>=
             <span className="val">&quot;sitevento&quot;</span> <span className="attr">content</span>=
             <span className="val">&quot;a8f3-9d21-...&quot;</span>&gt;
