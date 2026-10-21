@@ -296,11 +296,86 @@
   .hero-preview-dot:nth-child(2) { background: #ffd8a8; }
   .hero-preview-dot:nth-child(3) { background: var(--lime); }
 
+  /* Live-activity demo surface (replaces the earlier static purple
+     placeholder) — a dark panel that "+1 view / +1 impression / +1
+     click" chips pop up across while the toggle below is on, standing
+     in for what the banner actually does on a connected site. Off
+     state dims it and shows a short hint instead of pops. */
   .hero-preview-thumb {
+    position: relative;
     height: 110px;
     border-radius: 12px;
     margin-bottom: 14px;
-    background: linear-gradient(135deg, #cdb8ff 0%, #9a8af0 100%);
+    background: var(--ink);
+    overflow: hidden;
+    transition: opacity 0.25s ease;
+  }
+
+  .hero-preview-thumb.is-off {
+    opacity: 0.4;
+  }
+
+  .hero-preview-thumb-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #e8e4de;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .hero-preview-pop {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: var(--lime);
+    color: var(--lime-ink);
+    font-weight: 700;
+    font-size: 11.5px;
+    line-height: 1;
+    white-space: nowrap;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.35);
+    animation: hero-preview-pop-in 1.6s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes hero-preview-pop-in {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -40%) scale(0.7);
+    }
+    15% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    75% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -68%) scale(0.92);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-preview-pop {
+      animation: hero-preview-pop-fade 1.6s ease-out forwards;
+    }
+
+    @keyframes hero-preview-pop-fade {
+      0% { opacity: 0; }
+      15%, 75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   }
 
   .hero-preview-site {
@@ -316,6 +391,11 @@
     border-radius: 50%;
     background: #2fbf5c;
     flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .hero-preview-status-dot.is-off {
+    background: #c9c2b4;
   }
 
   .hero-preview-site-name {
@@ -344,7 +424,10 @@
     height: 22px;
     border-radius: 999px;
     background: var(--line);
+    border: none;
+    padding: 0;
     flex-shrink: 0;
+    cursor: pointer;
     transition: background-color 0.15s ease;
   }
 
