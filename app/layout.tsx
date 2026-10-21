@@ -1,8 +1,20 @@
 import type { Metadata, Viewport } from 'next';
+import { Lexend } from 'next/font/google';
 import './globals.css';
 import { GlobalNav } from '@/components/layout/GlobalNav';
 import { NavPendingProvider } from '@/hooks/useNavPending';
 import { NavPendingOverlay } from '@/components/layout/NavPendingOverlay';
+
+// Bundled at build time (no runtime CDN call) — used only for the hero
+// headline via --font-display (see styles/marketing-hero.css), not a
+// global font change. Lexend at weight 900 reads as a genuinely bold/
+// chunky display face, unlike the previous system-font fallback.
+const lexend = Lexend({
+  subsets: ['latin'],
+  weight: ['800', '900'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 // Central place for the handful of values SEO metadata below needs
 // more than once (title, OG/Twitter image, theme color). Swapping in
@@ -60,12 +72,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#c6ff3d', // var(--lime)
+  themeColor: '#faf9f0', // var(--app-bg) — lime was too loud for the browser chrome tint
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={lexend.variable}>
       <body>
         <NavPendingProvider>
           {children}
