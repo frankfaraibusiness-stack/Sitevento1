@@ -413,27 +413,33 @@
 .settings-panel-header svg {
   width: 20px;
   height: 20px;
-  stroke: var(--lime);
+  stroke: var(--lime-ink);
   fill: none;
   stroke-width: 2;
-  background: var(--lime-ink);
+  background: var(--lime);
   border-radius: 9px;
   padding: 7px;
   box-sizing: content-box;
 }
 
+/* Header/description/labels/hints sit on the dark glassy-black panel
+   card (.settings-main .settings-detail-panel, background: var(--set-
+   glass)), not directly on the lime page — so these need the light
+   on-glass tokens, not --lime-ink (near-black), which was effectively
+   invisible against that same near-black glass fill. The lime-filled
+   icon badge above is the one deliberate loud accent in the header;
+   everything else here reads as light text on a dark card. */
 .settings-panel-header h3 {
   font-size: 1.15rem;
   font-weight: 800;
-  color: var(--lime-ink);
+  color: var(--set-on-glass);
   letter-spacing: -0.2px;
   margin: 0;
 }
 
 .settings-panel-desc {
   font-size: 0.84rem;
-  color: var(--lime-ink);
-  opacity: 0.68;
+  color: var(--set-on-glass-dim);
   margin-top: -0.4rem;
   margin-bottom: 0.1rem;
   line-height: 1.45;
@@ -489,23 +495,20 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.35px;
-  color: var(--lime-ink);
-  opacity: 0.6;
+  color: var(--set-on-glass-dim);
   margin-left: 0.15rem;
 }
 
 .settings-input-group .settings-field-desc {
   font-size: 0.78rem;
-  color: var(--lime-ink);
-  opacity: 0.68;
+  color: var(--set-on-glass-dim);
   margin-bottom: 0.4rem;
   line-height: 1.4;
 }
 
 .settings-hint {
   font-size: 0.7rem;
-  color: var(--lime-ink);
-  opacity: 0.6;
+  color: var(--set-on-glass-faint);
   margin-left: 0.15rem;
   line-height: 1.3;
 }
