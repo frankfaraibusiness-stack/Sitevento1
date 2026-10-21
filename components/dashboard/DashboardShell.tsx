@@ -9,12 +9,13 @@
 // (styles/dashboard-premium.css) that sit directly on the page's lime
 // background rather than inside their own boxed-off sections. Lives at
 // /dashboard (see app/dashboard/page.tsx).
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavRouter } from '@/hooks/useNavPending';
 import type { User } from 'firebase/auth';
 import { useSites } from '@/hooks/useSites';
 import { useActiveSiteData } from '@/hooks/useActiveSiteData';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { DashEmptyState } from './DashEmptyState';
 import { SiteSwitcher } from './SiteSwitcher';
 import { ConnectedSitesSection } from './ConnectedSitesSection';
@@ -71,39 +72,22 @@ export function DashboardShell({
     onLeadsCountChange(stats.leadsCount);
   }, [stats.leadsCount, onLeadsCountChange]);
 
-  // Minimum-hold for the loading skeleton, same idea as BootSplash's
-  // randomized hold (see components/BootSplash.tsx / AppRoot.tsx): on a
-  // fast connection useSites can resolve in well under a second, which
-  // would otherwise flash the skeleton for a single frame. Instead we
-  // hold it for a randomized 3-5s floor every time this component
-  // mounts into a loading state, regardless of how fast the real data
-  // actually arrives, so it always reads as deliberate rather than a
-  // glitchy flicker. Only gates the transition OUT of 'loading' — the
-  // 'error' and 'empty' states are informational, not decorative, so
-  // they still show the instant they're known.
-  const minHoldMs = useMemo(() => 3000 + Math.random() * 2000, []);
-  const [minHoldElapsed, setMinHoldElapsed] = useState(false);
-  const holdTimerStarted = useRef(false);
-
-  useEffect(() => {
-    if (holdTimerStarted.current) return;
-    holdTimerStarted.current = true;
-    const t = setTimeout(() => setMinHoldElapsed(true), minHoldMs);
-    return () => clearTimeout(t);
-  }, [minHoldMs]);
-
-  const showLoadingSkeleton = dashState === 'loading' || (!minHoldElapsed && dashState !== 'error');
-
-  // Previously rendered its own in-place <AppSkeleton> here, which
-  // showed up as a second ("inline") spinner stacked right after the
-  // app-wide full-screen <AppSkeleton> (DashboardClient's auth gate /
-  // NavPendingOverlay) finished — two loaders back to back for one
-  // navigation. The full-screen one has already covered this same
-  // "still loading" window from the moment the route changed, so this
-  // render just stays empty until real data is ready instead of
-  // showing a second, redundant loading state.
-  if (showLoadingSkeleton) {
-    return <section aria-busy="true" aria-label="Loading your dashboard" />;
+  // Was previously held open with an extra, artificial 3-5s minimum
+  // delay (regardless of how fast useSites actually resolved) and, once
+  // that delay ended, rendered an empty <section> rather than any
+  // loading UI — on a fast connection that meant the outer full-screen
+  // <AppSkeleton> (DashboardClient's auth gate) would close, and the
+  // dashboard would then sit visibly blank for seconds before content
+  // appeared. Fixed by (a) dropping the artificial hold entirely, so
+  // this only stays in a loading state for as long as useSites is
+  // actually still loading, and (b) rendering the same inline
+  // <AppSkeleton> every other in-page loading state in this app uses
+  // (settings, profile, manage-site, widget designer), instead of
+  // nothing, so there's always a visible "still working" signal rather
+  // than a blank gap — even on a slow connection where this state is
+  // reached and held for longer than a frame.
+  if (dashState === 'loading') {
+    return <AppSkeleton label="Loading your dashboard" />;
   }
 
   if (dashState === 'error') {
