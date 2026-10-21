@@ -112,18 +112,22 @@
     transition: background-color 450ms ease;
   }
 
-  /* While BootSplash is in its lime phase (see components/BootSplash.tsx
+  /* While BootSplash is in its boot phase (see components/BootSplash.tsx
      and .boot-splash.is-lime in boot-splash.css), mirror that same
-     color onto html itself so mobile rubber-band overscroll — which
-     bounces past the fixed, viewport-covering splash and reveals
-     html/body underneath — shows lime instead of flashing back to
-     the default background. BootSplash adds/removes this class itself
-     and always removes it on unmount, so once boot finishes html goes
-     straight back to the var(--bg) rule above. Same transition timing
-     as the splash's own fade for a matched handoff. */
+     background onto html itself so mobile rubber-band overscroll —
+     which bounces past the fixed, viewport-covering splash and reveals
+     html/body underneath — shows the same background instead of
+     flashing to something else. The splash no longer washes the full
+     screen in lime (too loud/unprofessional), so this now mirrors
+     --app-bg, matching the html, body rule above — kept as its own
+     rule (rather than removed) so the class stays a harmless no-op if
+     a future change ever makes the two diverge again. BootSplash
+     adds/removes this class itself and always removes it on unmount.
+     Same transition timing as the splash's own fade for a matched
+     handoff. */
   html.is-boot-lime,
   html.is-boot-lime body {
-    background: var(--lime);
+    background: var(--app-bg);
   }
 
   body {
