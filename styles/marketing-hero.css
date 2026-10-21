@@ -39,7 +39,7 @@
     margin: 0 0 20px;
     font-weight: 900;
     letter-spacing: -0.02em;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--ink);
     /* The clamp above keeps "Your website." fitting on one line down to
        a 320px viewport in practice; this is just a safety net so an
@@ -53,16 +53,18 @@
     display: inline-block;
   }
 
-  /* Hand-drawn "marker" splotch behind "Your rules." — an irregular
-     blob (asymmetric border-radius + slight rotation) rather than a
-     clean pill, with a deeper, more saturated mid-lime fill than the
-     bright --lime used elsewhere, matching the reference. */
+  /* Hand-drawn "marker" splotch behind "Your rules." — genuinely
+     lumpy/squashed, not a near-circle/pill: each corner's horizontal
+     and vertical radius is deliberately far apart (e.g. 70%/18% vs
+     22%/68%) so the shape reads as an irregular, squashed blob rather
+     than a symmetric oval, with a deeper, more saturated mid-lime fill
+     than the bright --lime used elsewhere, matching the reference. */
   .hero-highlight-shape {
     position: absolute;
-    inset: -6% -5% -10% -4%;
+    inset: -7% -6% -12% -5%;
     background: #d2f376;
-    border-radius: 42% 46% 44% 48% / 60% 55% 62% 50%;
-    transform: rotate(-1deg);
+    border-radius: 70% 22% 58% 32% / 18% 68% 28% 78%;
+    transform: rotate(-2.5deg) scale(1.04, 0.94);
     z-index: 0;
   }
 
