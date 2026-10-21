@@ -23,10 +23,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--lime);
+    background: var(--app-bg);
     /* Kept for any brief instant before React hydrates/applies
-       .is-lime (see below) — the base background is lime now too, so
-       there's no cream flash on first paint. transition stays in case
+       .is-lime (see below) — the base background matches app-bg too,
+       so there's no flash on first paint. transition stays in case
        isLime is ever driven back to false by a future change. */
     transition: background-color 450ms ease;
     padding-top: env(safe-area-inset-top, 0px);
@@ -35,13 +35,13 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Driven directly from the component's `isLime` state, which is now
-     true for the splash's entire lifecycle (see BootSplash.tsx) —
-     this is the first screen every visitor sees, so it renders lime
-     immediately rather than starting cream and swapping partway
-     through the spin phase. */
+  /* Driven directly from the component's `isLime` state. Full-screen
+     lime read as too loud/unprofessional on boot, so the splash
+     background now stays on the standard app background at every
+     phase — lime is kept only as a small accent on the dots/blob
+     below, not as a full-screen wash. */
   .boot-splash.is-lime {
-    background: var(--lime);
+    background: var(--app-bg);
   }
 
   .boot-splash-stage {
