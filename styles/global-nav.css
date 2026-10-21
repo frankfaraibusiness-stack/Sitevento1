@@ -117,10 +117,10 @@
        fit without wrapping down to a 320px-wide phone. */
     .gnav-item {
       flex-direction: column;
-      gap: 2px;
+      gap: 0;
       flex: 1;
       min-width: 0;
-      padding: 6px 2px;
+      padding: 10px 2px;
       border-radius: 12px;
       background: var(--lime);
       border: 1.5px solid var(--lime-ink);
@@ -138,17 +138,9 @@
       height: 18px;
     }
 
+    /* Labels removed on mobile — icon-only tab bar, matching desktop. */
     .gnav-item-label {
-      display: block;
-      font-size: 10px;
-      line-height: 1.1;
-      font-weight: 600;
-      color: var(--lime-ink);
-      white-space: nowrap;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: none;
     }
 
     .gnav-item:active {
