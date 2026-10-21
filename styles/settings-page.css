@@ -376,12 +376,24 @@
   z-index: 1;
 }
 
-/* Panel content now sits directly on the raw lime page — no glassy
-   black card behind it. Margin/padding kept so spacing matches the
-   old card layout; just the background/border/blur/shadow are gone. */
+/* Restores the glassy-black card this panel is actually designed for
+   (see the file header comment and .settings-nav-item/.settings-topbar
+   just above, which use the same --set-glass/--set-on-glass pair).
+   Every label, description, input, toggle and button inside a panel
+   is styled with --set-on-glass (a cream/near-white) on the assumption
+   it sits on --set-glass (translucent near-black) — stripping this
+   fill left that cream text sitting directly on the raw lime page,
+   effectively invisible/low-contrast. Margin/padding unchanged from
+   before; just the surface itself is back. */
 .settings-main .settings-detail-panel {
   margin: 1.1rem 1.3rem 1.3rem 0;
   padding: 1.6rem 1.8rem 1.9rem;
+  background: var(--set-glass);
+  border: 1px solid var(--set-glass-border);
+  border-radius: 22px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
 }
 
 @media (max-width: 640px) {
