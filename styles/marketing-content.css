@@ -3,33 +3,37 @@
  * Split from app/globals.css for maintainability.
  * ============================================================ */
 
+  /* Header now blends flat into the page background (--app-bg) instead
+     of floating as a separate glass pill — the outer <header> element
+     itself (styles/base.css) is what's fixed/full-width; .pill-nav is
+     just its inner row, no longer a visually distinct capsule. */
   .pill-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 90%;
+    width: 100%;
+    max-width: 640px;
     height: 56px;
-    padding: 0 18px;
-    background: rgba(255, 255, 255, 0.55);
+    padding: 0 24px;
+    background: transparent;
     color: var(--ink);
-    border-radius: 999px;
-    border: 1px solid rgba(34, 32, 28, 0.35);
-    box-shadow: 0 8px 24px rgba(34, 32, 28, 0.08);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    margin: 0 auto;
   }
 
   .hamburger {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     gap: 6px;
-    width: 40px;
-    height: 40px;
-    background: none;
+    width: 44px;
+    height: 44px;
+    background: var(--app-header-bg);
+    border-radius: 999px;
     border: none;
     cursor: pointer;
     padding: 0;
+    flex-shrink: 0;
   }
 
   .hamburger span {
