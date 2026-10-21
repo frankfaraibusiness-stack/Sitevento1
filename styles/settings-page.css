@@ -71,9 +71,14 @@
 }
 
 .settings-wrap {
-  margin-top: 64px;
-  height: calc(100dvh - 64px);
-  max-height: calc(100dvh - 64px);
+  /* Clearance for the fixed header (styles/base.css): header sits at
+     top: 20px + safe-area-inset-top, and .pill-nav itself is 56px
+     tall, so the page content needs that full 76px (plus the same
+     safe-area inset) pushed down — not a flat 64px, which left this
+     page starting a few pixels under the header's bottom edge. */
+  margin-top: calc(76px + env(safe-area-inset-top, 0px));
+  height: calc(100dvh - 76px - env(safe-area-inset-top, 0px));
+  max-height: calc(100dvh - 76px - env(safe-area-inset-top, 0px));
   display: flex;
   flex-direction: column;
   background: var(--lime);
