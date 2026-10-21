@@ -14,6 +14,17 @@
     --lime: #c6ff3d;
     --lime-ink: #1a1f0a;
 
+    /* New app-feel page background (replaces the flat --lime page
+       background on the stripped-down marketing hero + header) —
+       sampled directly from the reference design: a soft warm
+       off-white, not pure white and not the bright lime field. */
+    --app-bg: #faf9f0;
+    /* Header's own background on top of --app-bg: same hue family as
+       --app-bg but with a faint lime tint, matching the reference's
+       hamburger-pill tone — "blends in" rather than floating as a
+       separate glass pill. */
+    --app-header-bg: #eff9cc;
+
     /* Card/panel surface used for in-page sections that sit on top of
        the lime page background (dashboard panels, site cards, profile
        cards, pill buttons). A soft near-white instead of pure white so
@@ -92,7 +103,7 @@
     margin: 0;
     padding: 0;
     min-height: 100%;
-    background: var(--lime);
+    background: var(--app-bg);
     /* Safety net: no single section (long unbroken text, a fixed-width
        child, etc.) should ever be able to force the whole page wider
        than the viewport and push other sections/scroll sideways. */
@@ -133,24 +144,29 @@
     }
   }
 
+  /* Header now sits flush at the true top of the screen and blends
+     into the page via --app-header-bg (not a floating inset pill
+     anymore — see .pill-nav, marketing-content.css), full width, no
+     side margins/gap above it. */
   header {
     position: fixed;
-    top: calc(20px + env(safe-area-inset-top, 0px));
+    top: 0;
     left: 0;
     right: 0;
     z-index: 10;
     display: flex;
     justify-content: center;
+    height: calc(56px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    background: var(--app-bg);
   }
 
-  /* Must clear the fixed header (styles/base.css `header`): it sits
-     at top: 20px and is 56px tall (.pill-nav, marketing-content.css),
-     so content needs 20 + 56 = 76px of top padding, plus a small gap,
-     before the safe-area inset shared by both. Previously only 52px,
-     which left the dashboard/profile content tucked a couple dozen
-     pixels under the header pill. */
+  /* Must clear the fixed header above: 56px tall, flush at the top, so
+     content needs 56px of top padding plus the shared safe-area inset
+     (already added once by header's own padding, so main only adds a
+     small breathing gap on top of 56px, not double safe-area). */
   main {
-    padding-top: calc(76px + 16px + env(safe-area-inset-top, 0px));
+    padding-top: calc(56px + 16px + env(safe-area-inset-top, 0px));
   }
 
   /* Settings > Appearance ("Font Size" / "Compact Mode") — applied
