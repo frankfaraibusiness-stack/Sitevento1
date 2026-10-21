@@ -3,29 +3,30 @@
  *
  * Full visual redesign of the main /dashboard body. Imported LAST in
  * app/globals.css (after dashboard.css) so these rules win on every
- * class they share a name with... except they don't share names:
- * everything here lives under its own `dnx-` prefix and fully replaces
- * dashboard.css's .dash-wrap/.dash-grid/.dash-card/.css-*/.qt-*/.feat-*/
- * .empty-*  primitives for the main dashboard route. VisitLogPanel,
- * LeadsPanel, BlockedVisitorsPanel and BannerComposer keep their
- * existing dashboard.css styling untouched (restyling those isn't part
- * of this pass) — only everything above them on the page is new.
+ * class they share a name with, even though in practice they do not
+ * share names: everything here lives under its own dnx- prefix and
+ * fully replaces dashboard.css dash-wrap/dash-grid/dash-card/css-/
+ * qt-/feat-/empty- primitives for the main dashboard route.
+ * VisitLogPanel, LeadsPanel, BlockedVisitorsPanel and BannerComposer
+ * keep their existing dashboard.css styling untouched, since
+ * restyling those is not part of this pass; only everything above
+ * them on the page is new.
  *
- * Design brief: the page's raw lime background (var(--lime), set in
- * base.css on html/body) IS the canvas. No section here paints its own
- * opaque white/cream block to sit "on top of" the lime like a card
- * dropped onto a different-colored page — instead every surface is a
+ * Design brief: the page raw lime background (var(--lime), set in
+ * base.css on html/body) IS the canvas. No section here paints its
+ * own opaque white/cream block to sit on top of the lime like a card
+ * dropped onto a different-colored page; instead every surface is a
  * soft frosted glass tint of the SAME lime (color-mix of var(--lime)
  * into var(--surface)/white), so the whole dashboard reads as one
  * continuous material, just with elevation, not a patchwork of
- * clashing panel backgrounds. Every token used below already exists in
- * base.css (--lime, --lime-ink, --ink, --surface, --dash-*) — nothing
- * new is hardcoded outside that palette.
+ * clashing panel backgrounds. Every token used below already exists
+ * in base.css (--lime, --lime-ink, --ink, --surface, --dash-*);
+ * nothing new is hardcoded outside that palette.
  * ============================================================ */
 
 :root {
   /* Frosted glass surfaces, all derived from --lime so every card reads
-     as "cut from the same lime material" rather than a stray white box
+     as cut from the same lime material rather than a stray white box
      dropped onto a lime page. */
   --dnx-glass: color-mix(in srgb, var(--lime) 14%, #ffffff 86%);
   --dnx-glass-strong: color-mix(in srgb, var(--lime) 22%, #ffffff 78%);
