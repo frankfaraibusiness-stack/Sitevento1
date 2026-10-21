@@ -134,6 +134,7 @@ export function GlobalNav() {
             item.icon(active)
           )}
         </span>
+        <span className="gnav-item-label">{item.label}</span>
       </button>
     );
   }
