@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { HeroMascot } from './HeroMascot';
 
 // components/marketing/Hero.tsx
 //
@@ -9,34 +9,17 @@ import Image from 'next/image';
 // with a hand-drawn-looking highlight blob behind the second line,
 // subcopy, two CTAs (full-width stacked on narrow screens, side-by-side
 // width capped once there's room), a "connected site" preview card, and
-// small decorative sparkle/squiggle accents scattered around — all
-// static/illustrative, except the preview card below which is a small
-// interactive demo of what a connected site looks like live. The mascot
-// (CharacterMascot) renders the real bunny art from public/mascot/.
+// a mascot (HeroMascot) — a hand-built, hand-animated SVG bunny (ears,
+// blinking eyes, head "look around", arm/leg sway) with its own
+// built-in sparkle/crystal accents, replacing the old static PNG. One
+// bigger, moving character fills the leftover space next to the
+// headline — not multiple copies of it.
+//
+// Desktop (1024px+): two-column layout — copy/CTAs/preview card on the
+// left, large mascot on the right (see marketing-hero.css).
 
 interface HeroProps {
   onConnectClick: () => void;
-}
-
-function CharacterMascot() {
-  // The real mascot art (lime bunny, mid-jump) — replaces the earlier
-  // dashed-outline blob placeholder. Source file is 1156x1361px
-  // (public/mascot/hero-bunny.png); `sizes` matches the column's
-  // clamp(78px, 24vw, 160px) width so next/image serves an
-  // appropriately small file on mobile instead of the full source.
-  return (
-    <div className="hero-character-placeholder">
-      <Image
-        src="/mascot/hero-bunny.png"
-        alt="sitevento mascot, a cheerful lime-green bunny jumping"
-        width={1156}
-        height={1361}
-        sizes="(min-width: 640px) 160px, 24vw"
-        className="hero-character-img"
-        priority
-      />
-    </div>
-  );
 }
 
 function Sparkle({ className }: { className: string }) {
@@ -44,38 +27,6 @@ function Sparkle({ className }: { className: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M12 0c0 5-1 9-3 11s-6 3-9 3c3 0 7 1 9 3s3 6 3 11c0-5 1-9 3-11s6-3 9-3c-3 0-7-1-9-3s-3-6-3-11z" />
     </svg>
-  );
-}
-
-function Squiggle({ className }: { className: string }) {
-  return (
-    <svg className={className} viewBox="0 0 60 20" fill="none" aria-hidden="true">
-      <path d="M2 14c6 0 6-10 12-10s6 12 12 12 6-9 12-9 6 7 12 7" strokeLinecap="round" strokeWidth="3.5" />
-    </svg>
-  );
-}
-
-function Crystal({ className }: { className: string }) {
-  return (
-    <svg className={className} viewBox="0 0 40 40" aria-hidden="true">
-      <path d="M20 2 36 14l-6 24H10L4 14z" />
-      <path d="M20 2 14 14h12z" opacity="0.5" />
-      <path d="M4 14h32l-6 24H10z" opacity="0.15" />
-    </svg>
-  );
-}
-
-function HeroDecor() {
-  // Scattered sparkles/crystal/squiggle accents around the headline and
-  // preview card, matching the reference's playful "juice splash" feel.
-  return (
-    <div className="hero-decor" aria-hidden="true">
-      <Sparkle className="hero-decor-sparkle hero-decor-sparkle-a" />
-      <Crystal className="hero-decor-crystal" />
-      <Sparkle className="hero-decor-sparkle hero-decor-sparkle-b" />
-      <Squiggle className="hero-decor-squiggle hero-decor-squiggle-a" />
-      <Squiggle className="hero-decor-squiggle hero-decor-squiggle-b" />
-    </div>
   );
 }
 
@@ -224,8 +175,8 @@ function ConnectedSitePreview() {
 export function Hero({ onConnectClick }: HeroProps) {
   return (
     <section className="hero">
-      <div className="hero-top">
-        <div className="hero-top-copy">
+      <div className="hero-layout">
+        <div className="hero-left-col">
           <h1>
             Your website.
             <br />
@@ -254,14 +205,14 @@ export function Hero({ onConnectClick }: HeroProps) {
               See how it works
             </button>
           </div>
+
+          <ConnectedSitePreview />
         </div>
+
         <div className="hero-character-col">
-          <CharacterMascot />
-          <HeroDecor />
+          <HeroMascot />
         </div>
       </div>
-
-      <ConnectedSitePreview />
 
       <p className="hero-tagline">
         <Sparkle className="hero-tagline-sparkle" />
