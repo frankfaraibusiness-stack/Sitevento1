@@ -9,14 +9,16 @@
  * dark/white fill:
  *
  *   - .settings-wrap / .settings-main / .settings-sidebar /
- *     .settings-detail-panel all sit directly on var(--lime) — the
- *     real page background, not a surface draped on top of it. There
- *     is no solid-ink panel anywhere on this page any more, on either
- *     desktop or mobile (the mobile full-screen list/detail toggle —
- *     .settings-main[data-mobile-view] — reuses the exact same
- *     .settings-sidebar / .settings-detail-panel elements the desktop
- *     rail uses, so fixing the fill here fixes both breakpoints at
- *     once instead of needing a separate mobile-only rule).
+ *     .settings-detail-panel are all transparent, so the real page
+ *     background is whatever html/body is painted with
+ *     (var(--app-bg), styles/base.css) — not a hardcoded var(--lime)
+ *     fill draped on top of it. There is no solid-ink panel anywhere
+ *     on this page any more, on either desktop or mobile (the mobile
+ *     full-screen list/detail toggle — .settings-main[data-mobile-view]
+ *     — reuses the exact same .settings-sidebar / .settings-detail-panel
+ *     elements the desktop rail uses, so fixing the fill here fixes
+ *     both breakpoints at once instead of needing a separate
+ *     mobile-only rule).
  *   - Nav items and the panel content card are "glassy black":
  *     translucent var(--ink) with backdrop-filter blur + a hairline
  *     light border, so the lime shows through at the edges and the
@@ -81,7 +83,9 @@
   max-height: calc(100dvh - 76px - env(safe-area-inset-top, 0px));
   display: flex;
   flex-direction: column;
-  background: var(--lime);
+  /* No hardcoded fill here anymore — inherits html/body's own
+     background (var(--app-bg), styles/base.css) instead of painting
+     a separate lime background on top of it. */
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -181,12 +185,15 @@
   overflow: hidden;
   position: relative;
   min-height: 0;
-  background: var(--lime);
+  /* No hardcoded lime fill — transparent, so the real page background
+     (html/body's var(--app-bg), styles/base.css) shows through instead
+     of this panel painting its own lime background on top of it. */
+  background: transparent;
 }
 
 /* ── Sidebar (left on desktop, full-screen list on mobile) — sits
-   directly on lime; nav items themselves are the glassy black cards
-   that "stand out", not the rail behind them ──────────────────────── */
+   directly on the page background; nav items themselves are the
+   glassy black cards that "stand out", not the rail behind them ──── */
 .settings-sidebar {
   width: 280px;
   min-width: 240px;
@@ -337,11 +344,13 @@
 }
 
 /* ── Detail panel (right on desktop, full-screen on mobile when a
-   panel is selected) — sits on lime, content lives inside one glassy
-   black card ────────────────────────────────────────────────────── */
+   panel is selected) — sits on the page background, content lives
+   inside one glassy black card ──────────────────────────────────── */
 .settings-detail-panel {
   flex: 1;
-  background: var(--lime);
+  /* No hardcoded lime fill — transparent, so html/body's own
+     var(--app-bg) (styles/base.css) shows through instead. */
+  background: transparent;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 1.1rem 1.3rem 1.3rem 0;
