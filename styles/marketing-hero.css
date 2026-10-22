@@ -8,14 +8,14 @@
 
   .hero {
     position: relative;
-    max-width: 640px;
+    max-width: min(94vw, 640px);
     margin: 0 auto;
     padding: 4px 20px 56px;
     text-align: left;
     overflow: visible;
   }
 
-  .hero-top {
+  .hero-layout {
     position: relative;
     display: flex;
     align-items: flex-start;
@@ -23,7 +23,7 @@
     gap: 8px;
   }
 
-  .hero-top-copy {
+  .hero-left-col {
     flex: 1 1 auto;
     min-width: 0;
   }
@@ -188,88 +188,17 @@
     transform: translateY(0);
   }
 
-  /* ---- Mascot + decorations column ---- */
+  /* ---- Mascot column ----
+     One single animated character, sized larger than the old static
+     PNG so it actually fills the leftover vertical space next to the
+     headline on mobile (the animation — not duplicate copies — is
+     what uses that room). Fluid clamp(min, vw, max) the whole way —
+     no fixed px steps — so it scales continuously with the viewport
+     and becomes the full right column at 1024px+ below. */
   .hero-character-col {
     position: relative;
     flex: 0 0 auto;
-    width: clamp(78px, 24vw, 160px);
-  }
-
-  .hero-character-placeholder {
-    width: 100%;
-    aspect-ratio: 1156 / 1361; /* matches public/mascot/hero-bunny.png source */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-character-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  /* ---- Scattered decorative sparkles/crystal/squiggles ----
-     Purely decorative, aria-hidden, positioned around the character
-     column — matching the little stars/crystal/motion-lines scattered
-     around the mascot in the reference. */
-  .hero-decor {
-    position: absolute;
-    inset: -14% -10% -10% -20%;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .hero-decor-sparkle {
-    position: absolute;
-    color: color-mix(in srgb, var(--ink) 80%, var(--lime) 20%);
-  }
-
-  .hero-decor-sparkle-a {
-    width: 16px;
-    height: 16px;
-    top: 2%;
-    left: 8%;
-    color: color-mix(in srgb, var(--ink) 55%, var(--lime) 45%);
-  }
-
-  .hero-decor-sparkle-b {
-    width: 20px;
-    height: 20px;
-    bottom: 22%;
-    left: -6%;
-    color: #8f6ff0;
-  }
-
-  .hero-decor-crystal {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: -4%;
-    right: 2%;
-    fill: #8f6ff0;
-  }
-
-  .hero-decor-squiggle {
-    position: absolute;
-    width: 46px;
-    height: 16px;
-    stroke: var(--lime-ink);
-    opacity: 0.55;
-  }
-
-  .hero-decor-squiggle-a {
-    top: 18%;
-    right: -8%;
-    transform: rotate(8deg);
-  }
-
-  .hero-decor-squiggle-b {
-    bottom: 6%;
-    right: 6%;
-    transform: rotate(-12deg) scale(0.85);
+    width: clamp(118px, 34vw, 220px);
   }
 
   /* ---- Connected-site preview card ---- */
@@ -515,7 +444,69 @@
 
   @media (min-width: 640px) {
     .hero {
-      max-width: 720px;
+      max-width: min(90vw, 720px);
       padding-top: 24px;
+    }
+  }
+
+  /* ============================================================
+   * Desktop: one continuous fluid system from 1024px up, instead of
+   * fixed-px steps. The container width is a clamped percentage of
+   * the viewport (so it keeps growing smoothly all the way past
+   * 1500px+ rather than jumping at a breakpoint and then sitting
+   * still), and every size inside it — headline, subcopy, gaps,
+   * column widths, mascot — is a vw-based clamp() for the same
+   * reason. Only the *layout change* (stacked → side-by-side) is a
+   * hard switch at 1024px; everything after that is fluid.
+   * ============================================================ */
+  @media (min-width: 1024px) {
+    .hero {
+      max-width: min(92vw, 1440px);
+      padding-top: clamp(40px, 4vw, 72px);
+      padding-bottom: clamp(64px, 7vw, 96px);
+    }
+
+    .hero-layout {
+      align-items: center;
+      gap: clamp(40px, 4.5vw, 80px);
+    }
+
+    .hero-left-col {
+      flex: 1 1 52%;
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 3.6vw, 80px);
+    }
+
+    .hero p.sub {
+      font-size: clamp(17px, 1vw, 20px);
+      max-width: clamp(32ch, 34vw, 40ch);
+    }
+
+    .hero .actions {
+      flex-direction: row;
+      max-width: none;
+    }
+
+    .hero .btn-primary,
+    .hero .btn-secondary {
+      width: auto;
+    }
+
+    .hero-preview {
+      max-width: clamp(380px, 32vw, 460px);
+    }
+
+    .hero-character-col {
+      flex: 1 1 44%;
+      width: auto;
+      max-width: clamp(320px, 30vw, 540px);
+      align-self: center;
+    }
+
+    .hero-tagline {
+      justify-content: flex-start;
+      margin-left: 4px;
     }
   }
