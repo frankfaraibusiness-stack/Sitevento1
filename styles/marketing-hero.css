@@ -39,7 +39,7 @@
     margin: 0 0 20px;
     font-weight: 900;
     letter-spacing: -0.02em;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--ink);
     /* The clamp above keeps "Your website." fitting on one line down to
        a 320px viewport in practice; this is just a safety net so an
@@ -53,16 +53,28 @@
     display: inline-block;
   }
 
-  /* Hand-drawn "marker" splotch behind "Your rules." — an irregular
-     blob (asymmetric border-radius + slight rotation) rather than a
-     clean pill, with a deeper, more saturated mid-lime fill than the
-     bright --lime used elsewhere, matching the reference. */
+  /* Hand-drawn "marker" splotch behind "Your rules." — border-radius
+     percentages (even with a wide corner spread) still read as a
+     rounded egg/circle once the corners blend, so this uses an
+     explicit irregular polygon instead: a closed loop of unevenly
+     spaced points with no mirror symmetry on either axis, which is
+     the only reliable way to get a genuinely lumpy/squashed outline
+     rather than a smoothed oval. Oversized relative to the text box
+     (inset goes negative well past the text's edges) so the lumps
+     don't clip the letters, with a deeper, more saturated mid-lime
+     fill than the bright --lime used elsewhere, matching the
+     reference. */
   .hero-highlight-shape {
     position: absolute;
-    inset: -6% -5% -10% -4%;
+    inset: -22% -14% -26% -12%;
     background: #d2f376;
-    border-radius: 42% 46% 44% 48% / 60% 55% 62% 50%;
-    transform: rotate(-1deg);
+    clip-path: polygon(
+      9% 38%, 2% 22%, 14% 6%, 33% 0%, 46% 9%, 61% 1%, 77% 10%,
+      91% 4%, 100% 24%, 94% 41%, 100% 58%, 89% 74%, 96% 90%,
+      79% 100%, 63% 92%, 48% 100%, 31% 95%, 16% 100%, 4% 86%,
+      11% 68%, 0% 52%
+    );
+    transform: rotate(-2deg);
     z-index: 0;
   }
 
@@ -294,11 +306,86 @@
   .hero-preview-dot:nth-child(2) { background: #ffd8a8; }
   .hero-preview-dot:nth-child(3) { background: var(--lime); }
 
+  /* Live-activity demo surface (replaces the earlier static purple
+     placeholder) — a dark panel that "+1 view / +1 impression / +1
+     click" chips pop up across while the toggle below is on, standing
+     in for what the banner actually does on a connected site. Off
+     state dims it and shows a short hint instead of pops. */
   .hero-preview-thumb {
+    position: relative;
     height: 110px;
     border-radius: 12px;
     margin-bottom: 14px;
-    background: linear-gradient(135deg, #cdb8ff 0%, #9a8af0 100%);
+    background: var(--ink);
+    overflow: hidden;
+    transition: opacity 0.25s ease;
+  }
+
+  .hero-preview-thumb.is-off {
+    opacity: 0.4;
+  }
+
+  .hero-preview-thumb-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #e8e4de;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .hero-preview-pop {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: var(--lime);
+    color: var(--lime-ink);
+    font-weight: 700;
+    font-size: 11.5px;
+    line-height: 1;
+    white-space: nowrap;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.35);
+    animation: hero-preview-pop-in 1.6s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes hero-preview-pop-in {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -40%) scale(0.7);
+    }
+    15% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    75% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -68%) scale(0.92);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-preview-pop {
+      animation: hero-preview-pop-fade 1.6s ease-out forwards;
+    }
+
+    @keyframes hero-preview-pop-fade {
+      0% { opacity: 0; }
+      15%, 75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   }
 
   .hero-preview-site {
@@ -314,6 +401,11 @@
     border-radius: 50%;
     background: #2fbf5c;
     flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .hero-preview-status-dot.is-off {
+    background: #c9c2b4;
   }
 
   .hero-preview-site-name {
@@ -342,7 +434,10 @@
     height: 22px;
     border-radius: 999px;
     background: var(--line);
+    border: none;
+    padding: 0;
     flex-shrink: 0;
+    cursor: pointer;
     transition: background-color 0.15s ease;
   }
 
