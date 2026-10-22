@@ -17,7 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     background_color: '#f6f2e7', // var(--cream)
-    theme_color: '#faf9f0', // var(--app-bg) — lime was too loud for home-screen/chrome tint
+    theme_color: '#b9d98f', // muted/toned-down lime, not full-saturation var(--lime)
     icons: [
       {
         src: '/icon.png',
