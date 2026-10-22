@@ -3,11 +3,15 @@
  *
  * Mobile and desktop are two separate rule blocks, not one shared
  * layout stretched with clamp(). Below 1024px is the mobile hero:
- * a single stacked column, tuned for phone widths. At 1024px+ the
- * desktop block replaces the structural rules outright (its own
- * container, its own two-column grid with the preview card beside
- * the copy, its own type scale) rather than nudging the mobile
- * numbers upward.
+ * tuned for phone widths. At 1024px+ the desktop block replaces the
+ * structural rules outright (its own container, its own type scale)
+ * rather than nudging the mobile numbers upward.
+ *
+ * .hero-layout itself is a 50/50 row at BOTH breakpoints: copy + CTAs
+ * in the left half (.hero-left-col), the animated bunny character
+ * (public/mascot/hero-bunny.png) filling the right half
+ * (.hero-character-col), big on phone and on desktop alike — not a
+ * mobile stack that only becomes two columns at 1024px.
  * ============================================================ */
 
   #marketingView {
@@ -99,31 +103,63 @@
 
   /* ============================================================
    * MOBILE HERO (default, up to 1023px)
-   * Single stacked column, phone-tuned sizes. No mascot/character
-   * column — removed entirely, not just hidden.
+   * .hero-layout is a 50/50 row here too — copy+CTAs on the left,
+   * the big bunny character on the right — not a stacked column.
    * ============================================================ */
   .hero {
     position: relative;
-    max-width: min(94vw, 640px);
+    max-width: min(96vw, 720px);
     margin: 0 auto;
-    padding: 4px 20px 56px;
+    padding: 4px 14px 48px;
     text-align: left;
     overflow: visible;
   }
 
   .hero-layout {
     position: relative;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .hero-left-col {
+    flex: 1 1 50%;
     min-width: 0;
   }
 
+  .hero-character-col {
+    flex: 1 1 50%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-character-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    animation: hero-character-float 4.5s ease-in-out infinite;
+  }
+
+  /* Gentle bob + tilt so the character reads as alive rather than a
+     static sticker, without being distracting next to the copy. */
+  @keyframes hero-character-float {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-character-img {
+      animation: none;
+    }
+  }
+
   .hero h1 {
-    font-size: clamp(26px, 9.6vw, 52px);
+    font-size: clamp(22px, 7.6vw, 40px);
     line-height: 1.04;
-    margin: 0 0 20px;
+    margin: 0 0 14px;
     font-weight: 900;
     letter-spacing: -0.02em;
     font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -132,52 +168,52 @@
   }
 
   .hero p.sub {
-    font-size: 16.5px;
-    line-height: 1.5;
+    font-size: 14.5px;
+    line-height: 1.45;
     color: #514d47;
-    max-width: 30ch;
-    margin: 0 0 28px;
+    max-width: 26ch;
+    margin: 0 0 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  /* Stacked full-width CTAs. At 400px+ there's enough room for
-     "Connect your site" on one line, so the full label shows there
-     and up; below 400px a shorter label is swapped in instead, so
-     the button never wraps to two lines. */
+  /* Stacked full-width CTAs within the (now half-width) left column.
+     At 400px+ there's enough room for "Connect your site" on one
+     line, so the full label shows there and up; below 400px a
+     shorter label is swapped in instead, so the button never wraps
+     to two lines. */
   .hero .actions {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
-    max-width: 360px;
-    margin-bottom: 40px;
+    gap: 10px;
+    max-width: 260px;
+    margin-bottom: 20px;
   }
 
   .hero .btn-primary,
   .hero .btn-secondary {
     width: 100%;
     text-align: center;
-    font-size: 16px;
+    font-size: 14px;
   }
 
+  /* With the hero now a 50/50 row at every width, the left column is
+     narrow even on phones — the short "Connect site" label is used
+     all the way up to the 1024px desktop switch instead of swapping
+     to the long label at 400px, so the pill never wraps/overflows. */
   .btn-primary-full { display: none; }
   .btn-primary-short { display: inline; }
-
-  @media (min-width: 400px) and (max-width: 1023px) {
-    .btn-primary-full { display: inline; }
-    .btn-primary-short { display: none; }
-  }
 
   .hero .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     background: var(--ink);
     color: var(--lime);
     border: none;
     border-radius: 999px;
-    padding: 17px 20px;
+    padding: 14px 16px;
     font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
@@ -186,7 +222,7 @@
   }
 
   .hero .btn-primary .btn-arrow {
-    font-size: 17px;
+    font-size: 15px;
     line-height: 1;
     flex-shrink: 0;
   }
@@ -205,7 +241,7 @@
     color: var(--ink);
     border: 1.5px solid var(--ink);
     border-radius: 999px;
-    padding: 16px 20px;
+    padding: 13px 16px;
     font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     cursor: pointer;
@@ -222,29 +258,59 @@
     transform: translateY(0);
   }
 
+  /* Lives inside .hero-left-col now (grouped with the copy/CTAs in
+     the left half), not centered full-width below the fold. */
   .hero-tagline {
     display: flex;
     align-items: center;
-    gap: 8px;
-    justify-content: center;
-    font-size: 14px;
+    gap: 6px;
+    justify-content: flex-start;
+    font-size: 11.5px;
     color: #928c80;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .hero-tagline-sparkle {
-    width: 15px;
-    height: 15px;
+    width: 13px;
+    height: 13px;
     color: var(--lime-ink);
     opacity: 0.6;
     flex-shrink: 0;
   }
 
+  @media (min-width: 420px) and (max-width: 1023px) {
+    .hero .actions {
+      max-width: 320px;
+    }
+
+    .hero .btn-primary,
+    .hero .btn-secondary {
+      font-size: 15px;
+    }
+  }
+
   @media (min-width: 640px) and (max-width: 1023px) {
     .hero {
-      max-width: min(90vw, 720px);
+      max-width: min(90vw, 900px);
       padding-top: 24px;
+    }
+
+    .hero-layout {
+      gap: 32px;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 6vw, 48px);
+    }
+
+    .hero p.sub {
+      font-size: 16px;
+      max-width: 30ch;
+    }
+
+    .hero-tagline {
+      font-size: 13px;
     }
   }
 
@@ -433,45 +499,24 @@
   }
 
   /* ============================================================
-   * DESKTOP HERO (1024px and up) — its own container, its own
-   * two-column grid (copy on the left, the connected-site preview
-   * card on the right, beside the headline), its own type scale.
-   * This is NOT the mobile layout stretched wider: the structural
-   * rules below (grid-template-columns, column order, card
-   * placement) replace the mobile block's display:block stack
-   * outright at this width.
+   * DESKTOP HERO (1024px and up) — its own container and its own
+   * type scale, but the SAME idea as mobile: .hero-layout stays a
+   * 50/50 row, copy+CTAs on the left, the bunny character filling
+   * the right half, big. The connected-site preview card is a
+   * separate full-width section below the hero on desktop too (its
+   * own .hero-showcase rules further down), not squeezed into the
+   * hero's right half — that's the character's spot at every width.
    * ============================================================ */
   @media (min-width: 1024px) {
-    /* .hero and .hero-showcase are separate <section> siblings in
-       the markup (MarketingPage.tsx) so each can keep its own
-       independent rules; on desktop their shared parent lays them
-       out as a two-column row — copy+CTAs on the left, the
-       connected-site preview card on the right, side by side —
-       instead of the mobile stack of full-width sections. */
-    #marketingView {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
-      align-items: center;
-      gap: clamp(32px, 4vw, 72px);
+    .hero {
       max-width: min(92vw, 1440px);
       margin: 0 auto;
-      padding: clamp(48px, 5vw, 88px) clamp(24px, 2.4vw, 40px) clamp(64px, 7vw, 96px);
-    }
-
-    .hero {
-      grid-column: 1;
-      max-width: none;
-      margin: 0;
-      padding: 0;
+      padding: clamp(48px, 5vw, 88px) clamp(24px, 2.4vw, 40px) clamp(32px, 3vw, 48px);
       text-align: left;
     }
 
     .hero-layout {
-      display: block;
-    }
-
-    .hero-left-col {
-      min-width: 0;
+      gap: clamp(32px, 4vw, 72px);
     }
 
     .hero h1 {
@@ -490,33 +535,43 @@
       flex-direction: row;
       max-width: none;
       width: auto;
-      margin-bottom: 0;
+      margin-bottom: 32px;
     }
 
     .hero .btn-primary,
     .hero .btn-secondary {
       width: auto;
+      font-size: 16px;
+      padding: 17px 24px;
     }
 
     .btn-primary-full { display: inline; }
     .btn-primary-short { display: none; }
 
     .hero-tagline {
-      justify-content: flex-start;
-      margin: 28px 0 0;
+      font-size: 14px;
+      gap: 8px;
     }
 
-    /* On desktop the preview card is the grid's right-hand column,
-       beside the headline — not stacked below it like on mobile. */
+    .hero-tagline-sparkle {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  /* ---- Connected-site preview: standalone section (desktop) ----
+   * Full-width section below the hero, same container width as the
+   * hero itself, laid out as its own row rather than stacked under
+   * the (now 50/50) hero copy/character split above it.
+   * ------------------------------------------------------------- */
+  @media (min-width: 1024px) {
     .hero-showcase {
-      grid-column: 2;
-      max-width: none;
-      margin: 0;
-      padding: 0;
+      max-width: min(92vw, 1440px);
+      margin: 0 auto;
+      padding: 0 clamp(24px, 2.4vw, 40px) clamp(64px, 7vw, 96px);
     }
 
     .hero-preview {
-      max-width: none;
-      width: 100%;
+      max-width: clamp(380px, 32vw, 460px);
     }
   }
