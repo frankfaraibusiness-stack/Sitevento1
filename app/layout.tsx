@@ -72,7 +72,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#faf9f0', // var(--app-bg) — lime was too loud for the browser chrome tint
+  // Muted/toned-down lime — keeps the brand tint on mobile chrome
+  // without the full-saturation #c6ff3d shouting at the user. Lower
+  // saturation + slightly deeper value than var(--lime), not a plain
+  // neutral like --app-bg.
+  themeColor: '#b9d98f',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
