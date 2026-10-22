@@ -1,22 +1,19 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { HeroMascot } from './HeroMascot';
 
 // components/marketing/Hero.tsx
 //
-// App-feel hero matching the reference design: bold two-line headline
-// with a hand-drawn-looking highlight blob behind the second line,
-// subcopy, two CTAs (full-width stacked on narrow screens, side-by-side
-// width capped once there's room), a "connected site" preview card, and
-// a mascot (HeroMascot) — a hand-built, hand-animated SVG bunny (ears,
-// blinking eyes, head "look around", arm/leg sway) with its own
-// built-in sparkle/crystal accents, replacing the old static PNG. One
-// bigger, moving character fills the leftover space next to the
-// headline — not multiple copies of it.
+// App-feel hero: bold two-line headline with a hand-drawn-looking
+// highlight blob behind the second line, subcopy, and two CTAs
+// (full-width stacked on narrow screens, side-by-side once there's
+// room). Single stacked column at every width — no mascot/character
+// column anymore, and no side-by-side squeeze on mobile.
 //
-// Desktop (1024px+): two-column layout — copy/CTAs/preview card on the
-// left, large mascot on the right (see marketing-hero.css).
+// The "connected site" demo card previously lived at the bottom of
+// this component; it's now its own standalone section
+// (ConnectedSiteShowcase, rendered separately by MarketingPage) rather
+// than part of the hero.
 
 interface HeroProps {
   onConnectClick: () => void;
@@ -122,56 +119,6 @@ function ActivityDemoSurface({ isOn }: { isOn: boolean }) {
   );
 }
 
-function ConnectedSitePreview() {
-  // The card beneath the CTAs: a mini browser-window chrome, a live
-  // activity demo standing in for the banner's real-time tracking,
-  // "Connected"/"Disconnected" status + site name, a working toggle
-  // (on by default) that switches the demo on/off, and the meta-tag
-  // snippet overlapping the card's bottom edge.
-  const [isOn, setIsOn] = useState(true);
-
-  return (
-    <div className="hero-preview">
-      <div className="hero-preview-card">
-        <div className="hero-preview-browser">
-          <span className="hero-preview-dot" />
-          <span className="hero-preview-dot" />
-          <span className="hero-preview-dot" />
-        </div>
-        <ActivityDemoSurface isOn={isOn} />
-        <div className="hero-preview-info">
-          <div className="hero-preview-site">
-            <span className={`hero-preview-status-dot${isOn ? '' : ' is-off'}`} />
-            <span className="hero-preview-site-name">YourSite.com</span>
-          </div>
-          <p className="hero-preview-connected">{isOn ? 'Connected' : 'Disconnected'}</p>
-          <div className="hero-preview-toggle-row">
-            <button
-              type="button"
-              className={`hero-preview-toggle${isOn ? ' is-on' : ''}`}
-              role="switch"
-              aria-checked={isOn}
-              aria-label={isOn ? 'Turn off demo banner' : 'Turn on demo banner'}
-              onClick={() => setIsOn((v) => !v)}
-            >
-              <span className="hero-preview-toggle-knob" />
-            </button>
-            <span className="hero-preview-toggle-label">{isOn ? 'Connected' : 'Disconnected'}</span>
-          </div>
-        </div>
-      </div>
-      <div className="hero-preview-snippet">
-        <span className="hero-preview-snippet-icon">&lt;/&gt;</span>
-        <span className="hero-preview-snippet-code">
-          <span className="attr">name</span>=<span className="val">&quot;sitevento&quot;</span>
-          <br />
-          <span className="attr">content</span>=<span className="val">&quot;QKnNQvsrXqAziCjdiWKJ&quot;</span>
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export function Hero({ onConnectClick }: HeroProps) {
   return (
     <section className="hero">
@@ -205,12 +152,6 @@ export function Hero({ onConnectClick }: HeroProps) {
               See how it works
             </button>
           </div>
-
-          <ConnectedSitePreview />
-        </div>
-
-        <div className="hero-character-col">
-          <HeroMascot />
         </div>
       </div>
 
@@ -218,6 +159,58 @@ export function Hero({ onConnectClick }: HeroProps) {
         <Sparkle className="hero-tagline-sparkle" />
         One tiny snippet. Live control.
       </p>
+    </section>
+  );
+}
+
+// ---- Connected-site demo: now its own standalone section ----
+// Previously nested inside Hero (card beneath the CTAs); split out so
+// it's a section on its own, separate from the header/hero. Same
+// mini browser-window chrome, live activity demo, Connected/
+// Disconnected status + toggle, and meta-tag snippet as before.
+export function ConnectedSiteShowcase() {
+  const [isOn, setIsOn] = useState(true);
+
+  return (
+    <section className="hero-showcase">
+      <div className="hero-preview">
+        <div className="hero-preview-card">
+          <div className="hero-preview-browser">
+            <span className="hero-preview-dot" />
+            <span className="hero-preview-dot" />
+            <span className="hero-preview-dot" />
+          </div>
+          <ActivityDemoSurface isOn={isOn} />
+          <div className="hero-preview-info">
+            <div className="hero-preview-site">
+              <span className={`hero-preview-status-dot${isOn ? '' : ' is-off'}`} />
+              <span className="hero-preview-site-name">YourSite.com</span>
+            </div>
+            <p className="hero-preview-connected">{isOn ? 'Connected' : 'Disconnected'}</p>
+            <div className="hero-preview-toggle-row">
+              <button
+                type="button"
+                className={`hero-preview-toggle${isOn ? ' is-on' : ''}`}
+                role="switch"
+                aria-checked={isOn}
+                aria-label={isOn ? 'Turn off demo banner' : 'Turn on demo banner'}
+                onClick={() => setIsOn((v) => !v)}
+              >
+                <span className="hero-preview-toggle-knob" />
+              </button>
+              <span className="hero-preview-toggle-label">{isOn ? 'Connected' : 'Disconnected'}</span>
+            </div>
+          </div>
+        </div>
+        <div className="hero-preview-snippet">
+          <span className="hero-preview-snippet-icon">&lt;/&gt;</span>
+          <span className="hero-preview-snippet-code">
+            <span className="attr">name</span>=<span className="val">&quot;sitevento&quot;</span>
+            <br />
+            <span className="attr">content</span>=<span className="val">&quot;QKnNQvsrXqAziCjdiWKJ&quot;</span>
+          </span>
+        </div>
+      </div>
     </section>
   );
 }
