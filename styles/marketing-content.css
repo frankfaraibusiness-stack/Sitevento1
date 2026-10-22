@@ -12,12 +12,26 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 640px;
+    max-width: min(94vw, 640px);
     height: 56px;
     padding: 0 24px;
     background: transparent;
     color: var(--ink);
     margin: 0 auto;
+  }
+
+  /* ---- Desktop width ----
+     Below this the pill stayed capped at 640px even on large monitors,
+     sitting centered with huge empty margins on either side. One
+     continuous fluid clamp (percentage of viewport, not a fixed px
+     jump) so it keeps growing smoothly all the way past 1500px+,
+     matching .hero's own max-width (marketing-hero.css) so the header
+     and hero line up at every width instead of just at a breakpoint. */
+  @media (min-width: 1024px) {
+    .pill-nav {
+      max-width: min(92vw, 1440px);
+      padding: 0 clamp(24px, 2.4vw, 40px);
+    }
   }
 
   .hamburger {
