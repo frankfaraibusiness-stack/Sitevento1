@@ -1,53 +1,24 @@
 /* ============================================================
  * marketing-hero.css — app-feel hero (see components/marketing/Hero.tsx)
+ *
+ * Mobile and desktop are two separate rule blocks, not one shared
+ * layout stretched with clamp(). Below 1024px is the mobile hero:
+ * a single stacked column, tuned for phone widths. At 1024px+ the
+ * desktop block replaces the structural rules outright (its own
+ * container, its own two-column grid with the preview card beside
+ * the copy, its own type scale) rather than nudging the mobile
+ * numbers upward.
  * ============================================================ */
 
   #marketingView {
     background: var(--app-bg);
   }
 
-  .hero {
-    position: relative;
-    max-width: min(94vw, 640px);
-    margin: 0 auto;
-    padding: 4px 20px 56px;
-    text-align: left;
-    overflow: visible;
-  }
-
-  .hero-layout {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .hero-left-col {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  /* ---- Headline ----
-     Very heavy/chunky display weight (900, tight tracking) to match the
-     reference, which reads much bolder than a normal 700/800 weight.
-     Font-size uses a steep clamp so "Your website." keeps reading as one
-     line down to a 320px viewport instead of wrapping mid-phrase. */
-  .hero h1 {
-    font-size: clamp(26px, 9.6vw, 52px);
-    line-height: 1.04;
-    margin: 0 0 20px;
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color: var(--ink);
-    /* The clamp above keeps "Your website." fitting on one line down to
-       a 320px viewport in practice; this is just a safety net so an
-       unusually wide font fallback wraps instead of clipping/
-       overflowing the viewport. */
-    overflow-wrap: break-word;
-  }
-
+  /* ------------------------------------------------------------
+   * Shared tokens only — things that are genuinely identical at
+   * every size (colors, the highlight-shape polygon, the sparkle
+   * icon, keyframes). No layout, sizing or spacing lives here.
+   * ------------------------------------------------------------ */
   .hero-highlight-wrap {
     position: relative;
     display: inline-block;
@@ -85,6 +56,81 @@
     padding: 0 4px;
   }
 
+  .hero-preview-dot:nth-child(1) { background: #c9b8ff; }
+  .hero-preview-dot:nth-child(2) { background: #ffd8a8; }
+  .hero-preview-dot:nth-child(3) { background: var(--lime); }
+
+  .hero-preview-status-dot.is-off { background: #c9c2b4; }
+  .hero-preview-toggle.is-on { background: #2fbf5c; }
+  .hero-preview-toggle.is-on .hero-preview-toggle-knob { transform: translateX(18px); }
+  .hero-preview-snippet-code .attr { color: #9cc4ff; }
+  .hero-preview-snippet-code .val { color: var(--lime); }
+
+  @keyframes hero-preview-pop-in {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -40%) scale(0.7);
+    }
+    15% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    75% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -68%) scale(0.92);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-preview-pop {
+      animation: hero-preview-pop-fade 1.6s ease-out forwards;
+    }
+
+    @keyframes hero-preview-pop-fade {
+      0% { opacity: 0; }
+      15%, 75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  }
+
+  /* ============================================================
+   * MOBILE HERO (default, up to 1023px)
+   * Single stacked column, phone-tuned sizes. No mascot/character
+   * column — removed entirely, not just hidden.
+   * ============================================================ */
+  .hero {
+    position: relative;
+    max-width: min(94vw, 640px);
+    margin: 0 auto;
+    padding: 4px 20px 56px;
+    text-align: left;
+    overflow: visible;
+  }
+
+  .hero-layout {
+    position: relative;
+    display: block;
+  }
+
+  .hero-left-col {
+    min-width: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(26px, 9.6vw, 52px);
+    line-height: 1.04;
+    margin: 0 0 20px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+
   .hero p.sub {
     font-size: 16.5px;
     line-height: 1.5;
@@ -94,11 +140,9 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  /* ---- CTAs ----
-     Stacked full-width by default (phones). At 400px+ there's enough
-     room for "Connect your site" to sit on one line inside the pill, so
-     the full label shows there and up; below 400px a shorter label
-     ("Connect site") is shown instead, via the two-span swap below, so
+  /* Stacked full-width CTAs. At 400px+ there's enough room for
+     "Connect your site" on one line, so the full label shows there
+     and up; below 400px a shorter label is swapped in instead, so
      the button never wraps to two lines. */
   .hero .actions {
     display: flex;
@@ -116,6 +160,14 @@
     font-size: 16px;
   }
 
+  .btn-primary-full { display: none; }
+  .btn-primary-short { display: inline; }
+
+  @media (min-width: 400px) and (max-width: 1023px) {
+    .btn-primary-full { display: inline; }
+    .btn-primary-short { display: none; }
+  }
+
   .hero .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -131,24 +183,6 @@
     cursor: pointer;
     white-space: nowrap;
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
-  }
-
-  .btn-primary-full {
-    display: none;
-  }
-
-  .btn-primary-short {
-    display: inline;
-  }
-
-  @media (min-width: 400px) {
-    .btn-primary-full {
-      display: inline;
-    }
-
-    .btn-primary-short {
-      display: none;
-    }
   }
 
   .hero .btn-primary .btn-arrow {
@@ -188,24 +222,49 @@
     transform: translateY(0);
   }
 
-  /* ---- Mascot column ----
-     One single animated character, sized larger than the old static
-     PNG so it actually fills the leftover vertical space next to the
-     headline on mobile (the animation — not duplicate copies — is
-     what uses that room). Fluid clamp(min, vw, max) the whole way —
-     no fixed px steps — so it scales continuously with the viewport
-     and becomes the full right column at 1024px+ below. */
-  .hero-character-col {
-    position: relative;
-    flex: 0 0 auto;
-    width: clamp(118px, 34vw, 220px);
+  .hero-tagline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    font-size: 14px;
+    color: #928c80;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  /* ---- Connected-site preview card ---- */
+  .hero-tagline-sparkle {
+    width: 15px;
+    height: 15px;
+    color: var(--lime-ink);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .hero {
+      max-width: min(90vw, 720px);
+      padding-top: 24px;
+    }
+  }
+
+  /* ---- Connected-site preview: standalone section (mobile) ---- */
+  .hero-showcase {
+    max-width: min(94vw, 640px);
+    margin: 0 auto;
+    padding: 0 20px 56px;
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .hero-showcase {
+      max-width: min(90vw, 720px);
+    }
+  }
+
   .hero-preview {
     position: relative;
     max-width: 420px;
-    margin: 0 0 56px;
+    margin: 0;
   }
 
   .hero-preview-card {
@@ -229,15 +288,11 @@
     background: var(--line);
   }
 
-  .hero-preview-dot:nth-child(1) { background: #c9b8ff; }
-  .hero-preview-dot:nth-child(2) { background: #ffd8a8; }
-  .hero-preview-dot:nth-child(3) { background: var(--lime); }
-
-  /* Live-activity demo surface (replaces the earlier static purple
-     placeholder) — a dark panel that "+1 view / +1 impression / +1
-     click" chips pop up across while the toggle below is on, standing
-     in for what the banner actually does on a connected site. Off
-     state dims it and shows a short hint instead of pops. */
+  /* Live-activity demo surface — a dark panel that "+1 view / +1
+     impression / +1 click" chips pop up across while the toggle
+     below is on, standing in for what the banner actually does on a
+     connected site. Off state dims it and shows a short hint instead
+     of pops. */
   .hero-preview-thumb {
     position: relative;
     height: 110px;
@@ -287,37 +342,6 @@
     pointer-events: none;
   }
 
-  @keyframes hero-preview-pop-in {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, -40%) scale(0.7);
-    }
-    15% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    75% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -68%) scale(0.92);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-preview-pop {
-      animation: hero-preview-pop-fade 1.6s ease-out forwards;
-    }
-
-    @keyframes hero-preview-pop-fade {
-      0% { opacity: 0; }
-      15%, 75% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-  }
-
   .hero-preview-site {
     display: flex;
     align-items: center;
@@ -332,10 +356,6 @@
     background: #2fbf5c;
     flex-shrink: 0;
     transition: background-color 0.15s ease;
-  }
-
-  .hero-preview-status-dot.is-off {
-    background: #c9c2b4;
   }
 
   .hero-preview-site-name {
@@ -371,10 +391,6 @@
     transition: background-color 0.15s ease;
   }
 
-  .hero-preview-toggle.is-on {
-    background: #2fbf5c;
-  }
-
   .hero-preview-toggle-knob {
     position: absolute;
     top: 2px;
@@ -385,10 +401,6 @@
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: transform 0.15s ease;
-  }
-
-  .hero-preview-toggle.is-on .hero-preview-toggle-knob {
-    transform: translateX(18px);
   }
 
   .hero-preview-toggle-label {
@@ -420,73 +432,65 @@
     font-size: 12px;
   }
 
-  .hero-preview-snippet-code .attr { color: #9cc4ff; }
-  .hero-preview-snippet-code .val { color: var(--lime); }
-
-  .hero-tagline {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-    font-size: 14px;
-    color: #928c80;
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .hero-tagline-sparkle {
-    width: 15px;
-    height: 15px;
-    color: var(--lime-ink);
-    opacity: 0.6;
-    flex-shrink: 0;
-  }
-
-  @media (min-width: 640px) {
-    .hero {
-      max-width: min(90vw, 720px);
-      padding-top: 24px;
-    }
-  }
-
   /* ============================================================
-   * Desktop: one continuous fluid system from 1024px up, instead of
-   * fixed-px steps. The container width is a clamped percentage of
-   * the viewport (so it keeps growing smoothly all the way past
-   * 1500px+ rather than jumping at a breakpoint and then sitting
-   * still), and every size inside it — headline, subcopy, gaps,
-   * column widths, mascot — is a vw-based clamp() for the same
-   * reason. Only the *layout change* (stacked → side-by-side) is a
-   * hard switch at 1024px; everything after that is fluid.
+   * DESKTOP HERO (1024px and up) — its own container, its own
+   * two-column grid (copy on the left, the connected-site preview
+   * card on the right, beside the headline), its own type scale.
+   * This is NOT the mobile layout stretched wider: the structural
+   * rules below (grid-template-columns, column order, card
+   * placement) replace the mobile block's display:block stack
+   * outright at this width.
    * ============================================================ */
   @media (min-width: 1024px) {
-    .hero {
+    /* .hero and .hero-showcase are separate <section> siblings in
+       the markup (MarketingPage.tsx) so each can keep its own
+       independent rules; on desktop their shared parent lays them
+       out as a two-column row — copy+CTAs on the left, the
+       connected-site preview card on the right, side by side —
+       instead of the mobile stack of full-width sections. */
+    #marketingView {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+      align-items: center;
+      gap: clamp(32px, 4vw, 72px);
       max-width: min(92vw, 1440px);
-      padding-top: clamp(40px, 4vw, 72px);
-      padding-bottom: clamp(64px, 7vw, 96px);
+      margin: 0 auto;
+      padding: clamp(48px, 5vw, 88px) clamp(24px, 2.4vw, 40px) clamp(64px, 7vw, 96px);
+    }
+
+    .hero {
+      grid-column: 1;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      text-align: left;
     }
 
     .hero-layout {
-      align-items: center;
-      gap: clamp(40px, 4.5vw, 80px);
+      display: block;
     }
 
     .hero-left-col {
-      flex: 1 1 52%;
+      min-width: 0;
     }
 
     .hero h1 {
-      font-size: clamp(44px, 3.6vw, 80px);
+      font-size: clamp(48px, 4.2vw, 84px);
+      line-height: 1.02;
+      margin: 0 0 24px;
     }
 
     .hero p.sub {
-      font-size: clamp(17px, 1vw, 20px);
-      max-width: clamp(32ch, 34vw, 40ch);
+      font-size: clamp(18px, 1.1vw, 21px);
+      max-width: 38ch;
+      margin: 0 0 32px;
     }
 
     .hero .actions {
       flex-direction: row;
       max-width: none;
+      width: auto;
+      margin-bottom: 0;
     }
 
     .hero .btn-primary,
@@ -494,19 +498,25 @@
       width: auto;
     }
 
-    .hero-preview {
-      max-width: clamp(380px, 32vw, 460px);
-    }
-
-    .hero-character-col {
-      flex: 1 1 44%;
-      width: auto;
-      max-width: clamp(320px, 30vw, 540px);
-      align-self: center;
-    }
+    .btn-primary-full { display: inline; }
+    .btn-primary-short { display: none; }
 
     .hero-tagline {
       justify-content: flex-start;
-      margin-left: 4px;
+      margin: 28px 0 0;
+    }
+
+    /* On desktop the preview card is the grid's right-hand column,
+       beside the headline — not stacked below it like on mobile. */
+    .hero-showcase {
+      grid-column: 2;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .hero-preview {
+      max-width: none;
+      width: 100%;
     }
   }
