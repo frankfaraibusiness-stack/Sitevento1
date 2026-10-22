@@ -5,10 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 // components/marketing/Hero.tsx
 //
 // App-feel hero: bold two-line headline with a hand-drawn-looking
-// highlight blob behind the second line, subcopy, and two CTAs
-// (full-width stacked on narrow screens, side-by-side once there's
-// room). Single stacked column at every width — no mascot/character
-// column anymore, and no side-by-side squeeze on mobile.
+// highlight blob behind the second line, subcopy, and two CTAs — on
+// the left half of the hero, on both phone and desktop. The right
+// half is the animated bunny character (public/mascot/hero-bunny.png),
+// large on both breakpoints, same 50/50 split at every width (see
+// .hero-layout / .hero-character-col in marketing-hero.css).
 //
 // The "connected site" demo card previously lived at the bottom of
 // this component; it's now its own standalone section
@@ -152,13 +153,23 @@ export function Hero({ onConnectClick }: HeroProps) {
               See how it works
             </button>
           </div>
+
+          <p className="hero-tagline">
+            <Sparkle className="hero-tagline-sparkle" />
+            One tiny snippet. Live control.
+          </p>
+        </div>
+
+        <div className="hero-character-col" aria-hidden="true">
+          <img
+            className="hero-character-img"
+            src="/mascot/hero-bunny.png"
+            alt=""
+            width={1156}
+            height={1361}
+          />
         </div>
       </div>
-
-      <p className="hero-tagline">
-        <Sparkle className="hero-tagline-sparkle" />
-        One tiny snippet. Live control.
-      </p>
     </section>
   );
 }
