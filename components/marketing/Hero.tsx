@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 // components/marketing/Hero.tsx
 //
@@ -11,19 +12,29 @@ import { useEffect, useRef, useState } from 'react';
 // small decorative sparkle/squiggle accents scattered around — all
 // static/illustrative, except the preview card below which is a small
 // interactive demo of what a connected site looks like live. The mascot
-// is a placeholder (CharacterPlaceholder) until the real character art
-// is supplied.
+// (CharacterMascot) renders the real bunny art from public/mascot/.
 
 interface HeroProps {
   onConnectClick: () => void;
 }
 
-function CharacterPlaceholder() {
-  // Stands in for the mascot (see reference) — only this component
-  // needs to change later when the real art is supplied.
+function CharacterMascot() {
+  // The real mascot art (lime bunny, mid-jump) — replaces the earlier
+  // dashed-outline blob placeholder. Source file is 1156x1361px
+  // (public/mascot/hero-bunny.png); `sizes` matches the column's
+  // clamp(78px, 24vw, 160px) width so next/image serves an
+  // appropriately small file on mobile instead of the full source.
   return (
-    <div className="hero-character-placeholder" aria-hidden="true">
-      <div className="hero-character-blob" />
+    <div className="hero-character-placeholder">
+      <Image
+        src="/mascot/hero-bunny.png"
+        alt="sitevento mascot, a cheerful lime-green bunny jumping"
+        width={1156}
+        height={1361}
+        sizes="(min-width: 640px) 160px, 24vw"
+        className="hero-character-img"
+        priority
+      />
     </div>
   );
 }
@@ -245,7 +256,7 @@ export function Hero({ onConnectClick }: HeroProps) {
           </div>
         </div>
         <div className="hero-character-col">
-          <CharacterPlaceholder />
+          <CharacterMascot />
           <HeroDecor />
         </div>
       </div>
