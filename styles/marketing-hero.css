@@ -188,7 +188,7 @@
     transform: translateY(0);
   }
 
-  /* ---- Mascot placeholder + decorations column ---- */
+  /* ---- Mascot + decorations column ---- */
   .hero-character-col {
     position: relative;
     flex: 0 0 auto;
@@ -197,7 +197,7 @@
 
   .hero-character-placeholder {
     width: 100%;
-    aspect-ratio: 1 / 1.1;
+    aspect-ratio: 1156 / 1361; /* matches public/mascot/hero-bunny.png source */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -205,12 +205,10 @@
     z-index: 1;
   }
 
-  .hero-character-blob {
-    width: 72%;
-    height: 72%;
-    border-radius: 48% 52% 55% 45% / 55% 48% 52% 45%;
-    background: color-mix(in srgb, var(--lime) 55%, var(--ink) 6%);
-    border: 2px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+  .hero-character-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   /* ---- Scattered decorative sparkles/crystal/squiggles ----
@@ -283,7 +281,10 @@
 
   .hero-preview-card {
     position: relative;
-    background: #ffffff;
+    /* Same muted/toned-down lime as the mobile status bar
+       (--theme-color-muted-lime in app/layout.tsx & manifest.ts),
+       not the full-saturation var(--lime) and not plain white. */
+    background: #b9d98f;
     border-radius: 20px;
     padding: 18px 18px 22px;
     box-shadow: 0 24px 50px -20px rgba(34, 32, 28, 0.32), 0 0 0 1px rgba(34, 32, 28, 0.04);
@@ -351,6 +352,9 @@
     white-space: nowrap;
     padding: 5px 9px;
     border-radius: 999px;
+    /* Black edge so each chip reads as a distinct sticker against the
+       demo panel, rather than blending into it. */
+    border: 1.5px solid #14120d;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.35);
     animation: hero-preview-pop-in 1.6s ease-out forwards;
@@ -418,7 +422,10 @@
   .hero-preview-connected {
     margin: 0 0 14px 17px;
     font-size: 13px;
-    color: #928c80;
+    /* Darkened from the original #928c80 — that passed fine on the
+       card's old white background but drops below readable contrast
+       on the new muted-lime card background. */
+    color: #514a40;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
