@@ -4,12 +4,26 @@
 // Subscribes to the active site's visits + leads subcollections in real
 // time and derives the same stats the dashboard cards show (total,
 // unique, blocked, leads) so components don't recompute them separately.
+//
+// Also owns restrictVisitor — a timed counterpart to toggleBlockVisit's
+// permanent block, used by the new /dashboard/visits page (see
+// VisitsPage.tsx). A restriction is stored as a plain epoch-ms
+// `restrictedUntil` field (not serverTimestamp(), since the expiry
+// needs client-side "now + N minutes" arithmetic) on every visit row
+// for that visitorId and on the same blockedVisitors/{visitorId} doc
+// toggleBlockVisit already writes to — so the tracker on the
+// customer's site, which only reads blockedVisitors, honors both
+// permanent blocks and active restrictions the same way. isRestricted
+// below treats an expired restrictedUntil as not-restricted without
+// needing a cleanup job: nothing un-sets the field, it just stops
+// counting once it's in the past.
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   onSnapshot,
   orderBy,
@@ -20,6 +34,10 @@ import {
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import type { Lead, Visit } from '@/lib/types';
+
+export function isRestricted(v: Visit, now = Date.now()): boolean {
+  return typeof v.restrictedUntil === 'number' && v.restrictedUntil > now;
+}
 
 export function useActiveSiteData(uid: string | null, siteId: string | null) {
   const [visits, setVisits] = useState<Visit[]>([]);
@@ -114,5 +132,40 @@ export function useActiveSiteData(uid: string | null, siteId: string | null) {
     }
   }
 
-  return { visits: visits.slice(0, 50), leads: leads.slice(0, 50), stats, toggleBlockVisit };
+  // Restricts a visitor for a fixed duration instead of indefinitely.
+  // durationMs === null clears an existing restriction early (the
+  // "Lift restriction" action). Leaves `blocked` untouched — a
+  // restriction and a permanent block are independent controls, so
+  // lifting one never implies changing the other.
+  async function restrictVisitor(visitorId: string, durationMs: number | null) {
+    if (!uid || !siteId || !visitorId) return;
+    try {
+      const db = getFirebaseDb();
+      const until = durationMs === null ? null : Date.now() + durationMs;
+
+      const batch = writeBatch(db);
+      for (const v of visits) {
+        if (v.visitorId === visitorId) {
+          batch.update(doc(db, 'users', uid, 'sites', siteId, 'visits', v.id), {
+            restrictedUntil: until,
+          });
+        }
+      }
+      await batch.commit();
+
+      const blockRef = doc(db, 'users', uid, 'sites', siteId, 'blockedVisitors', visitorId);
+      if (until !== null) {
+        await setDoc(blockRef, { restrictedUntil: until }, { merge: true });
+      } else {
+        // Only clear the restriction field — leave the doc (and any
+        // permanent blockedAt on it) alone if a block also exists.
+        await setDoc(blockRef, { restrictedUntil: deleteField() }, { merge: true }).catch(() => {});
+      }
+    } catch (err) {
+      console.error('restrictVisitor error', err);
+      window.alert('Could not update that visitor right now.');
+    }
+  }
+
+  return { visits: visits.slice(0, 50), leads: leads.slice(0, 50), stats, toggleBlockVisit, restrictVisitor };
 }
