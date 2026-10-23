@@ -128,11 +128,17 @@
   }
 
   .hero-character-col {
+    position: relative;
     flex: 1 1 50%;
     min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Reserve the character's own aspect ratio (1156x1361, see
+       Hero.tsx) so the column has real height before the image loads
+       — otherwise the skeleton below has nothing to size itself
+       against and collapses to 0px. */
+    aspect-ratio: 1156 / 1361;
   }
 
   .hero-character-img {
@@ -141,6 +147,73 @@
     height: auto;
     max-width: none;
     animation: hero-character-float 4.5s ease-in-out infinite;
+  }
+
+  .hero-character-img.is-loading {
+    opacity: 0;
+  }
+
+  .hero-character-img.is-loaded {
+    opacity: 1;
+    animation: hero-character-fade-in 420ms ease, hero-character-float 4.5s ease-in-out infinite;
+  }
+
+  @keyframes hero-character-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Skeleton/spinner shown over the reserved aspect-ratio box while
+     hero-bunny.png loads, so slow connections see a loading state
+     instead of empty space. Removed from the DOM once imgLoaded
+     flips true (Hero.tsx), rather than just hidden, so it never sits
+     under the final image. */
+  .hero-character-skeleton {
+    position: absolute;
+    inset: 6%;
+    border-radius: 24px;
+    background: linear-gradient(
+      100deg,
+      var(--cream-deep) 30%,
+      var(--cream) 50%,
+      var(--cream-deep) 70%
+    );
+    background-size: 200% 100%;
+    animation: hero-skeleton-shimmer 1.4s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-character-skeleton-spinner {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid var(--line);
+    border-top-color: var(--lime-ink);
+    animation: hero-skeleton-spin 0.8s linear infinite;
+    opacity: 0.6;
+  }
+
+  @keyframes hero-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @keyframes hero-skeleton-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-character-skeleton {
+      animation: none;
+    }
+    .hero-character-skeleton-spinner {
+      animation: none;
+    }
+    .hero-character-img.is-loaded {
+      animation: none;
+    }
   }
 
   /* Gentle bob + tilt so the character reads as alive rather than a
@@ -546,6 +619,16 @@
 
     .hero-layout {
       gap: clamp(32px, 4vw, 72px);
+      /* Override the mobile align-items: center (above). At this
+         width .hero-left-col is far shorter than the character
+         image, so centering the row sinks the character below the
+         left column's top edge and, since align-items is a row's
+         cross-axis property on BOTH children, drags the left
+         column's own content down too — read as "a gap under the
+         heading." flex-start pins both columns' tops flush instead,
+         so the character's top lines up with the sub-copy immediately
+         under the heading, with no inherited vertical centering. */
+      align-items: flex-start;
     }
 
     /* Desktop reverts to the original two-line stacked headline.
