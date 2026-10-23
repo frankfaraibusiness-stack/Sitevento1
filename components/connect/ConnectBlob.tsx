@@ -5,8 +5,8 @@
 // Self-contained copy of the brand's "slime" character (same blob-path
 // technique as components/agent/AgentBlob.tsx, components/marketing/
 // HeroSlime.tsx and components/BootSplash.tsx), kept independent of
-// agent-page.css so the connect wizard's CSS stays self-contained (see
-// styles/connect-wizard.css).
+// agent-page.css so the connect flow's CSS stays self-contained (see
+// styles/connect-flow.css).
 //
 // Unlike AgentBlob, this one is tintable: a `tone` prop swaps its fill
 // between the brand lime (idle/neutral), a green (verification
