@@ -128,7 +128,7 @@
       justify-content: space-between;
       align-items: flex-end;
       gap: 0;
-      height: 64px;
+      height: 72px;
       padding: 0 14px calc(10px + env(safe-area-inset-bottom, 0px));
       background: color-mix(in srgb, var(--cream) 92%, var(--lime) 8%);
       backdrop-filter: blur(16px) saturate(170%);
@@ -171,55 +171,89 @@
       z-index: 0;
     }
 
-    /* Quiet icon buttons — no fill, no border, just the icon. A soft
-       rounded-square highlight appears only behind the active route,
-       so the bar still tells you where you are without every tab
-       shouting for attention. Two tabs sit left of the notch, two
-       sit right (flex: 1 so each side fills its half evenly). */
+    /* Each of the four side tabs gets its own accent color (the
+       --dash-* tone tokens already used across the dashboard), set
+       once here as a local --tab-tone var and referenced by the
+       label, icon stroke and active indicator below — "nice each
+       option, with its own css and uniqueness" rather than one
+       shared lime treatment for all four. No full-card fill on the
+       active tab anymore: just a short pill-shaped line under the
+       icon, colored to match that tab's own tone. */
     .gnav-item {
       flex-direction: column;
-      gap: 0;
+      gap: 3px;
       flex: 1 1 0;
       width: auto;
-      max-width: 64px;
-      height: 44px;
-      padding: 0;
+      max-width: 68px;
+      height: 52px;
+      padding: 6px 0 0;
       border-radius: 13px;
       background: transparent;
       border: none;
       color: var(--ink);
-      opacity: 0.6;
+      opacity: 0.58;
       position: relative;
       z-index: 1;
-      transition: transform 160ms ease, background-color 160ms ease, opacity 160ms ease;
+      transition: transform 160ms ease, opacity 160ms ease, color 160ms ease;
     }
 
+    .gnav-group-left .gnav-item:nth-child(1) { --tab-tone: var(--dash-green); --tab-tone-ink: var(--dash-green-ink); }
+    .gnav-group-left .gnav-item:nth-child(2) { --tab-tone: var(--dash-blue); --tab-tone-ink: var(--dash-blue-ink); }
+    .gnav-group-right .gnav-item:nth-child(1) { --tab-tone: var(--dash-purple); --tab-tone-ink: var(--dash-purple-ink); }
+    .gnav-group-right .gnav-item:nth-child(2) { --tab-tone: var(--dash-orange); --tab-tone-ink: var(--dash-orange-ink); }
+
     .gnav-item-icon {
-      width: 20px;
-      height: 20px;
+      width: 21px;
+      height: 21px;
       margin: 0 auto;
     }
 
     .gnav-item-icon svg {
-      width: 20px;
-      height: 20px;
+      width: 21px;
+      height: 21px;
     }
 
     .gnav-avatar,
     .gnav-avatar-initial {
-      width: 20px;
-      height: 20px;
+      width: 21px;
+      height: 21px;
       font-size: 10.5px;
     }
 
-    /* Labels removed on mobile — icon-only tab bar, matching desktop. */
+    /* Labels back under each icon on mobile. */
     .gnav-item-label {
-      display: none;
+      display: block;
+      font-size: 9.5px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: nowrap;
+    }
+
+    /* Small indicator line under the active tab instead of a full
+       highlighted card — sits just under the label, colored with
+       that tab's own tone. */
+    .gnav-item::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      width: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--tab-tone, var(--lime-ink));
+      transform: translateX(-50%);
+      transition: width 200ms ease;
     }
 
     .gnav-item.is-active {
       opacity: 1;
-      background: color-mix(in srgb, var(--lime) 55%, transparent);
+      color: var(--tab-tone-ink, var(--ink));
+    }
+
+    .gnav-item.is-active::after {
+      width: 22px;
     }
 
     .gnav-item:active {
