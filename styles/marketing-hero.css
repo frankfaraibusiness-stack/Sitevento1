@@ -157,14 +157,43 @@
   }
 
   .hero h1 {
-    font-size: clamp(22px, 7.6vw, 40px);
-    line-height: 1.04;
     margin: 0 0 14px;
     font-weight: 900;
     letter-spacing: -0.02em;
     font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: var(--ink);
     overflow-wrap: break-word;
+  }
+
+  /* Single <h1 className="hero-h1"> in the markup (Hero.tsx) — its
+     layout is entirely re-declared per breakpoint below rather than
+     toggled between two separate elements with display:none/block.
+
+     Mobile (here, the default): one row, full hero width, "Your
+     website." pinned left and "Your rules." pinned right — not a
+     two-line stack. Its own clamp() floor is tuned so both phrases
+     actually fit side by side down to a 320px viewport, where the
+     hero's own padding leaves ~290px to work with. */
+  .hero-h1 {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+    font-size: clamp(15px, 5.6vw, 22px);
+    line-height: 1.1;
+    margin: 4px 0 16px;
+  }
+
+  .hero-h1-left {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  @media (min-width: 420px) {
+    .hero-h1 {
+      font-size: clamp(20px, 5.8vw, 26px);
+    }
   }
 
   .hero p.sub {
@@ -300,8 +329,8 @@
       gap: 32px;
     }
 
-    .hero h1 {
-      font-size: clamp(32px, 6vw, 48px);
+    .hero-h1 {
+      font-size: clamp(26px, 4.4vw, 40px);
     }
 
     .hero p.sub {
@@ -519,10 +548,28 @@
       gap: clamp(32px, 4vw, 72px);
     }
 
-    .hero h1 {
+    /* Desktop reverts to the original two-line stacked headline.
+       This <h1> is a DOM sibling that sits right before .hero-layout
+       (see Hero.tsx) — on desktop its width is matched to
+       .hero-left-col's actual rendered width below it (50% of
+       .hero-layout minus half the row's own gap, since the two
+       columns are flex: 1 1 50% with a gap between them) so it lines
+       up as if it were inside that column, without needing to be
+       nested in the markup. "Your website." is forced onto its own
+       line via display:block on .hero-h1-left, "Your rules."
+       wrapping to the line below it, exactly as the original
+       two-line stack did. */
+    .hero-h1 {
+      display: block;
+      width: auto;
+      max-width: calc(50% - clamp(16px, 2vw, 36px));
       font-size: clamp(48px, 4.2vw, 84px);
       line-height: 1.02;
       margin: 0 0 24px;
+    }
+
+    .hero-h1 .hero-h1-left {
+      display: block;
     }
 
     .hero p.sub {
