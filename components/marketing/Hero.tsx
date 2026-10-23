@@ -121,6 +121,21 @@ function ActivityDemoSurface({ isOn }: { isOn: boolean }) {
 }
 
 export function Hero({ onConnectClick }: HeroProps) {
+  // Skeleton/spinner while hero-bunny.png loads, so the right column
+  // isn't empty space on a slow connection. imgRef + the mount check
+  // below covers the case where the <img> is already `complete` by
+  // the time React attaches onLoad (e.g. served from the browser's
+  // cache) — without it, onLoad never fires and the skeleton would
+  // be stuck showing over an already-loaded image.
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setImgLoaded(true);
+    }
+  }, []);
+
   return (
     <section className="hero">
       {/* Single <h1> (one top-level heading, not two) whose layout
@@ -169,12 +184,19 @@ export function Hero({ onConnectClick }: HeroProps) {
         </div>
 
         <div className="hero-character-col" aria-hidden="true">
+          {!imgLoaded && (
+            <span className="hero-character-skeleton" aria-hidden="true">
+              <span className="hero-character-skeleton-spinner" />
+            </span>
+          )}
           <img
-            className="hero-character-img"
+            ref={imgRef}
+            className={`hero-character-img${imgLoaded ? ' is-loaded' : ' is-loading'}`}
             src="/mascot/hero-bunny.png"
             alt=""
             width={1156}
             height={1361}
+            onLoad={() => setImgLoaded(true)}
           />
         </div>
       </div>
