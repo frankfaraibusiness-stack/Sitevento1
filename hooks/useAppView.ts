@@ -66,11 +66,11 @@ export function useAppView(user: User | null, openAuth: (pane: 'signin' | 'signu
 
   // Any "Connect your site" / "Start free" CTA on the marketing page
   // should route by real auth state: signed-in users go straight to
-  // /dashboard with the add-site wizard already open; guests get the
-  // signup form instead.
+  // the connect-site flow's own page; guests get the signup form
+  // instead.
   const handleConnectCTA = useCallback(() => {
     if (user) {
-      router.push('/dashboard?connect=1');
+      router.push('/dashboard/connect');
     } else {
       openAuth('signup');
     }
