@@ -100,6 +100,11 @@ export interface Visit {
   visitorId: string;
   sessionId?: string;
   blocked: boolean;
+  // Epoch-ms expiry of a temporary restriction (see
+  // hooks/useActiveSiteData.ts's restrictVisitor/isRestricted) —
+  // independent of `blocked`, which is the permanent block. Undefined
+  // or in the past both read as "not currently restricted".
+  restrictedUntil?: number | null;
 }
 
 export interface Lead {
