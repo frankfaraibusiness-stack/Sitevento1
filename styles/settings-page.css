@@ -1,49 +1,31 @@
 /* styles/settings-page.css
  *
- * /settings — full from-scratch redesign.
+ * /settings.
  *
- * Previous version sat the nav rail and every panel card on solid
- * var(--ink) / var(--surface) (near-white) fills — on this lime-brand
- * app that reads as a plain dark-mode screen with a cream form glued
- * on, not "the lime app's settings". This pass removes every flat
- * dark/white fill:
+ * Previous pass used a "glassy black on lime" surface family — near-
+ * black translucent cards (nav items, the topbar, and especially the
+ * detail-panel wrapper) with cream text on top. That read as a solid
+ * black background behind the page's actual content. This pass:
  *
- *   - .settings-wrap / .settings-main / .settings-sidebar /
- *     .settings-detail-panel are all transparent, so the real page
- *     background is whatever html/body is painted with
- *     (var(--app-bg), styles/base.css) — not a hardcoded var(--lime)
- *     fill draped on top of it. There is no solid-ink panel anywhere
- *     on this page any more, on either desktop or mobile (the mobile
- *     full-screen list/detail toggle — .settings-main[data-mobile-view]
- *     — reuses the exact same .settings-sidebar / .settings-detail-panel
- *     elements the desktop rail uses, so fixing the fill here fixes
- *     both breakpoints at once instead of needing a separate
- *     mobile-only rule).
- *   - Nav items and the panel content card are "glassy black":
- *     translucent var(--ink) with backdrop-filter blur + a hairline
- *     light border, so the lime shows through at the edges and the
- *     card reads as frosted glass sitting on lime rather than an
- *     opaque dark box. This is the standout treatment the brief asks
- *     for — options are highlighted glassy-black cards against lime,
- *     same family as the frosted pattern already used for dark
- *     overlays elsewhere in the app, scoped here with its own `set-`
- *     tokens.
- *   - The active nav item and the selected panel's header strip use
- *     solid lime fills (var(--lime)/var(--lime-ink)) as the one loud
- *     accent, same "lime is the on/selected signal" rule the agent
- *     page (styles/agent-page.css) and dashboard already follow.
- *   - A dark hero card up top — same construction as .agt-head on
- *     /dashboard/agent (var(--ink), a soft lime radial glow in the
- *     corner, the blob peeking out) — replaces the old plain topbar,
- *     so /settings now opens with the same "meeting the app"
- *     character beat the agent page has. SettingsBlob is the blob
- *     component (components/settings/SettingsBlob.tsx), reusing the
- *     exact body-path technique AgentBlob/HeroSlime use.
- *   - No hardcoded #fff / near-white literals left anywhere in this
- *     file — every fill is one of the app's own --ink/--lime/--cream
- *     tokens (at full or partial alpha) or a semantic status tone
- *     (--dash-green-* / error reds), same budget the rest of the app
- *     already uses.
+ *   - Remaps every --set-* token (defined once on .settings-wrap) from
+ *     the old near-black glass family to the app's own light surface
+ *     tokens (--surface/--ink/--line/--bg, styles/base.css) — the same
+ *     card family dashboard panels and site cards already use. Every
+ *     rule in this file still just reads --set-glass / --set-on-glass
+ *     / etc.; only what those tokens resolve to changed, so nothing
+ *     needed renaming rule-by-rule.
+ *   - .settings-main .settings-detail-panel no longer wraps panel
+ *     content in its own card at all — background/border/shadow are
+ *     all none, so content sits directly on the page, row by row
+ *     (.settings-input-group, .settings-toggle-item, .settings-kv-row
+ *     etc. are each their own light row/card instead).
+ *   - .settings-wrap / .settings-main / .settings-sidebar stay
+ *     transparent, so the real page background is whatever html/body
+ *     is painted with (var(--app-bg), styles/base.css).
+ *   - The active nav item still uses a solid lime fill
+ *     (var(--lime)/var(--lime-ink)) as the one loud accent, same
+ *     "lime is the on/selected signal" rule the agent page
+ *     (styles/agent-page.css) and dashboard already follow.
  *   - UI chrome stays on -apple-system (labels/buttons/meta text),
  *     matching every other dashboard surface; the page body's serif
  *     is reserved for marketing copy and the hero heading only.
@@ -54,22 +36,26 @@
  * component-side className change.
  */
 
-/* ── Local tokens — the "glassy black on lime" surface family ──────
-   Scoped to this file only (sv- prefix avoids clashing with the
-   app-wide --surface tokens, which stay cream/near-white for every
-   other page). Alpha-over-lime, not a flat hex, so the page's own
-   lime always shows through at the edges/blur fringe. ───────────── */
+/* ── Local tokens — light surfaces on the page background ───────────
+   Previously this was a "glassy black on lime" family (near-black
+   translucent fills with cream text on top). That's what was reading
+   as a solid black background behind the settings content. Replaced
+   with light tokens built from the app's own --surface/--ink/--line
+   (styles/base.css) — the same card family dashboard panels and site
+   cards already use — so content sits directly on the page instead
+   of inside a dark card. Token names (--set-*) are kept so every rule
+   below still resolves; only what they point to has changed. */
 .settings-wrap {
-  --set-glass: rgba(26, 31, 10, 0.78);
-  --set-glass-soft: rgba(26, 31, 10, 0.55);
-  --set-glass-border: rgba(246, 242, 231, 0.14);
-  --set-glass-border-strong: rgba(246, 242, 231, 0.24);
-  --set-on-glass: #f6f2e7;
-  --set-on-glass-dim: rgba(246, 242, 231, 0.6);
-  --set-on-glass-faint: rgba(246, 242, 231, 0.4);
-  --set-hairline: rgba(246, 242, 231, 0.1);
-  --set-danger: #ff8a73;
-  --set-danger-strong: #ff6245;
+  --set-glass: var(--surface);
+  --set-glass-soft: color-mix(in srgb, var(--surface) 55%, var(--app-bg) 45%);
+  --set-glass-border: var(--surface-border);
+  --set-glass-border-strong: #a9c97a;
+  --set-on-glass: var(--ink);
+  --set-on-glass-dim: color-mix(in srgb, var(--ink) 62%, transparent);
+  --set-on-glass-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --set-hairline: var(--line);
+  --set-danger: #c23b22;
+  --set-danger-strong: #a92e18;
 }
 
 .settings-wrap {
@@ -90,8 +76,9 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* ── Hero strip — dark glass card with the lime glow + blob, same
-   construction family as .agt-head on /dashboard/agent ───────────── */
+/* ── Hero strip — light card with the lime glow + blob, same
+   construction family as .agt-head on /dashboard/agent but using the
+   app's light --surface tokens instead of a dark glass fill ───────── */
 .settings-topbar {
   position: relative;
   overflow: hidden;
@@ -147,7 +134,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(246, 242, 231, 0.1);
+  background: var(--bg);
   border: 1px solid var(--set-glass-border);
   color: var(--set-on-glass);
   padding: 9px 15px;
@@ -163,7 +150,7 @@
 
 .settings-back-btn:hover {
   transform: translateY(-1px);
-  background: rgba(246, 242, 231, 0.18);
+  background: var(--surface);
   border-color: var(--set-glass-border-strong);
 }
 
@@ -276,7 +263,7 @@
 .settings-nav-item .nav-badge {
   margin-left: auto;
   flex-shrink: 0;
-  background: rgba(246, 242, 231, 0.16);
+  background: var(--bg);
   color: var(--set-on-glass);
   font-size: 0.63rem;
   font-weight: 800;
@@ -385,30 +372,27 @@
   z-index: 1;
 }
 
-/* Restores the glassy-black card this panel is actually designed for
-   (see the file header comment and .settings-nav-item/.settings-topbar
-   just above, which use the same --set-glass/--set-on-glass pair).
-   Every label, description, input, toggle and button inside a panel
-   is styled with --set-on-glass (a cream/near-white) on the assumption
-   it sits on --set-glass (translucent near-black) — stripping this
-   fill left that cream text sitting directly on the raw lime page,
-   effectively invisible/low-contrast. Margin/padding unchanged from
-   before; just the surface itself is back. */
+/* No card wrapper here anymore — panel content sits directly on the
+   page background, row by row, instead of inside a dark/glass card.
+   Labels, inputs, toggles etc. below still use --set-on-glass /
+   --set-glass-border, which now resolve to light on-page tokens
+   (see the --set-* remap at the top of this file), so everything
+   stays legible without this wrapper providing contrast. */
 .settings-main .settings-detail-panel {
   margin: 1.1rem 1.3rem 1.3rem 0;
-  padding: 1.6rem 1.8rem 1.9rem;
-  background: var(--set-glass);
-  border: 1px solid var(--set-glass-border);
-  border-radius: 22px;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 }
 
 @media (max-width: 640px) {
   .settings-main .settings-detail-panel {
     margin: 0.7rem 0.7rem calc(70px + 0.9rem + env(safe-area-inset-bottom, 0px));
-    padding: 1.3rem 1.2rem 1.5rem;
+    padding: 0;
   }
 }
 
@@ -544,7 +528,7 @@
   padding: 0.7rem 0.6rem;
   border-radius: 0.8rem;
   border: 1px solid var(--set-glass-border);
-  background: rgba(246, 242, 231, 0.06);
+  background: var(--bg);
   color: var(--set-on-glass-dim);
   font-family: inherit;
   cursor: pointer;
@@ -571,7 +555,7 @@
 
 /* Select dropdown */
 .settings-select {
-  background: rgba(246, 242, 231, 0.06);
+  background-color: var(--bg);
   border: 1px solid var(--set-glass-border);
   border-radius: 0.75rem;
   padding: 0.65rem 2.3rem 0.65rem 0.85rem;
@@ -582,7 +566,7 @@
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f6f2e7' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2322201c' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.9rem center;
   transition: border-color 0.15s;
@@ -591,7 +575,7 @@
 }
 
 .settings-select option {
-  background: var(--lime-ink);
+  background: var(--bg);
   color: var(--set-on-glass);
 }
 
@@ -605,7 +589,7 @@
 }
 
 .settings-text-input {
-  background: rgba(246, 242, 231, 0.06);
+  background: var(--bg);
   border: 1px solid var(--set-glass-border);
   border-radius: 0.75rem;
   padding: 0.65rem 0.85rem;
@@ -635,7 +619,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(246, 242, 231, 0.06);
+  background: var(--bg);
   border: 1px solid var(--set-glass-border);
   border-radius: 0.9rem;
   padding: 0.8rem 1.1rem;
@@ -686,7 +670,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(246, 242, 231, 0.18);
+  background-color: var(--line);
   transition: 0.25s;
   border-radius: 24px;
 }
@@ -702,10 +686,10 @@
   width: 19px;
   left: 2px;
   bottom: 2px;
-  background-color: var(--set-on-glass);
+  background-color: var(--bg);
   transition: 0.25s;
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .settings-toggle-switch input:checked + .slider {
@@ -765,7 +749,7 @@
    glass pill instead of the solid-lime primary treatment. */
 .settings-save-btn-inline,
 .settings-save-btn-ghost {
-  background: rgba(246, 242, 231, 0.1);
+  background: var(--bg);
   border: 1px solid var(--set-glass-border);
   color: var(--set-on-glass);
   box-shadow: none;
@@ -773,7 +757,7 @@
 
 .settings-save-btn-inline:not(:disabled):hover,
 .settings-save-btn-ghost:not(:disabled):hover {
-  background: rgba(246, 242, 231, 0.18);
+  background: var(--surface);
   border-color: var(--set-glass-border-strong);
 }
 
@@ -827,7 +811,7 @@
 
 .settings-toast.is-error {
   background: var(--set-danger-strong);
-  color: var(--lime-ink);
+  color: #fff;
   border: 1px solid var(--set-danger-strong);
 }
 
@@ -837,7 +821,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(246, 242, 231, 0.06);
+  background: var(--bg);
   border: 1px solid var(--set-glass-border);
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
@@ -868,7 +852,7 @@
   height: 30px;
   border-radius: 50%;
   border: 1px solid var(--set-glass-border);
-  background: rgba(246, 242, 231, 0.08);
+  background: var(--bg);
   color: var(--set-on-glass-dim);
   cursor: pointer;
   flex-shrink: 0;
@@ -876,7 +860,7 @@
 }
 
 .settings-icon-btn:hover {
-  background: rgba(246, 242, 231, 0.18);
+  background: var(--surface);
   border-color: var(--set-glass-border-strong);
   color: var(--set-on-glass);
 }
@@ -892,7 +876,7 @@
 .settings-placeholder-note {
   font-size: 0.78rem;
   color: var(--set-on-glass-dim);
-  background: rgba(246, 242, 231, 0.05);
+  background: var(--bg);
   border: 1px dashed var(--set-glass-border);
   border-radius: 0.65rem;
   padding: 0.8rem 1rem;
