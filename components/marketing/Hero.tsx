@@ -123,16 +123,24 @@ function ActivityDemoSurface({ isOn }: { isOn: boolean }) {
 export function Hero({ onConnectClick }: HeroProps) {
   return (
     <section className="hero">
+      {/* Single <h1> (one top-level heading, not two) whose layout
+          switches entirely via CSS (.hero-h1 in marketing-hero.css):
+          a full-width row above the 50/50 split on mobile — "Your
+          website." pinned left, "Your rules." pinned right, with the
+          whole hero's width to work with rather than just the left
+          column's half, which is what keeps both sides fitting even
+          at a 320px viewport — versus the original two-line stack,
+          width-matched to .hero-left-col, on desktop. */}
+      <h1 className="hero-h1">
+        <span className="hero-h1-left">Your website.</span>
+        <span className="hero-highlight-wrap">
+          <span className="hero-highlight-shape" aria-hidden="true" />
+          <span className="hero-highlight-text">Your rules.</span>
+        </span>
+      </h1>
+
       <div className="hero-layout">
         <div className="hero-left-col">
-          <h1>
-            Your website.
-            <br />
-            <span className="hero-highlight-wrap">
-              <span className="hero-highlight-shape" aria-hidden="true" />
-              <span className="hero-highlight-text">Your rules.</span>
-            </span>
-          </h1>
           <p className="sub">
             Connect once. Change what visitors see, anytime — without rebuilding your site.
           </p>
