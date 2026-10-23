@@ -144,7 +144,9 @@
      bottom padding is needed there. */
   @media (max-width: 859px) {
     body {
-      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+      /* Bar grew 64px → 72px (global-nav.css) to fit labels back
+         under each icon, so clearance grows to match (70px → 82px). */
+      padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px));
     }
   }
 
