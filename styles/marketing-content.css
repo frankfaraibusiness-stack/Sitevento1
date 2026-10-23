@@ -298,6 +298,108 @@
     .status-pill { font-size: 12px; padding: 9px 16px 9px 14px; gap: 8px; }
   }
 
+  /* ---- Capabilities (icon grid + detail grid) ----
+     Shared by TopCapabilities (4 cols, icon + title + body) and
+     DetailCapabilities, which reuses the same .capabilities/.cap
+     classes directly under the "What sitevento actually does"
+     .section-heading — same raised-card language as .price-card /
+     .testi-card / .step above (ink border, offset shadow pop). */
+  .capabilities {
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .cap {
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 22px 20px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  /* TopCapabilities cards are registered with useScrollReveal, which
+     tags them [data-reveal] and adds .is-visible once scrolled into
+     view (see the hook's own comment) — only those start hidden/
+     offset and animate in. DetailCapabilities cards carry no ref, so
+     they're untagged and render visible immediately. */
+  .cap[data-reveal] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: transform 220ms ease, box-shadow 220ms ease, opacity 420ms ease, transform 420ms ease;
+  }
+
+  .cap[data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (hover: hover) {
+    .cap:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.3);
+    }
+  }
+
+  .cap-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--lime-ink);
+    flex-shrink: 0;
+  }
+
+  .cap-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cap h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .cap p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #6b665e;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* DetailCapabilities cards carry no icon — just title + body, so
+     they read as a denser, text-first second pass over the same
+     ground the top icon row already covered. */
+  .capabilities .cap:not(:has(.cap-icon)) {
+    padding-top: 20px;
+  }
+
+  @media (max-width: 980px) {
+    .capabilities { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .capabilities { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cap { opacity: 1; transform: none; transition: none; }
+  }
+
   /* ---- Section shared ---- */
   .section-heading {
     max-width: 900px;
