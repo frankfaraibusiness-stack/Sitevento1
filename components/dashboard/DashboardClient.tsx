@@ -5,12 +5,16 @@
 // Client-side shell for the standalone /dashboard route (see
 // app/dashboard/page.tsx). Previously the dashboard was just one branch
 // of AppRoot's marketing/dashboard view switch, living at `/`; this is
-// its own mount now, with its own auth gate, header/sidebar and connect
-// wizard wiring — not reused from AppRoot, since AppRoot's `view` state
-// no longer needs a 'dashboard' branch at all (see its own updated
-// comment).
+// its own mount now, with its own auth gate and header/sidebar — not
+// reused from AppRoot, since AppRoot's `view` state no longer needs a
+// 'dashboard' branch at all (see its own updated comment).
+//
+// The "connect a site" flow is its own route now
+// (app/dashboard/connect/page.tsx, components/connect/ConnectFlow.tsx)
+// rather than a modal mounted here — openAddSiteModal below still does
+// the same pre-flight /api/site-limits check it always did, but
+// navigates to that route instead of opening an overlay.
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useNavRouter } from '@/hooks/useNavPending';
 import { AppSkeleton } from '@/components/AppSkeleton';
 import { Header } from '@/components/layout/Header';
@@ -23,15 +27,12 @@ import { SiteManagePage } from '@/components/dashboard/SiteManagePage';
 import { VisitsPage } from '@/components/dashboard/VisitsPage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { UpsellOverlay } from '@/components/dashboard/UpsellOverlay';
-import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAppliedAppearance } from '@/hooks/useAppliedAppearance';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { DashSection } from '@/hooks/useAppView';
-import type { LimitStatus } from '@/hooks/useConnectSiteWizard';
 import type { PlanId } from '@/lib/plans';
 
 interface DashboardClientProps {
@@ -71,13 +72,7 @@ const LANDING_VIEW_SECTION: Record<string, DashSection> = {
 
 export default function DashboardClient({ view = 'dashboard', siteId }: DashboardClientProps) {
   const router = useNavRouter();
-  const searchParams = useSearchParams();
   const { user, authReady, authError } = useAuth();
-  // Account plan, read here so ConnectSiteWizard's step-1 permissions
-  // grid (components/connect/ConnectPermissionsGrid.tsx) knows which
-  // grants are already unlocked vs. which show an "Upgrade" pill —
-  // same hook AgentPageClient uses for its own plan-gated pickers.
-  const { planId } = useUserProfile(user);
   const sidebar = useSidebar();
   // Settings > Appearance, applied app-wide (Font Size / Compact Mode —
   // see hooks/useAppliedAppearance.ts) and read here for Dashboard
@@ -99,15 +94,12 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
   }, []);
   const closeAuth = useCallback(() => setAuthOpen(false), []);
 
-  const [connectOpen, setConnectOpen] = useState(false);
-  const [connectResumeTarget, setConnectResumeTarget] = useState<ConnectSiteResumeTarget | null>(null);
-
-  // Upsell state: shown instead of the wizard whenever the account is
-  // at its plan's connected-site limit. Populated either (a) by the
-  // /api/site-limits check below, before the wizard ever opens, or
-  // (b) by ConnectSiteWizard's onLimitReached safety net if the
-  // account hits the limit in the race window between that check and
-  // actually submitting the domain form (see that prop's comment).
+  // Upsell state: shown whenever the account is at its plan's
+  // connected-site limit, found out via the /api/site-limits
+  // pre-flight check in openAddSiteModal below (the connect route's
+  // own /api/connect-site call re-checks atomically at creation time
+  // regardless, so this is purely about surfacing the upsell before
+  // the user even lands on that route).
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [upsellInfo, setUpsellInfo] = useState<{ planId: PlanId; limit: number; used: number } | null>(null);
 
@@ -129,34 +121,18 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
       }
     } catch (err) {
       // If the limit check itself fails (network blip, etc.), don't
-      // block the user from trying to connect a site — the wizard's
-      // own /api/connect-site call re-checks the limit anyway and will
-      // surface the upsell then if they're genuinely over, via
-      // onLimitReached below. Fail open on the advisory check only.
+      // block the user from trying to connect a site — the connect
+      // route's own /api/connect-site call re-checks the limit anyway
+      // and will surface the upsell then if they're genuinely over.
+      // Fail open on the advisory check only.
       console.error('site-limits check failed', err);
     }
-    setConnectResumeTarget(null);
-    setConnectOpen(true);
-  }, [user]);
+    router.push('/dashboard/connect');
+  }, [user, router]);
 
-  const closeConnectModal = useCallback(() => setConnectOpen(false), []);
   const closeUpsell = useCallback(() => setUpsellOpen(false), []);
 
-  function handleWizardLimitReached(status: LimitStatus) {
-    setConnectOpen(false);
-    setUpsellInfo({ planId: (status.planId as PlanId) || 'free', limit: status.limit || 0, used: status.used || 0 });
-    setUpsellOpen(true);
-  }
-
   const [leadsCount, setLeadsCount] = useState(0);
-
-  useEffect(() => {
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape' && connectOpen) closeConnectModal();
-    }
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [connectOpen, closeConnectModal]);
 
   // A signed-out visitor landing straight on /dashboard (bookmark, typed
   // URL, etc.) gets the sign-in pane instead of a blank/broken page.
@@ -164,25 +140,8 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     if (authReady && !user) openAuth('signin');
   }, [authReady, user, openAuth]);
 
-  // Marketing page's "Connect your site" CTA routes signed-in users to
-  // /dashboard?connect=1 (see hooks/useAppView.ts's handleConnectCTA) so
-  // the wizard opens immediately instead of landing the user on the
-  // dashboard with an extra click still needed.
-  useEffect(() => {
-    if (authReady && user && searchParams.get('connect') === '1') {
-      openAddSiteModal();
-      router.replace('/dashboard');
-    }
-  }, [authReady, user, searchParams, openAddSiteModal, router]);
-
   function handleResumeVerification(site: { id: string; url: string }) {
-    setConnectResumeTarget(site);
-    setConnectOpen(true);
-  }
-
-  function handleConnectFinished() {
-    setConnectOpen(false);
-    setConnectResumeTarget(null);
+    router.push(`/dashboard/connect?site=${encodeURIComponent(site.id)}&url=${encodeURIComponent(site.url)}`);
   }
 
   function scrollToSection(section: DashSection) {
@@ -190,19 +149,18 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // On landing on the main dashboard view (not profile/plans/site-manage,
-  // and not already mid-connect-flow), jump straight to the section the
-  // user picked in Appearance > Dashboard Landing View, once per mount.
-  // DashboardShell's child panels (and the Firestore-backed landingView
-  // value itself) can both still be loading on the first paint, so this
-  // polls briefly for the target element instead of assuming one
+  // On landing on the main dashboard view (not profile/plans/site-manage),
+  // jump straight to the section the user picked in Appearance >
+  // Dashboard Landing View, once per mount. DashboardShell's child
+  // panels (and the Firestore-backed landingView value itself) can
+  // both still be loading on the first paint, so this polls briefly
+  // for the target element instead of assuming one
   // requestAnimationFrame is enough.
   const [landedOnSection, setLandedOnSection] = useState(false);
   useEffect(() => {
     if (landedOnSection) return;
     if (view !== 'dashboard' || !user) return;
     if (!userSettingsLoaded) return; // wait for the real saved value — don't act on the 'overview' default
-    if (searchParams.get('connect') === '1') return; // let the connect-wizard effect above take this mount instead
     const target = LANDING_VIEW_SECTION[userSettings.landingView] || 'overview';
     if (target === 'overview') {
       setLandedOnSection(true);
@@ -236,7 +194,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     };
     raf = requestAnimationFrame(tryScroll);
     return () => cancelAnimationFrame(raf);
-  }, [landedOnSection, view, user, userSettingsLoaded, searchParams, userSettings.landingView]);
+  }, [landedOnSection, view, user, userSettingsLoaded, userSettings.landingView]);
 
   // Sidebar's "Dashboard"/"Email capture"/etc. links only make sense as
   // in-page scrolls when the main dashboard view is already mounted
@@ -268,7 +226,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
         <div style={{ maxWidth: 480 }}>
           <p style={{ fontWeight: 600, marginBottom: 8 }}>Something went wrong loading your dashboard.</p>
-          <p style={{ color: '#6b655c', fontSize: 14 }}>{authError}</p>
+          <p style={{ color: 'var(--muted-mid)', fontSize: 14 }}>{authError}</p>
         </div>
       </div>
     );
@@ -336,20 +294,6 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
       </main>
 
       <SiteFooter />
-
-      <ConnectSiteWizard
-        open={connectOpen}
-        uid={user?.uid ?? null}
-        plan={planId}
-        resumeTarget={connectResumeTarget}
-        onClose={closeConnectModal}
-        onFinished={handleConnectFinished}
-        onLimitReached={handleWizardLimitReached}
-        onUpgradeClick={() => {
-          closeConnectModal();
-          router.push('/dashboard/plans');
-        }}
-      />
 
       {upsellInfo && (
         <UpsellOverlay
