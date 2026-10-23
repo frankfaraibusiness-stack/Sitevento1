@@ -13,8 +13,7 @@
 // pulsing lime dot, logo) so it feels like the same product rather
 // than a bolted-on paywall — see styles/upsell-overlay.css, which
 // mirrors styles/auth-overlay.css's .showcase rules closely on
-// purpose. z-index sits above the connect wizard's 200/210 (see
-// connect-wizard.css) since this can render on top of/instead of it.
+// purpose.
 import { useEffect } from 'react';
 import { getPlan, PLANS, type PlanId } from '@/lib/plans';
 
