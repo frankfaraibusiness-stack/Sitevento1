@@ -63,6 +63,29 @@
     --dash-orange-surface: #fff1e4;
     --dash-orange-border: #fad9b8;
 
+    /* Muted text tones — used across cards, forms, and secondary copy
+       app-wide. Three steps from "quiet caption" to "near-ink body". */
+    --muted: #8a8477;
+    --muted-mid: #6b665e;
+    --muted-dark: #51493e;
+
+    /* Status/semantic colors — success, warning/pending, danger — each
+       with an ink-level shade for text/icons on a light surface. */
+    --success: #6ba84f;
+    --success-ink: #2f5c1d;
+    --success-surface: #eafaf0;
+    --success-border: #c3ecd3;
+
+    --warning: #d99a2b;
+    --warning-ink: #9a5313;
+
+    --danger: #b3432b;
+    --danger-ink: #7a2c18;
+    --danger-surface: #fdeee9;
+
+    --border-soft: #d8d2c5;
+    --placeholder: #a8a295;
+
     color-scheme: light;
   }
 
