@@ -142,7 +142,16 @@ export function GlobalNav() {
   return (
     <nav className="gnav-root" aria-label="Main">
       <div className="gnav-pill">
-        {LEFT_ITEMS.map(renderItem)}
+        {/* Grouped so the two side-tab clusters can be spaced
+            independently from the center "+" on mobile, where the
+            button is pulled out of the flex flow (position: absolute,
+            see global-nav.css) to sit in the notch cut into the bar's
+            top edge — without a wrapper here, .gnav-pill's own
+            justify-content: space-between would have nothing left to
+            push the two lone groups apart. Desktop ignores these
+            wrapper divs (display: contents) and lays all five items
+            out in one row exactly as before. */}
+        <div className="gnav-group gnav-group-left">{LEFT_ITEMS.map(renderItem)}</div>
 
         <button
           type="button"
@@ -156,7 +165,7 @@ export function GlobalNav() {
           <span className="gnav-add-label">Add site</span>
         </button>
 
-        {RIGHT_ITEMS.map(renderItem)}
+        <div className="gnav-group gnav-group-right">{RIGHT_ITEMS.map(renderItem)}</div>
       </div>
     </nav>
   );
