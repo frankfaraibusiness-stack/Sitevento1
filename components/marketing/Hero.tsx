@@ -28,94 +28,128 @@ function Sparkle({ className }: { className: string }) {
   );
 }
 
-// Pop labels cycled through for the live-activity demo — mirrors the
-// kind of events sitevento actually tracks on a connected site.
-const ACTIVITY_LABELS = ['+1 view', '+1 impression', '+1 click', '+1 visitor'];
+// ---- Connect → verify → tracking demo ----
+// Replaces the old random "+1 view" chip-popping surface with a
+// scripted, looping story told inside a browser-window mock: a plain
+// site loads, the snippet gets dropped in, the site verifies/connects,
+// then live tracking chips start drifting up the page — then it resets
+// and repeats. Not wired to anything real; purely illustrative, like a
+// short looping product video rather than a literal live demo.
+type DemoPhase = 'loading' | 'pasting' | 'connecting' | 'tracking';
 
-interface ActivityPop {
+const PHASE_DURATIONS_MS: Record<DemoPhase, number> = {
+  loading: 1400,
+  pasting: 2200,
+  connecting: 1600,
+  tracking: 5200,
+};
+
+const PHASE_ORDER: DemoPhase[] = ['loading', 'pasting', 'connecting', 'tracking'];
+
+const TRACKING_LABELS = ['+1 view', '+1 impression', '+1 click', '+1 visitor'];
+
+interface TrackingChip {
   id: number;
   label: string;
-  left: number; // percentage across the demo surface
-  top: number; // percentage down the demo surface
+  left: number;
+  top: number;
 }
 
-const POP_LIFETIME_MS = 1600;
-const BURST_WINDOW_MS = 5000; // ~5s of bursts, then a pause, like widgets rotating
-const BURST_PAUSE_MS = 1800;
-const POP_INTERVAL_MS = 420;
+const SNIPPET_TEXT = '<meta name="sitevento" content="QKnN…iWKJ" />';
 
-function ActivityDemoSurface({ isOn }: { isOn: boolean }) {
-  // Illustrates what a connected site's banner does live: a steady drip
-  // of "+1 view / +1 impression / +1 click" chips popping up at random
-  // points across the surface, several at once, in ~5s bursts with a
-  // short pause between — the same rhythm widgets rotate through —
-  // rather than a single one-off pop. Purely a demo (nothing here is
-  // wired to real traffic); when the toggle is off, it goes idle and
-  // shows a hint instead.
-  const [pops, setPops] = useState<ActivityPop[]>([]);
-  const nextId = useRef(0);
+function ConnectDemoSurface() {
+  const [phase, setPhase] = useState<DemoPhase>('loading');
+  const [typedChars, setTypedChars] = useState(0);
+  const [chips, setChips] = useState<TrackingChip[]>([]);
+  const nextChipId = useRef(0);
 
+  // Advances through the scripted phases, looping back to the start —
+  // the same four beats every time, like a looped product video.
   useEffect(() => {
-    if (!isOn) {
-      setPops([]);
-      return;
-    }
+    const idx = PHASE_ORDER.indexOf(phase);
+    const timer = setTimeout(() => {
+      const next = PHASE_ORDER[(idx + 1) % PHASE_ORDER.length];
+      setPhase(next);
+      if (next === 'pasting') setTypedChars(0);
+      if (next === 'tracking') setChips([]);
+    }, PHASE_DURATIONS_MS[phase]);
+    return () => clearTimeout(timer);
+  }, [phase]);
 
-    let burstTimer: ReturnType<typeof setTimeout>;
-    let popTimer: ReturnType<typeof setInterval>;
-    let elapsed = 0;
+  // Types the snippet out character by character during "pasting".
+  useEffect(() => {
+    if (phase !== 'pasting') return;
+    const stepMs = Math.max(18, PHASE_DURATIONS_MS.pasting / (SNIPPET_TEXT.length + 6));
+    const interval = setInterval(() => {
+      setTypedChars((c) => (c < SNIPPET_TEXT.length ? c + 1 : c));
+    }, stepMs);
+    return () => clearInterval(interval);
+  }, [phase]);
 
-    const spawnPop = () => {
-      const id = nextId.current++;
-      const pop: ActivityPop = {
+  // Drips tracking chips for the duration of the "tracking" phase.
+  useEffect(() => {
+    if (phase !== 'tracking') return;
+    const spawn = () => {
+      const id = nextChipId.current++;
+      const chip: TrackingChip = {
         id,
-        label: ACTIVITY_LABELS[Math.floor(Math.random() * ACTIVITY_LABELS.length)],
-        left: 8 + Math.random() * 78,
-        top: 10 + Math.random() * 68,
+        label: TRACKING_LABELS[Math.floor(Math.random() * TRACKING_LABELS.length)],
+        left: 10 + Math.random() * 76,
+        top: 14 + Math.random() * 60,
       };
-      setPops((prev) => [...prev, pop]);
-      setTimeout(() => {
-        setPops((prev) => prev.filter((p) => p.id !== id));
-      }, POP_LIFETIME_MS);
+      setChips((prev) => [...prev, chip]);
+      setTimeout(() => setChips((prev) => prev.filter((c) => c.id !== id)), 1600);
     };
-
-    const runBurst = () => {
-      elapsed = 0;
-      popTimer = setInterval(() => {
-        spawnPop();
-        elapsed += POP_INTERVAL_MS;
-        if (elapsed >= BURST_WINDOW_MS) {
-          clearInterval(popTimer);
-          burstTimer = setTimeout(runBurst, BURST_PAUSE_MS);
-        }
-      }, POP_INTERVAL_MS);
-    };
-
-    // Kick off immediately so the demo doesn't sit empty on first paint.
-    spawnPop();
-    runBurst();
-
-    return () => {
-      clearInterval(popTimer);
-      clearTimeout(burstTimer);
-    };
-  }, [isOn]);
+    spawn();
+    const interval = setInterval(spawn, 480);
+    return () => clearInterval(interval);
+  }, [phase]);
 
   return (
-    <div className={`hero-preview-thumb${isOn ? '' : ' is-off'}`} aria-hidden="true">
-      {isOn ? (
-        pops.map((pop) => (
-          <span
-            key={pop.id}
-            className="hero-preview-pop"
-            style={{ left: `${pop.left}%`, top: `${pop.top}%` }}
-          >
-            {pop.label}
-          </span>
-        ))
-      ) : (
-        <p className="hero-preview-thumb-hint">Turn on to see live activity</p>
-      )}
+    <div className="hero-demo-surface" aria-hidden="true">
+      <div className={`hero-demo-page hero-demo-page--${phase}`}>
+        <div className="hero-demo-page-bar" />
+        <div className="hero-demo-page-line hero-demo-page-line--title" />
+        <div className="hero-demo-page-line hero-demo-page-line--a" />
+        <div className="hero-demo-page-line hero-demo-page-line--b" />
+
+        {phase === 'pasting' && (
+          <div className="hero-demo-codeblock">
+            <span className="hero-demo-codeblock-caret">
+              {SNIPPET_TEXT.slice(0, typedChars)}
+              <span className="hero-demo-caret" />
+            </span>
+          </div>
+        )}
+
+        {phase === 'connecting' && (
+          <div className="hero-demo-connecting">
+            <span className="hero-demo-spinner" />
+            <span>Verifying snippet…</span>
+          </div>
+        )}
+
+        {phase === 'tracking' &&
+          chips.map((chip) => (
+            <span
+              key={chip.id}
+              className="hero-demo-chip"
+              style={{ left: `${chip.left}%`, top: `${chip.top}%` }}
+            >
+              {chip.label}
+            </span>
+          ))}
+      </div>
+
+      <div className="hero-demo-statusbar">
+        <span className={`hero-demo-status-dot hero-demo-status-dot--${phase}`} />
+        <span className="hero-demo-status-text">
+          {phase === 'loading' && 'YourSite.com'}
+          {phase === 'pasting' && 'Adding sitevento snippet…'}
+          {phase === 'connecting' && 'Connecting…'}
+          {phase === 'tracking' && 'Connected — tracking live'}
+        </span>
+      </div>
     </div>
   );
 }
@@ -205,51 +239,41 @@ export function Hero({ onConnectClick }: HeroProps) {
 }
 
 // ---- Connected-site demo: now its own standalone section ----
-// Previously nested inside Hero (card beneath the CTAs); split out so
-// it's a section on its own, separate from the header/hero. Same
-// mini browser-window chrome, live activity demo, Connected/
-// Disconnected status + toggle, and meta-tag snippet as before.
+// Sits directly under the hero, blended into the same page background
+// rather than a floating white card. The browser-window mock plays a
+// short looping story — site loads, snippet goes in, it connects,
+// tracking starts — instead of a one-off animation. On desktop, two
+// supporting copy columns flank the mock so the full-width section
+// doesn't read as one small card adrift in empty space; on mobile the
+// single centered mock is enough.
 export function ConnectedSiteShowcase() {
-  const [isOn, setIsOn] = useState(true);
-
   return (
     <section className="hero-showcase">
-      <div className="hero-preview">
-        <div className="hero-preview-card">
-          <div className="hero-preview-browser">
-            <span className="hero-preview-dot" />
-            <span className="hero-preview-dot" />
-            <span className="hero-preview-dot" />
-          </div>
-          <ActivityDemoSurface isOn={isOn} />
-          <div className="hero-preview-info">
-            <div className="hero-preview-site">
-              <span className={`hero-preview-status-dot${isOn ? '' : ' is-off'}`} />
-              <span className="hero-preview-site-name">YourSite.com</span>
-            </div>
-            <p className="hero-preview-connected">{isOn ? 'Connected' : 'Disconnected'}</p>
-            <div className="hero-preview-toggle-row">
-              <button
-                type="button"
-                className={`hero-preview-toggle${isOn ? ' is-on' : ''}`}
-                role="switch"
-                aria-checked={isOn}
-                aria-label={isOn ? 'Turn off demo banner' : 'Turn on demo banner'}
-                onClick={() => setIsOn((v) => !v)}
-              >
-                <span className="hero-preview-toggle-knob" />
-              </button>
-              <span className="hero-preview-toggle-label">{isOn ? 'Connected' : 'Disconnected'}</span>
-            </div>
-          </div>
+      <div className="hero-showcase-inner">
+        <div className="hero-showcase-side hero-showcase-side--left" aria-hidden="true">
+          <p className="hero-showcase-eyebrow">Step 1–2</p>
+          <p className="hero-showcase-side-text">
+            Drop one snippet into your site&apos;s head. No rebuild, no redeploy — it verifies itself
+            in seconds.
+          </p>
         </div>
-        <div className="hero-preview-snippet">
-          <span className="hero-preview-snippet-icon">&lt;/&gt;</span>
-          <span className="hero-preview-snippet-code">
-            <span className="attr">name</span>=<span className="val">&quot;sitevento&quot;</span>
-            <br />
-            <span className="attr">content</span>=<span className="val">&quot;QKnNQvsrXqAziCjdiWKJ&quot;</span>
-          </span>
+
+        <div className="hero-showcase-frame">
+          <div className="hero-demo-chrome">
+            <span className="hero-demo-dot" />
+            <span className="hero-demo-dot" />
+            <span className="hero-demo-dot" />
+            <span className="hero-demo-url">yoursite.com</span>
+          </div>
+          <ConnectDemoSurface />
+        </div>
+
+        <div className="hero-showcase-side hero-showcase-side--right" aria-hidden="true">
+          <p className="hero-showcase-eyebrow">Step 3</p>
+          <p className="hero-showcase-side-text">
+            Once it&apos;s connected, every view, impression, and click streams in live — ready to
+            control from your dashboard.
+          </p>
         </div>
       </div>
     </section>
