@@ -147,8 +147,9 @@
     .gnav-group {
       display: flex;
       align-items: flex-end;
+      justify-content: space-between;
       gap: 4px;
-      flex: 0 0 auto;
+      flex: 1 1 0;
     }
 
     /* The notch: a circular cutout at top-center of the bar, slightly
@@ -184,7 +185,7 @@
       gap: 3px;
       flex: 1 1 0;
       width: auto;
-      max-width: 68px;
+      max-width: none;
       height: 52px;
       padding: 6px 0 0;
       border-radius: 13px;
@@ -275,8 +276,8 @@
       margin: 0;
       flex-shrink: 0;
       z-index: 2;
-      box-shadow: 0 6px 16px color-mix(in srgb, var(--lime) 55%, transparent), 0 2px 0 rgba(34, 32, 28, 0.9);
-      transition: transform 160ms ease, box-shadow 160ms ease;
+      box-shadow: none;
+      transition: transform 160ms ease;
     }
 
     .gnav-add svg {
@@ -290,7 +291,6 @@
 
     .gnav-add:active {
       transform: translateX(-50%) scale(0.94);
-      box-shadow: 0 3px 10px color-mix(in srgb, var(--lime) 55%, transparent), 0 1px 0 rgba(34, 32, 28, 0.9);
     }
   }
 
