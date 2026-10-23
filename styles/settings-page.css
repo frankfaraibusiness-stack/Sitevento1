@@ -526,11 +526,12 @@
 }
 
 .settings-field-row .settings-text-input {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   min-width: 0;
 }
 
 .settings-field-row .settings-save-btn {
+  flex: 0 0 auto;
   flex-shrink: 0;
 }
 
@@ -780,7 +781,7 @@
 
 .settings-save-btn-inline {
   flex-shrink: 0;
-  padding: 0.65rem 1.1rem;
+  padding: 0.65rem 0.9rem;
 }
 
 .settings-danger-btn {
