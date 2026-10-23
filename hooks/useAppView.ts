@@ -39,6 +39,15 @@ export function useAppView(user: User | null, openAuth: (pane: 'signin' | 'signu
         openAuth('signin');
         return;
       }
+      // "Visit logs" now has its own dedicated page
+      // (components/dashboard/VisitsPage.tsx) rather than an in-page
+      // anchor on the main dashboard — route straight there instead of
+      // building a /dashboard#panelVisits link that no longer resolves
+      // to anything.
+      if (section === 'logs') {
+        router.push('/dashboard/visits');
+        return;
+      }
       const anchor = section ? `#${SECTION_ANCHORS[section] || ''}` : '';
       router.push(`/dashboard${anchor}`);
     },
