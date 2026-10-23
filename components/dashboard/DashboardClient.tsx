@@ -20,6 +20,7 @@ import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { ProfilePage } from '@/components/dashboard/ProfilePage';
 import { PlansPage } from '@/components/dashboard/PlansPage';
 import { SiteManagePage } from '@/components/dashboard/SiteManagePage';
+import { VisitsPage } from '@/components/dashboard/VisitsPage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { UpsellOverlay } from '@/components/dashboard/UpsellOverlay';
 import { ConnectSiteWizard, type ConnectSiteResumeTarget } from '@/components/connect/ConnectSiteWizard';
@@ -38,10 +39,12 @@ interface DashboardClientProps {
   // instead (see app/dashboard/profile/page.tsx), "plans" renders the
   // plan-switch/compare page (see app/dashboard/plans/page.tsx),
   // "site-manage" renders the standalone per-site management page (see
-  // app/dashboard/sites/[siteId]/page.tsx and SiteManagePage.tsx) —
-  // all three while still sharing this component's single auth gate,
-  // header and sidebar.
-  view?: 'dashboard' | 'profile' | 'plans' | 'site-manage';
+  // app/dashboard/sites/[siteId]/page.tsx and SiteManagePage.tsx),
+  // "visits" renders the standalone visit-logs page (see
+  // app/dashboard/visits/page.tsx and VisitsPage.tsx) — all four while
+  // still sharing this component's single auth gate, header and
+  // sidebar.
+  view?: 'dashboard' | 'profile' | 'plans' | 'site-manage' | 'visits';
   // Required when view="site-manage" — the [siteId] route param,
   // passed straight through to SiteManagePage so it can look the site
   // up out of useSites() itself rather than this component owning a
@@ -205,6 +208,14 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
       setLandedOnSection(true);
       return;
     }
+    // "Visits" now has its own dedicated page (see VisitsPage.tsx)
+    // rather than an in-page anchor — redirect there instead of
+    // scrolling to a section id that no longer exists on this view.
+    if (target === 'logs') {
+      setLandedOnSection(true);
+      router.replace('/dashboard/visits');
+      return;
+    }
     let attempts = 0;
     let raf: number;
     const tryScroll = () => {
@@ -227,14 +238,22 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
     return () => cancelAnimationFrame(raf);
   }, [landedOnSection, view, user, userSettingsLoaded, searchParams, userSettings.landingView]);
 
-  // Sidebar's "Dashboard"/"Visit logs"/"Email capture"/etc. links only
-  // make sense as in-page scrolls when the main dashboard view is
-  // already mounted (those section ids only exist there). From any
-  // other view (profile, plans, site-manage) navigate to /dashboard
-  // first — the section can't be scrolled to until that view mounts,
-  // so land on the plain dashboard rather than silently doing nothing.
+  // Sidebar's "Dashboard"/"Email capture"/etc. links only make sense as
+  // in-page scrolls when the main dashboard view is already mounted
+  // (those section ids only exist there). From any other view
+  // (profile, plans, site-manage, visits) navigate to /dashboard first
+  // — the section can't be scrolled to until that view mounts, so land
+  // on the plain dashboard rather than silently doing nothing.
+  //
+  // "Visit logs" is the one exception: it now has its own dedicated
+  // page (see VisitsPage.tsx) rather than an in-page anchor, so it
+  // always navigates there regardless of the current view.
   function goToSection(section: DashSection) {
     sidebar.setOpen(false);
+    if (section === 'logs') {
+      router.push('/dashboard/visits');
+      return;
+    }
     if (view !== 'dashboard') {
       router.push('/dashboard');
       return;
@@ -291,6 +310,8 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
             <PlansPage user={user} sites={sites} />
           ) : view === 'site-manage' && siteId ? (
             <SiteManagePage user={user} siteId={siteId} />
+          ) : view === 'visits' ? (
+            <VisitsPage user={user} />
           ) : (
             <DashboardShell
               user={user}
