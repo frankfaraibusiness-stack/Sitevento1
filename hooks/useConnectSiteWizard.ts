@@ -1,11 +1,14 @@
 // hooks/useConnectSiteWizard.ts
 //
-// Replaces the connect-site wizard's module-level state and functions
-// (handleDomainSubmit, watchConnectSiteStatus, verifySiteTag, etc.) with
-// a stateful hook the ConnectSiteWizard component drives. Same flow:
-// domain -> create pending site doc + siteIndex doc -> show tag -> poll
-// /api/verify-site (and live-listen on the doc in case verification
-// lands from elsewhere) -> success.
+// Drives the /dashboard/connect page (see app/dashboard/connect/page.tsx
+// and components/connect/ConnectFlow.tsx). Two steps now, not three:
+// 1) domain + permissions grant, 2) tag + verify, merged with the old
+// step 3's "you're connected" moment — verifying successfully flips
+// `connected` to true in place rather than switching to a distinct
+// step, so the tag/verify card and the success state share one screen
+// without a jarring step change. The page itself still renders a
+// separate "what's next" screen once `connected` is true (see
+// ConnectFlow.tsx) — that's presentation, not wizard state.
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
@@ -15,21 +18,12 @@ import { useDomainLookup } from '@/hooks/useDomainLookup';
 import { defaultPermissionIds } from '@/lib/connectPermissions';
 import type { PlanId } from '@/lib/plans';
 
-// Three steps now (was two): 1) domain + permissions grant, 2) tag +
-// verify, 3) success. 'domain' still covers both the URL field and the
-// permissions grid below it — they're one step/one submit, not a
-// fourth step, since the permissions grid has no server effect yet
-// (see lib/connectPermissions.ts's header) and splitting it out would
-// just be an extra click for nothing saved differently.
-export type ConnectStep = 'domain' | 'tag' | 'success';
+export type ConnectStep = 'domain' | 'tag';
 export type VerifyStatusKind = 'pending' | 'checking' | 'ok' | 'fail';
 
 // Mirrors app/api/connect-site/route.ts's SITE_LIMIT_REACHED response.
 // `idle` = nothing to report; `reached` = the server just refused to
-// create a site because the account is at its plan's cap — the UI
-// (ConnectSiteWizard -> DashboardClient) reacts to this by swapping to
-// the UpsellOverlay instead of showing a plain form error, since this
-// is a "upgrade to continue" moment, not a transient failure.
+// create a site because the account is at its plan's cap.
 export interface LimitStatus {
   state: 'idle' | 'reached';
   planId?: string;
@@ -38,19 +32,12 @@ export interface LimitStatus {
 }
 
 // Accepts a bare domain ("yourbusiness.com") as happily as a full URL
-// ("https://yourbusiness.com/landing") — the step-1 field no longer
-// requires the user to type a scheme themselves (see
-// ConnectSiteWizard.tsx's plain-text input), so this has to meet them
-// halfway rather than relying on the browser's native type="url"
-// validation to reject anything without "https://" up front.
+// ("https://yourbusiness.com/landing").
 function normalizeUrl(raw: string): string | null {
   let v = raw.trim();
   if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
   try {
     const u = new URL(v);
-    // A bare domain must still look like one (has a dot, has a TLD) —
-    // this rejects stray single words ("test") that new URL() would
-    // otherwise happily accept once we've prepended https://.
     if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(u.hostname)) return null;
     return u.origin + (u.pathname !== '/' ? u.pathname : '');
   } catch {
@@ -65,10 +52,6 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
   const [domainSubmitting, setDomainSubmitting] = useState(false);
 
   // Step 1's permission grants (components/connect/ConnectPermissionsGrid.tsx).
-  // Seeded with the plan's sensible defaults each time the wizard
-  // resets; purely local state for this pass (see
-  // lib/connectPermissions.ts's header) — nothing here blocks or
-  // alters submitDomain below.
   const [permissionIds, setPermissionIds] = useState<string[]>(() => defaultPermissionIds(plan));
   const togglePermission = useCallback((permissionId: string, next: boolean) => {
     setPermissionIds((prev) => {
@@ -85,12 +68,16 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
   const [verifyMessage, setVerifyMessage] = useState('Waiting for you to add the tag');
   const [verifySubmitting, setVerifySubmitting] = useState(false);
 
+  // Flips true the moment verification succeeds — merged in from the
+  // old separate "step 3". The tag/verify card (step 'tag') and the
+  // success state now coexist on one screen instead of swapping steps.
+  const [connected, setConnected] = useState(false);
+
   const [copyLabel, setCopyLabel] = useState('Copy tag');
 
-  // Drives the full-screen pass/fail banner (ConnectSiteWizard's
-  // ConnectStatusBanner) that flashes over step 2 right after a verify
-  // attempt resolves. Separate from verifyStatus/verifyMessage (which
-  // persist as the inline status row) — this is just the one-shot
+  // Drives the full-screen pass/fail banner that flashes right after a
+  // verify attempt resolves. Separate from verifyStatus/verifyMessage
+  // (which persist as the inline status row) — this is the one-shot
   // celebratory/apologetic overlay, auto-dismissed a couple seconds
   // after it appears.
   const [statusBanner, setStatusBanner] = useState<'ok' | 'fail' | null>(null);
@@ -111,8 +98,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
 
   // Cosmetic "domain intel" lookup shown under the step-1 field — see
   // components/connect/DomainIntelCard.tsx. Entirely decoupled from the
-  // actual connect flow below; it never blocks submitDomain or affects
-  // domainError.
+  // actual connect flow below.
   const domainLookup = useDomainLookup();
 
   const setDomainInputAndLookup = useCallback(
@@ -142,6 +128,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
     setVerifyStatus('pending');
     setVerifyMessage('Waiting for you to add the tag');
     setVerifySubmitting(false);
+    setConnected(false);
     setLimitStatus({ state: 'idle' });
     setPermissionIds(defaultPermissionIds(plan));
     domainLookup.reset();
@@ -157,15 +144,16 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
           setVerifyStatus('ok');
           setVerifyMessage('Tag found — site verified');
           flashBanner('ok');
-          setTimeout(() => setStep('success'), 1400);
+          setConnected(true);
         }
       });
     },
     [teardownWatch, flashBanner]
   );
 
-  // Reopen the wizard straight at the tag/verify step for an already
-  // pending site — same as the original's resumeVerification().
+  // Reopen the flow straight at the tag/verify step for an already
+  // pending site — e.g. landing on /dashboard/connect?site=...&url=...
+  // from DashboardShell's "verify now" action.
   const resumeVerification = useCallback(
     (site: { id: string; url: string }) => {
       setSiteId(site.id);
@@ -179,6 +167,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
       setHostname(h);
       setVerifyStatus('pending');
       setVerifyMessage('Waiting for you to add the tag');
+      setConnected(false);
       setStep('tag');
       if (uid) watchSiteStatus(uid, site.id);
     },
@@ -207,11 +196,6 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
         }
         const idToken = await currentUser.getIdToken();
 
-        // Site creation goes through the server now instead of a direct
-        // client-side addDoc()/setDoc() — this is what actually enforces
-        // the plan's connected-site limit (atomically, so it can't be
-        // bypassed by calling Firestore directly either). See
-        // app/api/connect-site/route.ts.
         const res = await fetch('/api/connect-site', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -233,6 +217,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
         setHostname(result.hostname || '');
         setVerifyStatus('pending');
         setVerifyMessage('Waiting for you to add the tag');
+        setConnected(false);
         setStep('tag');
         watchSiteStatus(uid, result.siteId);
       } catch (err) {
@@ -263,7 +248,9 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
         setVerifyStatus('ok');
         setVerifyMessage('Tag found — site verified');
         flashBanner('ok');
-        setTimeout(() => setStep('success'), 1400);
+        // Auto-advance into the connected state the moment verification
+        // succeeds — no extra click needed.
+        setConnected(true);
       } else {
         setVerifyStatus('fail');
         setVerifyMessage(result.message || "Couldn't find the tag yet. Add it and try again.");
@@ -279,9 +266,9 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
     }
   }, [siteId, siteUrl, uid, flashBanner]);
 
-  // Shared by the step-2 copy button and step-3's "AI prompt" box
-  // (ConnectSiteWizard.tsx) — one source for the exact tag text so the
-  // two never drift apart.
+  // Shared by the step-2 copy button and the connected panel's "AI
+  // prompt" box — one source for the exact tag text so the two never
+  // drift apart.
   const getConnectTag = useCallback(() => {
     if (!siteId) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -308,6 +295,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
   const backToDomainStep = useCallback(() => {
     teardownWatch();
     dismissBanner();
+    setConnected(false);
     setStep('domain');
   }, [teardownWatch, dismissBanner]);
 
@@ -326,6 +314,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
     verifyStatus,
     verifyMessage,
     verifySubmitting,
+    connected,
     statusBanner,
     dismissBanner,
     copyLabel,
