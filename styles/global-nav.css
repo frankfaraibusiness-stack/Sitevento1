@@ -125,9 +125,9 @@
       width: 100%;
       max-width: none;
       margin: 0;
-      justify-content: space-between;
+      justify-content: center;
       align-items: flex-end;
-      gap: 0;
+      gap: 54px;
       height: 72px;
       padding: 0 14px calc(10px + env(safe-area-inset-bottom, 0px));
       background: color-mix(in srgb, var(--cream) 92%, var(--lime) 8%);
@@ -140,36 +140,17 @@
       position: relative;
     }
 
-    /* Each side becomes a real flex group: its 2 tabs sit together as
-       a unit, evenly spaced from each other, with the group itself
-       pinned toward .gnav-pill's edge (not the notch) via
-       justify-content: space-between above. */
+    /* Each side becomes a real flex group: its 2 tabs sit together,
+       evenly spaced from each other, and both groups take an equal
+       share of the bar's width either side of the center "+" — so
+       the row reads as one evenly-spaced set of 5 slots instead of 2
+       clumps pinned hard to the edges with a dead gap in the middle. */
     .gnav-group {
       display: flex;
       align-items: flex-end;
-      justify-content: space-between;
-      gap: 4px;
+      justify-content: space-around;
+      gap: 0;
       flex: 1 1 0;
-    }
-
-    /* The notch: a circular cutout at top-center of the bar, slightly
-       larger than the "+" button that sits in it, so the button
-       visually pokes up through the bar's top edge instead of just
-       floating above a flat edge. Built as its own ::before (a
-       page-background-colored disc) rather than a CSS mask, so it
-       still works with the bar's own blur/translucency intact. */
-    .gnav-pill::before {
-      content: '';
-      position: absolute;
-      top: -16px;
-      left: 50%;
-      width: 76px;
-      height: 76px;
-      transform: translateX(-50%);
-      border-radius: 50%;
-      background: var(--app-bg);
-      border: 1.5px solid var(--line);
-      z-index: 0;
     }
 
     /* Each of the four side tabs gets its own accent color (the
