@@ -60,16 +60,6 @@
     padding: 0 4px;
   }
 
-  .hero-preview-dot:nth-child(1) { background: #c9b8ff; }
-  .hero-preview-dot:nth-child(2) { background: #ffd8a8; }
-  .hero-preview-dot:nth-child(3) { background: var(--lime); }
-
-  .hero-preview-status-dot.is-off { background: #c9c2b4; }
-  .hero-preview-toggle.is-on { background: #2fbf5c; }
-  .hero-preview-toggle.is-on .hero-preview-toggle-knob { transform: translateX(18px); }
-  .hero-preview-snippet-code .attr { color: #9cc4ff; }
-  .hero-preview-snippet-code .val { color: var(--lime); }
-
   @keyframes hero-preview-pop-in {
     0% {
       opacity: 0;
@@ -90,8 +80,13 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-preview-pop {
+    .hero-demo-chip {
       animation: hero-preview-pop-fade 1.6s ease-out forwards;
+    }
+
+    .hero-demo-caret {
+      animation: none;
+      opacity: 1;
     }
 
     @keyframes hero-preview-pop-fade {
@@ -416,93 +411,206 @@
     }
   }
 
-  /* ---- Connected-site preview: standalone section (mobile) ---- */
+  /* ---- Connected-site demo: standalone section (mobile) ----
+   * No white card — the section sits in the same --app-bg as the
+   * rest of the page, with the browser-window mock as the only
+   * "object" on it (a soft border + shadow to lift it slightly,
+   * not a hard white panel). One mock is plenty at phone widths;
+   * the side copy columns only render from 1024px up.
+   * ------------------------------------------------------------- */
   .hero-showcase {
-    max-width: min(94vw, 640px);
-    margin: 0 auto;
+    background: var(--app-bg);
     padding: 0 20px 56px;
   }
 
+  .hero-showcase-inner {
+    max-width: min(94vw, 640px);
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+  }
+
   @media (min-width: 640px) and (max-width: 1023px) {
-    .hero-showcase {
+    .hero-showcase-inner {
       max-width: min(90vw, 720px);
     }
   }
 
-  .hero-preview {
+  .hero-showcase-side {
+    display: none;
+  }
+
+  .hero-showcase-frame {
     position: relative;
+    width: 100%;
     max-width: 420px;
-    margin: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--app-bg) 60%, var(--bg) 40%);
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 44px -26px rgba(34, 32, 28, 0.28);
   }
 
-  .hero-preview-card {
-    position: relative;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 18px 18px 22px;
-    box-shadow: 0 24px 50px -20px rgba(34, 32, 28, 0.32), 0 0 0 1px rgba(34, 32, 28, 0.04);
-  }
-
-  .hero-preview-browser {
+  /* Faux browser chrome — reads as a window, not a card. */
+  .hero-demo-chrome {
     display: flex;
+    align-items: center;
     gap: 6px;
-    margin-bottom: 10px;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--ink) 4%, var(--app-bg) 96%);
+    border-bottom: 1px solid var(--line);
   }
 
-  .hero-preview-dot {
+  .hero-demo-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--line);
   }
 
-  /* Live-activity demo surface — a dark panel that "+1 view / +1
-     impression / +1 click" chips pop up across while the toggle
-     below is on, standing in for what the banner actually does on a
-     connected site. Off state dims it and shows a short hint instead
-     of pops. */
-  .hero-preview-thumb {
+  .hero-demo-dot:nth-child(1) { background: #c9b8ff; }
+  .hero-demo-dot:nth-child(2) { background: #ffd8a8; }
+  .hero-demo-dot:nth-child(3) { background: var(--lime); }
+
+  .hero-demo-url {
+    margin-left: 8px;
+    font-size: 11.5px;
+    color: #928c80;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* The "page" inside the mock browser window — a believable, generic
+     site skeleton that the snippet gets added to and that lights up
+     with tracking chips once connected. */
+  .hero-demo-surface {
     position: relative;
-    height: 110px;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    background: var(--ink);
+  }
+
+  .hero-demo-page {
+    position: relative;
+    height: 180px;
+    padding: 18px 16px;
     overflow: hidden;
-    transition: opacity 0.25s ease;
+    background: var(--bg);
+    transition: background-color 0.4s ease;
   }
 
-  .hero-preview-thumb.is-off {
-    opacity: 0.4;
+  .hero-demo-page--tracking {
+    background: var(--ink);
   }
 
-  .hero-preview-thumb-hint {
+  .hero-demo-page-bar {
+    width: 38%;
+    height: 9px;
+    border-radius: 5px;
+    background: var(--line);
+    margin-bottom: 16px;
+    transition: background-color 0.4s ease, opacity 0.4s ease;
+  }
+
+  .hero-demo-page--tracking .hero-demo-page-bar {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  .hero-demo-page-line {
+    height: 7px;
+    border-radius: 4px;
+    background: var(--line);
+    margin-bottom: 10px;
+    transition: background-color 0.4s ease, opacity 0.4s ease;
+  }
+
+  .hero-demo-page-line--title { width: 62%; height: 10px; }
+  .hero-demo-page-line--a { width: 88%; }
+  .hero-demo-page-line--b { width: 72%; }
+
+  .hero-demo-page--tracking .hero-demo-page-line {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .hero-demo-page--pasting .hero-demo-page-line,
+  .hero-demo-page--connecting .hero-demo-page-line {
+    opacity: 0.5;
+  }
+
+  /* Snippet being "typed" into place during the pasting phase. */
+  .hero-demo-codeblock {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 18px;
+    background: var(--ink);
+    color: #cdeb8f;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    min-height: 20px;
+    box-shadow: 0 10px 24px -12px rgba(34, 32, 28, 0.4);
+  }
+
+  .hero-demo-codeblock-caret {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .hero-demo-caret {
+    display: inline-block;
+    width: 6px;
+    height: 12px;
+    margin-left: 1px;
+    background: var(--lime);
+    vertical-align: -2px;
+    animation: hero-demo-blink 0.9s steps(1) infinite;
+  }
+
+  @keyframes hero-demo-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  /* Verifying/connecting spinner overlay. */
+  .hero-demo-connecting {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0;
-    padding: 0 16px;
-    text-align: center;
-    font-size: 12.5px;
+    gap: 10px;
+    background: color-mix(in srgb, var(--app-bg) 70%, transparent);
+    font-size: 13px;
     font-weight: 600;
-    color: #e8e4de;
+    color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  .hero-preview-pop {
+  .hero-demo-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2.5px solid var(--line);
+    border-top-color: var(--walnut);
+    animation: hero-demo-spin 0.8s linear infinite;
+  }
+
+  @keyframes hero-demo-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Tracking chips — same idea as before, now only shown during the
+     scripted "tracking" phase of the loop rather than at random. */
+  .hero-demo-chip {
     position: absolute;
     transform: translate(-50%, -50%);
     background: var(--lime);
     color: var(--lime-ink);
     font-weight: 700;
-    font-size: 11.5px;
+    font-size: 11px;
     line-height: 1;
     white-space: nowrap;
     padding: 5px 9px;
     border-radius: 999px;
-    /* Black edge so each chip reads as a distinct sticker against the
-       demo panel, rather than blending into it. */
     border: 1.5px solid #14120d;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.35);
@@ -510,94 +618,34 @@
     pointer-events: none;
   }
 
-  .hero-preview-site {
+  /* Status bar beneath the mock page — mirrors the old
+     Connected/Disconnected row, now reporting the current phase. */
+  .hero-demo-statusbar {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 2px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--ink) 3%, var(--app-bg) 97%);
   }
 
-  .hero-preview-status-dot {
+  .hero-demo-status-dot {
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: #2fbf5c;
     flex-shrink: 0;
-    transition: background-color 0.15s ease;
+    background: #c9c2b4;
+    transition: background-color 0.3s ease;
   }
 
-  .hero-preview-site-name {
-    font-weight: 700;
-    font-size: 15.5px;
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
+  .hero-demo-status-dot--tracking { background: #2fbf5c; }
+  .hero-demo-status-dot--connecting { background: #e6a23c; }
 
-  .hero-preview-connected {
-    margin: 0 0 14px 17px;
+  .hero-demo-status-text {
     font-size: 13px;
-    color: #928c80;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .hero-preview-toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .hero-preview-toggle {
-    position: relative;
-    width: 40px;
-    height: 22px;
-    border-radius: 999px;
-    background: var(--line);
-    border: none;
-    padding: 0;
-    flex-shrink: 0;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-
-  .hero-preview-toggle-knob {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    transition: transform 0.15s ease;
-  }
-
-  .hero-preview-toggle-label {
-    font-weight: 700;
-    font-size: 14.5px;
+    font-weight: 600;
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .hero-preview-snippet {
-    position: relative;
-    margin: -20px 0 0 28px;
-    background: var(--ink);
-    color: #e8e4de;
-    border-radius: 14px;
-    padding: 14px 18px 14px 44px;
-    font-family: "SFMono-Regular", Consolas, monospace;
-    font-size: 12.5px;
-    line-height: 1.6;
-    box-shadow: 0 14px 32px -14px rgba(34, 32, 28, 0.45);
-  }
-
-  .hero-preview-snippet-icon {
-    position: absolute;
-    left: 16px;
-    top: 14px;
-    color: var(--lime);
-    font-weight: 700;
-    font-size: 12px;
   }
 
   /* ============================================================
@@ -689,19 +737,55 @@
     }
   }
 
-  /* ---- Connected-site preview: standalone section (desktop) ----
+  /* ---- Connected-site demo: standalone section (desktop) ----
    * Full-width section below the hero, same container width as the
-   * hero itself, laid out as its own row rather than stacked under
-   * the (now 50/50) hero copy/character split above it.
+   * hero itself. Unlike mobile, the browser mock alone doesn't fill a
+   * wide row convincingly, so two supporting copy columns flank it —
+   * a 3-column row rather than one small object adrift in the middle
+   * of a full-width section.
    * ------------------------------------------------------------- */
   @media (min-width: 1024px) {
     .hero-showcase {
-      max-width: min(92vw, 1440px);
-      margin: 0 auto;
-      padding: 0 clamp(24px, 2.4vw, 40px) clamp(64px, 7vw, 96px);
+      padding: 0 0 clamp(64px, 7vw, 96px);
     }
 
-    .hero-preview {
-      max-width: clamp(380px, 32vw, 460px);
+    .hero-showcase-inner {
+      max-width: min(92vw, 1440px);
+      padding: 0 clamp(24px, 2.4vw, 40px);
+      align-items: center;
+      gap: clamp(32px, 4vw, 64px);
+    }
+
+    .hero-showcase-side {
+      display: block;
+      flex: 1;
+      max-width: 280px;
+    }
+
+    .hero-showcase-side--right {
+      text-align: right;
+    }
+
+    .hero-showcase-eyebrow {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--walnut);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .hero-showcase-side-text {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .hero-showcase-frame {
+      flex-shrink: 0;
+      width: clamp(380px, 30vw, 440px);
     }
   }
