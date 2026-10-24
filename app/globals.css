@@ -20,6 +20,7 @@
 @import "../styles/base/footer-sidebar.css";
 @import "../styles/base/global-nav.css";
 @import "../styles/content/legal.css";
+@import "../styles/content/not-found.css";
 @import "../styles/auth/auth-overlay.css";
 @import "../styles/overlays/upsell-overlay.css";
 @import "../styles/base/install-prompt-overlay.css";
