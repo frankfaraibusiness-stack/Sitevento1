@@ -20,6 +20,7 @@ import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
+import { AuthBlob } from '@/components/auth/AuthBlob';
 import { UpsellOverlay } from '@/components/dashboard/UpsellOverlay';
 import { ConnectFlow } from '@/components/connect/ConnectFlow';
 import { useAuth } from '@/hooks/useAuth';
@@ -122,6 +123,7 @@ export default function ConnectFlowClient() {
           <section>
             <div className="dashboard-empty">
               <div className="dash-empty-inner">
+                <AuthBlob />
                 <h2>Sign in to connect a site</h2>
                 <p>You&apos;ll need an account before linking a site to sitevento.</p>
                 <button className="btn-primary" onClick={() => openAuth('signin')}>
