@@ -14,10 +14,12 @@
 // Deliberately standalone: it reads auth itself (useAuth) rather than
 // receiving user as a prop, so it can mount from the server-rendered
 // root layout without needing AppRoot/DashboardClient's own state tree.
-// "Add site" always routes through /dashboard?connect=1 — the same
-// param DashboardClient already watches for (see hooks/useAppView.ts's
-// handleConnectCTA) — so no new wiring is needed there; signed-out
-// users land on /dashboard, which itself opens the sign-in pane.
+// "Add site" always routes straight to /dashboard/connect, the
+// dedicated connect-flow page (see app/dashboard/connect/page.tsx and
+// hooks/useAppView.ts's handleConnectCTA, which routes marketing CTAs
+// there the same way). That page owns its own signed-out gate — a
+// guest landing on it gets the sign-in pane opened for them — so
+// GlobalNav doesn't need to check auth state before navigating.
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavRouter } from '@/hooks/useNavPending';
@@ -106,7 +108,7 @@ export function GlobalNav() {
   }
 
   function handleAddSite() {
-    router.push('/dashboard?connect=1');
+    router.push('/dashboard/connect');
   }
 
   const name = user ? user.displayName || (user.email ? user.email.split('@')[0] : 'Account') : '';
