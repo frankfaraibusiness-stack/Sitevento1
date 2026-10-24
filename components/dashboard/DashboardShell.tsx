@@ -95,6 +95,12 @@ export function DashboardShell({
       <section>
         <div className="dashboard-empty">
           <div className="dash-empty-inner">
+            <div className="dash-empty-error-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16.5h.01" strokeLinecap="round" />
+              </svg>
+            </div>
             <h2>Couldn&apos;t load your dashboard</h2>
             <p>{errorMessage}</p>
             <button className="btn-primary" onClick={() => window.location.reload()}>
