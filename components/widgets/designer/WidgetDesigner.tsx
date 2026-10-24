@@ -15,8 +15,10 @@
 // is a real route instead so each widget gets its own indexable URL.
 //
 // Uses the same Header + Sidebar + useAuth/useSites wiring
-// WidgetsPageClient.tsx uses, so the designer carries the same top bar
-// as the picker and the rest of the app.
+// WidgetsPageClient.tsx uses — the app's one shared global auth state,
+// not a page-local auth subscription — so the designer carries the
+// same top bar and the same signed-in session as the picker and the
+// rest of the app.
 import { useEffect, useMemo, useState } from 'react';
 import { useNavRouter } from '@/hooks/useNavPending';
 import { Header } from '@/components/layout/Header';
@@ -25,7 +27,7 @@ import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { useSiteWidget } from '@/hooks/useSiteWidget';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
-import { useWidgetDesignerAuth } from './useWidgetDesignerAuth';
+import { useAuth } from '@/hooks/useAuth';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import { getWidgetCatalogEntry, type WidgetFieldDef } from '@/lib/widgets';
 import { AppSkeleton } from '@/components/AppSkeleton';
@@ -124,16 +126,14 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 
 export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const router = useNavRouter();
-  // This route is reached by a client-side router.push from /widgets
-  // (same tab, no reload), straight into a brand-new mount of this
-  // component — and a plain useAuth() here used to re-run Firebase's
-  // onAuthStateChanged subscription from scratch on every single one
-  // of those navigations, reading as signed-out for a beat even when
-  // the session was already resolved one route ago. useWidgetDesignerAuth
-  // (./useWidgetDesignerAuth.ts) replaces that per-mount race with a
-  // synchronous auth.currentUser seed plus a short settle window, so
-  // this page stops bouncing people back to sign-in on every visit.
-  const { user, authReady } = useWidgetDesignerAuth();
+  // Same hooks/useAuth.ts every other authenticated route uses (see
+  // WidgetsPageClient.tsx, DashboardClient.tsx) — not a page-local
+  // auth subscription. useAuth() waits for setPersistence() to settle
+  // before attaching onAuthStateChanged, so an already-signed-in
+  // visitor doesn't read as signed-out for a beat on this route the
+  // way a fresh, unsynced listener would; that's what previously made
+  // this page re-prompt sign-in on every visit.
+  const { user, authReady } = useAuth();
   const sidebar = useSidebar();
   const { activeSiteId, activeSite } = useSites(user?.uid ?? null);
   const entry = getWidgetCatalogEntry(widgetId);
@@ -149,10 +149,10 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const [toast, setToast] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [previewVisible, setPreviewVisible] = useState(true);
 
-  // authReady here only ever flips true once useWidgetDesignerAuth is
-  // actually sure (current user checked + onAuthStateChanged settled,
-  // or the grace window ran out) — so there's no earlier false-null
-  // tick left to guard against, unlike the old per-mount useAuth().
+  // authReady only flips true once useAuth() has actually settled
+  // (persistence restored + onAuthStateChanged's first callback), so
+  // this only ever prompts sign-in for a visitor who is genuinely
+  // signed out — never mid-restore.
   useEffect(() => {
     if (authReady && !user) {
       setAuthPane('signin');
