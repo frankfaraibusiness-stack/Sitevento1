@@ -2,15 +2,16 @@
  * auth-overlay.css — sign in / sign up / forgot password overlay
  * Split from app/globals.css for maintainability.
  *
- * Redesign note: the overlay no longer paints its own white/--bg
- * backdrop. It sits directly on the page's lime body background
- * (var(--lime), same as html/body in base.css), so opening it never
- * feels like a different surface sliding on top — it's the same
- * lime the rest of the brand lives on. Inputs, cards and buttons
- * are the things that get a surface color now (var(--bg)/var(--surface)),
- * not the overlay itself. The brand's lime "slime" character
- * (AuthBlob, same body-path technique as HeroSlime/AgentBlob) greets
- * the visitor at the top of the form column.
+ * The overlay sits directly on the same background as the rest of
+ * the app (var(--app-bg), same as html/body in base.css) instead of
+ * painting its own lime backdrop — opening it never feels like a
+ * different surface sliding on top, it's the same canvas the whole
+ * app lives on. Inputs, cards and buttons are the things that get a
+ * surface color (var(--bg)/var(--surface)), not the overlay itself.
+ * The brand's "slime" character (AuthBlob, same body-path technique
+ * as HeroSlime/AgentBlob) greets the visitor at the top of the form
+ * column, now in its lime-body/ink-face coloring since the canvas
+ * behind it is no longer lime.
  * ============================================================ */
 
   /* ============ Auth overlay (sign in / sign up / forgot) ============ */
@@ -18,7 +19,7 @@
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: var(--lime);
+    background: var(--app-bg);
     opacity: 0;
     pointer-events: none;
     transform: translateY(14px);
@@ -46,7 +47,7 @@
     height: 40px;
     border-radius: 50%;
     border: 1.5px solid var(--lime-ink);
-    background: var(--lime);
+    background: var(--app-bg);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -70,6 +71,14 @@
     .auth-overlay .auth-exit {
       top: max(18px, env(safe-area-inset-top, 0px));
     }
+  }
+
+  /* On mobile/narrow layouts the sticky .auth-mobile-header (below)
+     carries its own close button docked next to the logo, so the
+     floating circle is hidden there to avoid two separate close
+     affordances competing at the top of the screen. */
+  @media (max-width: 920px) {
+    .auth-overlay .auth-exit { display: none; }
   }
 
   .auth-overlay .stage {
@@ -267,36 +276,69 @@
     margin-bottom: 28px;
   }
 
-  .auth-overlay .mobile-brand {
+  /* ---- Mobile sticky header --------------------------------------
+   * Its own real header for the overlay on narrow layouts: pinned to
+   * the top of the viewport (not just the form column) for the whole
+   * time the overlay is scrolled, logo on the left, a docked close
+   * button on the right — replaces the old bare "logo only, floating
+   * close circle elsewhere" split. Hidden entirely ≥920px, where the
+   * two-column desktop layout keeps the brand mark in .showcase-brand
+   * and the floating .auth-exit circle instead. */
+  .auth-overlay .auth-mobile-header {
     display: none;
-    align-items: center;
-    gap: 9px;
-    font-weight: 700;
-    font-size: 15px;
-    margin: -32px -24px 20px;
-    padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 14px;
-    position: sticky;
-    top: -32px;
-    z-index: 5;
-    background: var(--lime);
   }
 
   @media (max-width: 920px) {
-    .auth-overlay .mobile-brand { display: flex; }
+    .auth-overlay .auth-mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 18px 12px;
+      background: color-mix(in srgb, var(--app-bg) 92%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(26,31,10,0.1);
+    }
   }
 
-  .auth-overlay .mobile-brand .dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--lime-ink);
-  }
-
-  .auth-overlay .mobile-brand .brand-logo,
+  .auth-overlay .auth-mobile-header .brand-logo,
   .auth-overlay .showcase-brand .brand-logo {
-    height: 28px;
+    height: 26px;
     width: auto;
     display: block;
+  }
+
+  .auth-overlay .auth-mobile-header-close {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(26,31,10,0.18);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1), background 0.15s ease;
+  }
+
+  .auth-overlay .auth-mobile-header-close:hover {
+    background: var(--app-bg);
+    transform: scale(1.06);
+  }
+
+  .auth-overlay .auth-mobile-header-close:active {
+    transform: scale(0.94);
+  }
+
+  .auth-overlay .auth-mobile-header-close svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--lime-ink);
   }
 
   /* Small blob next to the headline on mobile, where the showcase
@@ -647,9 +689,9 @@
    * HeroSlime/AgentBlob, inlined here so AuthOverlay stays fully
    * self-contained (auth-overlay.css is imported globally via
    * globals.css; agent-page.css is not, so we don't depend on it).
-   * Sits on the lime background itself, so body fill is ink (not
-   * lime-on-lime) with a lime face, mirroring how the character
-   * reads on the (white) agent page in reverse.
+   * Sits on the app's cream canvas now (not lime-on-lime), so an ink
+   * body with lime eyes/mouth still reads with plenty of contrast —
+   * no further inversion needed.
    * ============================================================ */
   .auth-blob {
     display: block;
