@@ -88,6 +88,25 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
         </svg>
       </button>
 
+      {/* Sticky header shown only on mobile/narrow layouts (≤920px),
+          where the desktop showcase column — and its floating
+          .auth-exit close circle sitting over it — is hidden. Keeps
+          the logo and a close affordance pinned to the top of the
+          scrollable form column instead of a lone circle floating
+          over the content. */}
+      <div className="auth-mobile-header">
+        <img
+          className="brand-logo"
+          src="https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png"
+          alt="sitevento"
+        />
+        <button className="auth-mobile-header-close" aria-label="Close" onClick={onClose}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
       <div className="stage">
         <div className="showcase">
           <div className="showcase-brand">
@@ -128,14 +147,6 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
 
         <div className="form-wrap">
           <div className="form-panel">
-            <div className="mobile-brand">
-              <img
-                className="brand-logo"
-                src="https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png"
-                alt="sitevento"
-              />
-            </div>
-
             <div className="panes">
               {/* SIGN IN */}
               <div className={`pane${pane === 'signin' ? ' active' : ''}`}>
