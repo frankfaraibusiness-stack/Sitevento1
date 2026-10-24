@@ -4,191 +4,107 @@
 // while auth state is resolving (and for a short minimum hold after,
 // see the onDone contract below).
 //
-// Simple orbiting-dots loader, not a giant screen-filling shape:
-// a ring of small lime dots spins around the center of the screen.
-// After ~3s of spinning, every dot flies inward and converges on the
-// exact center, at which point the logo appears (mounted the instant
-// convergence starts, with its own entrance animation playing as the
-// dots land).
+// Redesign: a "welcome to the app" moment rather than a loading
+// spinner — soft drifting gradient atmosphere, the logo arriving
+// first, the brand blob rising in underneath it with a toned-down
+// (not solid-saturated) lime finish and a continuous idle float/
+// breathe/blink loop, and a short welcome line that fades in last.
+// Three phases, driven from here (not just CSS), because phase 2's
+// arrival timing is staggered across several elements and the parent
+// needs to know when the whole thing is actually done:
+//   1. "arriving" (~1.1s)  — atmosphere fades in, logo drops/settles
+//                             in, blob rises in right after.
+//   2. "settled"  (~2.6s)  — everything at rest, blob idles (gentle
+//                             float + breathing + occasional blink
+//                             and wink), welcome line fades in,
+//                             progress dots tick along the bottom.
+//   3. "leaving"  (~450ms) — whole splash fades + lifts out, then
+//                             onDone() fires once.
 //
-// Lifecycle has three phases, driven from here (not just CSS), because
-// phase 3's duration is randomized and the parent needs to know when
-// the whole thing is actually done:
-//   1. "spinning"    (~3s)    — dots orbit the center, evenly spaced,
-//                                spinning as a ring.
-//   2. "converging"  (~550ms) — each dot flies from its position on the
-//                                ring straight into the center and
-//                                shrinks to nothing on arrival. The
-//                                logo mounts at the same instant and
-//                                plays its own pop-in.
-//   3. "holding"      (3s,     — logo sits still (tiny idle breathing so
-//       fixed)                   it doesn't look frozen), then calls
-//                                onDone().
-//
-// onDone is called exactly once, after the full fixed-length lifecycle
-// finishes — NOT tied to how long auth actually takes. The parent
-// (AppRoot) is expected to keep rendering BootSplash until onDone
-// fires, even if authReady flips true earlier, so the splash always
-// gets its full, deliberate screen time rather than flickering by
-// instantly on a fast connection. See AppRoot.tsx for how this is
-// wired up.
-//
-// Reduced-motion: skips the orbit/convergence animation entirely and
-// just cross-fades a few static dots out and the logo in on a short
-// fixed timer.
+// Reduced-motion: skips the drift/float loops and plays a single
+// short cross-fade instead.
 
 import { useEffect, useMemo, useState } from 'react';
 
-type Phase = 'spinning' | 'converging' | 'holding';
+type Phase = 'arriving' | 'settled' | 'leaving';
 
 interface BootSplashProps {
   onDone?: () => void;
 }
 
-interface Dot {
-  angleDeg: number; // position around the ring, 0 = top, clockwise
-  radius: number; // distance from center, in viewBox units
-  size: number; // dot diameter, in viewBox units
-  wobbleSeed: number; // stable per-mount offset so dots don't pulse in perfect unison
-}
-
-const DOT_COUNT = 10;
-
-function makeDots(seedBase: number): Dot[] {
-  let s = seedBase;
-  function rand() {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  }
-
-  const dots: Dot[] = [];
-  for (let i = 0; i < DOT_COUNT; i++) {
-    // Evenly spaced around the ring with a touch of per-dot jitter so
-    // it reads as organic rather than a perfectly mechanical clock
-    // face, while still clearly being a ring.
-    const baseAngle = (360 / DOT_COUNT) * i;
-    const angleDeg = baseAngle + (rand() - 0.5) * 8;
-    const radius = 68 + (rand() - 0.5) * 6;
-    const size = 9 + rand() * 5;
-    dots.push({ angleDeg, radius, size, wobbleSeed: rand() * 1000 });
-  }
-  return dots;
-}
+const WELCOME_LINES = [
+  'One script tag. A control panel for your whole site.',
+  'Loading your live control panel…',
+  'Getting your dashboard ready…',
+];
 
 export function BootSplash({ onDone }: BootSplashProps) {
-  const [phase, setPhase] = useState<Phase>('spinning');
+  const [phase, setPhase] = useState<Phase>('arriving');
 
-  const { dots, spinMs, holdMs } = useMemo(() => {
-    const seed = Math.floor(Math.random() * 1e9);
-    return {
-      dots: makeDots(seed),
-      spinMs: 3000, // spin for exactly ~3s before converging, as requested
-      holdMs: 3000, // fixed exactly 3s hold once formed (was randomized 3-5s)
-    };
+  // Stable per-mount pick so the line doesn't change if this component
+  // re-renders mid-animation.
+  const welcomeLine = useMemo(
+    () => WELCOME_LINES[Math.floor(Math.random() * WELCOME_LINES.length)],
+    []
+  );
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase('settled'), 1100);
+    return () => clearTimeout(t1);
   }, []);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('converging'), spinMs);
-    return () => clearTimeout(t1);
-  }, [spinMs]);
-
-  useEffect(() => {
-    if (phase !== 'converging') return;
-    // Matches the CSS convergence animation duration below.
-    const t2 = setTimeout(() => setPhase('holding'), 550);
+    if (phase !== 'settled') return;
+    const t2 = setTimeout(() => setPhase('leaving'), 2600);
     return () => clearTimeout(t2);
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== 'holding') return;
+    if (phase !== 'leaving') return;
     const t3 = setTimeout(() => {
       onDone?.();
-    }, holdMs);
+    }, 450);
     return () => clearTimeout(t3);
-  }, [phase, holdMs, onDone]);
+  }, [phase, onDone]);
 
-  // Lime from the very first frame — no more cream-then-lime swap.
-  // Previously this was `phase !== 'spinning'`, so the whole ~3s spin
-  // phase rendered on cream and only flipped to lime once convergence
-  // began; now the splash (and the mirrored html background below)
-  // are lime for its entire lifecycle, so there's nothing to visually
-  // jump partway through. Kept as its own variable (rather than just
-  // inlining `true`) since boot-splash.css still keys off the
-  // `.is-lime` class name and the html mirror below reads this same
-  // value — this is the one place that state lives.
-  const isLime = true;
-
-  // Mirror the same lime state onto <html> itself, not just the fixed
-  // .boot-splash overlay. The overlay covers the viewport, but mobile
-  // rubber-band overscroll (bouncing past the top/bottom edge) reveals
-  // whatever color html/body are painted underneath it — without this,
-  // that overscroll flashes white/cream while the splash is lime,
-  // which reads as a mismatch/flicker. Toggled via a class rather than
-  // writing html's inline style directly so base.css stays the single
-  // source of truth for the actual color value. Always cleaned up on
-  // unmount/phase change so a page navigated to after boot never
-  // inherits a stuck lime html background.
+  // Mirrors the splash's own background onto <html> for the duration
+  // of boot so mobile rubber-band overscroll (which bounces past the
+  // fixed, viewport-covering splash) reveals the same tone underneath
+  // instead of flashing to something else. base.css owns the actual
+  // color value via .is-boot-lime; always cleaned up on unmount so a
+  // page navigated to after boot never inherits it.
   useEffect(() => {
     const root = document.documentElement;
-    if (isLime) {
-      root.classList.add('is-boot-lime');
-    } else {
-      root.classList.remove('is-boot-lime');
-    }
+    root.classList.add('is-boot-lime');
     return () => {
       root.classList.remove('is-boot-lime');
     };
-  }, [isLime]);
+  }, []);
 
   return (
-    <div className={`boot-splash${isLime ? ' is-lime' : ''}`} role="status" aria-label="Loading sitevento">
-      <div className={`boot-splash-stage is-${phase}`}>
-        <div className="boot-splash-ring">
-          {dots.map((dot, i) => {
-            const rad = (dot.angleDeg * Math.PI) / 180;
-            // Start position on the ring, relative to center (0,0).
-            const x = Math.sin(rad) * dot.radius;
-            const y = -Math.cos(rad) * dot.radius;
-            return (
-              <span
-                key={i}
-                className="boot-splash-dot"
-                style={{
-                  width: `${dot.size}px`,
-                  height: `${dot.size}px`,
-                  // Custom properties consumed by the keyframes in CSS:
-                  // the dot orbits by rotating its own translated
-                  // offset around the shared ring center, then on
-                  // convergence just animates that offset back to 0,0.
-                  ['--dot-x' as string]: `${x}px`,
-                  ['--dot-y' as string]: `${y}px`,
-                  // Stable per-dot offset so the pulse animation isn't
-                  // perfectly synchronized across all dots.
-                  animationDelay: `${dot.wobbleSeed % 600}ms`,
-                }}
-              />
-            );
-          })}
-        </div>
-        {/* Logo: mounted the instant convergence begins, so it appears
-            exactly as the dots land on the center, then plays its own
-            bouncy entrance on top of/after the convergence motion. */}
-        {phase !== 'spinning' && (
+    <div className={`boot-splash is-${phase}`} role="status" aria-label="Loading sitevento">
+      <div className="boot-splash-atmosphere" aria-hidden="true">
+        <span className="boot-splash-glow boot-splash-glow-a" />
+        <span className="boot-splash-glow boot-splash-glow-b" />
+        <span className="boot-splash-glow boot-splash-glow-c" />
+      </div>
+
+      <div className="boot-splash-stage">
+        <div className="boot-splash-mark">
           <img
             className="boot-splash-logo"
             src="https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png"
             alt="sitevento"
           />
-        )}
 
-        {/* Blob character: pops in on top of the logo the moment it lands,
-            startle/"jump-scare" style (fast overshoot scale-in from
-            nothing), then settles and fades back out — same shadow + eyes
-            as the hero slime, kept as-is. Purely decorative (aria-hidden),
-            mounted only for the window it animates in so it never lingers
-            as a static shape sitting over the logo. */}
-        {phase === 'holding' && (
           <svg className="boot-splash-blob" viewBox="0 0 200 220" aria-hidden="true">
+            <defs>
+              <linearGradient id="bootBlobFill" x1="0" y1="0" x2="0.3" y2="1">
+                <stop offset="0%" stopColor="#dcf7a6" />
+                <stop offset="55%" stopColor="#bfe77e" />
+                <stop offset="100%" stopColor="#9fc95f" />
+              </linearGradient>
+            </defs>
             <ellipse className="boot-splash-blob-shadow" cx="100" cy="196" rx="58" ry="10" />
             <g className="boot-splash-blob-body-wrap">
               <path
@@ -197,27 +113,29 @@ export function BootSplash({ onDone }: BootSplashProps) {
               />
               <ellipse className="boot-splash-blob-shine" cx="76" cy="78" rx="18" ry="11" />
               <g className="boot-splash-blob-eyes">
-                <g>
+                <g className="boot-splash-blob-eye boot-splash-blob-eye-left">
                   <ellipse className="eye-white" cx="82" cy="104" rx="11" ry="13" />
                   <circle className="eye-pupil" cx="84" cy="106" r="5" />
                 </g>
-                <g>
+                <g className="boot-splash-blob-eye boot-splash-blob-eye-right">
                   <ellipse className="eye-white" cx="118" cy="104" rx="11" ry="13" />
                   <circle className="eye-pupil" cx="120" cy="106" r="5" />
                 </g>
               </g>
               <path className="boot-splash-blob-mouth" d="M 92 126 Q 100 132 108 126" />
+              <ellipse className="boot-splash-blob-blush boot-splash-blob-blush-left" cx="66" cy="118" rx="7" ry="4" />
+              <ellipse className="boot-splash-blob-blush boot-splash-blob-blush-right" cx="134" cy="118" rx="7" ry="4" />
             </g>
           </svg>
-        )}
+        </div>
 
-        {/* Keeps the screen visibly alive for the whole holding phase —
-            without this, once the logo settles there are a few seconds of
-            total stillness that read as the site having frozen rather than
-            the boot animation just finishing up. */}
-        {phase === 'holding' && (
-          <span className="boot-splash-spinner" role="status" aria-label="Loading" />
-        )}
+        <p className="boot-splash-welcome">{welcomeLine}</p>
+
+        <div className="boot-splash-progress" role="presentation">
+          <span className="boot-splash-progress-dot" />
+          <span className="boot-splash-progress-dot" />
+          <span className="boot-splash-progress-dot" />
+        </div>
       </div>
     </div>
   );
