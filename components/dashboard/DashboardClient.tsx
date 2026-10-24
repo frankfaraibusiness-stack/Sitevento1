@@ -1,8 +1,6 @@
 
 'use client';
 
-// components/dashboard/DashboardClient.tsx
-
 import { useCallback, useEffect, useState } from 'react';
 import { useNavRouter } from '@/hooks/useNavPending';
 import { AppSkeleton } from '@/components/AppSkeleton';
@@ -114,8 +112,6 @@ export default function DashboardClient({
         return;
       }
     } catch (err) {
-      // Fail open if the advisory site-limit check fails.
-      // The connect route performs its own limit validation.
       console.error('site-limits check failed', err);
     }
 
@@ -128,7 +124,6 @@ export default function DashboardClient({
 
   const [leadsCount, setLeadsCount] = useState(0);
 
-  // Show the sign-in dialog when a signed-out visitor opens the dashboard.
   useEffect(() => {
     if (authReady && !user) {
       openAuth('signin');
@@ -149,17 +144,14 @@ export default function DashboardClient({
       SECTION_ELEMENT_IDS[section] || 'dashMain'
     );
 
-    if (el) {
-      el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
+    el?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
   }
 
   const [landedOnSection, setLandedOnSection] = useState(false);
 
-  // Apply the saved dashboard landing-view preference.
   useEffect(() => {
     if (landedOnSection) return;
     if (view !== 'dashboard' || !user) return;
@@ -173,7 +165,6 @@ export default function DashboardClient({
       return;
     }
 
-    // Visit logs has its own dedicated page.
     if (target === 'logs') {
       setLandedOnSection(true);
       router.replace('/dashboard/visits');
@@ -181,7 +172,7 @@ export default function DashboardClient({
     }
 
     let attempts = 0;
-    let raf: number;
+    let raf = 0;
 
     const tryScroll = () => {
       const el = document.getElementById(SECTION_ELEMENT_IDS[target]);
@@ -208,9 +199,7 @@ export default function DashboardClient({
 
     raf = requestAnimationFrame(tryScroll);
 
-    return () => {
-      cancelAnimationFrame(raf);
-    };
+    return () => cancelAnimationFrame(raf);
   }, [
     landedOnSection,
     view,
@@ -236,7 +225,6 @@ export default function DashboardClient({
     scrollToSection(section);
   }
 
-  // Keep the dashboard loading gate tied to authentication and site data.
   const dashboardDataLoading =
     view === 'dashboard' &&
     !!user &&
@@ -315,7 +303,7 @@ export default function DashboardClient({
             <ProfilePage
               user={user}
               sites={sites}
-              onDisconnectSite={async (siteId: string) => {
+              onDisconnectSite={async (siteId: string): Promise<void> => {
                 await disconnectSite(siteId);
               }}
               onAddSite={openAddSiteModal}
@@ -341,7 +329,9 @@ export default function DashboardClient({
               activeSite={activeSite}
               dashState={dashState}
               errorMessage={errorMessage}
-              disconnectSite={disconnectSite}
+              disconnectSite={async (siteId: string): Promise<void> => {
+                await disconnectSite(siteId);
+              }}
               onOpenAddSiteModal={openAddSiteModal}
               onResumeVerification={handleResumeVerification}
               onLeadsCountChange={setLeadsCount}
