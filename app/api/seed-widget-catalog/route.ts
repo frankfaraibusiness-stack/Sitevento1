@@ -1,10 +1,11 @@
 // app/api/seed-widget-catalog/route.ts
 //
 // Backs the public admin tool at /admin/widgets (see that route's
-// page.tsx) — a "Deploy" button that writes the global
-// widgets/{id} catalog docs this app's own Firestore needs before any
-// shipped widget (support-chat, countdown-timer) can actually render
-// for a visitor. See lib/widgets.ts's "Self-healing global catalog"
+// page.tsx) — a "Push all" button (and, per row, a single-widget
+// "Push" button) that writes the global widgets/{id} catalog docs this
+// app's own Firestore needs before any shipped widget (support-chat,
+// countdown-timer) can actually render for a visitor. See
+// lib/widgets.ts's "Self-healing global catalog"
 // comment for the fuller story: app/api/widget and app/api/site-widget
 // already self-heal this the first time a widget is requested/toggled
 // on, so in the common case this route is a convenience, not the only
@@ -19,11 +20,15 @@
 // quick internal tool, not gated behind sign-in or a passphrase). That
 // is safe ONLY because of what this route is hard-coded to do and
 // nothing more:
-//   - It can only ever write the fixed SHIPPED_WIDGET_IDS below (the
-//     exact ids in lib/widgets.ts's WIDGET_CATALOG) — there is no
-//     widgetId field read from the request body, so a caller cannot
-//     use this to inject an arbitrary doc id into the widgets/
-//     collection.
+//   - It can only ever write ids from the fixed SHIPPED_WIDGET_IDS list
+//     below (the exact ids in lib/widgets.ts's WIDGET_CATALOG). The
+//     request body may optionally narrow WHICH of those known ids to
+//     write this time (an `ids` array, used by the admin table's
+//     per-row "Push" button so pushing one widget doesn't also
+//     re-touch ones that are already fine) — any id not already in
+//     SHIPPED_WIDGET_IDS is silently ignored rather than written, so
+//     this still can't be used to inject an arbitrary doc id into the
+//     widgets/ collection.
 //   - Every bundleUrl it writes is derived from THIS request's own
 //     origin (req.nextUrl.origin, the same derivation
 //     expectedCatalogDoc() uses elsewhere) — never a URL supplied by
@@ -70,6 +75,37 @@ export async function POST(req: NextRequest) {
     return jsonError(429, 'Too many requests. Please wait a moment and try again.');
   }
 
+  // Optional body: { ids?: string[] }. Missing/empty body, or a body
+  // that isn't valid JSON, both fall back to "all shipped ids" — this
+  // keeps the existing "Push all" behavior (and any other caller that
+  // POSTs with no body) working unchanged.
+  let requestedIds: string[] | null = null;
+  try {
+    const raw = await req.text();
+    if (raw) {
+      const body = JSON.parse(raw);
+      if (Array.isArray(body?.ids)) {
+        requestedIds = body.ids.filter((v: unknown): v is string => typeof v === 'string');
+      }
+    }
+  } catch {
+    // Malformed body is treated the same as no body — push everything —
+    // rather than erroring, since the common caller (the admin page's
+    // "Push all" button) sends no body at all.
+  }
+
+  // Narrow to the known allowlist regardless of what was requested — an
+  // id that isn't one of our own shipped ids is simply dropped, never
+  // written. See the file-header note above.
+  const idsToSeed: readonly string[] =
+    requestedIds === null
+      ? SHIPPED_WIDGET_IDS
+      : SHIPPED_WIDGET_IDS.filter((id) => requestedIds!.includes(id));
+
+  if (idsToSeed.length === 0) {
+    return jsonError(400, 'No valid widget ids to push.');
+  }
+
   let db;
   try {
     db = getAdminDb();
@@ -82,7 +118,7 @@ export async function POST(req: NextRequest) {
   const results: { id: string; status: 'created' | 'updated'; bundleUrl: string }[] = [];
 
   try {
-    for (const id of SHIPPED_WIDGET_IDS) {
+    for (const id of idsToSeed) {
       const entry = getWidgetCatalogEntry(id);
       if (!entry) continue; // defensive only — ids above always exist in the catalog
 
