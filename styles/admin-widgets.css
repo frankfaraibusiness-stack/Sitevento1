@@ -15,7 +15,7 @@
 
 .admwdg-card {
   width: 100%;
-  max-width: 560px;
+  max-width: 760px;
   background: var(--cream);
   border: 1px solid var(--line);
   border-radius: 1.2rem;
@@ -41,6 +41,53 @@
   border-radius: 4px;
   padding: 0.1em 0.35em;
   font-size: 0.85em;
+}
+
+.admwdg-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
+.admwdg-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.3rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.admwdg-refresh-btn:hover:not(:disabled) {
+  background: var(--cream-deep);
+}
+
+.admwdg-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.admwdg-inline-note {
+  margin: 0.8rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admwdg-inline-ok {
+  color: #2f6b3a;
+}
+
+.admwdg-inline-error {
+  color: #8a3b30;
 }
 
 .admwdg-deploy-btn {
@@ -149,6 +196,11 @@
   color: #fff;
 }
 
+.admwdg-pill-missing {
+  background: #948a7c;
+  color: #fff;
+}
+
 .admwdg-arrow {
   color: #948a7c;
 }
@@ -156,4 +208,126 @@
 .admwdg-url {
   color: #5c5448;
   word-break: break-all;
+}
+
+/* ---- Status table ---- */
+
+.admwdg-table {
+  width: 100%;
+  margin-top: 1.4rem;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admwdg-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #948a7c;
+  font-weight: 700;
+  padding: 0 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.admwdg-table td {
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  color: var(--ink);
+}
+
+.admwdg-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admwdg-name {
+  font-weight: 700;
+}
+
+.admwdg-id {
+  display: inline-block;
+  margin-top: 0.15rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.05em 0.4em;
+  font-size: 0.75rem;
+  color: #5c5448;
+}
+
+.admwdg-url-cell {
+  color: #5c5448;
+  font-size: 0.78rem;
+  word-break: break-all;
+  max-width: 220px;
+}
+
+.admwdg-row-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.admwdg-push-btn {
+  background: transparent;
+  color: var(--walnut);
+  border: 1px solid var(--walnut);
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.admwdg-push-btn:hover:not(:disabled) {
+  background: var(--walnut);
+  color: #fff;
+}
+
+.admwdg-push-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.admwdg-row-error {
+  margin: 0.4rem 0 0;
+  font-size: 0.74rem;
+  color: #8a3b30;
+  max-width: 220px;
+}
+
+.admwdg-delete-btn {
+  background: transparent;
+  color: #8a3b30;
+  border: 1px solid #f3c6c1;
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.admwdg-delete-btn:hover:not(:disabled) {
+  background: #fdecea;
+}
+
+.admwdg-delete-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .admwdg-table {
+    font-size: 0.78rem;
+  }
+  .admwdg-url-cell {
+    display: none;
+  }
 }
