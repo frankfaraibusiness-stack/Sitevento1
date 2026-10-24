@@ -1,0 +1,681 @@
+/* ============================================================
+ * connect-flow.css — /dashboard/connect, full page (not a modal).
+ * Replaces styles/connect-wizard.css's overlay version. Every color
+ * below reads a variable from styles/base/base.css's :root block — none
+ * hardcoded — so this always matches the rest of the app's theme.
+ * ============================================================ */
+
+  .cflow {
+    min-height: calc(100vh - 160px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ============ Progress rail (3 stages) ============ */
+  /* Sticks just under the fixed site header (styles/base/base.css's bare
+     `header` — 56px tall, flush at the very top, z-index: 10) rather
+     than at viewport top: 0. Before this offset the rail raced the
+     header for the same strip of screen and sat ABOVE it (z-index: 20
+     > 10), so scrolling any step with enough content to move the page
+     slid the rail up over the header instead of staying docked below
+     it. z-index: 9 (one below the header's 10) plus the top offset
+     means the two now stack in the correct physical order no matter
+     how far the step scrolls. */
+  .cflow-rail {
+    position: sticky;
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    z-index: 9;
+    display: flex; gap: 4px;
+  }
+  .cflow-rail-seg {
+    flex: 1; height: 3px; background: var(--line);
+    transition: background 0.3s ease;
+  }
+  .cflow-rail-seg.is-current { background: var(--walnut); }
+  .cflow-rail-seg.is-done { background: var(--lime); }
+
+  /* ============ Stage shell ============ */
+  .cflow-stage {
+    flex: 1;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: clamp(28px, 6vw, 72px) 20px 64px;
+  }
+
+  .cflow-card { width: 100%; max-width: 480px; }
+  .cflow-step:has(.cwz-perm-section),
+  .cflow-connected,
+  .cflow-tagstage { max-width: none; }
+  .cflow-card:has(.cwz-perm-section),
+  .cflow-card:has(.cflow-connected),
+  .cflow-card:has(.cflow-tagstage) { max-width: 620px; }
+
+  .cflow-step-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
+    color: var(--walnut-dark); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 13px; margin-bottom: 20px; background: var(--bg);
+  }
+  .cflow-step-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime-ink); }
+
+  .cflow-card h1 {
+    font-size: clamp(26px, 5vw, 36px); font-weight: 400; margin: 0 0 10px; letter-spacing: -0.01em;
+    line-height: 1.12;
+  }
+  .cflow-card .cflow-sub {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px; color: var(--muted-mid); margin: 0 0 28px; line-height: 1.6; max-width: 46ch;
+  }
+
+  /* ============ Step 1 field ============ */
+  .cflow-field label {
+    display: block; font-family: -apple-system, sans-serif; font-size: 13px;
+    font-weight: 600; color: var(--ink); margin-bottom: 7px;
+  }
+  .cflow-field input[type="text"] {
+    width: 100%; padding: 14px 16px; font-size: 15.5px; border-radius: 14px;
+    border: 1.5px solid var(--line); background: var(--cream); color: var(--ink);
+    font-family: -apple-system, sans-serif;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .cflow-field input::placeholder { color: var(--placeholder); }
+  .cflow-field input:focus {
+    border-color: var(--walnut); background: var(--bg);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--walnut) 12%, transparent); outline: none;
+  }
+  .cflow-field .err-msg {
+    display: none; font-size: 12.5px; color: var(--danger); margin-top: 6px;
+    font-family: -apple-system, sans-serif;
+  }
+  .cflow-field.has-error input { border-color: var(--danger); }
+  .cflow-field.has-error .err-msg { display: block; }
+  .cflow-field { margin-bottom: 20px; }
+
+  /* ============ Shared buttons ============ */
+  .cflow-submit {
+    width: 100%; background: var(--lime); color: var(--lime-ink);
+    border: 1.5px solid var(--ink); border-radius: 999px; padding: 15px 22px;
+    font-size: 15.5px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 3px 0 var(--ink);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    position: relative; font-family: -apple-system, sans-serif;
+  }
+  .cflow-submit:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .cflow-submit:disabled { opacity: 0.6; cursor: default; }
+  .cflow-submit.loading .btn-text { opacity: 0.35; filter: blur(2.5px); }
+  .cflow-submit.loading { cursor: progress; }
+  .cflow-submit .spinner {
+    display: none; position: absolute; width: 18px; height: 18px;
+    border: 2.5px solid color-mix(in srgb, var(--lime-ink) 25%, transparent);
+    border-top-color: var(--lime-ink);
+    border-radius: 50%; animation: cflow-spin 0.7s linear infinite;
+  }
+  .cflow-submit.loading .spinner { display: block; }
+  @keyframes cflow-spin { to { transform: rotate(360deg); } }
+
+  .cflow-submit-wide { width: auto; padding-left: 28px; padding-right: 24px; }
+  .cflow-submit-wide svg { width: 16px; height: 16px; }
+
+  .cflow-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13.5px; font-weight: 600; color: var(--walnut-dark);
+    text-decoration: none; margin-bottom: 20px; background: none; border: none;
+    cursor: pointer; padding: 0; font-family: -apple-system, sans-serif;
+  }
+  .cflow-back:hover { text-decoration: underline; }
+
+  /* ============ Step 2: method tabs (Paste it myself / Hand it to
+     my AI) ============
+     A two-tab switch replaces the old single fixed layout — the tag
+     box and the AI-prompt box are both full, equally-first-class ways
+     to get the tag onto the site, not a primary path with an
+     afterthought bolted on, so they're presented as peers the person
+     actively picks between rather than one being pre-selected as
+     "the" way and the other buried further down the page. */
+  .cflow-method-tabs {
+    display: inline-flex; gap: 4px; padding: 4px;
+    background: var(--cream); border: 1.5px solid var(--line); border-radius: 14px;
+    margin-bottom: 18px;
+  }
+  .cflow-method-tab {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: 10px; border: none; background: transparent;
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--muted-mid); cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cflow-method-tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .cflow-method-tab:hover:not(.is-active) { color: var(--ink); }
+  .cflow-method-tab.is-active {
+    background: var(--bg); color: var(--ink);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 12%, transparent), 0 0 0 1.5px var(--line);
+  }
+  @media (max-width: 420px) {
+    .cflow-method-tabs { display: flex; }
+    .cflow-method-tab { flex: 1; justify-content: center; padding: 10px 8px; }
+  }
+
+  .cflow-method-panel {
+    animation: cflow-method-in 0.22s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes cflow-method-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cflow-method-panel { animation: none; }
+  }
+
+  .cflow-method-hint {
+    margin: 2px 0 20px; font-family: -apple-system, sans-serif; font-size: 12.5px;
+    line-height: 1.55; color: var(--muted-mid);
+  }
+  .cflow-method-hint code {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 11.5px;
+    background: var(--cream); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px;
+  }
+
+  .cflow-prompt-box-lg {
+    max-height: 220px; font-size: 12.5px; padding: 16px 18px; margin-bottom: 14px;
+  }
+
+  /* ============ Step 2: tag box + verify ============ */
+  .cflow-tag-box {
+    background: var(--ink); color: var(--cream); border-radius: 14px; padding: 18px 20px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 12.5px; line-height: 1.7;
+    margin-bottom: 10px; word-break: break-all; position: relative;
+  }
+  .cflow-tag-box .tag-name { color: var(--lime); }
+  .cflow-tag-box .attr { color: #9cc4ff; }
+  .cflow-tag-box .val { color: #f3b088; }
+
+  .cflow-copy-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: transparent; border: 1.5px solid var(--line); border-radius: 999px;
+    padding: 9px 16px; font-size: 13px; font-weight: 600; color: var(--ink);
+    cursor: pointer; font-family: -apple-system, sans-serif; margin-bottom: 22px;
+    transition: border-color 0.12s ease;
+  }
+  .cflow-copy-btn:hover { border-color: var(--walnut); }
+  .cflow-copy-btn svg { width: 14px; height: 14px; }
+
+  .cflow-note {
+    display: flex; gap: 10px; background: var(--cream); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 24px;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; color: var(--muted-mid); line-height: 1.55;
+  }
+  .cflow-note svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--walnut); margin-top: 1px; }
+  .cflow-note strong { color: var(--ink); }
+
+  .cflow-verify-status {
+    display: flex; align-items: center; gap: 9px; font-family: -apple-system, sans-serif;
+    font-size: 13.5px; color: var(--muted); margin-bottom: 20px; min-height: 20px;
+  }
+  .cflow-verify-status .vdot2 {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--warning); flex-shrink: 0;
+    position: relative;
+  }
+  .cflow-verify-status.pending .vdot2::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    background: var(--warning); opacity: 0.5; animation: cflow-pulse-ring 1.6s ease-out infinite;
+  }
+  .cflow-verify-status.ok { color: var(--walnut-dark); font-weight: 600; }
+  .cflow-verify-status.ok .vdot2 { background: var(--success); }
+  .cflow-verify-status.fail { color: var(--danger); font-weight: 600; }
+  .cflow-verify-status.fail .vdot2 { background: var(--danger); }
+
+  @keyframes cflow-pulse-ring {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    100% { transform: scale(2.1); opacity: 0; }
+  }
+
+  /* ============ Full-screen pass/fail flash ============ */
+  .cflow-flash {
+    position: fixed; inset: 0; z-index: 220;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; border: none; cursor: pointer; text-align: center;
+    padding: 24px; background: var(--bg);
+    animation: cflow-flash-in 0.4s cubic-bezier(0.22,1,0.36,1) both, cflow-flash-out 0.35s ease 1.3s forwards;
+  }
+  .cflow-flash.is-success {
+    background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--success) 22%, transparent), color-mix(in srgb, var(--success) 8%, transparent) 55%, var(--bg) 85%);
+  }
+  .cflow-flash.is-fail {
+    background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--danger) 20%, transparent), color-mix(in srgb, var(--danger) 7%, transparent) 55%, var(--bg) 85%);
+    animation-delay: 0s, 1.8s;
+  }
+  .cflow-flash-blob { width: 120px; margin-bottom: 4px; }
+  .cflow-flash-title {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: clamp(22px, 5vw, 30px); font-weight: 700;
+  }
+  .cflow-flash.is-success .cflow-flash-title { color: var(--success-ink); }
+  .cflow-flash.is-fail .cflow-flash-title { color: var(--danger-ink); }
+  .cflow-flash-sub {
+    font-family: -apple-system, sans-serif; font-size: 13.5px; color: var(--muted-mid); max-width: 40ch;
+  }
+
+  @keyframes cflow-flash-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes cflow-flash-out {
+    from { opacity: 1; }
+    to { opacity: 0; pointer-events: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cflow-flash { animation: cflow-flash-in 0.15s ease both, cflow-flash-out 0.15s ease 1.3s forwards; }
+  }
+
+  /* ============ Stage 3: Connected ============ */
+  .cflow-connected { text-align: center; }
+  .cflow-connected .cflow-step-label { margin-left: auto; margin-right: auto; }
+  .cflow-connected-sub { margin-left: auto; margin-right: auto; text-align: center; }
+  .cflow-connected h1 { text-align: center; }
+
+  .cflow-connected-hero {
+    position: relative; width: 132px; height: 132px; margin: 8px auto 22px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cflow-connected-blob { width: 100%; position: relative; z-index: 2; }
+  .cflow-connected-hero .cflow-connected-check {
+    position: absolute; right: -2px; bottom: 2px; margin: 0; z-index: 3;
+    width: 42px; height: 42px; border-radius: 50%; background: var(--lime);
+    display: flex; align-items: center; justify-content: center;
+    animation: cflow-pop-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.15s both;
+  }
+  .cflow-connected-hero .cflow-connected-check svg { width: 19px; height: 19px; stroke: var(--lime-ink); }
+
+  @keyframes cflow-pop-in {
+    0% { transform: scale(0); opacity: 0; }
+    65% { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+
+  /* Two soft rings breathing outward from behind the blob, confirming
+     "this connection is live" without being a spinner (nothing here is
+     still loading by the time this renders). */
+  .cflow-pulse-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px solid var(--success);
+    opacity: 0; z-index: 1;
+    animation: cflow-ring-breathe 2.8s ease-out infinite;
+  }
+  .cflow-pulse-ring-delay { animation-delay: 1.4s; }
+  @keyframes cflow-ring-breathe {
+    0% { transform: scale(0.72); opacity: 0.45; }
+    100% { transform: scale(1.55); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cflow-pulse-ring { animation: none; opacity: 0; }
+  }
+
+  .cflow-cta-row {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    flex-wrap: wrap; margin: 8px 0 56px;
+  }
+  .cflow-secondary-btn {
+    font-family: -apple-system, sans-serif; font-size: 14px; font-weight: 600;
+    color: var(--walnut-dark); text-decoration: none; padding: 15px 10px;
+    border-bottom: 1.5px solid transparent;
+  }
+  .cflow-secondary-btn:hover { border-bottom-color: var(--walnut-dark); }
+
+  /* ============ "What's next" explainer block ============ */
+  .cflow-whats-next {
+    max-width: 680px; margin: 0 auto; text-align: left;
+    padding-top: 8px; border-top: 1px solid var(--line);
+  }
+  .cflow-whats-next h2 {
+    font-size: clamp(19px, 3vw, 23px); font-weight: 400; margin: 36px 0 18px;
+    letter-spacing: -0.01em;
+  }
+  .cflow-whats-next-second { margin-top: 48px !important; }
+
+  .cflow-feature-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  @media (max-width: 720px) {
+    .cflow-feature-grid { grid-template-columns: 1fr; }
+  }
+  .cflow-feature-card {
+    border: 1.5px solid var(--line); border-radius: 18px; padding: 18px;
+    background: var(--bg);
+  }
+  .cflow-feature-card h3 {
+    font-family: -apple-system, sans-serif; font-size: 14.5px; font-weight: 700;
+    color: var(--ink); margin: 12px 0 6px;
+  }
+  .cflow-feature-card p {
+    font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.55;
+    color: var(--muted-mid); margin: 0;
+  }
+  .cflow-feature-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 12px;
+  }
+  .cflow-feature-icon svg { width: 18px; height: 18px; }
+  .cflow-feature-icon-green { background: var(--success-surface); color: var(--success-ink); }
+  .cflow-feature-icon-purple { background: var(--dash-purple-surface); color: var(--dash-purple-ink); }
+  .cflow-feature-icon-blue { background: var(--dash-blue-surface); color: var(--dash-blue-ink); }
+
+  .cflow-success-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin: 20px 0 32px;
+  }
+  @media (max-width: 620px) { .cflow-success-grid { grid-template-columns: 1fr; } }
+
+  .cflow-success-panel {
+    border: 1.5px solid var(--line); border-radius: 18px; padding: 16px;
+    background: var(--bg);
+  }
+  .cflow-success-panel-ai {
+    border-color: var(--lime);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--lime) 10%, transparent), color-mix(in srgb, var(--lime) 2%, transparent)), var(--bg);
+  }
+  .cflow-success-panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;
+  }
+  .cflow-success-panel-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--ink);
+  }
+  .cflow-success-panel-label svg { width: 14px; height: 14px; color: var(--walnut); }
+  .cflow-success-panel-note {
+    margin: 0 0 10px; font-family: -apple-system, sans-serif; font-size: 11.5px;
+    line-height: 1.5; color: var(--muted-mid);
+  }
+  .cflow-copy-btn-sm { margin-bottom: 0; padding: 7px 13px; font-size: 11.5px; }
+
+  .cflow-tag-box-sm { font-size: 11px; padding: 14px 15px; margin-bottom: 0; }
+  .cflow-prompt-box {
+    background: var(--cream); border: 1px solid var(--line); border-radius: 12px;
+    padding: 13px 14px; font-family: -apple-system, sans-serif; font-size: 11.5px;
+    line-height: 1.6; color: var(--walnut-dark); white-space: pre-wrap; word-break: break-word;
+    max-height: 180px; overflow-y: auto;
+  }
+
+  .cflow-submit-final { max-width: 320px; margin: 8px auto 0; }
+
+  /* ============ Mobile tightening ============ */
+  @media (max-width: 540px) {
+    .cflow-stage { padding: 20px 16px 48px; }
+    .cflow-cta-row { flex-direction: column; margin-bottom: 44px; }
+    .cflow-cta-row .cflow-submit-wide { width: 100%; }
+    .cflow-secondary-btn { padding: 4px 10px 0; }
+  }
+
+  /* ============ Domain intel reveal (reused verbatim from the old
+     wizard, under the connect-flow naming) ============ */
+  .domain-intel {
+    margin: -6px 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .domain-intel-loading,
+  .domain-intel-plain {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--walnut-dark); font-weight: 600;
+    background: var(--cream); border: 1.5px solid var(--line);
+    border-left: 4px solid var(--lime);
+    border-radius: 12px; padding: 12px 14px;
+    pointer-events: none;
+  }
+
+  .domain-intel-scan-dot,
+  .domain-intel-ok-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; position: relative;
+  }
+  .domain-intel-scan-dot { background: var(--warning); }
+  .domain-intel-scan-dot::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    background: var(--warning); opacity: 0.5; animation: cflow-pulse-ring 1.6s ease-out infinite;
+  }
+  .domain-intel-ok-dot { background: var(--success); }
+
+  .domain-intel-card {
+    border: 1.5px solid var(--lime); border-radius: 14px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--lime) 16%, transparent), color-mix(in srgb, var(--lime) 5%, transparent)), var(--cream);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--ink) 6%, transparent);
+    padding: 16px 18px 14px;
+    animation: domain-intel-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .domain-intel-head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
+  }
+  .domain-intel-domain {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+    font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
+  }
+
+  .domain-intel-age {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;
+  }
+  .domain-intel-age-num {
+    font-family: "Georgia", serif; font-size: 30px; font-weight: 400; color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+  }
+  .domain-intel-age-unit {
+    font-size: 12.5px; color: var(--muted);
+  }
+
+  .domain-intel-rows {
+    margin: 0; display: flex; flex-direction: column; gap: 7px;
+  }
+  .domain-intel-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    font-size: 12.5px; padding-bottom: 7px; border-bottom: 1px solid var(--line);
+    animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+    pointer-events: none;
+  }
+  .domain-intel-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .domain-intel-row dt { margin: 0; color: var(--muted); }
+  .domain-intel-row dd {
+    margin: 0; color: var(--ink); font-weight: 600; text-align: right;
+    max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .domain-intel-pills {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+  }
+  .domain-intel-pill {
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; font-weight: 600;
+    color: var(--walnut-dark); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 10px;
+    animation: domain-intel-row-in 0.42s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  @keyframes domain-intel-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes domain-intel-row-in {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .domain-intel-card,
+    .domain-intel-row,
+    .domain-intel-pill { animation: none !important; }
+    .domain-intel-scan-dot::after { animation: none !important; }
+  }
+
+  /* ============ Step 1: permissions grid ============
+     Redesigned for the 30-permission catalog (lib/connectPermissions.ts):
+     numbered rows, per-category icons, and a distinct "trial" state
+     (locked-but-triable, with its daily number shown) alongside the
+     plain locked state. Class names kept under the cwz- prefix. */
+  .cwz-perm-section { margin: 4px 0 24px; }
+  .cwz-perm-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .cwz-perm-title {
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--ink);
+  }
+  .cwz-perm-count {
+    font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--walnut); white-space: nowrap;
+  }
+  .cwz-perm-intro {
+    margin: 0 0 16px; font-family: -apple-system, sans-serif; font-size: 12.5px;
+    line-height: 1.55; color: var(--muted-mid); max-width: 56ch;
+  }
+
+  .cwz-perm-upsell {
+    position: relative; display: flex; align-items: center; gap: 12px;
+    width: 100%; padding: 12px 16px; margin-bottom: 20px;
+    border: 1.5px solid var(--ink); border-radius: 16px;
+    background: linear-gradient(120deg, var(--cream) 0%, var(--bg) 55%, var(--cream) 100%);
+    box-shadow: 0 2px 0 var(--ink);
+    cursor: pointer; text-align: left;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .cwz-perm-upsell:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+  .cwz-perm-upsell:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--ink); }
+  .cwz-perm-upsell-icon {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--lime); color: var(--lime-ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cwz-perm-upsell-icon svg { width: 17px; height: 17px; }
+  .cwz-perm-upsell-copy {
+    flex: 1; font-family: -apple-system, sans-serif; font-size: 12.5px;
+    line-height: 1.5; color: var(--muted-dark);
+  }
+  .cwz-perm-upsell-copy strong { color: var(--ink); }
+  .cwz-perm-upsell-cta {
+    flex-shrink: 0; padding: 7px 14px; border-radius: 999px;
+    background: var(--lime); color: var(--lime-ink); border: 1px solid var(--lime-ink);
+    font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 700; white-space: nowrap;
+  }
+  @media (max-width: 560px) {
+    .cwz-perm-upsell { flex-wrap: wrap; padding: 14px; }
+    .cwz-perm-upsell-cta { margin-left: 46px; }
+  }
+
+  .cwz-perm-group { margin-bottom: 22px; }
+  .cwz-perm-group-title {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 10px; font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: 14px; font-weight: 700; color: var(--ink);
+  }
+  .cwz-perm-group-icon {
+    flex-shrink: 0; width: 16px; height: 16px; color: var(--walnut);
+  }
+  .cwz-perm-rows {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+  .cwz-perm-row {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+    padding: 13px 15px; border-bottom: 1px solid var(--line);
+    transition: background 0.12s ease;
+  }
+  .cwz-perm-row:last-child { border-bottom: none; }
+  .cwz-perm-row.is-full:hover { background: var(--cream); }
+  .cwz-perm-row.is-trial { background: color-mix(in srgb, var(--lime) 7%, var(--bg)); }
+  .cwz-perm-row.is-trial:hover { background: color-mix(in srgb, var(--lime) 13%, var(--bg)); }
+  .cwz-perm-row.is-locked { background: color-mix(in srgb, var(--muted) 6%, transparent); }
+  .cwz-perm-row-num {
+    flex-shrink: 0; width: 20px; padding-top: 1px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; font-weight: 600;
+    color: var(--placeholder);
+  }
+  .cwz-perm-row-stack { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .cwz-perm-row-label {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .cwz-perm-row-note {
+    font-family: -apple-system, sans-serif; font-size: 11.5px; line-height: 1.45;
+    color: var(--muted-mid); max-width: 440px;
+  }
+  .cwz-perm-lock-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 9px 2px 7px; border: none; border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    font-family: -apple-system, sans-serif; font-size: 10px; font-weight: 700;
+    cursor: pointer; transition: background 0.12s ease;
+  }
+  .cwz-perm-lock-pill svg { width: 10px; height: 10px; }
+  .cwz-perm-lock-pill:hover { background: var(--walnut); }
+
+  .cwz-perm-trial-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 9px 2px 7px; border-radius: 999px;
+    background: var(--lime); color: var(--lime-ink);
+    font-family: -apple-system, sans-serif; font-size: 10px; font-weight: 700;
+    white-space: nowrap;
+  }
+  .cwz-perm-trial-pill svg { width: 11px; height: 11px; }
+  .cwz-perm-trial-upgrade {
+    align-self: flex-start; margin-top: 1px; padding: 0; border: none; background: none;
+    font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--walnut); cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+  }
+  .cwz-perm-trial-upgrade:hover { color: var(--walnut-dark); }
+
+  .cwz-perm-switch {
+    flex-shrink: 0; width: 40px; height: 24px; border-radius: 999px;
+    border: none; padding: 3px; background: var(--border-soft); cursor: pointer;
+    display: flex; align-items: center; transition: background 0.18s ease;
+    margin-top: 1px;
+  }
+  .cwz-perm-switch.is-on { background: var(--lime); box-shadow: inset 0 0 0 1px var(--lime-ink); }
+  .cwz-perm-switch.is-trial:not(.is-on) { background: color-mix(in srgb, var(--lime) 35%, var(--border-soft)); }
+  .cwz-perm-switch:disabled { cursor: not-allowed; opacity: 0.55; }
+  .cwz-perm-switch-knob {
+    width: 18px; height: 18px; border-radius: 50%; background: var(--bg);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 25%, transparent);
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .cwz-perm-switch.is-on .cwz-perm-switch-knob { transform: translateX(16px); }
+
+  @media (max-width: 560px) {
+    .cwz-perm-row { flex-wrap: wrap; }
+    .cwz-perm-row-note { max-width: none; }
+  }
+
+  /* ── Tintable blob (components/connect/ConnectBlob.tsx) ── */
+  .cnb { display: block; line-height: 0; }
+  .cnb-svg { width: 100%; height: auto; overflow: visible; }
+  .cnb-wrap { transform-origin: 60px 100px; animation: cnb-idle 3.8s ease-in-out infinite; }
+  .cnb-body { fill: var(--lime); stroke: var(--lime-ink); stroke-width: 2.2; stroke-linejoin: round; }
+  .cnb-shine { fill: var(--bg); opacity: 0.5; transform: rotate(-16deg); transform-origin: 46px 46px; }
+  .cnb-shadow { fill: var(--ink); opacity: 0.12; }
+  .cnb-eye-white { fill: var(--lime-ink); }
+  .cnb-eye-pupil { fill: var(--lime); }
+  .cnb-eye { transform-origin: center; transition: transform 120ms ease-out; }
+  .cnb-eyes.is-blinking .cnb-eye { transform: scaleY(0.08); }
+  .cnb-happy-eye, .cnb-mouth, .cnb-brow {
+    fill: none; stroke: var(--lime-ink); stroke-width: 2.4; stroke-linecap: round;
+  }
+
+  .cnb-success .cnb-body { fill: var(--success); stroke: var(--success-ink); }
+  .cnb-success .cnb-eye-white { fill: var(--success-ink); }
+  .cnb-success .cnb-eye-pupil { fill: var(--success); }
+  .cnb-success .cnb-happy-eye,
+  .cnb-success .cnb-mouth,
+  .cnb-success .cnb-brow { stroke: var(--success-ink); }
+
+  .cnb-fail .cnb-body { fill: color-mix(in srgb, var(--danger) 70%, var(--bg)); stroke: var(--danger-ink); }
+  .cnb-fail .cnb-eye-white { fill: var(--danger-ink); }
+  .cnb-fail .cnb-eye-pupil { fill: color-mix(in srgb, var(--danger) 70%, var(--bg)); }
+  .cnb-fail .cnb-happy-eye,
+  .cnb-fail .cnb-mouth,
+  .cnb-fail .cnb-brow { stroke: var(--danger-ink); }
+
+  @keyframes cnb-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.02, 0.97); }
+    50%  { transform: scale(0.985, 1.02); }
+    75%  { transform: scale(1.012, 0.99); }
+    100% { transform: scale(1, 1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cnb-wrap { animation: none !important; }
+  }
