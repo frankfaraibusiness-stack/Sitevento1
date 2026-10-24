@@ -616,3 +616,96 @@
 .dnx-empty-preview-icon svg { width: 19px; height: 19px; }
 .dnx-empty-preview-card h4 { font-size: 15.5px; font-weight: 800; margin: 0 0 6px; color: var(--ink); }
 .dnx-empty-preview-card p { font-size: 13px; color: var(--dnx-ink-soft); line-height: 1.5; margin: 0; }
+
+/* ============ Auth-gate / error empty state ============
+ * Shared shell used by three call sites for the exact same shape
+ * (h2 + p + .btn-primary inside .dash-empty-inner):
+ *   - ConnectFlowClient: "Sign in to connect a site"
+ *   - DashboardClient:   "Sign in to view your dashboard"
+ *   - DashboardShell:    "Couldn't load your dashboard" (error state)
+ * Previously had zero CSS — rendered as raw unstyled text. Styled as
+ * a centered glass card on the app canvas, with the brand blob
+ * greeting the visitor and a real pill CTA, matching the premium
+ * empty-state language used elsewhere on /dashboard (.dnx-*). */
+.dashboard-empty {
+  min-height: calc(100vh - 56px - 16px - 82px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 60px;
+}
+
+.dash-empty-inner {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  background: var(--dnx-glass);
+  border: 1.5px solid var(--dnx-glass-border);
+  border-radius: var(--dnx-radius);
+  box-shadow: var(--dnx-shadow-lg);
+  padding: 40px 32px 34px;
+  font-family: var(--dnx-font);
+  animation: dnx-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-empty-inner .auth-blob {
+  width: 84px;
+  margin: 0 auto 18px;
+}
+
+.dash-empty-error-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger-surface);
+  color: var(--danger);
+}
+.dash-empty-error-icon svg { width: 26px; height: 26px; }
+
+.dash-empty-inner h2 {
+  font-family: "Georgia", serif;
+  font-size: clamp(21px, 4vw, 25px);
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.dash-empty-inner p {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--dnx-ink-soft);
+  margin: 0 0 26px;
+}
+
+.dash-empty-inner .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--ink);
+  color: var(--lime);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--dnx-shadow);
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease;
+}
+
+.dash-empty-inner .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--dnx-shadow-lg);
+}
+
+.dash-empty-inner .btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
