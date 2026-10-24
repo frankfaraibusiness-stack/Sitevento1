@@ -26,6 +26,7 @@ import { PlansPage } from '@/components/dashboard/PlansPage';
 import { SiteManagePage } from '@/components/dashboard/SiteManagePage';
 import { VisitsPage } from '@/components/dashboard/VisitsPage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
+import { AuthBlob } from '@/components/auth/AuthBlob';
 import { UpsellOverlay } from '@/components/dashboard/UpsellOverlay';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
@@ -282,6 +283,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
           <section>
             <div className="dashboard-empty">
               <div className="dash-empty-inner">
+                <AuthBlob />
                 <h2>Sign in to view your dashboard</h2>
                 <p>Connect your sites, see live visits, and push banners once you&apos;re signed in.</p>
                 <button className="btn-primary" onClick={() => openAuth('signin')}>
