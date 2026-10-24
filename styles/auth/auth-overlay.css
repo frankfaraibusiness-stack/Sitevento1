@@ -1,0 +1,746 @@
+/* ============================================================
+ * auth-overlay.css — sign in / sign up / forgot password overlay
+ * Split from app/globals.css for maintainability.
+ *
+ * The overlay sits directly on the same background as the rest of
+ * the app (var(--app-bg), same as html/body in base.css) instead of
+ * painting its own lime backdrop — opening it never feels like a
+ * different surface sliding on top, it's the same canvas the whole
+ * app lives on. Inputs, cards and buttons are the things that get a
+ * surface color (var(--bg)/var(--surface)), not the overlay itself.
+ * The brand's "slime" character (AuthBlob, same body-path technique
+ * as HeroSlime/AgentBlob) greets the visitor at the top of the form
+ * column, now in its lime-body/ink-face coloring since the canvas
+ * behind it is no longer lime.
+ * ============================================================ */
+
+  /* ============ Auth overlay (sign in / sign up / forgot) ============ */
+  .auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--app-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(14px);
+    transition: opacity 0.35s cubic-bezier(0.22,1,0.36,1), transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .auth-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay { transition: opacity 0.2s ease; transform: none !important; }
+  }
+
+  .auth-overlay .auth-exit {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 110;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid var(--lime-ink);
+    background: var(--app-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(26,31,10,0.14);
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1), background 0.15s ease;
+  }
+
+  .auth-overlay .auth-exit:hover {
+    background: var(--bg);
+    transform: scale(1.06);
+  }
+
+  .auth-overlay .auth-exit svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--lime-ink);
+  }
+
+  @supports (padding: max(0px)) {
+    .auth-overlay .auth-exit {
+      top: max(18px, env(safe-area-inset-top, 0px));
+    }
+  }
+
+  /* On mobile/narrow layouts the sticky .auth-mobile-header (below)
+     carries its own close button docked next to the logo, so the
+     floating circle is hidden there to avoid two separate close
+     affordances competing at the top of the screen. */
+  @media (max-width: 920px) {
+    .auth-overlay .auth-exit { display: none; }
+  }
+
+  .auth-overlay .stage {
+    min-height: 100%;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+  }
+
+  @media (max-width: 920px) {
+    .auth-overlay .stage { grid-template-columns: 1fr; }
+  }
+
+  /* ---- Left: visual / brand panel (lives on the same lime, no card) ---- */
+  .auth-overlay .showcase {
+    position: relative;
+    color: var(--lime-ink);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 920px) {
+    .auth-overlay .showcase { display: none; }
+  }
+
+  /* Soft depth instead of the old dark-panel radial blobs — just two
+     faint ink/white washes so the lime still has some life behind the
+     blob character without competing with it. */
+  .auth-overlay .showcase::before {
+    content: "";
+    position: absolute;
+    inset: -40% -10% auto auto;
+    width: 560px;
+    height: 560px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 70%);
+    animation: float-blob 14s ease-in-out infinite;
+  }
+
+  .auth-overlay .showcase::after {
+    content: "";
+    position: absolute;
+    inset: auto auto -30% -10%;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,31,10,0.1), transparent 70%);
+    animation: float-blob 18s ease-in-out infinite reverse;
+  }
+
+  @keyframes float-blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-30px, 40px) scale(1.08); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay .showcase::before, .auth-overlay .showcase::after { animation: none; }
+  }
+
+  .auth-overlay .showcase-brand {
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .auth-overlay .showcase-brand .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(26,31,10,0.35); }
+    50% { box-shadow: 0 0 0 6px rgba(26,31,10,0); }
+  }
+
+  /* ---- Blob character (greets the visitor) ---- */
+  .auth-overlay .showcase-blob {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 180px);
+    margin: 4px 0 -8px;
+  }
+
+  .auth-overlay .showcase-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 30ch;
+  }
+
+  .auth-overlay .showcase-copy h1 {
+    font-size: clamp(28px, 2.6vw, 38px);
+    line-height: 1.2;
+    font-weight: 400;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+    color: var(--lime-ink);
+  }
+
+  .auth-overlay .showcase-copy p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(26,31,10,0.72);
+    margin: 0;
+  }
+
+  .auth-overlay .showcase-stats {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 36px;
+  }
+
+  .auth-overlay .showcase-stats .s-num {
+    font-size: 24px;
+    font-weight: 600;
+    display: block;
+    color: var(--lime-ink);
+  }
+
+  .auth-overlay .showcase-stats .s-label {
+    font-size: 12.5px;
+    color: rgba(26,31,10,0.68);
+  }
+
+  .auth-overlay .showcase-card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(26,31,10,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: card-rise 0.9s cubic-bezier(0.22,1,0.36,1) both;
+    animation-delay: 0.3s;
+  }
+
+  @keyframes card-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-overlay .showcase-card .live-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .auth-overlay .showcase-card .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    opacity: 0.4;
+    animation: pulse-ring 1.6s ease-out infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(0.6); opacity: 0.5; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+
+  .showcase-card .ctext { font-size: 13px; color: var(--lime-ink); font-family: "SFMono-Regular", Consolas, monospace; }
+
+  /* ---- Right: form column — lives on the lime too; inputs/buttons
+     get their own surface color rather than a wrapping card. ---- */
+  .auth-overlay .form-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px 48px;
+  }
+
+  .auth-overlay .form-panel {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .auth-overlay .form-header {
+    margin-bottom: 28px;
+  }
+
+  /* ---- Mobile sticky header --------------------------------------
+   * Its own real header for the overlay on narrow layouts: pinned to
+   * the top of the viewport (not just the form column) for the whole
+   * time the overlay is scrolled, logo on the left, a docked close
+   * button on the right — replaces the old bare "logo only, floating
+   * close circle elsewhere" split. Hidden entirely ≥920px, where the
+   * two-column desktop layout keeps the brand mark in .showcase-brand
+   * and the floating .auth-exit circle instead. */
+  .auth-overlay .auth-mobile-header {
+    display: none;
+  }
+
+  @media (max-width: 920px) {
+    .auth-overlay .auth-mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 18px 12px;
+      background: color-mix(in srgb, var(--app-bg) 92%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(26,31,10,0.1);
+    }
+  }
+
+  .auth-overlay .auth-mobile-header .brand-logo,
+  .auth-overlay .showcase-brand .brand-logo {
+    height: 26px;
+    width: auto;
+    display: block;
+  }
+
+  .auth-overlay .auth-mobile-header-close {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(26,31,10,0.18);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1), background 0.15s ease;
+  }
+
+  .auth-overlay .auth-mobile-header-close:hover {
+    background: var(--app-bg);
+    transform: scale(1.06);
+  }
+
+  .auth-overlay .auth-mobile-header-close:active {
+    transform: scale(0.94);
+  }
+
+  .auth-overlay .auth-mobile-header-close svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--lime-ink);
+  }
+
+  /* Small blob next to the headline on mobile, where the showcase
+     column (and its larger greeting blob) is hidden. */
+  .auth-overlay .form-blob {
+    display: none;
+    width: 64px;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 920px) {
+    .auth-overlay .form-blob { display: block; }
+  }
+
+  .auth-overlay .form-header h2 {
+    font-size: clamp(24px, 4vw, 30px);
+    font-weight: 400;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    color: var(--lime-ink);
+  }
+
+  .auth-overlay .form-header p {
+    font-size: 14.5px;
+    color: rgba(26,31,10,0.68);
+    margin: 0;
+  }
+
+  .auth-overlay .form-header p a, .auth-overlay .switcher-link {
+    color: var(--lime-ink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(26,31,10,0.3);
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .form-header p a:hover, .switcher-link:hover { text-decoration-color: var(--lime-ink); }
+
+  /* panel transition */
+  .auth-overlay .panes { position: relative; }
+
+  .auth-overlay .pane {
+    display: none;
+    animation: pane-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .pane.active { display: block; }
+
+  @keyframes pane-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-overlay .oauth-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--lime-ink);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .auth-overlay .oauth-btn:hover {
+    box-shadow: 0 4px 14px rgba(26,31,10,0.18);
+    transform: translateY(-1px);
+  }
+
+  .auth-overlay .oauth-btn:active { transform: scale(0.98); }
+
+  .oauth-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .auth-overlay .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0;
+    color: rgba(26,31,10,0.6);
+    font-size: 12.5px;
+  }
+
+  .auth-overlay .divider::before, .auth-overlay .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(26,31,10,0.18);
+  }
+
+  .auth-overlay .field {
+    margin-bottom: 16px;
+  }
+
+  .auth-overlay .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--lime-ink);
+  }
+
+  .auth-overlay .input-shell {
+    position: relative;
+  }
+
+  .auth-overlay .field input {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 14.5px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(26,31,10,0.22);
+    background: var(--bg);
+    color: var(--ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .field input::placeholder { color: #a8a295; }
+
+  .auth-overlay .field input:focus {
+    border-color: var(--lime-ink);
+    background: var(--bg);
+    box-shadow: 0 0 0 4px rgba(26,31,10,0.12);
+  }
+
+  .auth-overlay .field.has-error input {
+    border-color: var(--danger);
+  }
+
+  .auth-overlay .field .err-msg {
+    display: none;
+    font-size: 12.5px;
+    color: var(--danger);
+    margin-top: 6px;
+  }
+
+  .field.has-error .err-msg { display: block; }
+
+  .auth-overlay .pw-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #8a8477;
+    padding: 4px;
+    display: flex;
+  }
+
+  .pw-toggle svg { width: 18px; height: 18px; }
+
+  .auth-overlay .row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 0 22px;
+  }
+
+  .auth-overlay .check-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    color: rgba(26,31,10,0.68);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .auth-overlay .check-row input[type="checkbox"] {
+    appearance: none;
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+    border: 1.5px solid rgba(26,31,10,0.28);
+    background: var(--bg);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .auth-overlay .check-row input[type="checkbox"]:checked {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .auth-overlay .check-row input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1.5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--lime);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .auth-overlay .forgot-link {
+    font-size: 13.5px;
+    color: var(--lime-ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(26,31,10,0.3);
+    text-underline-offset: 2px;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .auth-overlay .forgot-link:hover { text-decoration-color: var(--lime-ink); }
+
+  .auth-overlay .submit-btn {
+    width: 100%;
+    background: var(--ink);
+    color: var(--lime);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(26,31,10,0.5);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    position: relative;
+  }
+
+  .auth-overlay .submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 rgba(26,31,10,0.5);
+  }
+
+  .auth-overlay .submit-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(26,31,10,0.5);
+  }
+
+  .submit-btn.loading .btn-text { opacity: 0; }
+
+  .auth-overlay .spinner {
+    display: none;
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(198,255,61,0.25);
+    border-top-color: var(--lime);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .submit-btn.loading .spinner { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay .pane, .auth-overlay .card-rise, .auth-overlay .showcase-card { animation: none !important; }
+  }
+
+  .auth-overlay .success-check {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    animation: pop-in 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  @keyframes pop-in {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .auth-overlay .success-check svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--lime);
+  }
+
+  .auth-overlay .success-pane {
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .success-pane h2 { color: var(--lime-ink); margin-bottom: 10px; }
+  .success-pane p { color: rgba(26,31,10,0.68); font-size: 14.5px; margin: 0 0 24px; }
+
+  .auth-overlay .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--lime-ink);
+    text-decoration: none;
+    margin-bottom: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .auth-overlay .back-link:hover { text-decoration: underline; }
+
+  .auth-overlay .terms-note {
+    font-size: 12.5px;
+    color: rgba(26,31,10,0.6);
+    text-align: center;
+    margin-top: 22px;
+    line-height: 1.6;
+  }
+
+  .terms-note a { color: var(--lime-ink); text-decoration: underline; text-decoration-color: rgba(26,31,10,0.3); font-weight: 600; }
+  .terms-note a:hover { text-decoration-color: var(--lime-ink); }
+
+  .auth-overlay .strength-meter {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .auth-overlay .strength-meter .bar {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+    background: rgba(26,31,10,0.15);
+    transition: background 0.2s ease;
+  }
+
+  /* ============================================================
+   * Blob character (AuthBlob component) — same brand "slime" as
+   * HeroSlime/AgentBlob, inlined here so AuthOverlay stays fully
+   * self-contained (auth-overlay.css is imported globally via
+   * globals.css; agent-page.css is not, so we don't depend on it).
+   * Sits on the app's cream canvas now (not lime-on-lime), so an ink
+   * body with lime eyes/mouth still reads with plenty of contrast —
+   * no further inversion needed.
+   * ============================================================ */
+  .auth-blob {
+    display: block;
+    line-height: 0;
+  }
+  .auth-blob-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .auth-blob-wrap {
+    transform-origin: 60px 100px;
+    animation: auth-blob-idle 3.8s ease-in-out infinite;
+  }
+  .auth-blob-body {
+    fill: var(--ink);
+    stroke: var(--ink);
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+  }
+  .auth-blob-shine {
+    fill: #ffffff;
+    opacity: 0.16;
+    transform: rotate(-16deg);
+    transform-origin: 46px 46px;
+  }
+  .auth-blob-shadow {
+    fill: #000;
+    opacity: 0.1;
+  }
+  .auth-blob-eye-white { fill: var(--lime); }
+  .auth-blob-eye-pupil { fill: var(--ink); }
+  .auth-blob-eye { transform-origin: center; transition: transform 120ms ease-out; }
+  .auth-blob-eyes.is-blinking .auth-blob-eye { transform: scaleY(0.08); }
+  .auth-blob-mouth {
+    fill: none;
+    stroke: var(--lime);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+
+  @keyframes auth-blob-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.02, 0.97); }
+    50%  { transform: scale(0.985, 1.02); }
+    75%  { transform: scale(1.012, 0.99); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-blob-wrap { animation: none !important; }
+  }
