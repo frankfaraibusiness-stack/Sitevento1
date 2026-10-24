@@ -1,0 +1,80 @@
+/* ============================================================
+ * app-skeleton.css — components/AppSkeleton.tsx
+ * One shared loading state: the same orbiting lime dot ring used by
+ * BootSplash's "spinning" phase (see styles/base/boot-splash.css), with no
+ * blob, no logo, and no shimmering placeholder rows. Reused by
+ * /settings, /dashboard, /dashboard/profile, /dashboard/sites/[siteId],
+ * /widgets, /widgets/[widgetId], and the widget designer in place of
+ * each page's own ad hoc loading markup, plus app/loading.tsx for
+ * route-level navigation.
+ * ============================================================ */
+
+.app-skel {
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.app-skel-full {
+  position: fixed;
+  inset: 0;
+  /* Above the sticky header (z-index: 10 in base.css) and the bottom
+     nav (z-index: 30 in global-nav.css), matching BootSplash's own
+     .boot-splash (z-index: 9999) — a full-page loading state should
+     be fully exclusive, not sit behind the page chrome, since nothing
+     under it is usable yet. Body scroll is locked for the duration
+     via a useEffect in AppSkeleton.tsx, same convention as
+     AuthOverlay/ConnectSiteWizard/Sidebar/UpsellOverlay. */
+  z-index: 9999;
+  min-height: 100dvh;
+  /* Match BootSplash's .boot-splash background (styles/base/boot-splash.css)
+     exactly — this is the same "still loading" state continued, so it
+     shouldn't start on a different background than the boot screen it
+     follows. Full-screen lime read as too loud/unprofessional, so both
+     now share the standard app background; lime stays only as a small
+     accent on the dots themselves. */
+  background: var(--app-bg);
+  padding-top: calc(3rem + env(safe-area-inset-top, 0px));
+}
+
+.app-skel-ring {
+  position: relative;
+  width: 156px;
+  height: 156px;
+  animation: app-skel-ring-spin 2.6s linear infinite;
+}
+
+.app-skel-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  background: var(--lime);
+  border: 1.5px solid var(--lime-ink);
+  transform: translate(-50%, -50%) translate(var(--dot-x), var(--dot-y));
+  animation: app-skel-dot-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes app-skel-ring-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes app-skel-dot-pulse {
+  0%, 100% { opacity: 0.75; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-skel-ring {
+    animation: none;
+  }
+  .app-skel-dot {
+    animation: none;
+    opacity: 0.9;
+  }
+}
