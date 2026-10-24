@@ -287,3 +287,26 @@ export function defaultConfigFor(id: string): Record<string, unknown> {
   for (const f of entry.configFields) out[f.key] = f.default;
   return out;
 }
+
+// ── Admin: catalog status + custom (user-uploaded) widgets ───────────
+//
+// Every entry here is "built-in": one of WIDGET_CATALOG's ids
+// (support-chat, countdown-timer). Its rendering code ships in this
+// repo under app/w/[widgetId]/widgets/*.tsx. Deleting its catalog doc
+// doesn't remove that code — the self-heal in app/api/widget recreates
+// the doc the next time it's requested, same as before this admin UI
+// existed; "Delete" in the admin table is a forced re-push, not a
+// permanent removal.
+//
+// (There is deliberately no concept of an uploaded/custom widget here —
+// every widget's code lives in this repo, reviewed and deployed the
+// normal way, not accepted as runtime input.)
+export interface AdminWidgetStatus {
+  id: string;
+  name: string;
+  source: 'built-in';
+  pushed: boolean; // does widgets/{id} exist in Firestore right now
+  enabled: boolean | null; // null when not pushed (no doc to read)
+  version: number | null;
+  bundleUrl: string | null;
+}
