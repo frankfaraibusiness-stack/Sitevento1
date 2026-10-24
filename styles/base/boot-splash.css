@@ -1,0 +1,298 @@
+/* ============================================================
+ * boot-splash.css — full-screen boot splash (components/BootSplash.tsx).
+ *
+ * Three phases, matched to the component's Phase state:
+ *   .is-spinning   — a ring of small dots spins around the screen
+ *                    center for ~3s. Each dot also pulses gently so
+ *                    the ring doesn't look like a static sticker while
+ *                    it spins.
+ *   .is-converging — every dot flies from its ring position straight
+ *                    into the exact center and shrinks to nothing on
+ *                    arrival (~550ms). The logo mounts at the same
+ *                    instant and pops in on top.
+ *   .is-holding    — logo sits with a very slight idle breathing scale
+ *                    so it doesn't read as a frozen frame while it
+ *                    waits out its randomized 3-5s hold before onDone()
+ *                    fires.
+ * ============================================================ */
+
+  .boot-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--app-bg);
+    /* Kept for any brief instant before React hydrates/applies
+       .is-lime (see below) — the base background matches app-bg too,
+       so there's no flash on first paint. transition stays in case
+       isLime is ever driven back to false by a future change. */
+    transition: background-color 450ms ease;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Driven directly from the component's `isLime` state. Full-screen
+     lime read as too loud/unprofessional on boot, so the splash
+     background now stays on the standard app background at every
+     phase — lime is kept only as a small accent on the dots/blob
+     below, not as a full-screen wash. */
+  .boot-splash.is-lime {
+    background: var(--app-bg);
+  }
+
+  .boot-splash-stage {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---- The ring -------------------------------------------------- */
+  /* .boot-splash-ring itself is the thing that spins (a single rotate
+     animation on the whole group) — each individual dot is positioned
+     via its own --dot-x/--dot-y offset (set inline per-dot from the
+     component) and does NOT rotate itself, so dots stay upright while
+     the ring they're arranged on turns, same as hands on a clock face
+     rather than each dot tumbling in place. */
+  .boot-splash-ring {
+    position: absolute;
+    inset: 0;
+    animation: boot-ring-spin 2.6s linear infinite;
+  }
+
+  .is-converging .boot-splash-ring,
+  .is-holding .boot-splash-ring {
+    animation: none;
+  }
+
+  @keyframes boot-ring-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .boot-splash-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
+    transform: translate(-50%, -50%) translate(var(--dot-x), var(--dot-y));
+    animation: boot-dot-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes boot-dot-pulse {
+    0%, 100% { opacity: 0.75; }
+    50%      { opacity: 1; }
+  }
+
+  /* ---- Convergence ------------------------------------------------ */
+  /* Each dot animates its own translate offset from (--dot-x,--dot-y)
+     back to (0,0) — i.e. flying from its ring position straight into
+     the shared center — while shrinking and fading, like it's being
+     absorbed into the logo that's appearing underneath it. The ring's
+     own spin stops the instant this phase starts (see above) so the
+     flight path is a clean straight line in rather than a spiral. */
+  .is-converging .boot-splash-dot {
+    /* Explicit 0 delay here overrides the per-dot pulse delay set
+       inline from the component (that delay only applies to the
+       spinning-phase pulse animation) so every dot starts flying in
+       together rather than inheriting a stagger meant for a different
+       animation. */
+    animation: boot-dot-converge 480ms cubic-bezier(0.36, 0, 0.66, -0.15) forwards;
+    animation-delay: 0ms;
+  }
+
+  @keyframes boot-dot-converge {
+    0% {
+      transform: translate(-50%, -50%) translate(var(--dot-x), var(--dot-y));
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) translate(0, 0);
+      opacity: 0;
+    }
+  }
+
+  .is-holding .boot-splash-dot {
+    opacity: 0;
+  }
+
+  /* ---- Logo --------------------------------------------------------
+   * Mounted the instant convergence begins (see component), so it is
+   * already in the DOM, at rest/tiny, while the dots fly in on top of
+   * it — then plays a bouncy pop-in of its own once the dots have
+   * mostly landed. */
+  .boot-splash-logo {
+    position: relative;
+    z-index: 1;
+    width: min(42vw, 150px);
+    height: auto;
+    opacity: 0;
+    transform: scale(0.5);
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.12));
+  }
+
+  .is-converging .boot-splash-logo {
+    animation: boot-splash-logo-in 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 220ms;
+  }
+
+  @keyframes boot-splash-logo-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Holding phase starts already landed (opacity 1, scale 1 — matching
+     where boot-splash-logo-in left off) and only plays the gentle idle
+     breathing loop, rather than re-running the pop-in entrance, which
+     would otherwise snap the logo back to invisible/tiny for a frame
+     right as the phase switches. */
+  .is-holding .boot-splash-logo {
+    opacity: 1;
+    animation: boot-splash-logo-breathe 3.2s ease-in-out infinite;
+  }
+
+  @keyframes boot-splash-logo-breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.035); }
+  }
+
+  /* ---- Blob jump-scare -----------------------------------------------
+   * Pops in on top of the logo at the start of the holding phase: snaps
+   * in big and fast (startle), overshoots, then settles down to a smaller
+   * rest size before fading out — the logo stays visible underneath/
+   * behind it throughout, same shadow + eyes as the marketing hero slime,
+   * untouched. Only mounted during .is-holding (see component), so it
+   * never sits there as a static shape once its one-shot animation ends. */
+  .boot-splash-blob {
+    position: absolute;
+    z-index: 2;
+    width: min(82vw, 300px);
+    height: auto;
+    pointer-events: none;
+    animation: boot-blob-jumpscare 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .boot-splash-blob-shadow {
+    fill: rgba(0, 0, 0, 0.16);
+    filter: blur(1px);
+  }
+
+  .boot-splash-blob-body {
+    fill: var(--lime);
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+  }
+
+  .boot-splash-blob-shine {
+    fill: rgba(255, 255, 255, 0.55);
+  }
+
+  .boot-splash-blob-eyes .eye-white {
+    fill: var(--lime-ink);
+  }
+
+  .boot-splash-blob-eyes .eye-pupil {
+    fill: var(--lime);
+  }
+
+  .boot-splash-blob-mouth {
+    fill: none;
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  @keyframes boot-blob-jumpscare {
+    0%   { opacity: 0; transform: scale(0.1) rotate(-6deg); }
+    12%  { opacity: 1; transform: scale(1.35) rotate(3deg); }
+    22%  { transform: scale(0.92) rotate(-2deg); }
+    32%  { transform: scale(1.06) rotate(1deg); }
+    42%  { opacity: 1; transform: scale(1) rotate(0deg); }
+    78%  { opacity: 1; transform: scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: scale(0.85) rotate(0deg); }
+  }
+
+  /* ---- "Still alive" spinner -------------------------------------------
+   * A small ring under the logo, visible through the whole holding phase,
+   * so the screen keeps reading as active rather than frozen for the
+   * few seconds the logo just sits there. */
+  .boot-splash-spinner {
+    position: absolute;
+    bottom: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2.5px solid color-mix(in srgb, var(--lime-ink) 20%, transparent);
+    border-top-color: var(--lime-ink);
+    animation: boot-spinner-spin 0.8s linear infinite;
+  }
+
+  @keyframes boot-spinner-spin {
+    to { transform: translateX(-50%) rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boot-splash-ring {
+      animation: none;
+    }
+
+    .boot-splash-dot {
+      animation: none;
+      opacity: 0.85;
+    }
+
+    .is-converging .boot-splash-dot,
+    .is-holding .boot-splash-dot {
+      animation: boot-dot-fade-out 300ms ease-out forwards;
+    }
+
+    @keyframes boot-dot-fade-out {
+      from { opacity: 0.85; }
+      to   { opacity: 0; }
+    }
+
+    .boot-splash-logo {
+      transform: none;
+    }
+
+    .is-converging .boot-splash-logo,
+    .is-holding .boot-splash-logo {
+      animation: boot-logo-fade-in 300ms ease-out forwards;
+    }
+
+    @keyframes boot-logo-fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .boot-splash-blob {
+      animation: boot-logo-fade-in 300ms ease-out forwards;
+    }
+
+    .boot-splash-spinner {
+      animation-duration: 1.6s;
+    }
+  }
