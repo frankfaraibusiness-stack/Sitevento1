@@ -266,9 +266,9 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
     }
   }, [siteId, siteUrl, uid, flashBanner]);
 
-  // Shared by the step-2 copy button and the connected panel's "AI
-  // prompt" box — one source for the exact tag text so the two never
-  // drift apart.
+  // Shared by the step-2 copy button, step-2's own "AI prompt" tab, and
+  // the connected panel's AI prompt box — one source for the exact tag
+  // text so none of the three ever drift apart.
   const getConnectTag = useCallback(() => {
     if (!siteId) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -277,6 +277,20 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
       `<script src="${origin}/sitevento.js" data-site="${siteId}" defer></script>`
     );
   }, [siteId]);
+
+  // Same prompt text the connected panel offers, available already at
+  // step 2 — building the tag isn't the only way to add it, so the
+  // choice between "paste it yourself" and "hand it to your AI" should
+  // exist the moment the tag exists, not only after verifying.
+  const getConnectAiPrompt = useCallback(() => {
+    const tag = getConnectTag();
+    if (!tag) return '';
+    return (
+      `Add the following tag to the <head> of every page on my site` +
+      `${hostname ? ` (${hostname})` : ''}, right before the closing </head> tag. ` +
+      `Don't modify the tag, just paste it in as-is:\n\n${tag}`
+    );
+  }, [getConnectTag, hostname]);
 
   const copyConnectTag = useCallback(() => {
     const tag = getConnectTag();
@@ -322,6 +336,7 @@ export function useConnectSiteWizard(uid: string | null, plan: PlanId = 'free') 
     verifySiteTag,
     copyConnectTag,
     getConnectTag,
+    getConnectAiPrompt,
     backToDomainStep,
     resumeVerification,
     reset,
