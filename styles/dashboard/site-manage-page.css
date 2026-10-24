@@ -1,0 +1,300 @@
+/* ============================================================
+ * styles/dashboard/site-manage-page.css
+ *
+ * Stylesheet for /dashboard/sites/[siteId]
+ * (components/dashboard/SiteManagePage.tsx). Own `smp-` prefix, same
+ * convention as `agt-`/`wgp-`/`wdg-`.
+ *
+ * Deliberately NOT in app/globals.css's @import list — every other
+ * styles/*.css file ships globally, this one is imported directly by
+ * app/dashboard/sites/[siteId]/page.tsx so it only loads on this one
+ * route (same scoping trick as styles/agent/agent-page.css — see that
+ * route's page.tsx comment). Reuses the app's base
+ * --ink/--lime/--cream/--walnut tokens from base.css but owns 100% of
+ * its own layout and component rules.
+ *
+ * Design language: matches styles/agent/agent-page.css — a dark ink header
+ * card with a soft lime glow and the lime blob mascot peeking out of
+ * the corner, one bold lime beat per section (pause/resume button,
+ * stat accents), calm cream/ink/line everywhere else so the lime
+ * reads as an accent rather than wallpaper.
+ * ============================================================ */
+
+.smp-main {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--cream);
+  padding: 80px 16px 120px;
+  display: flex;
+  justify-content: center;
+}
+
+.smp-wrap {
+  width: 100%;
+  /* Same fluid-cap approach as .dash-wrap (styles/dashboard/dashboard.css). */
+  max-width: clamp(980px, 68vw, 1500px);
+}
+
+.smp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 10px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+.smp-back svg { width: 16px; height: 16px; flex-shrink: 0; }
+.smp-back:hover { background: #fff; box-shadow: 0 2px 0 rgba(34, 32, 28, 0.12); transform: translateY(-1px); }
+.smp-back:active { transform: translateY(0) scale(0.98); box-shadow: none; }
+
+/* ── Loading / not-found ─────────────────────────────────────── */
+/* Page-level loading now uses the shared <AppSkeleton> (see
+   components/AppSkeleton.tsx / styles/base/app-skeleton.css) instead of a
+   page-specific shimmer. This small inline bar is just for the
+   "Widgets" meta-value cell, which loads slightly after the rest of
+   the page (see useSiteWidgetsList in SiteManagePage.tsx). */
+.smp-meta-skel {
+  display: inline-block;
+  width: 64px;
+  height: 13px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--line) 0%, #f3f0e8 50%, var(--line) 100%);
+  background-size: 200% 100%;
+  animation: smp-shimmer 1.4s ease infinite;
+}
+@keyframes smp-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.smp-notfound { padding: 48px 24px; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 20px; }
+.smp-notfound h2 { margin: 0 0 8px; font-size: 20px; }
+.smp-notfound p { margin: 0; color: var(--walnut); font-size: 14.5px; }
+
+/* ── Identity header — dark hero card with lime glow + blob ───── */
+.smp-head {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 26px;
+  padding: 26px 26px 24px;
+  border-radius: 24px;
+  background: var(--ink);
+  isolation: isolate;
+  color: var(--cream);
+}
+.smp-head::before {
+  content: '';
+  position: absolute;
+  top: -70px;
+  right: -60px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, var(--lime) 0%, transparent 68%);
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+.smp-head > * { position: relative; z-index: 1; }
+.smp-head-blob {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  width: 76px;
+  z-index: 1;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+
+.smp-head-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+
+.smp-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cream);
+}
+.smp-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #9a948a; }
+.smp-status-pill.is-verified { background: rgba(198, 255, 61, 0.16); color: var(--lime); }
+.smp-status-pill.is-verified .smp-status-dot { background: var(--lime); }
+.smp-status-pill.is-pending { background: rgba(229, 131, 44, 0.18); color: #ffb873; }
+.smp-status-pill.is-pending .smp-status-dot { background: #ffb873; }
+.smp-status-pill.is-paused { background: rgba(255, 255, 255, 0.12); color: #cfc9bd; }
+.smp-status-pill.is-paused .smp-status-dot { background: #cfc9bd; }
+
+.smp-paused-note { font-size: 13px; color: #cfc9bd; }
+
+.smp-site-name { margin: 0 0 6px; font-size: 26px; font-weight: 700; max-width: 80%; }
+
+.smp-site-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  color: #cfc9bd;
+  font-size: 14px;
+  text-decoration: none;
+}
+.smp-site-url svg { width: 13px; height: 13px; opacity: 0.8; }
+.smp-site-url:hover { color: var(--lime); }
+
+.smp-domain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.smp-domain-item { display: flex; flex-direction: column; gap: 3px; }
+.smp-domain-item-wide { grid-column: 1 / -1; }
+.smp-domain-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #a7a195; }
+.smp-domain-value { font-size: 14.5px; font-weight: 600; color: var(--cream); }
+.smp-domain-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.smp-domain-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: var(--cream);
+}
+.smp-domain-empty { grid-column: 1 / -1; margin: 0; font-size: 13.5px; color: #a7a195; }
+
+/* ── Sections ──────────────────────────────────────────────────── */
+.smp-section { margin-bottom: 26px; }
+.smp-section-head { margin-bottom: 14px; }
+.smp-section-head h2 { margin: 0; font-size: 18px; font-weight: 700; color: var(--ink); }
+
+/* ── Actions ───────────────────────────────────────────────────── */
+.smp-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.smp-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.smp-action-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+.smp-action-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 2px 0 rgba(34, 32, 28, 0.12); }
+.smp-action-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); box-shadow: none; }
+.smp-action-btn:disabled { opacity: 0.6; cursor: default; }
+
+.smp-action-verify { border-color: #fad9b8; background: var(--dash-orange-surface); color: var(--dash-orange-ink); }
+.smp-action-pause { border-color: var(--lime-ink); background: var(--lime); color: var(--lime-ink); }
+.smp-action-resume { border-color: var(--lime-ink); background: var(--lime); color: var(--lime-ink); }
+.smp-action-remove { border-color: #f3c9c3; background: #fdf0ee; color: #a03c30; }
+
+/* ── Stats ─────────────────────────────────────────────────────── */
+.smp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.smp-stat-card {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.smp-stat-card-accent { border-color: var(--lime-ink); background: var(--lime); }
+.smp-stat-label { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--walnut); }
+.smp-stat-card-accent .smp-stat-label { color: var(--lime-ink); opacity: 0.75; }
+.smp-stat-value { font-size: 28px; font-weight: 800; color: var(--ink); }
+
+.smp-stats-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 760px) {
+  .smp-stats-row { grid-template-columns: 1fr; }
+}
+
+.smp-panel {
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+.smp-panel h3 { margin: 0 0 14px; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.smp-panel-empty { margin: 0; font-size: 13.5px; color: var(--walnut); }
+
+.smp-countries-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.smp-country-row { display: grid; grid-template-columns: 110px 1fr 28px; align-items: center; gap: 10px; }
+.smp-country-name { font-size: 13.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.smp-country-bar-track { height: 8px; border-radius: 999px; background: var(--cream-deep); overflow: hidden; }
+.smp-country-bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--lime); }
+.smp-country-count { font-size: 12.5px; font-weight: 700; color: var(--walnut); text-align: right; }
+
+.smp-meta-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.smp-meta-row:last-child { border-bottom: none; }
+.smp-meta-label { font-size: 13px; color: var(--walnut); flex-shrink: 0; }
+.smp-meta-value { font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: right; }
+.smp-widgets-on { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.smp-widgets-names { font-size: 11.5px; font-weight: 500; color: var(--walnut); max-width: 200px; }
+
+/* ── Remove confirm sheet (own smp- namespace, mirrors the shared
+   css-sheet pattern used elsewhere so it reads the same way the
+   Connected Sites card's disconnect sheet does) ──────────────────── */
+.smp-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(34, 32, 28, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 80;
+}
+.smp-sheet {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--bg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+.smp-sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; color: var(--ink); }
+.smp-sheet-msg { font-size: 13.5px; line-height: 1.5; color: var(--walnut); margin: 0 0 18px; }
+.smp-sheet-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.smp-sheet-btn {
+  padding: 9px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.smp-sheet-btn:hover:not(:disabled) { background: var(--cream); }
+.smp-sheet-btn:disabled { opacity: 0.6; cursor: default; }
+.smp-sheet-btn-danger { border-color: #f3c9c3; background: #fdf0ee; color: #a03c30; }
+
+@media (max-width: 560px) {
+  .smp-main { padding: 80px 12px 100px; }
+  .smp-head { padding: 22px 18px 20px; }
+  .smp-site-name { font-size: 22px; max-width: 100%; }
+  .smp-head-blob { width: 56px; top: 8px; right: 12px; }
+}
