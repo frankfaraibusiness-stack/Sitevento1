@@ -199,6 +199,16 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate,
             </span>
             Settings
           </a>
+          <a href="/admin/widgets" className="sidebar-link" target="_blank" rel="noopener noreferrer">
+            <span className="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <rect x="3" y="4" width="18" height="4" rx="1" />
+                <rect x="3" y="10" width="18" height="4" rx="1" />
+                <rect x="3" y="16" width="18" height="4" rx="1" />
+              </svg>
+            </span>
+            Admin
+          </a>
           <a href="/support" className="sidebar-link" target="_blank" rel="noopener noreferrer">
             <span className="icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
