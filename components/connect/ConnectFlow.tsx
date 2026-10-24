@@ -5,10 +5,13 @@
 // ConnectSiteWizard.tsx, now removed). Three visual stages:
 //
 //   1. Domain — pick a domain, choose what you're granting sitevento.
-//   2. Tag — paste the tag, verify. Success flashes inline here (the
-//      old separate "step 3" success card is gone; verifying
-//      successfully just flips the hook's `connected` flag) and then
-//      auto-advances to stage 3 a beat later.
+//   2. Tag — two tabs, "Paste it myself" (the raw tag + copy button)
+//      and "Hand it to my AI" (the same prompt text stage 3 offers,
+//      available here too — verify doesn't care which route produced
+//      the tag). Success flashes inline here (the old separate "step
+//      3" success card is gone; verifying successfully just flips the
+//      hook's `connected` flag) and then auto-advances to stage 3 a
+//      beat later.
 //   3. Connected — a dedicated "what's next" screen: a small live
 //      animation confirming the link is active, a short explanation of
 //      what sitevento now does for this site, and two calm CTAs (go to
@@ -73,6 +76,20 @@ export function ConnectFlow({ uid, plan = 'free', resumeTarget, onLimitReached, 
   // is presented as its own screen even though the hook still just
   // calls it step 'tag' underneath.
   const stage: 'domain' | 'tag' | 'connected' = wizard.connected ? 'connected' : wizard.step;
+
+  // Each stage is a full new "page" of content, but the flow never
+  // unmounts/remounts — it's the same scrollable container swapping
+  // its children — so without this the browser leaves scroll position
+  // exactly where "Continue"/"Verify" was clicked. On a step whose
+  // content runs past the bottom of that scroll position, the next
+  // stage then renders mostly below the fold, starting the user
+  // partway down a screen they haven't read yet. Scroll back to the
+  // top of the flow (not necessarily the very top of the page, so the
+  // fixed header + sticky rail stay correctly in view) every time the
+  // visible stage changes.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [stage]);
 
   function handleUpgrade() {
     if (onUpgradeClick) onUpgradeClick();
@@ -142,74 +159,10 @@ export function ConnectFlow({ uid, plan = 'free', resumeTarget, onLimitReached, 
           )}
 
           {stage === 'tag' && (
-            <div className="cflow-step">
-              <button className="cflow-back" onClick={wizard.backToDomainStep}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-                Back
-              </button>
-              <span className="cflow-step-label">
-                <span className="dot" />
-                Step 2 of 3
-              </span>
-              <h1>Add this tag &amp; verify</h1>
-              <p className="cflow-sub">
-                Paste this into the <code>&lt;head&gt;</code> of <span>{wizard.hostname || 'your site'}</span>, then
-                verify below — this step covers both adding the tag and confirming the connection.
-              </p>
-
-              <div className="cflow-tag-box">
-                &lt;<span className="tag-name">meta</span> <span className="attr">name</span>=
-                <span className="val">&quot;sitevento&quot;</span> <span className="attr">content</span>=
-                <span className="val">&quot;{wizard.siteId}&quot;</span>&gt;
-                <br />
-                &lt;<span className="tag-name">script</span> <span className="attr">src</span>=
-                <span className="val">
-                  &quot;{typeof window !== 'undefined' ? window.location.origin : ''}/sitevento.js&quot;
-                </span>{' '}
-                <span className="attr">data-site</span>=<span className="val">&quot;{wizard.siteId}&quot;</span>{' '}
-                <span className="attr">defer</span>&gt;&lt;/<span className="tag-name">script</span>&gt;
-              </div>
-              <button type="button" className="cflow-copy-btn" onClick={wizard.copyConnectTag}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <rect x="9" y="9" width="12" height="12" rx="2" />
-                  <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
-                </svg>
-                <span>{wizard.copyLabel}</span>
-              </button>
-
-              <div className="cflow-note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 8v5M12 16h.01" />
-                </svg>
-                <span>
-                  <strong>This tag is unique to your account</strong> — it&apos;s how sitevento knows which dashboard
-                  a visit, lead, or overlay belongs to. Don&apos;t share it or post it publicly.
-                </span>
-              </div>
-
-              <div
-                className={
-                  'cflow-verify-status' +
-                  (wizard.verifyStatus === 'ok' ? ' ok' : wizard.verifyStatus === 'fail' ? ' fail' : wizard.verifyStatus === 'checking' ? ' pending' : '')
-                }
-              >
-                <span className="vdot2" />
-                <span>{wizard.verifyMessage}</span>
-              </div>
-
-              <button
-                type="button"
-                className={`cflow-submit${wizard.verifySubmitting ? ' loading' : ''}`}
-                disabled={wizard.verifySubmitting}
-                onClick={wizard.verifySiteTag}
-              >
-                <span className="btn-text">Verify site</span>
-                <span className="spinner" />
-              </button>
-            </div>
+            <TagStage
+              wizard={wizard}
+              origin={typeof window !== 'undefined' ? window.location.origin : ''}
+            />
           )}
 
           {stage === 'connected' && (
@@ -222,6 +175,167 @@ export function ConnectFlow({ uid, plan = 'free', resumeTarget, onLimitReached, 
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Stage 2: Tag &amp; verify — redesigned as a two-tab card (Paste it
+// yourself / Hand it to your AI) instead of one fixed "here's a code
+// block" layout. Both tabs end at the same verify control underneath,
+// since either route produces the identical tag on the page — verify
+// doesn't care how it got there. ────────────────────────────────────
+type TagMethod = 'manual' | 'ai';
+
+function TagStage({
+  wizard,
+  origin,
+}: {
+  wizard: ReturnType<typeof useConnectSiteWizard>;
+  origin: string;
+}) {
+  const [method, setMethod] = useState<TagMethod>('manual');
+  const aiPrompt = wizard.getConnectAiPrompt();
+
+  return (
+    <div className="cflow-step cflow-tagstage">
+      <button className="cflow-back" onClick={wizard.backToDomainStep}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back
+      </button>
+      <span className="cflow-step-label">
+        <span className="dot" />
+        Step 2 of 3
+      </span>
+      <h1>Add this tag &amp; verify</h1>
+      <p className="cflow-sub">
+        Add one tag to <code>&lt;head&gt;</code> on <span>{wizard.hostname || 'your site'}</span> — paste it in
+        yourself, or hand the prompt to an AI coding assistant to do it for you. Either way, verify below once
+        it&apos;s live.
+      </p>
+
+      <div className="cflow-method-tabs" role="tablist" aria-label="How to add the tag">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={method === 'manual'}
+          className={`cflow-method-tab${method === 'manual' ? ' is-active' : ''}`}
+          onClick={() => setMethod('manual')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16" />
+          </svg>
+          Paste it myself
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={method === 'ai'}
+          className={`cflow-method-tab${method === 'ai' ? ' is-active' : ''}`}
+          onClick={() => setMethod('ai')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="M12 2 9 9l-7 3 7 3 3 7 3-7 7-3-7-3-3-7Z" />
+          </svg>
+          Hand it to my AI
+        </button>
+      </div>
+
+      <div className="cflow-method-panel">
+        {method === 'manual' ? (
+          <>
+            <div className="cflow-tag-box">
+              &lt;<span className="tag-name">meta</span> <span className="attr">name</span>=
+              <span className="val">&quot;sitevento&quot;</span> <span className="attr">content</span>=
+              <span className="val">&quot;{wizard.siteId}&quot;</span>&gt;
+              <br />
+              &lt;<span className="tag-name">script</span> <span className="attr">src</span>=
+              <span className="val">&quot;{origin}/sitevento.js&quot;</span>{' '}
+              <span className="attr">data-site</span>=<span className="val">&quot;{wizard.siteId}&quot;</span>{' '}
+              <span className="attr">defer</span>&gt;&lt;/<span className="tag-name">script</span>&gt;
+            </div>
+            <button type="button" className="cflow-copy-btn" onClick={wizard.copyConnectTag}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <rect x="9" y="9" width="12" height="12" rx="2" />
+                <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+              </svg>
+              <span>{wizard.copyLabel}</span>
+            </button>
+            <p className="cflow-method-hint">
+              Paste this right before the closing <code>&lt;/head&gt;</code> tag on every page you want tracked.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="cflow-prompt-box cflow-prompt-box-lg">{aiPrompt}</div>
+            <AiPromptCopyButton prompt={aiPrompt} />
+            <p className="cflow-method-hint">
+              Paste this into Claude, ChatGPT, Cursor, or any AI coding assistant pointed at your site&apos;s
+              codebase — it&apos;ll add the tag for you.
+            </p>
+          </>
+        )}
+      </div>
+
+      <div className="cflow-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v5M12 16h.01" />
+        </svg>
+        <span>
+          <strong>This tag is unique to your account</strong> — it&apos;s how sitevento knows which dashboard a
+          visit, lead, or overlay belongs to. Don&apos;t share it or post it publicly.
+        </span>
+      </div>
+
+      <div
+        className={
+          'cflow-verify-status' +
+          (wizard.verifyStatus === 'ok'
+            ? ' ok'
+            : wizard.verifyStatus === 'fail'
+            ? ' fail'
+            : wizard.verifyStatus === 'checking'
+            ? ' pending'
+            : '')
+        }
+      >
+        <span className="vdot2" />
+        <span>{wizard.verifyMessage}</span>
+      </div>
+
+      <button
+        type="button"
+        className={`cflow-submit${wizard.verifySubmitting ? ' loading' : ''}`}
+        disabled={wizard.verifySubmitting}
+        onClick={wizard.verifySiteTag}
+      >
+        <span className="btn-text">Verify site</span>
+        <span className="spinner" />
+      </button>
+    </div>
+  );
+}
+
+function AiPromptCopyButton({ prompt }: { prompt: string }) {
+  const [label, setLabel] = useState('Copy prompt');
+  function copy() {
+    if (!prompt) return;
+    const done = () => {
+      setLabel('Copied');
+      setTimeout(() => setLabel('Copy prompt'), 1600);
+    };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(prompt).then(done).catch(done);
+    else done();
+  }
+  return (
+    <button type="button" className="cflow-copy-btn" onClick={copy}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <rect x="9" y="9" width="12" height="12" rx="2" />
+        <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+      </svg>
+      <span>{label}</span>
+    </button>
   );
 }
 
