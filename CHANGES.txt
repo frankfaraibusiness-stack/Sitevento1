@@ -1,0 +1,57 @@
+Admin widget management — unzip over your existing project root to apply.
+
+All files are modified or new (no deletions):
+
+  components/layout/Sidebar.tsx          — modified
+  styles/admin-widgets.css               — modified
+  lib/widgets.ts                         — modified
+  components/admin/AdminWidgetsClient.tsx — modified
+  app/admin/widgets/page.tsx             — modified (comment only)
+  app/api/admin/widgets/route.ts         — new
+  app/api/admin/widgets/[id]/route.ts    — new
+  app/api/seed-widget-catalog/route.ts   — modified
+
+What changed:
+
+1. Sidebar now links to the admin page
+   components/layout/Sidebar.tsx
+   Added an "Admin" item that opens /admin/widgets in a new tab. The
+   page itself stays standalone (no header/sidebar/auth) — only a link
+   to it was added.
+
+2. New read-only status endpoint
+   app/api/admin/widgets/route.ts (new)
+   GET returns, for every id in lib/widgets.ts's WIDGET_CATALOG,
+   whether its widgets/{id} Firestore doc currently exists, plus its
+   enabled/version/bundleUrl if so. Public, no auth, read-only.
+
+3. New per-widget delete endpoint
+   app/api/admin/widgets/[id]/route.ts (new)
+   DELETE removes one widget's catalog doc. For a built-in widget this
+   isn't permanent — app/api/widget's existing self-heal recreates the
+   doc the next time any visitor requests it — so this is really
+   "force a clean re-push," not a permanent removal. Only ever
+   operates on known WIDGET_CATALOG ids.
+
+4. Seed endpoint can now target a single widget
+   app/api/seed-widget-catalog/route.ts
+   POST now accepts an optional JSON body { ids: string[] } to push
+   only the named widgets instead of always re-seeding every shipped
+   widget. Empty/missing/malformed body still pushes everything,
+   unchanged from before. Any id not already in the route's own
+   SHIPPED_WIDGET_IDS allowlist is ignored.
+
+5. Admin page rebuilt as a status table
+   components/admin/AdminWidgetsClient.tsx, styles/admin-widgets.css
+   Replaced the single "Deploy" button with: a status table (one row
+   per widget, pushed/not-pushed pill, enabled, version, bundle URL),
+   a per-row "Push" / "Re-push" button (uses the new ids filter above
+   so it only touches that one row), a per-row "Delete" button, a
+   "Push all" button for seeding everything at once, and a Refresh
+   button. Row-level actions show their own inline errors without
+   clearing the rest of the table.
+
+6. Updated page comment
+   app/admin/widgets/page.tsx
+   Comment now describes the table/push/delete UI and the sidebar
+   link, instead of the old single-button "Deploy" description.
