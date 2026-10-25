@@ -1,0 +1,182 @@
+/* styles/onboarding/onboarding-step-3.css
+ *
+ * Step 3 — tone="blue". Widget/banner mock + 3-card feature grid.
+ * Classes referenced by components/onboarding/OnboardingSteps.tsx's
+ * StepThree().
+ */
+
+/* ============ Widget / banner mock ============ */
+
+.onb-widget-mock {
+  position: relative;
+  width: 100%;
+  height: 124px;
+  border-radius: 1.1rem;
+  overflow: hidden;
+  background: var(--app-bg);
+  border: 1.5px solid var(--dash-blue-ink);
+  box-shadow: 0 5px 0 var(--dash-blue-ink), 0 18px 34px -16px rgba(26, 31, 10, 0.35);
+  margin: 0 0 1.5rem;
+}
+
+.onb-widget-mock-page {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 22px,
+    var(--cream-deep);
+  opacity: 0.7;
+}
+
+.onb-widget-mock-banner {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.85rem;
+  background: var(--dash-blue-surface);
+  border: 1.5px solid var(--dash-blue-ink);
+  box-shadow: 0 3px 0 var(--dash-blue-ink), 0 10px 22px -10px rgba(23, 90, 146, 0.4);
+  animation: onb-banner-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both, onb-banner-bob 3.6s ease-in-out 0.9s infinite;
+}
+
+@keyframes onb-banner-rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes onb-banner-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb-widget-mock-banner { animation: none; }
+}
+
+.onb-widget-mock-banner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dash-blue-ink);
+  flex-shrink: 0;
+}
+
+.onb-widget-mock-banner-text {
+  flex: 1 1 auto;
+  font-family: var(--onb-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--dash-blue-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.onb-widget-mock-banner-btn {
+  flex-shrink: 0;
+  font-family: var(--onb-sans);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--dash-blue-ink);
+  color: #fff;
+}
+
+/* ============ Feature grid (3 cards) ============ */
+
+.onb-feature-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+  text-align: left;
+}
+
+.onb-feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: var(--surface, var(--cream));
+  background: color-mix(in srgb, var(--ink) 3%, var(--cream));
+  border: 1px solid var(--line);
+  animation: onb-card-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.onb-feature-grid .onb-feature-card:nth-child(1) { animation-delay: 0.05s; }
+.onb-feature-grid .onb-feature-card:nth-child(2) { animation-delay: 0.14s; }
+.onb-feature-grid .onb-feature-card:nth-child(3) { animation-delay: 0.23s; }
+
+@keyframes onb-card-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb-feature-card { animation: none; }
+}
+
+.onb-feature-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.onb-feature-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.onb-feature-icon-blue {
+  background: var(--dash-blue-surface);
+  color: var(--dash-blue-ink);
+  border: 1px solid var(--dash-blue-border);
+}
+
+.onb-feature-icon-green {
+  background: var(--dash-green-surface);
+  color: var(--dash-green-ink);
+  border: 1px solid var(--dash-green-border);
+}
+
+.onb-feature-icon-purple {
+  background: var(--dash-purple-surface);
+  color: var(--dash-purple-ink);
+  border: 1px solid var(--dash-purple-border);
+}
+
+.onb-feature-card strong {
+  font-family: var(--onb-sans);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.onb-feature-card p {
+  margin: 0;
+  font-family: var(--onb-sans);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+@media (min-width: 640px) {
+  .onb-feature-grid { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+  .onb-feature-card { align-items: center; text-align: center; }
+}
+
+@media (min-width: 720px) {
+  .onb-widget-mock { height: 150px; }
+}
