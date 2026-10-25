@@ -735,6 +735,15 @@
 
     function renderWidget(container, widget) {
       mountWidgetStyles();
+      // Expandable widgets' sizing rules (collapsed launcher -> full
+      // panel/modal on open) live in mountAutoStyles() below; ensure
+      // they're present even if this widget was placed manually rather
+      // than through the auto-mount path, so the open/close
+      // postMessage bridge always has somewhere to apply its class
+      // toggle.
+      if (widget && (widget.id === 'support-chat' || widget.id === 'spin-reward' || widget.id === 'appointment-booking')) {
+        mountAutoStyles();
+      }
       container.innerHTML = '';
 
       if (widget.type === 'iframe' && widget.bundleUrl) {
@@ -912,26 +921,82 @@
         'pointer-events:none;}' +
         '#sv-auto-scroll-end .sv-widget-frame{width:100%;height:100%;' +
         'background:transparent;pointer-events:auto;}' +
-        // support-chat specifically needs to be able to grow to a true
-        // full-screen panel on mobile (sticky header + sticky input,
-        // covering the whole viewport) while still looking like a
-        // small bottom-left launcher bubble the rest of the time — a
-        // fixed 336x480 box (the generic corner sizing above) can't do
-        // both. Its frame is viewport-covering and pointer-events:none
-        // by default so it never blocks clicks on the host page
-        // outside its own visible bubble/panel; the inner widget
-        // (LimeSupportChatWidget.tsx) re-enables pointer-events only
-        // on the launcher button and the open panel themselves, and
-        // anchors both to the bottom-left corner itself via its own
-        // fixed positioning — so this box\u2019s bounds are never what
-        // determines where the chat sits, only how far it\u2019s allowed
-        // to expand.
-        '[data-sitevento-widget="support-chat"]{position:fixed !important;' +
-        'inset:0 !important;z-index:2147483100;}' +
-        '[data-sitevento-widget="support-chat"] .sv-widget-frame{' +
-        'position:static;width:100% !important;height:100% !important;' +
-        'max-width:none !important;background:transparent;pointer-events:none;}';
+        // ── Expandable corner widgets ──────────────────────────────
+        // Some corner widgets (support-chat, spin-reward, appointment-
+        // booking) open into something bigger than the generic 336x480
+        // box above: support-chat needs a true full-viewport panel on
+        // mobile, and spin-reward/appointment-booking each open a
+        // `position:fixed;inset:0` modal INSIDE their iframe meant to
+        // cover the whole screen with a backdrop.
+        //
+        // That inset:0 is relative to the iframe's own viewport, which
+        // is only ever as big as the browser actually renders the
+        // iframe element — so as long as the generic 336x480 corner
+        // box above is what sizes these iframes, their "fullscreen"
+        // modal is clipped to a 336x480 window: the launcher button
+        // still responds to clicks (so it LOOKS broken, not just
+        // small), but the modal it opens is invisible or cut off,
+        // which reads as "I click and nothing happens."
+        //
+        // A prior version of this tried keeping support-chat's iframe
+        // permanently full-viewport with pointer-events:none, hoping
+        // the widget inside could selectively re-enable it on just its
+        // own button/panel. That doesn't work: pointer-events:none set
+        // on an <iframe> element from the PARENT page's stylesheet
+        // blocks the parent from ever dispatching events into that
+        // iframe at all — nothing the iframe's own document does
+        // internally can hand that back. Hence: visible but completely
+        // unclickable.
+        //
+        // Fix: every expandable widget's iframe stays sized to its
+        // collapsed launcher by default (so it never needs pointer-
+        // events:none and never blocks clicks on the rest of the
+        // page), and posts a message to this window the moment it
+        // opens/closes (see EXPANDABLE_WIDGET_IDS below and each
+        // widget's own postMessage effect). The listener this arms
+        // grows that SAME iframe — not a new overlay — to full-
+        // viewport only while it's actually open, then shrinks it back
+        // on close, so inset:0 inside the iframe lines up with the
+        // real screen exactly when it needs to.
+        '[data-sitevento-widget].sv-expandable{transition:width .15s ease,height .15s ease;}' +
+        '[data-sitevento-widget].sv-expandable.sv-expanded{position:fixed;inset:0;' +
+        'bottom:auto;left:auto;right:auto;top:auto;width:100%;height:100%;' +
+        'max-width:none;max-height:none;z-index:2147483100;}' +
+        '[data-sitevento-widget].sv-expandable .sv-widget-frame{width:100%;height:100%;background:transparent;}' +
+        // support-chat's desktop "open" size is a floating card, not a
+        // true fullscreen takeover — only its mobile open state (and
+        // spin-reward/appointment-booking's modal, which always wants
+        // a backdrop over the whole screen) use the inset:0 rule above.
+        '[data-sitevento-widget="support-chat"]{width:56px;height:56px;}' +
+        '[data-sitevento-widget="support-chat"].sv-expanded.sv-chat-desktop{' +
+        'position:fixed;inset:auto;bottom:16px;left:16px;top:auto;right:auto;' +
+        'width:384px;height:600px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);}';
       document.head.appendChild(style);
+    }
+
+    // Widgets whose open state needs more room than the generic
+    // 336x480 corner box — see the CSS comment above. Each one posts
+    // { source: 'sitevento-widget', widgetId, open, isMobile? } to this
+    // window from inside its iframe when it opens/closes.
+    var EXPANDABLE_WIDGET_IDS = { 'support-chat': 1, 'spin-reward': 1, 'appointment-booking': 1 };
+
+    // Listens for the open/closed state an expandable widget posts
+    // from inside its iframe and resizes that iframe's host element
+    // accordingly.
+    function startExpandableWidgetBridge() {
+      window.addEventListener('message', function (event) {
+        var data = event && event.data;
+        if (!data || data.source !== 'sitevento-widget' || !EXPANDABLE_WIDGET_IDS[data.widgetId]) return;
+        var el = document.querySelector('[data-sitevento-widget="' + data.widgetId + '"]');
+        if (!el) return;
+        el.classList.add('sv-expandable');
+        el.classList.toggle('sv-expanded', !!data.open);
+        // support-chat only: desktop-open uses a floating card, not
+        // the shared fullscreen rule, so it needs its own class too.
+        if (data.widgetId === 'support-chat') {
+          el.classList.toggle('sv-chat-desktop', !!data.open && !data.isMobile);
+        }
+      });
     }
 
     // Lazily creates (once) and returns the shared positioned container
@@ -1072,6 +1137,13 @@
       autoMountWidgets();
     }
     startAutoMount();
+
+    // Armed unconditionally (not gated on document.body like the
+    // mount functions above) — it's just an event listener, safe to
+    // attach immediately, and needs to be in place before any
+    // expandable widget's iframe can post its first open/closed
+    // message.
+    startExpandableWidgetBridge();
   } catch (e) {
     // Never throw into the host page.
   }
