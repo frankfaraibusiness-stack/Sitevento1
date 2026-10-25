@@ -1,14 +1,7 @@
 'use client';
 
 // components/dashboard/DashboardShell.tsx
-//
-// Premium redesign of the dashboard body: a lime-native hero header with
-// the site switcher, animated stat tiles, an ambient plan-usage/upsell
-// strip, the sites management rail, Quick Tools, and the existing
-// visit/lead/blocked panels — all wrapped in new `dnx-*` classnames
-// (styles/dashboard/dashboard-premium.css) that sit directly on the page's lime
-// background rather than inside their own boxed-off sections. Lives at
-// /dashboard (see app/dashboard/page.tsx).
+
 import { useEffect, useState } from 'react';
 import { useNavRouter } from '@/hooks/useNavPending';
 import type { User } from 'firebase/auth';
@@ -31,18 +24,16 @@ import { BlockedVisitorsPanel } from './BlockedVisitorsPanel';
 
 interface DashboardShellProps {
   user: User;
-  // Lifted from useSites() up into DashboardClient so the single
-  // fullscreen loading gate there can wait on dashState too, instead
-  // of this component owning its own duplicate subscription and
-  // flashing its own inline AppSkeleton once that outer gate closes.
-  // See DashboardClient's comment on the gate for the full story.
   sites: Site[];
   activeSiteId: string | null;
   setActiveSiteId: (id: string) => void;
   activeSite: Site | null;
   dashState: DashState;
   errorMessage: string;
-  disconnectSite: (siteId: string) => Promise<void> | Promise<boolean>;
+
+  // Supports disconnect functions that return either void or a boolean.
+  disconnectSite: (siteId: string) => void | Promise<void | boolean>;
+
   onOpenAddSiteModal: () => void;
   onResumeVerification: (site: { id: string; url: string }) => void;
   onLeadsCountChange: (count: number) => void;
@@ -62,7 +53,13 @@ export function DashboardShell({
   onLeadsCountChange,
 }: DashboardShellProps) {
   const router = useNavRouter();
-  const { visits, leads, stats, toggleBlockVisit } = useActiveSiteData(user.uid, activeSiteId, user);
+
+  const { visits, leads, stats, toggleBlockVisit } = useActiveSiteData(
+    user.uid,
+    activeSiteId,
+    user
+  );
+
   const { planId } = useUserProfile(user);
   const { limits: accountLimits } = useAccountLimits(user);
 
@@ -70,20 +67,21 @@ export function DashboardShell({
 
   useEffect(() => {
     if (!siteAlertOpen) return;
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+
+    const previousOverflow = document.body.style.overflow;
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
         setSiteAlertOpen(false);
       }
     }
+
     document.addEventListener('keydown', handleEscape);
-    // Full-screen takeover, so lock background scroll the same way
-    // ConnectSiteWizard does for its own modal — otherwise the
-    // dashboard underneath can still scroll (and its scroll position
-    // shifts) while this covers the whole viewport.
     document.body.style.overflow = 'hidden';
+
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
     };
   }, [siteAlertOpen]);
 
@@ -91,12 +89,6 @@ export function DashboardShell({
     onLeadsCountChange(stats.leadsCount);
   }, [stats.leadsCount, onLeadsCountChange]);
 
-  // dashState is now owned by DashboardClient (see its comment), whose
-  // single fullscreen gate already keeps the loader up until dashState
-  // leaves 'loading' — so this component should never actually mount
-  // while it's still 'loading'. Render nothing rather than a second,
-  // inline <AppSkeleton> in that brief in-between render, so there's
-  // no second spinner flash under the gate.
   if (dashState === 'loading') {
     return null;
   }
@@ -107,14 +99,29 @@ export function DashboardShell({
         <div className="dashboard-empty">
           <div className="dash-empty-inner">
             <div className="dash-empty-error-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
                 <circle cx="12" cy="12" r="9" />
-                <path d="M12 8v5M12 16.5h.01" strokeLinecap="round" />
+                <path
+                  d="M12 8v5M12 16.5h.01"
+                  strokeLinecap="round"
+                />
               </svg>
             </div>
+
             <h2>Couldn&apos;t load your dashboard</h2>
             <p>{errorMessage}</p>
-            <button className="btn-primary" onClick={() => window.location.reload()}>
+
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => window.location.reload()}
+            >
               Retry
             </button>
           </div>
@@ -141,29 +148,66 @@ export function DashboardShell({
             onSelect={setActiveSiteId}
             onAddSite={onOpenAddSiteModal}
           />
-          <h1 className="dnx-hero-title">Welcome back{user.displayName ? `, ${user.displayName.split(' ')[0]}` : ''}</h1>
-          <p className="dnx-hero-sub">Here&apos;s what&apos;s happening across your {sites.length === 1 ? 'site' : 'sites'} right now.</p>
+
+          <h1 className="dnx-hero-title">
+            Welcome back
+            {user.displayName
+              ? `, ${user.displayName.split(' ')[0]}`
+              : ''}
+          </h1>
+
+          <p className="dnx-hero-sub">
+            Here&apos;s what&apos;s happening across your{' '}
+            {sites.length === 1 ? 'site' : 'sites'} right now.
+          </p>
         </div>
 
         {activeSite?.status === 'pending' && (
           <div className="dnx-verify-banner">
-            <span className="dnx-verify-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <span
+              className="dnx-verify-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path d="M12 3l7 3v5c0 5-3.2 8.3-7 10-3.8-1.7-7-5-7-10V6l7-3z" />
                 <path d="M9 12.2l2 2 4-4.4" />
               </svg>
             </span>
+
             <div className="dnx-verify-text">
               <strong>Not verified yet.</strong>
-              <span>This site won&apos;t log visits or accept banners until the tag is confirmed.</span>
+              <span>
+                This site won&apos;t log visits or accept banners until
+                the tag is confirmed.
+              </span>
             </div>
+
             <button
               type="button"
               className="dnx-verify-cta"
-              onClick={() => activeSite && onResumeVerification({ id: activeSite.id, url: activeSite.url })}
+              onClick={() => {
+                if (!activeSite) return;
+
+                onResumeVerification({
+                  id: activeSite.id,
+                  url: activeSite.url,
+                });
+              }}
             >
               Finish verifying
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                aria-hidden="true"
+              >
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
@@ -173,6 +217,7 @@ export function DashboardShell({
         <div className="dnx-section-head">
           <h2>Overview</h2>
         </div>
+
         <OverviewStats
           totalVisits={stats.total}
           uniqueVisitors={stats.unique}
@@ -201,18 +246,28 @@ export function DashboardShell({
             onSelect={setActiveSiteId}
             onAddSite={onOpenAddSiteModal}
             onDisconnect={disconnectSite}
-            onManageSite={(siteId) => router.push(`/dashboard/sites/${siteId}`)}
+            onManageSite={(siteId) =>
+              router.push(`/dashboard/sites/${siteId}`)
+            }
           />
         )}
 
         <div id="panelOverlay">
-          <FeatureOptionsGrid onOpenSiteAlert={() => setSiteAlertOpen(true)} />
+          <FeatureOptionsGrid
+            onOpenSiteAlert={() => setSiteAlertOpen(true)}
+          />
         </div>
 
         <div id="panelVisits">
           <VisitLogPanel
             visits={visits}
-            onToggleBlock={(visitId, blockedValue, visitorId) => toggleBlockVisit(visitId, blockedValue, visitorId)}
+            onToggleBlock={(visitId, blockedValue, visitorId) =>
+              toggleBlockVisit(
+                visitId,
+                blockedValue,
+                visitorId
+              )
+            }
           />
         </div>
 
@@ -222,25 +277,53 @@ export function DashboardShell({
 
         <BlockedVisitorsPanel
           blocked={stats.blocked}
-          onUnblock={(visitId, visitorId) => toggleBlockVisit(visitId, false, visitorId)}
+          onUnblock={(visitId, visitorId) =>
+            toggleBlockVisit(visitId, false, visitorId)
+          }
         />
       </div>
 
       {siteAlertOpen && (
-        <div className="feat-panel-screen" role="dialog" aria-modal="true" aria-label="Site Alert">
+        <div
+          className="feat-panel-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site Alert"
+        >
           <div className="feat-panel-head">
             <div className="feat-panel-head-text">
               <h2>Live banner</h2>
-              <span>Push a full-screen or popup banner to this site, right now.</span>
+              <span>
+                Push a full-screen or popup banner to this site,
+                right now.
+              </span>
             </div>
-            <button type="button" className="feat-panel-close" aria-label="Close" onClick={() => setSiteAlertOpen(false)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+
+            <button
+              type="button"
+              className="feat-panel-close"
+              aria-label="Close"
+              onClick={() => setSiteAlertOpen(false)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
                 <path d="M5 5l14 14M19 5L5 19" />
               </svg>
             </button>
           </div>
+
           <div className="feat-panel-body">
-            <BannerComposer uid={user.uid} activeSite={activeSite} user={user} />
+            <BannerComposer
+              uid={user.uid}
+              activeSite={activeSite}
+              user={user}
+            />
           </div>
         </div>
       )}
