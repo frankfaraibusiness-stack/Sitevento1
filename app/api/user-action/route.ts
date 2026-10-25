@@ -51,6 +51,7 @@ import {
 } from '@/lib/serverAuth';
 import { sanitizeSiteOverlay } from '@/lib/siteAlert';
 import { CONNECT_PERMISSIONS, isPermissionAllowedForPlan } from '@/lib/connectPermissions';
+import type { PlanId } from '@/lib/plans';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
