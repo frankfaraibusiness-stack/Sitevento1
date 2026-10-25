@@ -30,12 +30,12 @@ interface DashboardShellProps {
   activeSite: Site | null;
   dashState: DashState;
   errorMessage: string;
-
-  // Supports disconnect functions that return either void or a boolean.
-  disconnectSite: (siteId: string) => void | Promise<void | boolean>;
-
+  disconnectSite: (siteId: string) => Promise<void> | Promise<boolean>;
   onOpenAddSiteModal: () => void;
-  onResumeVerification: (site: { id: string; url: string }) => void;
+  onResumeVerification: (site: {
+    id: string;
+    url: string;
+  }) => void;
   onLeadsCountChange: (count: number) => void;
 }
 
@@ -54,11 +54,8 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const router = useNavRouter();
 
-  const { visits, leads, stats, toggleBlockVisit } = useActiveSiteData(
-    user.uid,
-    activeSiteId,
-    user
-  );
+  const { visits, leads, stats, toggleBlockVisit } =
+    useActiveSiteData(user.uid, activeSiteId, user);
 
   const { planId } = useUserProfile(user);
   const { limits: accountLimits } = useAccountLimits(user);
@@ -245,7 +242,9 @@ export function DashboardShell({
             activeSiteId={activeSiteId}
             onSelect={setActiveSiteId}
             onAddSite={onOpenAddSiteModal}
-            onDisconnect={disconnectSite}
+            onDisconnect={async (siteId) => {
+              await disconnectSite(siteId);
+            }}
             onManageSite={(siteId) =>
               router.push(`/dashboard/sites/${siteId}`)
             }
