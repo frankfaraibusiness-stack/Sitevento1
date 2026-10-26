@@ -27,12 +27,32 @@ async function callAdvertise(action: string, extra?: Record<string, unknown>): P
   if (!user) {
     return { ok: false, error: 'Your session has expired. Please sign in again.' };
   }
-  const idToken = await user.getIdToken();
-  const res = await fetch('/api/advertise', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken, action, ...extra }),
-  });
+  // Network failures (offline, DNS, CORS, a dropped connection) throw
+  // from fetch() itself, before there's any Response to read — without
+  // this try/catch that rejection propagated uncaught out of create-ad/
+  // top-up/pause/resume, so the caller's own try/finally still cleared
+  // `busy`, but no error ever reached the UI: the form just sat there
+  // with nothing to show for the submit, and because refresh() never
+  // ran, counts and the balance stayed at their last-known value (0 on
+  // a fresh load). Catching here guarantees every call path always
+  // resolves to a definite { ok, error } the caller can act on.
+  let idToken: string;
+  try {
+    idToken = await user.getIdToken();
+  } catch {
+    return { ok: false, error: 'Your session has expired. Please sign in again.' };
+  }
+  let res: Response;
+  try {
+    res = await fetch('/api/advertise', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, action, ...extra }),
+    });
+  } catch (err) {
+    console.error(`[useAdvertiser] ${action} network error`, err);
+    return { ok: false, error: 'Could not reach the server. Check your connection and try again.' };
+  }
   const data = await res.json().catch(() => ({ ok: false, error: 'Malformed server response.' }));
   if (!res.ok || !data.ok) {
     console.error(`[useAdvertiser] ${action} failed`, data.error || res.status);
