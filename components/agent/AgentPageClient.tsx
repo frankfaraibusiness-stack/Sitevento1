@@ -22,6 +22,7 @@ import { useNavRouter } from '@/hooks/useNavPending';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
@@ -138,13 +139,13 @@ export default function AgentPageClient() {
           </div>
 
           {!authReady ? (
-            <p className="agt-row-note">{'Loading\u2026'}</p>
+            <AppSkeleton label="Loading" />
           ) : !user ? (
             <p className="agt-row-note">Sign in to build and run your agent.</p>
           ) : !activeSite ? (
             <p className="agt-row-note">Connect a site from your dashboard to build an agent for it.</p>
           ) : loading ? (
-            <p className="agt-row-note">Loading your agent…</p>
+            <AppSkeleton label="Loading your agent" />
           ) : (
             <>
               <AgentVerifyPanel site={activeSite} />
