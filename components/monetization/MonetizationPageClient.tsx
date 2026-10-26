@@ -22,6 +22,7 @@ import { useNavRouter } from '@/hooks/useNavPending';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useSites } from '@/hooks/useSites';
@@ -112,7 +113,7 @@ export default function MonetizationPageClient() {
           </div>
 
           {!authReady || loading ? (
-            <p className="mon-row-note">Loading…</p>
+            <AppSkeleton label="Loading monetization" />
           ) : !user ? (
             <p className="mon-row-note">Sign in to turn on monetization for your site.</p>
           ) : !activeSite ? (
