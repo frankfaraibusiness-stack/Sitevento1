@@ -24,6 +24,7 @@ import { useNavRouter } from '@/hooks/useNavPending';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
+import { AppSkeleton } from '@/components/AppSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { useAdvertiser } from '@/hooks/useAdvertiser';
@@ -40,6 +41,7 @@ export default function AdvertisePageClient() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
   const [formOpen, setFormOpen] = useState(false);
+  const [justCreated, setJustCreated] = useState(false);
 
   const { billing, ads, loading, busy, topUp, createAd, pauseAd, resumeAd } = useAdvertiser(user?.uid ?? null);
 
@@ -89,12 +91,10 @@ export default function AdvertisePageClient() {
             <p>Run your own banner, link, or text ads across the Sitevento network — set your creative, pick your formats, go live.</p>
           </div>
 
-          {!authReady ? (
-            <p className="adv-row-note">Loading…</p>
+          {!authReady || loading ? (
+            <AppSkeleton label="Loading your account" />
           ) : !user ? (
             <p className="adv-row-note">Sign in to create and run ads.</p>
-          ) : loading ? (
-            <p className="adv-row-note">Loading your account…</p>
           ) : (
             <>
               <AdvertiseBillingPanel balanceUsd={billing.balanceUsd} busy={busy} onTopUp={topUp} />
@@ -105,9 +105,12 @@ export default function AdvertisePageClient() {
                 <div className="adv-section-head">
                   <h2 className="adv-section-title">New ad</h2>
                   {!formOpen && (
-                    <button type="button" className="ghost-btn live" onClick={() => setFormOpen(true)}>
-                      Create ad
-                    </button>
+                    <div className="adv-section-head-right">
+                      {justCreated && <span className="adv-saved-note">Ad created</span>}
+                      <button type="button" className="ghost-btn live" onClick={() => setFormOpen(true)}>
+                        Create ad
+                      </button>
+                    </div>
                   )}
                 </div>
                 {formOpen && (
@@ -116,7 +119,11 @@ export default function AdvertisePageClient() {
                     onCancel={() => setFormOpen(false)}
                     onSubmit={async (creative, budget) => {
                       const result = await createAd(creative, budget);
-                      if (result.ok) setFormOpen(false);
+                      if (result.ok) {
+                        setFormOpen(false);
+                        setJustCreated(true);
+                        setTimeout(() => setJustCreated(false), 2200);
+                      }
                       return result;
                     }}
                   />
