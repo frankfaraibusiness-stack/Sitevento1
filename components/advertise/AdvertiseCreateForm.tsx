@@ -133,9 +133,17 @@ export function AdvertiseCreateForm({ busy, onCancel, onSubmit }: AdvertiseCreat
     }
     if (countries.length > 0) budget.countries = countries;
 
-    const result = await onSubmit(creative, budget);
-    if (!result.ok) {
-      setError(result.error || 'Something went wrong creating that ad.');
+    try {
+      const result = await onSubmit(creative, budget);
+      if (!result.ok) {
+        setError(result.error || 'Something went wrong creating that ad.');
+      }
+    } catch {
+      // onSubmit shouldn't reject (useAdvertiser's createAd always
+      // resolves to { ok, error }), but this is the last line of
+      // defense against the form silently doing nothing if it ever
+      // does — same reasoning as the fetch try/catch in useAdvertiser.ts.
+      setError('Something went wrong creating that ad. Please try again.');
     }
   }
 
