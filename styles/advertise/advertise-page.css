@@ -248,6 +248,11 @@ p.adv-row-note {
   font-weight: 700;
   color: var(--dnx-ink-faint, #6b665e);
 }
+.adv-section-head-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
 /* ============ Ad list ============ */
 .adv-ad-list {
