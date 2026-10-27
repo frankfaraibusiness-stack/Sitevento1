@@ -1,0 +1,136 @@
+/* ============================================================
+ * not-found.css — app/not-found.tsx, sitevento's own 404 page.
+ * The <header> tag itself (fixed, app-bg, 56px) is already styled
+ * globally in styles/base/base.css; this file only covers the
+ * logo-only pill-nav content and the 404 card below it.
+ * ============================================================ */
+
+  .nf-header .pill-nav {
+    justify-content: flex-start;
+  }
+
+  .nf-header .nav-logo {
+    height: 28px;
+    width: auto;
+    display: block;
+  }
+
+  .nf-main {
+    min-height: calc(100vh - 56px - 16px - env(safe-area-inset-top, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px 64px;
+  }
+
+  .nf-card {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    background: var(--surface);
+    border: 1.5px solid var(--surface-border);
+    border-radius: 24px;
+    padding: 48px 32px 38px;
+    box-shadow: 0 18px 46px rgba(26,31,10,0.1), 0 4px 12px rgba(26,31,10,0.06);
+    animation: nf-rise 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  @keyframes nf-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nf-card { animation: none; }
+  }
+
+  .nf-code {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "Georgia", serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    background: var(--app-bg);
+    border: 1px solid var(--surface-border);
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+
+  .nf-blob {
+    width: 108px;
+    margin: 18px auto 10px;
+  }
+
+  .nf-card h1 {
+    font-family: "Georgia", serif;
+    font-size: clamp(22px, 5vw, 27px);
+    font-weight: 400;
+    color: var(--ink);
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .nf-card p {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--muted-mid);
+    margin: 0 0 28px;
+  }
+
+  .nf-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nf-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: var(--ink);
+    color: var(--lime);
+    border-radius: 999px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 3px 0 rgba(26,31,10,0.5);
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1), box-shadow 0.15s ease;
+  }
+
+  .nf-cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 rgba(26,31,10,0.5);
+  }
+
+  .nf-cta-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 rgba(26,31,10,0.5);
+  }
+
+  .nf-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--border-soft);
+    border-radius: 999px;
+    padding: 13px 20px;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .nf-cta-secondary:hover {
+    background: var(--cream);
+    border-color: var(--muted);
+  }
