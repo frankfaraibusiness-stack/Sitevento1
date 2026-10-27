@@ -39,3 +39,5 @@
 @import "../styles/widgets/preview/preview-base.css";
 @import "../styles/widgets/preview/preview-stages.css";
 @import "../styles/widgets/widget-status-popup.css";
+
+@import "../styles/dashboard/dashboard-refresh.css";
