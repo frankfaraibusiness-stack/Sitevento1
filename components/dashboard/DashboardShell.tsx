@@ -118,14 +118,27 @@ export function DashboardShell({
     <section>
       <div className="dnx-wrap" id="dashMain">
         <div className="dnx-hero">
-          <SiteSwitcher
-            sites={sites}
-            activeSiteId={activeSiteId}
-            onSelect={setActiveSiteId}
-            onAddSite={onOpenAddSiteModal}
-          />
-          <h1 className="dnx-hero-title">Welcome back{user.displayName ? `, ${user.displayName.split(' ')[0]}` : ''}</h1>
-          <p className="dnx-hero-sub">Here&apos;s what&apos;s happening across your {sites.length === 1 ? 'site' : 'sites'} right now.</p>
+          <div className="dnx-hero-topline">
+            <div className="dnx-hero-context">
+              <span className="dnx-eyebrow"><span className="dnx-eyebrow-dot" /> WORKSPACE OVERVIEW</span>
+              <SiteSwitcher
+                sites={sites}
+                activeSiteId={activeSiteId}
+                onSelect={setActiveSiteId}
+                onAddSite={onOpenAddSiteModal}
+              />
+            </div>
+            <button type="button" className="dnx-connect-cta" onClick={onOpenAddSiteModal}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} aria-hidden="true">
+                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+              </svg>
+              Connect site
+            </button>
+          </div>
+          <div className="dnx-hero-copy">
+            <h1 className="dnx-hero-title">Welcome back{user.displayName ? `, ${user.displayName.split(' ')[0]}` : ''}</h1>
+            <p className="dnx-hero-sub">Your website activity and tools, all in one place.</p>
+          </div>
         </div>
 
         {activeSite?.status === 'pending' && (
