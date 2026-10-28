@@ -1,0 +1,354 @@
+/* ============================================================
+ * write-limit-alert-modal.css — centered "daily write limit"
+ * warning/blocked modal (components/dashboard/WriteLimitAlertModal.tsx).
+ *
+ * Unlike upsell-overlay.css's full-screen page takeover (site-connect
+ * hard limit, nothing usable underneath), this is a lighter centered
+ * dialog over a blurred-but-visible dashboard — the account isn't
+ * blocked from using the app, so the backdrop stays translucent and
+ * the page behind it stays legible. Two color themes driven by a
+ * modifier class on the backdrop (.is-yellow / .is-red), both built on
+ * the same --cream/--ink/--lime token set as the rest of the
+ * dashboard so this reads as part of the product, not a bolted-on
+ * banner.
+ * ============================================================ */
+
+.wla-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 240; /* above upsell-overlay's 220/230 in the rare case both could stack */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(26, 24, 18, 0.46);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow-y: auto;
+}
+
+.wla-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wla-modal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: auto;
+  background: var(--bg);
+  border-radius: 24px;
+  padding: 32px 28px 26px;
+  box-shadow: 0 24px 70px rgba(20, 18, 12, 0.34), 0 4px 16px rgba(20, 18, 12, 0.14);
+  overflow: hidden;
+  transform: translateY(18px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+.wla-backdrop.is-open .wla-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wla-backdrop,
+  .wla-modal {
+    transition: opacity 0.15s ease !important;
+    transform: none !important;
+  }
+}
+
+/* ── Ambient glow blob, themed per severity ───────────────────── */
+.wla-glow {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  filter: blur(42px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.is-yellow .wla-glow {
+  background: radial-gradient(circle, #ffd659 0%, transparent 70%);
+}
+
+.is-red .wla-glow {
+  background: radial-gradient(circle, #ff7a66 0%, transparent 70%);
+}
+
+/* ── Close button ──────────────────────────────────────────────── */
+.wla-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #8a8477;
+  z-index: 1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.wla-close:hover {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.wla-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Icon ring ─────────────────────────────────────────────────── */
+.wla-icon-ring {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.wla-icon-ring svg {
+  width: 26px;
+  height: 26px;
+}
+
+.is-yellow .wla-icon-ring {
+  background: #fff4d9;
+  color: #a87400;
+}
+
+.is-red .wla-icon-ring {
+  background: #ffe3dd;
+  color: #c43d26;
+}
+
+/* ── Pill, title, body ─────────────────────────────────────────── */
+.wla-pill {
+  display: inline-block;
+  width: fit-content;
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.is-yellow .wla-pill {
+  background: #fff1c9;
+  color: #8a6200;
+}
+
+.is-red .wla-pill {
+  background: #ffdcd3;
+  color: #a4301b;
+}
+
+.wla-title {
+  font-family: -apple-system, sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.wla-body {
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #5a554a;
+  margin: 0 0 18px;
+}
+
+.wla-body strong {
+  color: var(--ink);
+}
+
+/* ── Usage track ───────────────────────────────────────────────── */
+.wla-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cream-deep);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.wla-track-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.wla-track-fill.is-yellow {
+  background: linear-gradient(90deg, #ffcf52, #f5a623);
+}
+
+.wla-track-fill.is-red {
+  background: linear-gradient(90deg, #ff8a6e, #e0432a);
+}
+
+.wla-track-caption {
+  display: flex;
+  justify-content: space-between;
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8a8477;
+  margin-bottom: 22px;
+}
+
+/* ── Option rows (upgrade / pay-as-you-go) ────────────────────────── */
+.wla-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.wla-option {
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--cream);
+}
+
+.wla-option-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.wla-option-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wla-option-head strong {
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.wla-option-head span {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #6b665e;
+}
+
+.wla-option-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wla-option-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.wla-option-icon-upgrade {
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+
+.wla-option-icon-wallet {
+  background: #22201c;
+  color: var(--lime);
+}
+
+.wla-option-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 11px;
+  border: none;
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wla-option-btn:active {
+  transform: scale(0.98);
+}
+
+.wla-option-btn-primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.wla-option-btn-primary:hover {
+  background: #363228;
+}
+
+.wla-option-btn-secondary {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+
+.wla-option-btn-secondary:hover {
+  border-color: var(--walnut);
+}
+
+/* ── Dismiss link ──────────────────────────────────────────────── */
+.wla-dismiss-link {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: none;
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8a8477;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.wla-dismiss-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .wla-modal {
+    padding: 26px 20px 20px;
+    border-radius: 20px;
+  }
+  .wla-title {
+    font-size: 19px;
+  }
+}
