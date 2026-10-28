@@ -18,7 +18,8 @@
 //                                  a hard lock until upgrade (see the
 //                                  "trialEligible" note in connectPermissions.ts).
 //   3. DEFAULT_DAILY_WRITE_LIMITS — the ONE daily write cap per plan
-//                                  (3,000 / 50,000 / 500,000 / 1,500,000),
+//                                  (150 [TEMP test value, normally 3,000] /
+//                                  50,000 / 500,000 / 1,500,000),
 //                                  used for both the account-wide write
 //                                  ceiling AND the Firestore write quota
 //                                  (firestoreQuota() just derives from this
@@ -227,7 +228,7 @@ export function featureDailyLimit(permissionId: string, plan: PlanId): number | 
 //    exact same numbers from this one place.
 // ────────────────────────────────────────────────────────────────
 export const DEFAULT_DAILY_WRITE_LIMITS: Record<PlanId, number | null> = {
-  free: 3_000,
+  free: 150, // TEMP test value — was 3_000
   starter: 50_000,
   scale: 500_000,
   'pro-developer': 1_500_000,
