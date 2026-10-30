@@ -2,15 +2,18 @@
  * auth-overlay.css — sign in / sign up / forgot password overlay
  * Split from app/globals.css for maintainability.
  *
- * The overlay paints its own living lime scene — a layered gradient,
- * a faint grain texture, and a few slow-drifting blob shapes — rather
- * than the flat near-white var(--app-bg) the rest of the app sits on.
- * This is the first thing every visitor sees before they're signed
- * in, so it gets its own premium, on-brand surface: the form card
- * floats above it on var(--bg) with real elevation (shadow), and the
- * brand's "slime" character (AuthBlob) greets the visitor with an
- * ink body / lime face so it still reads clearly against the lime
- * field behind it instead of disappearing into it.
+ * Cartoonic 3D background: the overlay no longer sits on the flat
+ * --app-bg card page color. It paints its own layered scene — a
+ * warm cream canvas with oversized soft-edged lime/ink/walnut blobs
+ * drifting at different depths/speeds (parallax-by-animation-
+ * duration, no JS), topped with a subtle dot-grid for texture and a
+ * gentle vignette so the edges recede. The form itself floats as a
+ * hard-shadow "sticker" card (same --ink offset-shadow trick as
+ * agent-page.css's .agt-group/.agt-upsell-banner) so it reads as a
+ * distinct toy-like object sitting above the scene, not a flat panel
+ * glued to the background. Inputs/buttons still get var(--bg) as
+ * their own surface. AuthBlob greets the visitor at the top of the
+ * form column.
  * ============================================================ */
 
   /* ============ Auth overlay (sign in / sign up / forgot) ============ */
@@ -19,75 +22,110 @@
     inset: 0;
     z-index: 100;
     background:
-      radial-gradient(1100px 700px at 14% -8%, rgba(255,255,255,0.55), transparent 60%),
-      radial-gradient(900px 620px at 100% 108%, rgba(26,31,10,0.16), transparent 62%),
-      linear-gradient(165deg, #d4f279 0%, var(--lime) 46%, #a9db34 100%);
+      radial-gradient(circle at 85% 8%, rgba(184,232,67,0.5), transparent 42%),
+      radial-gradient(circle at 6% 92%, rgba(107,74,52,0.16), transparent 46%),
+      radial-gradient(circle at 92% 88%, rgba(34,32,28,0.08), transparent 40%),
+      var(--app-bg);
     opacity: 0;
     pointer-events: none;
     transform: translateY(14px);
     transition: opacity 0.35s cubic-bezier(0.22,1,0.36,1), transform 0.35s cubic-bezier(0.22,1,0.36,1);
     overflow-y: auto;
-    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Faint grain so the gradient doesn't look flat/digital — tiled SVG
-     noise, kept extremely subtle (opacity 0.05) and purely decorative. */
-  .auth-overlay::before {
-    content: "";
+  /* ---- Floating 3D blob field (decorative, behind everything) ---- */
+  .auth-overlay .auth-bg-scene {
     position: fixed;
     inset: 0;
     z-index: 0;
-    pointer-events: none;
-    opacity: 0.05;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  }
-
-  /* Floating decorative blob-shapes drifting behind the content — pure
-     CSS, scoped to the overlay, never competing with the AuthBlob
-     mascot (z-index below .stage). */
-  .auth-overlay .auth-scene {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
     overflow: hidden;
+    pointer-events: none;
   }
 
-  .auth-overlay .auth-scene span {
+  .auth-overlay .auth-bg-scene::before {
+    /* Faint dot-grid for a toy-blueprint / cartoon-paper texture. */
+    content: "";
     position: absolute;
-    border-radius: 42% 58% 61% 39% / 44% 40% 60% 56%;
-    background: rgba(255,255,255,0.3);
-    filter: blur(2px);
-    animation: scene-drift 22s ease-in-out infinite;
+    inset: -4px;
+    background-image: radial-gradient(rgba(34,32,28,0.08) 1.6px, transparent 1.6px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+    mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+    opacity: 0.55;
   }
 
-  .auth-overlay .auth-scene span:nth-child(1) { width: 260px; height: 260px; top: -6%; left: 6%; background: rgba(255,255,255,0.4); animation-duration: 19s; }
-  .auth-overlay .auth-scene span:nth-child(2) { width: 180px; height: 180px; top: 62%; left: -4%; background: rgba(26,31,10,0.07); animation-duration: 24s; animation-delay: -6s; }
-  .auth-overlay .auth-scene span:nth-child(3) { width: 150px; height: 150px; top: 14%; right: 8%; background: rgba(26,31,10,0.06); animation-duration: 17s; animation-delay: -3s; }
-  .auth-overlay .auth-scene span:nth-child(4) { width: 320px; height: 320px; bottom: -10%; right: -6%; background: rgba(255,255,255,0.32); animation-duration: 27s; animation-delay: -11s; }
+  .auth-bg-blob {
+    position: absolute;
+    border-radius: 48% 52% 55% 45% / 52% 45% 55% 48%;
+    filter: blur(0.5px) drop-shadow(0 18px 30px rgba(34,32,28,0.14));
+  }
 
-  @keyframes scene-drift {
+  .auth-bg-blob.b1 {
+    top: -10%;
+    right: -8%;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle at 32% 28%, #cdf373 0%, var(--lime) 55%, #a0cf3a 100%);
+    opacity: 0.85;
+    animation: auth-bg-drift-1 16s ease-in-out infinite;
+  }
+
+  .auth-bg-blob.b2 {
+    bottom: -14%;
+    left: -10%;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle at 30% 30%, #8a6246 0%, var(--walnut) 60%, var(--walnut-dark) 100%);
+    opacity: 0.22;
+    animation: auth-bg-drift-2 20s ease-in-out infinite;
+  }
+
+  .auth-bg-blob.b3 {
+    top: 38%;
+    left: -6%;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle at 35% 30%, #e4e0d4 0%, var(--line) 70%);
+    opacity: 0.5;
+    animation: auth-bg-drift-3 13s ease-in-out infinite;
+  }
+
+  .auth-bg-blob.b4 {
+    bottom: 6%;
+    right: 4%;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle at 34% 30%, #d6ec9c 0%, var(--lime) 75%);
+    opacity: 0.5;
+    animation: auth-bg-drift-4 11s ease-in-out infinite;
+  }
+
+  @keyframes auth-bg-drift-1 {
     0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-    33% { transform: translate(-22px, 26px) scale(1.07) rotate(6deg); }
-    66% { transform: translate(18px, -18px) scale(0.95) rotate(-5deg); }
+    50% { transform: translate(-36px, 28px) scale(1.06) rotate(6deg); }
+  }
+  @keyframes auth-bg-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(30px, -24px) scale(1.08) rotate(-5deg); }
+  }
+  @keyframes auth-bg-drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(18px, 22px) scale(1.1); }
+  }
+  @keyframes auth-bg-drift-4 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-14px, -18px) scale(1.12); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .auth-overlay .auth-scene span { animation: none; }
+    .auth-bg-blob { animation: none !important; }
   }
 
   @media (max-width: 920px) {
-    .auth-overlay .auth-scene span:nth-child(1) { width: 180px; height: 180px; }
-    .auth-overlay .auth-scene span:nth-child(4) { width: 220px; height: 220px; }
-  }
-
-  .auth-overlay .stage,
-  .auth-overlay .auth-mobile-header,
-  .auth-overlay .auth-exit {
-    position: relative;
-    z-index: 1;
+    .auth-bg-blob.b1 { width: 300px; height: 300px; }
+    .auth-bg-blob.b2 { width: 260px; height: 260px; }
+    .auth-bg-blob.b3, .auth-bg-blob.b4 { display: none; }
   }
 
   .auth-overlay.open {
@@ -108,10 +146,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1.5px solid rgba(26,31,10,0.18);
-    background: rgba(255,255,255,0.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid var(--lime-ink);
+    background: var(--app-bg);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -121,7 +157,7 @@
   }
 
   .auth-overlay .auth-exit:hover {
-    background: rgba(255,255,255,0.85);
+    background: var(--bg);
     transform: scale(1.06);
   }
 
@@ -146,6 +182,8 @@
   }
 
   .auth-overlay .stage {
+    position: relative;
+    z-index: 1;
     min-height: 100%;
     display: grid;
     grid-template-columns: 1.05fr 1fr;
@@ -279,14 +317,15 @@
   .auth-overlay .showcase-card {
     position: relative;
     z-index: 1;
-    background: rgba(255,255,255,0.4);
-    border: 1px solid rgba(26,31,10,0.12);
+    background: rgba(255,255,255,0.55);
+    border: 1.5px solid var(--lime-ink);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 18px 20px;
     display: flex;
     align-items: center;
     gap: 14px;
+    box-shadow: 0 4px 0 rgba(26,31,10,0.25);
     animation: card-rise 0.9s cubic-bezier(0.22,1,0.36,1) both;
     animation-delay: 0.3s;
   }
@@ -331,17 +370,45 @@
     padding: 32px 24px 48px;
   }
 
+  /* Cartoonic 3D "sticker" card: thick ink border + hard offset
+     shadow (same trick as .agt-group/.agt-model-card.is-selected in
+     agent-page.css), gently rotated to feel placed-down rather than
+     flat-pasted, straightening on hover for a toy-like "settle in"
+     reaction. */
   .auth-overlay .form-panel {
     width: 100%;
     max-width: 380px;
+    position: relative;
+    padding: 34px 30px 30px;
     background: var(--bg);
-    border-radius: 28px;
-    padding: 36px 32px 28px;
-    box-shadow: 0 1px 2px rgba(26,31,10,0.06), 0 24px 60px -16px rgba(26,31,10,0.28), 0 0 0 1px rgba(26,31,10,0.05);
+    border: 2px solid var(--ink);
+    border-radius: 26px;
+    box-shadow:
+      0 8px 0 var(--ink),
+      0 18px 36px rgba(34,32,28,0.22);
+    transform: rotate(-0.6deg);
+    transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s cubic-bezier(0.22,1,0.36,1);
   }
 
-  @media (max-width: 480px) {
-    .auth-overlay .form-panel { padding: 28px 22px 22px; border-radius: 22px; }
+  .auth-overlay .form-panel:hover {
+    transform: rotate(0deg) translateY(-2px);
+    box-shadow:
+      0 10px 0 var(--ink),
+      0 22px 40px rgba(34,32,28,0.24);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay .form-panel { transition: none; }
+  }
+
+  @media (max-width: 920px) {
+    .auth-overlay .form-panel {
+      padding: 26px 20px 24px;
+      border-radius: 22px;
+      box-shadow: 0 6px 0 var(--ink), 0 14px 28px rgba(34,32,28,0.2);
+      transform: none;
+    }
+    .auth-overlay .form-panel:hover { transform: none; }
   }
 
   .auth-overlay .form-header {
@@ -370,7 +437,7 @@
       top: 0;
       z-index: 20;
       padding: calc(12px + env(safe-area-inset-top, 0px)) 18px 12px;
-      background: rgba(255,255,255,0.5);
+      background: color-mix(in srgb, var(--app-bg) 92%, transparent);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid rgba(26,31,10,0.1);
@@ -390,7 +457,7 @@
     flex-shrink: 0;
     border-radius: 50%;
     border: 1.5px solid rgba(26,31,10,0.18);
-    background: rgba(255,255,255,0.6);
+    background: var(--bg);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -399,7 +466,7 @@
   }
 
   .auth-overlay .auth-mobile-header-close:hover {
-    background: rgba(255,255,255,0.9);
+    background: var(--app-bg);
     transform: scale(1.06);
   }
 
@@ -450,33 +517,59 @@
 
   .form-header p a:hover, .switcher-link:hover { text-decoration-color: var(--lime-ink); }
 
-  /* panel transition — directional crossfade + slide + a gentle scale
-     "pop", keyed by data-dir on .panes ("fwd" for signin→signup/forgot,
-     "back" for the reverse) so the motion reads as moving through
-     related steps rather than a generic fade. */
+  /* ---- Pane transition (sign in ⇄ sign up ⇄ forgot) ----------------
+   * .panes measures and animates its own height (set inline by
+   * useAuthPaneTransition) across the swap so the card never jumps
+   * or clips mid-crossfade. Each .pane is absolutely positioned
+   * during the transition window (.panes.is-switching) so outgoing
+   * and incoming panes can briefly overlap for a true crossfade
+   * instead of an instant display:none/block swap — that overlap is
+   * what removes the old "glitch" flash. A soft scale+blur pop
+   * (card-like, not a flat slide) sells the cartoonic 3D feel. */
   .auth-overlay .panes {
     position: relative;
+    transition: height 0.38s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
   }
 
   .auth-overlay .pane {
     display: none;
-    animation: pane-in-fwd 0.5s cubic-bezier(0.22,1,0.36,1) both;
   }
 
-  .pane.active { display: block; }
-
-  .auth-overlay .panes[data-dir="back"] .pane.active {
-    animation-name: pane-in-back;
+  .pane.active {
+    display: block;
+    animation: pane-pop-in 0.38s cubic-bezier(0.22,1,0.36,1) both;
   }
 
-  @keyframes pane-in-fwd {
-    from { opacity: 0; transform: translateX(18px) scale(0.98); }
-    to { opacity: 1; transform: translateX(0) scale(1); }
+  .panes.is-switching .pane.active {
+    animation: pane-pop-in 0.38s cubic-bezier(0.22,1,0.36,1) both;
   }
 
-  @keyframes pane-in-back {
-    from { opacity: 0; transform: translateX(-18px) scale(0.98); }
-    to { opacity: 1; transform: translateX(0) scale(1); }
+  .panes.is-switching .pane.is-leaving {
+    display: block;
+    position: absolute;
+    inset: 0;
+    animation: pane-pop-out 0.22s cubic-bezier(0.4,0,1,1) both;
+    pointer-events: none;
+  }
+
+  @keyframes pane-pop-in {
+    0% { opacity: 0; transform: translateY(10px) scale(0.975); filter: blur(2px); }
+    60% { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  @keyframes pane-pop-out {
+    0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    100% { opacity: 0; transform: translateY(-6px) scale(0.975); filter: blur(2px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay .panes { transition: none; }
+    .pane.active, .panes.is-switching .pane.active, .panes.is-switching .pane.is-leaving {
+      animation: none !important;
+    }
+    .panes.is-switching .pane.is-leaving { display: none; }
   }
 
   .auth-overlay .oauth-btn {
@@ -694,10 +787,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .auth-overlay .pane, .auth-overlay .card-rise, .auth-overlay .showcase-card { animation: none !important; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .auth-overlay { transition: opacity 0.2s ease; transform: none !important; }
   }
 
   /* Reset-sent inline confirmation (forgot-password pane only — sign

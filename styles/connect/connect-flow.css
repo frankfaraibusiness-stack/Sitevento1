@@ -48,13 +48,36 @@
     padding: clamp(28px, 6vw, 72px) 20px 64px;
   }
 
-  .cflow-card { width: 100%; max-width: 480px; }
+  /* ============ Layout wrapper — mobile/tablet vs desktop ============
+     Below 960px: a single centered column, same as before. At 960px+:
+     a real two-column layout — the step card on the left, a sticky
+     context aside on the right — instead of the same narrow card just
+     floating in a sea of whitespace on a wide screen. */
+  .cflow-layout { width: 100%; max-width: 480px; }
   .cflow-step:has(.cwz-perm-section),
   .cflow-connected,
   .cflow-tagstage { max-width: none; }
-  .cflow-card:has(.cwz-perm-section),
-  .cflow-card:has(.cflow-connected),
-  .cflow-card:has(.cflow-tagstage) { max-width: 640px; }
+  .cflow-layout:has(.cwz-perm-section),
+  .cflow-layout:has(.cflow-connected),
+  .cflow-layout:has(.cflow-tagstage) { max-width: 640px; }
+
+  .cflow-card { width: 100%; }
+  .cflow-aside { display: none; }
+
+  @media (min-width: 960px) {
+    .cflow-stage { align-items: flex-start; padding-top: clamp(40px, 5vw, 72px); }
+    .cflow-layout,
+    .cflow-layout:has(.cwz-perm-section),
+    .cflow-layout:has(.cflow-connected),
+    .cflow-layout:has(.cflow-tagstage) {
+      max-width: 1040px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 40px;
+      align-items: start;
+    }
+    .cflow-aside { display: block; position: sticky; top: calc(56px + 32px + env(safe-area-inset-top, 0px)); }
+  }
 
   /* Each step now sits on a frosted glass "panel" rather than directly
      on the page background — gives the whole flow a lifted, premium
@@ -455,6 +478,27 @@
     .cflow-cta-row { flex-direction: column; margin-bottom: 44px; }
     .cflow-cta-row .cflow-submit-wide { width: 100%; }
     .cflow-secondary-btn { padding: 4px 10px 0; }
+
+    /* Feature cards: tighter padding, smaller icon, row layout instead
+       of icon-stacked-over-text so each card reads as one compact
+       line instead of a tall, mostly-empty block. */
+    .cflow-feature-grid { gap: 10px; }
+    .cflow-feature-card {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px; border-radius: 16px;
+    }
+    .cflow-feature-icon { width: 34px; height: 34px; border-radius: 11px; flex-shrink: 0; }
+    .cflow-feature-icon svg { width: 16px; height: 16px; }
+    .cflow-feature-card h3 { margin: 0 0 3px; font-size: 13.5px; }
+    .cflow-feature-card p { font-size: 12.5px; }
+    .cflow-feature-card:hover { transform: none; }
+
+    /* Success panels (tag / AI prompt): reclaim padding, shrink the
+       monospace boxes so they don't force horizontal scroll. */
+    .cflow-success-grid { gap: 12px; margin: 16px 0 28px; }
+    .cflow-success-panel { padding: 14px; border-radius: 16px; }
+    .cflow-tag-box-sm { font-size: 10px; padding: 12px; }
+    .cflow-prompt-box { font-size: 11px; padding: 11px 12px; max-height: 140px; }
   }
 
   /* ============ Domain intel reveal ============ */
@@ -555,6 +599,15 @@
     .domain-intel-scan-dot::after { animation: none !important; }
   }
 
+  @media (max-width: 540px) {
+    .domain-intel-card { padding: 14px 14px 12px; border-radius: 16px; }
+    .domain-intel-age-num { font-size: 24px; }
+    .domain-intel-row { font-size: 12px; gap: 8px; }
+    .domain-intel-row dd { max-width: 55%; }
+    .domain-intel-pills { gap: 5px; }
+    .domain-intel-pill { font-size: 10px; padding: 3px 8px; }
+  }
+
   /* Step 1's permissions grid (ConnectPermissionsGrid) now ships its
      own stylesheet — styles/connect/permissions-grid.css — so the same
      cwz-perm-* rules can be loaded by any route that reuses that
@@ -601,3 +654,59 @@
   @media (prefers-reduced-motion: reduce) {
     .cnb-wrap { animation: none !important; }
   }
+
+  /* ============ Desktop context aside ============
+     Shown only ≥960px (see .cflow-aside above). A quiet, persistent
+     summary panel — not a second control surface — so the wide
+     viewport has something purposeful next to the narrower step card
+     instead of just stretching it or leaving empty space. */
+  .cflow-aside-card {
+    border: 1px solid var(--line); border-radius: 24px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    box-shadow:
+      0 1px 0 color-mix(in srgb, #fff 50%, transparent) inset,
+      0 24px 60px -32px color-mix(in srgb, var(--ink) 25%, transparent);
+    padding: 28px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .cflow-aside-blob { width: 56px; margin-bottom: 14px; }
+  .cflow-aside-card h2 {
+    font-size: 17px; font-weight: 700; color: var(--ink); margin: 0 0 6px;
+    letter-spacing: -0.01em; word-break: break-word;
+  }
+  .cflow-aside-card > p {
+    font-size: 13px; line-height: 1.55; color: var(--muted-mid); margin: 0 0 22px;
+  }
+
+  .cflow-aside-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .cflow-aside-step {
+    display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;
+  }
+  .cflow-aside-step-dot {
+    flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 700; color: var(--muted);
+    background: var(--cream); border: 1px solid var(--line);
+    margin-top: 1px;
+  }
+  .cflow-aside-step-dot svg { width: 12px; height: 12px; }
+  .cflow-aside-step.is-current .cflow-aside-step-dot {
+    background: var(--lime); color: var(--lime-ink); border-color: var(--lime-ink);
+    box-shadow: 0 0 0 3px var(--lime-glass);
+  }
+  .cflow-aside-step.is-done .cflow-aside-step-dot {
+    background: var(--lime-ink); color: var(--lime); border-color: var(--lime-ink);
+  }
+  .cflow-aside-step-text { display: flex; flex-direction: column; gap: 1px; padding-top: 1px; }
+  .cflow-aside-step-text strong { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .cflow-aside-step-text span { font-size: 11.5px; line-height: 1.4; color: var(--muted-mid); }
+  .cflow-aside-step:not(.is-current) .cflow-aside-step-text strong { color: var(--muted-dark); }
+
+  .cflow-aside-note {
+    margin-top: 18px; padding: 10px 12px; border-radius: 12px;
+    background: var(--lime-glass); border: 1px solid var(--lime-glass-border);
+    font-size: 12px; color: var(--muted-dark);
+  }
+  .cflow-aside-note strong { color: var(--lime-ink); font-weight: 800; }
