@@ -154,18 +154,19 @@ export function ConnectPermissionsGrid({
 
       {lockedCount > 0 && (
         <button type="button" className="cwz-perm-upsell" onClick={onUpgradeClick}>
-          <span className="cwz-perm-upsell-glow" aria-hidden="true" />
-          <span className="cwz-perm-upsell-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
-            </svg>
-          </span>
-          <span className="cwz-perm-upsell-copy">
-            <strong className="cwz-perm-upsell-headline">{lockedCount} more permission{lockedCount === 1 ? '' : 's'} on a higher plan</strong>
-            <span className="cwz-perm-upsell-sub">
-              {trialCount > 0
-                ? <><strong>{trialCount}</strong> of those you can already try free, right now, with a daily limit.</>
-                : 'Unlock the rest to fully automate this site.'}
+          <span className="cwz-perm-upsell-top">
+            <span className="cwz-perm-upsell-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+              </svg>
+            </span>
+            <span className="cwz-perm-upsell-copy">
+              <strong className="cwz-perm-upsell-headline">{lockedCount} more permission{lockedCount === 1 ? '' : 's'} on a higher plan</strong>
+              <span className="cwz-perm-upsell-sub">
+                {trialCount > 0
+                  ? <><strong>{trialCount}</strong> of those you can already try free, right now, with a daily limit.</>
+                  : 'Unlock the rest to fully automate this site.'}
+              </span>
             </span>
           </span>
           <span className="cwz-perm-upsell-cta">

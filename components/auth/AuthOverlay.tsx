@@ -6,12 +6,69 @@
 // handleSubmit/fakeOAuth wiring. Pane switching is React state
 // (currentPane) instead of toggling a `.active` class across DOM nodes;
 // form fields are controlled inputs instead of getElementById lookups.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuthForms, type AuthPane, type SuccessKind } from '@/hooks/useAuthForms';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { GoogleIcon } from './GoogleIcon';
 import { AuthBlob } from './AuthBlob';
+
+// Drives the sign-in ⇄ sign-up ⇄ forgot crossfade (see
+// .panes/.pane/.is-switching/.is-leaving in auth-overlay.css). Plain
+// state swap is instant (old pane unmounts the same frame the new one
+// mounts), which is the "glitch" flash the fade-in animation alone
+// can't hide — there's nothing to fade *out* of. This keeps the
+// outgoing pane mounted and visible for one short beat so the two
+// panes genuinely cross over, and measures .panes' height across the
+// swap so the card body animates to its new size instead of jumping.
+function useAuthPaneTransition(pane: AuthPane) {
+  const [displayPane, setDisplayPane] = useState(pane);
+  const [leavingPane, setLeavingPane] = useState<AuthPane | null>(null);
+  const [switching, setSwitching] = useState(false);
+  const panesRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (pane === displayPane) return;
+
+    const el = panesRef.current;
+    // Lock the current height before swapping content so the height
+    // transition in CSS has a real "from" value to animate out of.
+    if (el) el.style.height = `${el.offsetHeight}px`;
+
+    setLeavingPane(displayPane);
+    setDisplayPane(pane);
+    setSwitching(true);
+
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setLeavingPane(null), 240);
+
+    return () => clearTimeout(timeoutRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pane]);
+
+  useEffect(() => {
+    const el = panesRef.current;
+    if (!el) return;
+    // After the new pane has rendered, measure its natural height and
+    // animate .panes to it; release back to "auto" once settled so
+    // later content changes (error text, etc.) aren't height-locked.
+    const raf = requestAnimationFrame(() => {
+      const next = el.scrollHeight;
+      el.style.height = `${next}px`;
+    });
+    const release = setTimeout(() => {
+      el.style.height = 'auto';
+      setSwitching(false);
+    }, 400);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(release);
+    };
+  }, [displayPane]);
+
+  return { displayPane, leavingPane, switching, panesRef };
+}
 
 interface AuthOverlayProps {
   open: boolean;
@@ -24,20 +81,9 @@ interface AuthOverlayProps {
   onAuthSucceeded: (isNewUser: boolean) => void;
 }
 
-// Pane order used to derive transition direction: moving to a pane
-// later in this list plays the "forward" slide, earlier plays "back" —
-// so signin→signup/forgot slides forward, and either returning to
-// signin slides back, matching how a person would read the step order.
-const PANE_ORDER: AuthPane[] = ['signin', 'signup', 'forgot'];
-
 export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: AuthOverlayProps) {
   const [pane, setPane] = useState<AuthPane>(initialPane);
-  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
-
-  function goToPane(next: AuthPane) {
-    setDir(PANE_ORDER.indexOf(next) >= PANE_ORDER.indexOf(pane) ? 'fwd' : 'back');
-    setPane(next);
-  }
+  const { displayPane, leavingPane, switching, panesRef } = useAuthPaneTransition(pane);
 
   const [siName, setSiName] = useState('');
   const [siEmail, setSiEmail] = useState('');
@@ -99,11 +145,11 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
 
   return (
     <div className="auth-overlay open" aria-hidden={!open}>
-      <div className="auth-scene" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
+      <div className="auth-bg-scene" aria-hidden="true">
+        <div className="auth-bg-blob b1" />
+        <div className="auth-bg-blob b2" />
+        <div className="auth-bg-blob b3" />
+        <div className="auth-bg-blob b4" />
       </div>
 
       <button className="auth-exit" aria-label="Close" onClick={onClose}>
@@ -171,14 +217,18 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
 
         <div className="form-wrap">
           <div className="form-panel">
-            <div className="panes" data-dir={dir}>
+            <div className={`panes${switching ? ' is-switching' : ''}`} ref={panesRef}>
               {/* SIGN IN */}
-              <div className={`pane${pane === 'signin' ? ' active' : ''}`}>
+              <div
+                className={`pane${
+                  displayPane === 'signin' ? ' active' : leavingPane === 'signin' ? ' is-leaving' : ''
+                }`}
+              >
                 <div className="form-header">
                   <AuthBlob className="form-blob" />
                   <h2>Welcome back</h2>
                   <p>
-                    New here? <a onClick={() => { clearErrors(); goToPane('signup'); }}>Create an account</a>
+                    New here? <a onClick={() => { clearErrors(); setPane('signup'); }}>Create an account</a>
                   </p>
                 </div>
 
@@ -238,7 +288,7 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
                       <input type="checkbox" defaultChecked />
                       Remember me
                     </label>
-                    <button type="button" className="forgot-link" onClick={() => { clearErrors(); goToPane('forgot'); }}>
+                    <button type="button" className="forgot-link" onClick={() => { clearErrors(); setPane('forgot'); }}>
                       Forgot password?
                     </button>
                   </div>
@@ -251,12 +301,16 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
               </div>
 
               {/* SIGN UP */}
-              <div className={`pane${pane === 'signup' ? ' active' : ''}`}>
+              <div
+                className={`pane${
+                  displayPane === 'signup' ? ' active' : leavingPane === 'signup' ? ' is-leaving' : ''
+                }`}
+              >
                 <div className="form-header">
                   <AuthBlob className="form-blob" />
                   <h2>Create your account</h2>
                   <p>
-                    Already have one? <a onClick={() => { clearErrors(); goToPane('signin'); }}>Sign in</a>
+                    Already have one? <a onClick={() => { clearErrors(); setPane('signin'); }}>Sign in</a>
                   </p>
                 </div>
 
@@ -346,10 +400,14 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
               </div>
 
               {/* FORGOT PASSWORD */}
-              <div className={`pane${pane === 'forgot' ? ' active' : ''}`}>
+              <div
+                className={`pane${
+                  displayPane === 'forgot' ? ' active' : leavingPane === 'forgot' ? ' is-leaving' : ''
+                }`}
+              >
                 <button
                   className="back-link"
-                  onClick={() => { clearErrors(); setResetSent(false); goToPane('signin'); }}
+                  onClick={() => { clearErrors(); setResetSent(false); setPane('signin'); }}
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                     <path d="M19 12H5M12 19l-7-7 7-7" />

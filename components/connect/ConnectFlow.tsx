@@ -106,7 +106,8 @@ export function ConnectFlow({ uid, plan = 'free', resumeTarget, onLimitReached, 
       </div>
 
       <div className="cflow-stage">
-        <div className="cflow-card">
+        <div className="cflow-layout">
+          <div className="cflow-card">
           {stage === 'domain' && (
             <div className="cflow-step">
               <span className="cflow-step-label">
@@ -173,8 +174,83 @@ export function ConnectFlow({ uid, plan = 'free', resumeTarget, onLimitReached, 
             />
           )}
         </div>
+
+        <DesktopAside stage={stage} hostname={wizard.hostname} permissionCount={wizard.permissionIds.length} />
+        </div>
       </div>
     </div>
+  );
+}
+
+// ── Desktop context panel — a persistent right-hand column shown only
+// ≥960px (see .cflow-aside's media query), giving the wide viewport
+// something other than empty whitespace next to a narrow card. Purely
+// informational: a stage-aware summary of where the user is and
+// what's coming next, never a second way to control the wizard. ─────
+function DesktopAside({
+  stage,
+  hostname,
+  permissionCount,
+}: {
+  stage: 'domain' | 'tag' | 'connected';
+  hostname: string;
+  permissionCount: number;
+}) {
+  const steps: { key: 'domain' | 'tag' | 'connected'; label: string; detail: string }[] = [
+    { key: 'domain', label: 'Domain & permissions', detail: 'Tell us the site and what to grant it.' },
+    { key: 'tag', label: 'Add the tag', detail: 'Paste one snippet, or hand it to your AI.' },
+    { key: 'connected', label: 'Connected', detail: "You're live — see what's on." },
+  ];
+  const currentIndex = STAGE_INDEX[stage];
+
+  return (
+    <aside className="cflow-aside" aria-hidden="true">
+      <div className="cflow-aside-card">
+        <ConnectBlob
+          tone={stage === 'connected' ? 'success' : 'idle'}
+          variant={stage === 'connected' ? 'happy' : 'greet'}
+          className="cflow-aside-blob"
+        />
+        <h2>{hostname || 'Connecting your site'}</h2>
+        <p>
+          {stage === 'domain' && 'A quick setup — pick your domain and what sitevento can do, then verify one tag.'}
+          {stage === 'tag' && 'Almost there — add the tag to your site, then come back and verify.'}
+          {stage === 'connected' && `sitevento is live on ${hostname || 'your site'}. Real-time visits start now.`}
+        </p>
+
+        <ol className="cflow-aside-steps">
+          {steps.map((s) => {
+            const idx = STAGE_INDEX[s.key];
+            return (
+              <li
+                key={s.key}
+                className={`cflow-aside-step${idx < currentIndex ? ' is-done' : idx === currentIndex ? ' is-current' : ''}`}
+              >
+                <span className="cflow-aside-step-dot">
+                  {idx < currentIndex ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  ) : (
+                    idx
+                  )}
+                </span>
+                <span className="cflow-aside-step-text">
+                  <strong>{s.label}</strong>
+                  <span>{s.detail}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+
+        {stage === 'domain' && permissionCount > 0 && (
+          <div className="cflow-aside-note">
+            <strong>{permissionCount}</strong> permission{permissionCount === 1 ? '' : 's'} granted so far
+          </div>
+        )}
+      </div>
+    </aside>
   );
 }
 
