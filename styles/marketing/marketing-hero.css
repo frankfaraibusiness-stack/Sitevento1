@@ -1,0 +1,1007 @@
+/* ============================================================
+ * marketing-hero.css — FULL REBUILD (see components/marketing/Hero.tsx)
+ *
+ * Replaces the old hero entirely. The old hero's right column was a
+ * single static PNG forced to its own 1156x1361 aspect ratio — on
+ * desktop that made the right column far taller than the left
+ * column's short two-line headline + copy + buttons, so the two sides
+ * never matched height and the character either floated oddly high
+ * or dragged the whole row down. This version's right column is the
+ * animated mascot "stage" (glow + rings + orbiting shapes, sized in
+ * ems and centered within whatever height the left column sets) —
+ * the row's height comes from the LEFT column's real content, and the
+ * stage just fills and centers itself inside that, at every
+ * breakpoint, instead of imposing its own fixed aspect ratio on the
+ * row.
+ *
+ * Mobile and desktop are two separate rule blocks below 1024px /
+ * 1024px+, same as before — but every single rule in both blocks is
+ * new; nothing here reuses .hero-character-*, which no longer exists
+ * in the markup.
+ * ============================================================ */
+
+#marketingView {
+  background: var(--app-bg);
+}
+
+/* ============================================================
+ * Shared tokens — identical at every size.
+ * ============================================================ */
+
+.hero-highlight-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+/* Hand-drawn "marker" splotch behind "Your rules." — an irregular
+   closed polygon rather than a rounded box, so it reads as a genuine
+   lumpy highlight instead of a smoothed pill. */
+.hero-highlight-shape {
+  position: absolute;
+  inset: -20% -12% -24% -10%;
+  background: #d2f376;
+  clip-path: polygon(
+    9% 38%, 2% 22%, 14% 6%, 33% 0%, 46% 9%, 61% 1%, 77% 10%,
+    91% 4%, 100% 24%, 94% 41%, 100% 58%, 89% 74%, 96% 90%,
+    79% 100%, 63% 92%, 48% 100%, 31% 95%, 16% 100%, 4% 86%,
+    11% 68%, 0% 52%
+  );
+  transform: rotate(-2deg);
+  z-index: 0;
+}
+
+.hero-highlight-text {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 0 4px;
+}
+
+/* ============================================================
+ * Mascot stage — reuses the onboarding "rig" pattern (glow / two
+ * counter-spinning dashed rings / four orbiting shapes / a bobbing
+ * float layer + ground shadow) under its own hero-mascot-* class
+ * prefix so it can be sized independently of onboarding's version.
+ * Tone classes (lime/purple/blue/orange) are swapped by Hero.tsx on a
+ * 1s interval — only color values differ between them, structure and
+ * timing stay fixed, which is what makes the swap read as a color
+ * change rather than a re-animation.
+ * ============================================================ */
+
+.hero-mascot-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-mascot-float {
+  position: relative;
+  z-index: 3;
+  width: 72%;
+  aspect-ratio: 1156 / 1361;
+  animation: hero-mascot-bob 4.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes hero-mascot-bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-14px) rotate(1deg); }
+}
+
+.hero-mascot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 18px 22px rgba(26, 31, 10, 0.18));
+}
+
+.hero-mascot-img.is-loading { opacity: 0; }
+.hero-mascot-img.is-loaded {
+  opacity: 1;
+  animation: hero-mascot-fade-in 420ms ease;
+}
+
+@keyframes hero-mascot-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Two hero images stacked in the same spot, crossfading in an
+   infinite loop. Both stay mounted (and preloaded) the whole time;
+   only opacity toggles which one is visible, so the swap is a smooth
+   fade rather than a layout jump, and nothing shows until both
+   images have finished loading. */
+.hero-mascot-img--swap {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.hero-mascot-img--swap.is-loading { opacity: 0; }
+
+.hero-mascot-img--swap.is-loaded {
+  opacity: 0;
+  animation: none;
+}
+
+.hero-mascot-img--swap.is-loaded.is-active {
+  opacity: 1;
+}
+
+.hero-mascot-skeleton {
+  position: absolute;
+  inset: 8%;
+  border-radius: 24px;
+  background: linear-gradient(100deg, var(--cream-deep) 30%, var(--cream) 50%, var(--cream-deep) 70%);
+  background-size: 200% 100%;
+  animation: hero-mascot-shimmer 1.4s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-mascot-skeleton-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--lime-ink);
+  animation: hero-mascot-spin-skel 0.8s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes hero-mascot-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes hero-mascot-spin-skel {
+  to { transform: rotate(360deg); }
+}
+
+.hero-mascot-shadow {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 4%;
+  width: 52%;
+  height: 18px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(26, 31, 10, 0.22), transparent 72%);
+  border-radius: 50%;
+  animation: hero-mascot-shadow-pulse 4.2s ease-in-out infinite;
+}
+
+@keyframes hero-mascot-shadow-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  50% { transform: translateX(-50%) scale(0.82); opacity: 0.7; }
+}
+
+.hero-mascot-glow {
+  position: absolute;
+  z-index: 0;
+  inset: 6%;
+  border-radius: 50%;
+  filter: blur(32px);
+  opacity: 0.55;
+  animation: hero-mascot-glow-pulse 5s ease-in-out infinite;
+  transition: background 0.6s ease;
+}
+
+@keyframes hero-mascot-glow-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.07); }
+}
+
+.hero-mascot-ring {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  border: 1.5px dashed;
+  opacity: 0.35;
+  transition: border-color 0.6s ease;
+}
+
+.hero-mascot-ring-a {
+  inset: 16%;
+  animation: hero-mascot-spin 22s linear infinite;
+}
+
+.hero-mascot-ring-b {
+  inset: 24%;
+  animation: hero-mascot-spin 16s linear infinite reverse;
+}
+
+@keyframes hero-mascot-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hero-mascot-shape {
+  position: absolute;
+  z-index: 2;
+  border-radius: 50%;
+  animation: hero-mascot-shape-orbit 6s ease-in-out infinite;
+  transition: background-color 0.6s ease, border-color 0.6s ease;
+}
+
+.hero-mascot-shape-1 {
+  top: 10%;
+  left: 12%;
+  width: 16px;
+  height: 16px;
+  animation-delay: 0s;
+}
+
+.hero-mascot-shape-2 {
+  top: 20%;
+  right: 8%;
+  width: 11px;
+  height: 11px;
+  animation-delay: 1.4s;
+  animation-duration: 5s;
+}
+
+.hero-mascot-shape-3 {
+  bottom: 22%;
+  left: 6%;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  animation-delay: 0.7s;
+  animation-duration: 7s;
+}
+
+.hero-mascot-shape-4 {
+  bottom: 12%;
+  right: 12%;
+  width: 9px;
+  height: 9px;
+  animation-delay: 2.1s;
+  animation-duration: 5.6s;
+}
+
+@keyframes hero-mascot-shape-orbit {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+  50% { transform: translate(5px, -12px) scale(1.15); opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mascot-float,
+  .hero-mascot-shadow,
+  .hero-mascot-glow,
+  .hero-mascot-ring-a,
+  .hero-mascot-ring-b,
+  .hero-mascot-shape {
+    animation: none !important;
+  }
+}
+
+/* ---- Tone variants — swapped on a 1s interval by Hero.tsx ---- */
+
+.hero-mascot-lime .hero-mascot-glow { background: radial-gradient(circle, var(--lime), transparent 70%); }
+.hero-mascot-lime .hero-mascot-ring { border-color: var(--lime-ink); }
+.hero-mascot-lime .hero-mascot-shape-1,
+.hero-mascot-lime .hero-mascot-shape-3 { background: var(--lime); border: 1.5px solid var(--lime-ink); }
+.hero-mascot-lime .hero-mascot-shape-2,
+.hero-mascot-lime .hero-mascot-shape-4 { background: var(--lime-ink); }
+
+.hero-mascot-purple .hero-mascot-glow { background: radial-gradient(circle, var(--dash-purple), transparent 70%); }
+.hero-mascot-purple .hero-mascot-ring { border-color: var(--dash-purple-ink); }
+.hero-mascot-purple .hero-mascot-shape-1,
+.hero-mascot-purple .hero-mascot-shape-3 { background: var(--dash-purple-surface); border: 1.5px solid var(--dash-purple-ink); }
+.hero-mascot-purple .hero-mascot-shape-2,
+.hero-mascot-purple .hero-mascot-shape-4 { background: var(--dash-purple); }
+
+.hero-mascot-blue .hero-mascot-glow { background: radial-gradient(circle, var(--dash-blue), transparent 70%); }
+.hero-mascot-blue .hero-mascot-ring { border-color: var(--dash-blue-ink); }
+.hero-mascot-blue .hero-mascot-shape-1,
+.hero-mascot-blue .hero-mascot-shape-3 { background: var(--dash-blue-surface); border: 1.5px solid var(--dash-blue-ink); }
+.hero-mascot-blue .hero-mascot-shape-2,
+.hero-mascot-blue .hero-mascot-shape-4 { background: var(--dash-blue); }
+
+.hero-mascot-orange .hero-mascot-glow { background: radial-gradient(circle, var(--dash-orange), transparent 70%); }
+.hero-mascot-orange .hero-mascot-ring { border-color: var(--dash-orange-ink); }
+.hero-mascot-orange .hero-mascot-shape-1,
+.hero-mascot-orange .hero-mascot-shape-3 { background: var(--dash-orange-surface); border: 1.5px solid var(--dash-orange-ink); }
+.hero-mascot-orange .hero-mascot-shape-2,
+.hero-mascot-orange .hero-mascot-shape-4 { background: var(--dash-orange); }
+
+/* ============================================================
+ * MOBILE HERO (default, up to 1023px)
+ * Single column: eyebrow → headline → subcopy → CTAs → trust row →
+ * mascot stage, all stacked and centered. No side-by-side split at
+ * phone widths — the old mobile hero forced a 50/50 row even on a
+ * 320px screen, which is what made both the headline and the
+ * character cramped; this stacks instead, each full width.
+ * ============================================================ */
+
+.hero {
+  position: relative;
+  max-width: min(96vw, 640px);
+  margin: 0 auto;
+  padding: 20px 18px 8px;
+  text-align: left;
+  overflow: visible;
+}
+
+.hero-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hero-left-col {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 6px 12px 6px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--walnut-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-eyebrow-sparkle {
+  width: 13px;
+  height: 13px;
+  color: var(--lime-ink);
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+.hero-h1 {
+  margin: 0 0 16px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  overflow-wrap: break-word;
+  font-size: clamp(32px, 10vw, 46px);
+  line-height: 1.04;
+}
+
+.hero-h1-line {
+  display: block;
+}
+
+.hero p.sub {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #514d47;
+  max-width: 38ch;
+  margin: 0 0 22px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 18px;
+}
+
+.hero .btn-primary,
+.hero .btn-secondary {
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+}
+
+.btn-primary-full { display: none; }
+.btn-primary-short { display: inline; }
+
+.hero .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ink);
+  color: var(--lime);
+  border: none;
+  border-radius: 999px;
+  padding: 15px 18px;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+}
+
+.hero .btn-primary .btn-arrow {
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hero .btn-primary:hover { transform: translateY(-2px); opacity: 0.92; }
+.hero .btn-primary:active { transform: translateY(0); }
+
+.hero .btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  padding: 14px 18px;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.hero .btn-secondary:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.hero .btn-secondary:active { transform: translateY(0); }
+
+/* ============================================================
+ * "See how it works" — promoted from a plain outline link into an
+ * animated call-to-action. It's the button most likely to turn a
+ * visitor into someone who actually understands sitevento (the modal
+ * behind it is the whole pitch), so it needs to visibly invite a
+ * click rather than sit there as quiet secondary chrome. Built from
+ * three layered effects, each subtle on its own so together they read
+ * as "alive" rather than "busy":
+ *   1. a filled play-icon badge with a soft ring pulsing outward —
+ *      the universal "there's a video/demo in here" signal
+ *   2. a slow shimmer sweep across the pill, like light catching it
+ *   3. a gentle, slow float — not an aggressive bounce, just enough
+ *      to differentiate it at rest from the static primary button
+ * ============================================================ */
+
+.hero .btn-how-it-works {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  background: var(--bg);
+  border-color: var(--ink);
+  animation: how-it-works-float 3.2s ease-in-out infinite;
+}
+
+.hero .btn-how-it-works::after {
+  /* Shimmer sweep: a soft diagonal band of light that drifts across
+     the pill every few seconds. */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    115deg,
+    transparent,
+    color-mix(in srgb, var(--lime) 55%, transparent),
+    transparent
+  );
+  transform: skewX(-18deg);
+  animation: how-it-works-shimmer 3.2s ease-in-out infinite;
+  animation-delay: 0.6s;
+  pointer-events: none;
+}
+
+.hero .btn-how-it-works:hover {
+  animation-play-state: paused;
+  transform: translateY(-3px);
+  background: var(--lime-mist);
+  border-color: var(--ink);
+  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--lime-ink) 45%, transparent);
+}
+
+.hero .btn-how-it-works:active { transform: translateY(-1px); }
+
+.how-it-works-play {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--lime);
+}
+
+.how-it-works-play svg {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  margin-left: 1.5px; /* optically center the play triangle */
+}
+
+.how-it-works-play-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: how-it-works-pulse 2s ease-out infinite;
+}
+
+@keyframes how-it-works-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+@keyframes how-it-works-shimmer {
+  0% { left: -60%; }
+  45%, 100% { left: 130%; }
+}
+
+@keyframes how-it-works-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .btn-how-it-works,
+  .hero .btn-how-it-works::after,
+  .how-it-works-play-pulse {
+    animation: none;
+  }
+}
+
+.hero-trust-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #847e72;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-trust-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime-ink);
+  flex-shrink: 0;
+}
+
+.hero-character-col {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 1 / 1;
+  margin-top: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mascot-img { animation: none; }
+}
+
+@media (min-width: 420px) {
+  .hero-h1 { font-size: clamp(36px, 9vw, 50px); }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero {
+    max-width: min(90vw, 760px);
+    padding-top: 32px;
+  }
+  .hero-h1 { font-size: clamp(46px, 7vw, 60px); }
+  .hero p.sub { font-size: 18px; max-width: 42ch; }
+  .hero .actions { flex-direction: row; width: auto; max-width: none; }
+  .hero .btn-primary, .hero .btn-secondary { width: auto; }
+  .btn-primary-full { display: inline; }
+  .btn-primary-short { display: none; }
+  .hero-character-col { max-width: 360px; }
+}
+
+/* ============================================================
+ * DESKTOP HERO (1024px and up)
+ * Left/right row again, but this time the right column's height is
+ * driven by the left column (align-items: stretch, not flex-start/
+ * center) — the mascot stage fills whatever height the real headline
+ * + copy + buttons produce and centers itself inside that box, so the
+ * two sides match at any content length instead of the stage forcing
+ * its own tall aspect ratio onto the row.
+ * ============================================================ */
+
+@media (min-width: 1024px) {
+  .hero {
+    /* No top padding here on desktop: `main` (styles/base/base.css)
+       already adds 56px + 16px of clearance under the fixed header
+       for every page, and this rule used to stack an EXTRA
+       clamp(40px, 5vw, 72px) of top padding of its own on top of
+       that — up to ~144px combined before the hero's content ever
+       started, reading as a big dead gap under the header. The hero
+       should start right under the header like any other page's
+       content, with no extra space of its own above the eyebrow/
+       headline. Side and bottom padding unchanged. */
+    max-width: min(92vw, 1320px);
+    margin: 0 auto;
+    padding: 0 clamp(24px, 2.4vw, 40px) clamp(8px, 1vw, 16px);
+    text-align: left;
+  }
+
+  .hero-layout {
+    flex-direction: row;
+    align-items: stretch;
+    gap: clamp(40px, 5vw, 88px);
+  }
+
+  .hero-left-col {
+    flex: 1 1 52%;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .hero-eyebrow { margin-bottom: 20px; }
+
+  .hero-h1 {
+    font-size: clamp(52px, 4.6vw, 80px);
+    line-height: 1.01;
+    margin: 0 0 24px;
+  }
+
+  .hero p.sub {
+    font-size: clamp(18px, 1.15vw, 21px);
+    max-width: 40ch;
+    margin: 0 0 32px;
+  }
+
+  .hero .actions {
+    flex-direction: row;
+    max-width: none;
+    width: auto;
+    margin-bottom: 26px;
+  }
+
+  .hero .btn-primary,
+  .hero .btn-secondary {
+    width: auto;
+    font-size: 16px;
+    padding: 17px 26px;
+  }
+
+  .btn-primary-full { display: inline; }
+  .btn-primary-short { display: none; }
+
+  .hero-trust-row { font-size: 13px; }
+
+  .hero-character-col {
+    flex: 1 1 48%;
+    min-width: 0;
+    max-width: none;
+    aspect-ratio: auto;
+    margin-top: 0;
+  }
+}
+
+/* ============================================================
+ * CONNECTED-SITE DEMO — now a compact section directly under the
+ * hero, acting as the "section under header" beat. The old version's
+ * typing/status readout sat in a status bar along the BOTTOM of the
+ * card, so it was the last thing a visitor noticed; it now sits right
+ * under the browser chrome at the TOP of the card instead (see
+ * .hero-demo-statusbar below and Hero.tsx's markup order).
+ * ============================================================ */
+
+.hero-showcase {
+  background: var(--app-bg);
+  padding: 8px 18px 48px;
+}
+
+.hero-showcase-inner {
+  max-width: min(96vw, 640px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hero-showcase-copy { display: none; }
+
+.hero-showcase-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--walnut);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-showcase-title {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 5.4vw, 28px);
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-showcase-list {
+  margin: 0;
+  padding: 0 0 0 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-showcase-frame {
+  width: 100%;
+}
+
+.hero-demo-chrome {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--app-bg) 60%, var(--bg) 40%);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 44px -26px rgba(34, 32, 28, 0.28);
+}
+
+.hero-demo-chrome-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--ink) 4%, var(--app-bg) 96%);
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-demo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.hero-demo-dot:nth-child(1) { background: #c9b8ff; }
+.hero-demo-dot:nth-child(2) { background: #ffd8a8; }
+.hero-demo-dot:nth-child(3) { background: var(--lime); }
+
+.hero-demo-url {
+  margin-left: 8px;
+  font-size: 11.5px;
+  color: #928c80;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Status/typing readout — TOP of the card now, not the bottom. */
+.hero-demo-statusbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 3%, var(--app-bg) 97%);
+  min-height: 44px;
+}
+
+.hero-demo-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #c9c2b4;
+  transition: background-color 0.3s ease;
+}
+
+.hero-demo-status-dot--tracking { background: #2fbf5c; }
+.hero-demo-status-dot--connecting { background: #e6a23c; }
+
+.hero-demo-status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  white-space: nowrap;
+}
+
+.hero-demo-typing {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: 2px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #cdeb8f;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.hero-demo-typing-snippet {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  max-width: 220px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.hero-demo-caret {
+  display: inline-block;
+  width: 6px;
+  height: 11px;
+  margin-left: 1px;
+  background: var(--lime);
+  vertical-align: -1px;
+  animation: hero-demo-blink 0.9s steps(1) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes hero-demo-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.hero-demo-surface { position: relative; }
+
+.hero-demo-page {
+  position: relative;
+  height: 180px;
+  padding: 18px 16px;
+  overflow: hidden;
+  background: var(--bg);
+  transition: background-color 0.4s ease;
+}
+
+.hero-demo-page--tracking { background: var(--ink); }
+
+.hero-demo-page-bar {
+  width: 38%;
+  height: 9px;
+  border-radius: 5px;
+  background: var(--line);
+  margin-bottom: 16px;
+  transition: background-color 0.4s ease, opacity 0.4s ease;
+}
+
+.hero-demo-page--tracking .hero-demo-page-bar { background: rgba(255, 255, 255, 0.14); }
+
+.hero-demo-page-line {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--line);
+  margin-bottom: 10px;
+  transition: background-color 0.4s ease, opacity 0.4s ease;
+}
+
+.hero-demo-page-line--title { width: 62%; height: 10px; }
+.hero-demo-page-line--a { width: 88%; }
+.hero-demo-page-line--b { width: 72%; }
+
+.hero-demo-page--tracking .hero-demo-page-line { background: rgba(255, 255, 255, 0.1); }
+
+.hero-demo-page--pasting .hero-demo-page-line,
+.hero-demo-page--connecting .hero-demo-page-line {
+  opacity: 0.5;
+}
+
+.hero-demo-connecting {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--app-bg) 70%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-demo-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--walnut);
+  animation: hero-demo-spin 0.8s linear infinite;
+}
+
+@keyframes hero-demo-spin {
+  to { transform: rotate(360deg); }
+}
+
+.hero-demo-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1.5px solid #14120d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.35);
+  animation: hero-preview-pop-in 1.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes hero-preview-pop-in {
+  0% { opacity: 0; transform: translate(-50%, -40%) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -68%) scale(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-demo-chip {
+    animation: hero-preview-pop-fade 1.6s ease-out forwards;
+  }
+  .hero-demo-caret {
+    animation: none;
+    opacity: 1;
+  }
+  @keyframes hero-preview-pop-fade {
+    0% { opacity: 0; }
+    15%, 75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-showcase-inner { max-width: min(90vw, 720px); }
+}
+
+/* ---- Desktop: two-column row, proof copy left, demo card right ---- */
+@media (min-width: 1024px) {
+  .hero-showcase {
+    padding: 0 0 clamp(64px, 7vw, 96px);
+  }
+
+  .hero-showcase-inner {
+    flex-direction: row;
+    align-items: center;
+    max-width: min(92vw, 1320px);
+    padding: 0 clamp(24px, 2.4vw, 40px);
+    gap: clamp(40px, 5vw, 80px);
+  }
+
+  .hero-showcase-copy {
+    display: block;
+    flex: 1 1 36%;
+    max-width: 380px;
+  }
+
+  .hero-showcase-frame {
+    flex: 1 1 56%;
+    max-width: 520px;
+  }
+
+  .hero-demo-chrome { max-width: none; }
+}

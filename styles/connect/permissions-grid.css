@@ -1,0 +1,288 @@
+/* ============================================================
+ * styles/connect/permissions-grid.css
+ *
+ * Styles for components/connect/ConnectPermissionsGrid.tsx — the
+ * 30-permission catalog UI (lib/connectPermissions.ts): a switchable
+ * tab strip of the 5 categories, numbered rows inside each tab capped
+ * to 5 visible with a "show more" expand, and a distinct "trial"
+ * state (locked-but-triable, with its daily number shown) alongside
+ * the plain locked state.
+ *
+ * Visual language: glassy lime, not walnut/brown — translucent lime
+ * surfaces, soft frosted panels, rounded-premium cards. No flat
+ * "cartoon offset shadow" buttons; depth comes from blur + soft shadow
+ * + a crisp lime edge instead. Class names kept under the cwz- prefix
+ * so markup is unchanged wherever this component is reused.
+ *
+ * Two importers today:
+ *   - app/dashboard/connect/page.tsx (also imports connect-flow.css
+ *     for the rest of the wizard's chrome)
+ *   - app/dashboard/sites/[siteId]/page.tsx (the per-site "Permissions"
+ *     panel, components/dashboard/SiteManagePage.tsx)
+ * Every color below reads a variable from styles/base/base.css's :root
+ * block — none hardcoded — same convention as connect-flow.css.
+ * ============================================================ */
+
+.cwz-perm-section { margin: 4px 0 24px; }
+.cwz-perm-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin-bottom: 6px;
+}
+.cwz-perm-title {
+  font-family: -apple-system, sans-serif; font-size: 13.5px; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.cwz-perm-count {
+  display: inline-flex; align-items: baseline; gap: 3px; white-space: nowrap;
+  font-family: -apple-system, sans-serif;
+}
+.cwz-perm-count-num {
+  font-size: 13.5px; font-weight: 800; color: var(--lime-ink);
+}
+.cwz-perm-count-of {
+  font-size: 11.5px; font-weight: 700; color: var(--muted-mid);
+}
+.cwz-perm-intro {
+  margin: 0 0 16px; font-family: -apple-system, sans-serif; font-size: 12.5px;
+  line-height: 1.55; color: var(--muted-mid); max-width: 56ch;
+}
+
+/* ============ Upsell — clean glass card ============
+ * Single, calm card instead of a hard-offset-shadow banner: a frosted
+ * lime-tinted surface, a soft glow behind the bolt icon, and a pill CTA
+ * that reads as "tap to see more" rather than a loud ad unit. */
+.cwz-perm-upsell {
+  position: relative; display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 15px 16px; margin-bottom: 20px;
+  border: 1px solid var(--lime-glass-border);
+  border-radius: 18px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--lime) 14%, var(--bg)) 0%, var(--bg) 60%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent), 0 10px 28px -16px color-mix(in srgb, var(--lime-ink) 35%, transparent);
+  cursor: pointer; text-align: left; overflow: hidden;
+  transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.cwz-perm-upsell:hover {
+  transform: translateY(-2px);
+  border-color: var(--lime);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent), 0 16px 32px -14px color-mix(in srgb, var(--lime-ink) 45%, transparent);
+}
+.cwz-perm-upsell:active { transform: translateY(0); }
+.cwz-perm-upsell-glow {
+  position: absolute; top: 50%; left: 28px; width: 90px; height: 90px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--lime) 55%, transparent) 0%, transparent 70%);
+  transform: translateY(-50%); pointer-events: none; opacity: 0.6; filter: blur(6px);
+}
+.cwz-perm-upsell-icon {
+  position: relative; flex-shrink: 0; width: 38px; height: 38px; border-radius: 13px;
+  background: linear-gradient(155deg, var(--lime), color-mix(in srgb, var(--lime) 70%, var(--bg)));
+  color: var(--lime-ink);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent), 0 4px 12px -4px color-mix(in srgb, var(--lime-ink) 45%, transparent);
+}
+.cwz-perm-upsell-icon svg { width: 18px; height: 18px; }
+.cwz-perm-upsell-copy {
+  position: relative; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: -apple-system, sans-serif;
+}
+.cwz-perm-upsell-headline {
+  font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em;
+}
+.cwz-perm-upsell-sub {
+  font-size: 12px; line-height: 1.45; color: var(--muted-mid);
+}
+.cwz-perm-upsell-sub strong { color: var(--ink); font-weight: 700; }
+.cwz-perm-upsell-cta {
+  position: relative; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--lime); color: var(--lime-ink);
+  font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 800; white-space: nowrap;
+  box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--lime-ink) 40%, transparent);
+}
+.cwz-perm-upsell-cta svg { width: 13px; height: 13px; }
+@media (max-width: 560px) {
+  .cwz-perm-upsell { flex-wrap: wrap; padding: 16px; }
+  .cwz-perm-upsell-glow { display: none; }
+  .cwz-perm-upsell-cta { margin-left: 52px; }
+}
+
+/* ============ Category tabs — side-by-side, switchable ============
+ * A scrollable strip on narrow screens (horizontal overflow with
+ * snapping, no visible scrollbar), an evenly-spaced inline row once
+ * there's room. Active tab reads as a lifted glass chip; inactive tabs
+ * sit flush on the frosted rail behind them. */
+.cwz-perm-tabs {
+  display: flex; gap: 6px; margin-bottom: 14px; padding: 5px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--lime) 7%, var(--cream));
+  border: 1px solid var(--line);
+  overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+}
+.cwz-perm-tabs::-webkit-scrollbar { display: none; }
+.cwz-perm-tab {
+  position: relative; flex: 0 0 auto; scroll-snap-align: start;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 14px; border: none; border-radius: 12px;
+  background: transparent; color: var(--muted-dark);
+  font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+}
+.cwz-perm-tab:hover:not(.is-active) { color: var(--ink); background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.cwz-perm-tab.is-active {
+  background: var(--bg); color: var(--ink);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent), 0 0 0 1.5px var(--lime);
+  transform: translateY(-1px);
+}
+.cwz-perm-tab-icon { width: 15px; height: 15px; flex-shrink: 0; color: var(--lime-ink); opacity: 0.55; }
+.cwz-perm-tab.is-active .cwz-perm-tab-icon { opacity: 1; }
+.cwz-perm-tab-label { white-space: nowrap; }
+.cwz-perm-tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 17px; height: 17px; padding: 0 5px; border-radius: 999px;
+  background: var(--lime); color: var(--lime-ink);
+  font-size: 10px; font-weight: 800; line-height: 1;
+}
+@media (min-width: 720px) {
+  .cwz-perm-tabs { overflow-x: visible; }
+  .cwz-perm-tab { flex: 1 1 0; justify-content: center; }
+}
+
+/* ============ Active category panel ============ */
+.cwz-perm-group {
+  animation: cwz-perm-panel-in 0.2s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes cwz-perm-panel-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.cwz-perm-group-title {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 10px; font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 14.5px; font-weight: 700; color: var(--ink);
+}
+.cwz-perm-group-icon {
+  flex-shrink: 0; width: 16px; height: 16px; color: var(--lime-ink);
+}
+.cwz-perm-group-count {
+  margin-left: auto; font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600;
+  color: var(--muted); letter-spacing: 0.01em;
+}
+
+/* ============ Rows — glass panel ============ */
+.cwz-perm-rows {
+  background: color-mix(in srgb, var(--bg) 92%, var(--lime) 3%);
+  border: 1px solid var(--line); border-radius: 18px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+}
+.cwz-perm-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+  padding: 14px 16px; border-bottom: 1px solid var(--line);
+  transition: background 0.14s ease;
+}
+.cwz-perm-row:last-child { border-bottom: none; }
+.cwz-perm-row.is-full:hover { background: color-mix(in srgb, var(--lime) 5%, transparent); }
+.cwz-perm-row.is-trial { background: color-mix(in srgb, var(--lime) 9%, transparent); }
+.cwz-perm-row.is-trial:hover { background: color-mix(in srgb, var(--lime) 15%, transparent); }
+.cwz-perm-row.is-locked { background: color-mix(in srgb, var(--muted) 5%, transparent); }
+.cwz-perm-row.is-pending { opacity: 0.6; pointer-events: none; }
+.cwz-perm-row-num {
+  flex-shrink: 0; width: 20px; padding-top: 1px;
+  font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; font-weight: 600;
+  color: var(--placeholder);
+}
+.cwz-perm-row-stack { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.cwz-perm-row-label {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  font-family: -apple-system, sans-serif; font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.cwz-perm-row-note {
+  font-family: -apple-system, sans-serif; font-size: 11.5px; line-height: 1.45;
+  color: var(--muted-mid); max-width: 440px;
+}
+.cwz-perm-lock-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px 2px 7px; border: none; border-radius: 999px;
+  background: var(--ink); color: var(--bg);
+  font-family: -apple-system, sans-serif; font-size: 10px; font-weight: 700;
+  cursor: pointer; transition: background 0.12s ease;
+}
+.cwz-perm-lock-pill svg { width: 10px; height: 10px; }
+.cwz-perm-lock-pill:hover { background: var(--lime-ink); }
+
+.cwz-perm-trial-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px 2px 7px; border-radius: 999px;
+  background: var(--lime); color: var(--lime-ink);
+  font-family: -apple-system, sans-serif; font-size: 10px; font-weight: 700;
+  white-space: nowrap;
+}
+.cwz-perm-trial-pill svg { width: 11px; height: 11px; }
+.cwz-perm-trial-upgrade {
+  align-self: flex-start; margin-top: 1px; padding: 0; border: none; background: none;
+  font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--lime-ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+}
+.cwz-perm-trial-upgrade:hover { color: var(--ink); }
+
+/* ============ Switch ============ */
+.cwz-perm-switch {
+  flex-shrink: 0; width: 40px; height: 24px; border-radius: 999px;
+  border: none; padding: 3px; background: var(--border-soft); cursor: pointer;
+  display: flex; align-items: center; transition: background 0.18s ease;
+  margin-top: 1px;
+  position: relative;
+}
+.cwz-perm-switch.is-on { background: var(--lime); box-shadow: inset 0 0 0 1px var(--lime-ink); }
+.cwz-perm-switch.is-trial:not(.is-on) { background: color-mix(in srgb, var(--lime) 35%, var(--border-soft)); }
+.cwz-perm-switch:disabled { cursor: not-allowed; opacity: 0.55; }
+.cwz-perm-switch-knob {
+  width: 18px; height: 18px; border-radius: 50%; background: var(--bg);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 25%, transparent);
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+}
+.cwz-perm-switch.is-on .cwz-perm-switch-knob { transform: translateX(16px); }
+
+/* Per-row "saving" state — used by SiteManagePage's Permissions panel
+   while a toggle's user-action request is in flight. The switch itself
+   swaps its knob for a small spinner so the row visibly busy-waits
+   instead of looking like the click did nothing. */
+.cwz-perm-switch.is-pending { cursor: wait; opacity: 0.85; }
+.cwz-perm-switch-spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  border-top-color: var(--ink);
+  animation: cwz-perm-spin 0.7s linear infinite;
+}
+.cwz-perm-switch.is-on .cwz-perm-switch-spinner { border-color: color-mix(in srgb, var(--lime-ink) 25%, transparent); border-top-color: var(--lime-ink); }
+@keyframes cwz-perm-spin { to { transform: rotate(360deg); } }
+
+/* ============ Show more / fewer ============ */
+.cwz-perm-expand {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 8px; padding: 10px;
+  border: 1px dashed var(--line); border-radius: 14px;
+  background: transparent; color: var(--muted-dark);
+  font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+.cwz-perm-expand:hover {
+  background: color-mix(in srgb, var(--lime) 8%, transparent);
+  border-color: var(--lime); border-style: solid; color: var(--ink);
+}
+.cwz-perm-expand-chevron { width: 13px; height: 13px; transition: transform 0.2s cubic-bezier(0.22,1,0.36,1); }
+.cwz-perm-expand-chevron.is-up { transform: rotate(180deg); }
+
+@media (max-width: 560px) {
+  .cwz-perm-row { flex-wrap: wrap; }
+  .cwz-perm-row-note { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cwz-perm-switch-spinner { animation: none; }
+  .cwz-perm-group { animation: none; }
+}

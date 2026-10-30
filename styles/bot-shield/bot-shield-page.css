@@ -1,0 +1,309 @@
+/* ============================================================
+ * styles/bot-shield/bot-shield-page.css
+ *
+ * Stylesheet for /dashboard/bot-shield (components/bot-shield/
+ * BotShieldPageClient.tsx). Own `bsh-` prefix, same convention as
+ * `agt-`/`wgp-`/`wdg-`.
+ *
+ * Deliberately NOT in app/globals.css's @import list — same reasoning
+ * as styles/agent/agent-page.css's header comment: imported directly
+ * by app/dashboard/bot-shield/page.tsx so it only loads on this route.
+ * Reuses the app's base --ink/--lime/--cream/--walnut tokens.
+ *
+ * Corner-glow note: agent-page.css's .agt-head uses a separate ::before
+ * element with a NEGATIVE top offset, clipped back by overflow:hidden
+ * on the parent — the exact pattern that caused the Account settings
+ * card's top-edge clipping bug (styles/settings/settings-page.css,
+ * .acct-card). This page's .bsh-head avoids that from the start by
+ * painting the glow as a background-image radial-gradient instead —
+ * confined entirely within the card's own box, nothing to clip.
+ * ============================================================ */
+
+.bsh-main {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--cream);
+  padding: 104px 16px 120px;
+  display: flex;
+  justify-content: center;
+}
+
+.bsh-wrap {
+  width: 100%;
+  max-width: clamp(820px, 60vw, 1100px);
+}
+
+.bsh-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 10px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+.bsh-back svg { width: 16px; height: 16px; flex-shrink: 0; }
+.bsh-back:hover { background: #fff; box-shadow: 0 2px 0 rgba(34, 32, 28, 0.12); transform: translateY(-1px); }
+.bsh-back:active { transform: translateY(0) scale(0.98); box-shadow: none; }
+
+/* ── Page head ── */
+.bsh-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 26px;
+  padding: 24px 26px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--lime) 45%, transparent) 0%, transparent 62%),
+    var(--ink);
+}
+
+.bsh-head-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bsh-head-icon svg { width: 24px; height: 24px; }
+
+.bsh-head-text h1 {
+  margin: 0 0 6px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 27px;
+  font-weight: 700;
+  color: #fff;
+}
+.bsh-head-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 52ch;
+}
+
+.bsh-note {
+  font-size: 14px;
+  color: var(--muted);
+  padding: 14px 0;
+}
+
+.bsh-error {
+  font-size: 13.5px;
+  color: #b3261e;
+  background: #fdecea;
+  border: 1px solid #f5c6c2;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 0 18px;
+}
+
+.bsh-signin-card {
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bsh-signin-btn {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+/* ── Widget cards ── */
+.bsh-widget-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+@media (min-width: 720px) {
+  .bsh-widget-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.bsh-widget-card {
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bsh-widget-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.bsh-widget-card h2 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.bsh-widget-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted-mid, var(--muted));
+}
+
+.bsh-status-pill {
+  align-self: flex-start;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--muted);
+}
+.bsh-status-pill.is-on {
+  background: color-mix(in srgb, var(--lime) 35%, transparent);
+  color: var(--lime-ink);
+}
+
+/* ── Toggle switch ── */
+.bsh-toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  height: 25px;
+  border-radius: 999px;
+  border: none;
+  background: var(--line);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease;
+}
+.bsh-toggle.is-on {
+  background: var(--lime);
+}
+.bsh-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+.bsh-toggle.is-on .bsh-toggle-knob {
+  transform: translateX(17px);
+}
+
+/* ── Activity log ── */
+.bsh-log-section h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bsh-log-list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bsh-log-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.bsh-log-row-blocked {
+  border-color: #f5c6c2;
+  background: #fdf4f3;
+}
+
+.bsh-log-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c23b32;
+}
+.bsh-log-dot-warn {
+  background: #d39a1f;
+}
+
+.bsh-log-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bsh-log-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bsh-log-reason {
+  font-size: 12.5px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bsh-log-time {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.bsh-unblock-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bsh-unblock-btn:hover {
+  background: var(--cream);
+}
