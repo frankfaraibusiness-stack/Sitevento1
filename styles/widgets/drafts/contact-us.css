@@ -1,0 +1,241 @@
+/* ============================================================
+ * styles/widgets/drafts/contact-us.css
+ *
+ * Contact Us — CSS extracted as-is from the widget-drafts preview
+ * (widget-drafts/contact-us.html). No visual redesign: colors, spacing
+ * and layout are unchanged from the draft. Demo-page-only rules
+ * (.demo-page / .demo-controls / .demo-note — the preview scaffolding,
+ * not the widget itself) have been removed.
+ *
+ * Not yet wired into the app. Once ported into a React component
+ * under app/w/[widgetId]/widgets/ and added to WIDGET_CATALOG in
+ * lib/widgets.ts, this file's colors should be swapped for the
+ * widget's per-site `accent`-style config fields so site owners can
+ * match their own site's colors from the dashboard, the same way
+ * support-chat/countdown-timer/email-capture already expose an
+ * `accent` field today.
+ * ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+  body {
+    background: linear-gradient(135deg, #f7f9f3 0%, #eef3e4 100%);
+    min-height: 100vh;
+    color: #1a1f0a;
+  }
+
+  /* ---- Launcher ---- */
+  #sv-contact-launcher {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a1f0a;
+    color: #f5ffe0;
+    border: none;
+    border-radius: 999px;
+    padding: 13px 20px 13px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(26, 31, 10, 0.22);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: sv-fade-up 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 300ms;
+  }
+  @keyframes sv-fade-up { to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- Overlay + card ---- */
+  #sv-contact-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(17, 20, 10, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #sv-contact-overlay.sv-open { display: flex; }
+
+  .sv-contact-card {
+    background: #fdfdf7;
+    border-radius: 18px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(26, 31, 10, 0.25);
+    position: relative;
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+    animation: sv-card-in 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    overflow: hidden;
+  }
+  @keyframes sv-card-in { to { opacity: 1; transform: scale(1) translateY(0); } }
+
+  .sv-contact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 22px 14px;
+  }
+  .sv-contact-title { font-size: 16px; font-weight: 700; }
+  .sv-contact-sub { font-size: 12.5px; color: #6b7560; margin-top: 3px; }
+  .sv-contact-close {
+    background: none;
+    border: none;
+    color: #9aa38a;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .sv-contact-close:hover { color: #3a4230; }
+
+  .sv-contact-body { padding: 4px 22px 22px; }
+
+  .sv-field { margin-bottom: 13px; }
+  .sv-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #3a4230;
+  }
+  .sv-field input, .sv-field textarea {
+    width: 100%;
+    border: 1.5px solid #e5ead9;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 120ms ease;
+  }
+  .sv-field input:focus, .sv-field textarea:focus { border-color: #6fae3f; }
+  .sv-field textarea { resize: vertical; min-height: 84px; }
+  .sv-field-error {
+    font-size: 11px;
+    color: #c05050;
+    margin-top: 4px;
+    display: none;
+  }
+  .sv-field.sv-invalid input,
+  .sv-field.sv-invalid textarea { border-color: #e0a0a0; }
+  .sv-field.sv-invalid .sv-field-error { display: block; }
+
+  .sv-contact-submit {
+    width: 100%;
+    background: #1a1f0a;
+    color: #f5ffe0;
+    border: none;
+    border-radius: 9px;
+    padding: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 120ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sv-contact-submit:hover:not(:disabled) { opacity: 0.9; }
+  .sv-contact-submit:disabled { opacity: 0.55; cursor: default; }
+
+  .sv-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(245,255,224,0.35);
+    border-top-color: #f5ffe0;
+    border-radius: 50%;
+    animation: sv-spin 700ms linear infinite;
+    display: none;
+  }
+  @keyframes sv-spin { to { transform: rotate(360deg); } }
+  .sv-contact-submit.sv-sending .sv-spinner { display: inline-block; }
+  .sv-contact-submit.sv-sending .sv-submit-label { opacity: 0.8; }
+
+  /* ---- Success state ---- */
+  .sv-success-view {
+    display: none;
+    text-align: center;
+    padding: 36px 22px 32px;
+  }
+  .sv-success-view.sv-show { display: block; }
+
+  .sv-tick-wrap {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+  }
+  .sv-tick-circle {
+    stroke: #6fae3f;
+    stroke-width: 3;
+    fill: none;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-linecap: round;
+    animation: sv-tick-circle 480ms cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+  .sv-tick-check {
+    stroke: #6fae3f;
+    stroke-width: 3.5;
+    fill: none;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: sv-tick-check 320ms cubic-bezier(0.65, 0, 0.45, 1) 460ms forwards;
+  }
+  @keyframes sv-tick-circle { to { stroke-dashoffset: 0; } }
+  @keyframes sv-tick-check { to { stroke-dashoffset: 0; } }
+
+  .sv-success-heading {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    opacity: 0;
+    animation: sv-fade-in 300ms ease 700ms forwards;
+  }
+  .sv-success-sub {
+    font-size: 12.5px;
+    color: #6b7560;
+    line-height: 1.6;
+    opacity: 0;
+    animation: sv-fade-in 300ms ease 800ms forwards;
+  }
+  @keyframes sv-fade-in { to { opacity: 1; } }
+
+  .sv-success-done {
+    margin-top: 18px;
+    background: #eef3e4;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 18px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #3a4230;
+    cursor: pointer;
+    opacity: 0;
+    animation: sv-fade-in 300ms ease 900ms forwards;
+  }
+  .sv-success-done:hover { background: #e5ead9; }
+
+  /* ---- Error state (send failed) ---- */
+  .sv-send-error {
+    display: none;
+    font-size: 11.5px;
+    color: #c05050;
+    background: #fbecec;
+    border: 1px solid #f0d0d0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+  }
+  .sv-send-error.sv-show { display: block; }
