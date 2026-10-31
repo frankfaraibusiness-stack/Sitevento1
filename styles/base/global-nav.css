@@ -132,17 +132,19 @@
     }
 
     /* Smaller, tighter pill — premium/compact rather than a big slab.
-       56px tall (was 72px), narrower max-width, smaller gap between
-       the two side groups so the whole thing reads as a neat capsule
-       instead of a large bar. */
+       64px tall (was 72px originally; bumped up slightly from the
+       56px icon-only version to fit a small label back under each
+       icon), narrower max-width, smaller gap between the two side
+       groups so the whole thing still reads as a neat capsule instead
+       of a large bar. */
     .gnav-pill {
       width: 100%;
-      max-width: 340px;
+      max-width: 360px;
       margin: 0;
       justify-content: center;
       align-items: center;
       gap: 40px;
-      height: 56px;
+      height: 64px;
       padding: 0 12px;
       background: var(--app-bg);
       backdrop-filter: blur(16px) saturate(170%);
@@ -150,7 +152,7 @@
       /* Pure black, not grey — a defined edge against the lime page
          instead of the near-white var(--line) this used to be. */
       border: 1.5px solid #000;
-      border-radius: 22px;
+      border-radius: 24px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
       position: relative;
     }
@@ -171,16 +173,15 @@
     /* Flat black for every tab, active or not — no per-tab accent
        colors, no blue. Active state is carried entirely by the small
        red dot above the icon (.gnav-item::before) instead of a color
-       or underline change, so the row stays visually quiet. Icon-only:
-       labels are hidden on mobile now to keep the pill small. */
+       or underline change, so the row stays visually quiet. */
     .gnav-item {
       flex-direction: column;
-      gap: 0;
+      gap: 2px;
       flex: 1 1 0;
       width: auto;
       max-width: none;
-      height: 40px;
-      padding: 0;
+      height: 48px;
+      padding: 4px 0 0;
       border-radius: 13px;
       background: transparent;
       border: none;
@@ -192,27 +193,34 @@
     }
 
     .gnav-item-icon {
-      width: 21px;
-      height: 21px;
+      width: 20px;
+      height: 20px;
       margin: 0 auto;
     }
 
     .gnav-item-icon svg {
-      width: 21px;
-      height: 21px;
+      width: 20px;
+      height: 20px;
     }
 
     .gnav-avatar,
     .gnav-avatar-initial {
-      width: 21px;
-      height: 21px;
-      font-size: 10.5px;
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
     }
 
-    /* Labels hidden on mobile — icon-only keeps the pill compact.
-       Still in the DOM for a11y/desktop, just not shown here. */
+    /* Labels back under each icon — small enough to keep the pill
+       compact (8.5px, tight line-height) rather than the larger 9.5px
+       label the original full-width bar used. */
     .gnav-item-label {
-      display: none;
+      display: block;
+      font-size: 8.5px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: nowrap;
     }
 
     /* Small red dot above the active tab's icon instead of a colored
