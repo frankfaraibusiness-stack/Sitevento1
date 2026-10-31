@@ -8,9 +8,10 @@
  * in the middle, straddling the bar's top edge — the one loud shape,
  * same idea as a native app's tab bar with a center FAB. Side tabs
  * (Home/Dashboard left, Settings/Profile right) are quiet icon
- * buttons either side of the notch. Desktop (>=860px): a floating
- * pill nav pinned near the bottom-right, same five items laid out
- * horizontally with an animated hover state (unchanged).
+ * buttons either side of the notch. Desktop (>=860px): the same five
+ * items now sit centered inside the sticky top header's own row,
+ * each with its title showing next to its icon, instead of floating
+ * as a separate icon-only pill elsewhere on the page.
  * ============================================================ */
 
   .gnav-root {
@@ -276,62 +277,87 @@
   }
 
   /* ============================================================
-   * Desktop: floating pill nav, >=860px. Bottom-right rather than
-   * alongside the existing top header pill (components/layout/
-   * Header.tsx's .pill-nav, ~90% width, centered) — floating this one
-   * at the opposite corner keeps it out of that pill's way entirely
-   * instead of competing for the same strip of the viewport.
-   * ============================================================ */
+   * Desktop: nav now lives centered INSIDE the sticky header's own
+   * row, >=860px — replacing the old floating bottom-right pill
+   * (which read as a loose, disconnected element hovering over page
+   * content). .gnav-root is repositioned to the same fixed strip the
+   * header occupies (height: 56px, flush top) and centered
+   * horizontally; .gnav-pill drops its own capsule chrome (no
+   * separate background/border/shadow — it now sits directly in the
+   * header's own glassy surface) and lays its items out in a single
+   * row with each item's title showing next to its icon, so every
+   * option reads clearly instead of being guessed from an icon alone.
+   * The header itself (styles/base/base.css) still owns the glassy
+   * background/blur/border; .gnav-root/.gnav-pill here are purely the
+   * centered content sitting on top of it, same z-index stacking
+   * context. Mobile's bottom tab bar (above) is untouched. */
   @media (min-width: 860px) {
     .gnav-root {
-      top: auto;
-      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-      justify-content: flex-end;
-      padding-right: max(32px, env(safe-area-inset-right, 0px));
+      top: 0;
+      bottom: auto;
+      left: 0;
+      right: 0;
+      height: calc(56px + env(safe-area-inset-top, 0px));
+      padding-top: env(safe-area-inset-top, 0px);
+      justify-content: center;
+      align-items: center;
+      /* Sit in the same stacking position as <header> (z-index: 10,
+         base.css) rather than above modals/sidebar — it's part of the
+         header now, not a floating overlay. */
+      z-index: 10;
+      /* Let clicks on the header's own logo/signup/hamburger (far
+         left/right of the row) pass through the parts of this centered
+         strip that have no nav item under the pointer. */
+      pointer-events: none;
     }
 
     .gnav-pill {
-      gap: 2px;
-      background: color-mix(in srgb, var(--cream) 90%, var(--lime) 10%);
-      backdrop-filter: blur(16px) saturate(170%);
-      -webkit-backdrop-filter: blur(16px) saturate(170%);
-      border: 1.5px solid var(--line);
-      border-radius: 999px;
-      padding: 6px;
-      box-shadow: 0 10px 28px rgba(34, 32, 28, 0.1);
+      pointer-events: auto;
+      gap: 4px;
+      background: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      box-shadow: none;
     }
 
     .gnav-item {
       flex-direction: row;
-      gap: 0;
-      padding: 10px;
-      border-radius: 50%;
+      gap: 7px;
+      padding: 8px 12px;
+      border-radius: 999px;
       position: relative;
       background: none;
-      transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background-color 180ms ease, color 180ms ease;
     }
 
     .gnav-item-icon {
-      width: 19px;
-      height: 19px;
+      width: 17px;
+      height: 17px;
     }
 
-    /* Desktop stays icon-only, same as before this change. */
+    /* Each option now gets its own visible title next to the icon,
+       instead of icon-only with the label hidden. */
     .gnav-item-label {
-      display: none;
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
     }
 
     .gnav-avatar,
     .gnav-avatar-initial {
-      width: 19px;
-      height: 19px;
-      font-size: 10.5px;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
     }
 
     .gnav-item:hover {
-      background: var(--lime);
-      color: var(--lime-ink);
-      transform: translateY(-1px);
+      background: rgba(26, 31, 10, 0.08);
     }
 
     .gnav-item.is-active {
@@ -344,37 +370,54 @@
       outline-offset: 2px;
     }
 
+    /* "Add site" stays a compact icon-only CTA between the two
+       titled groups — giving it the same label treatment as Home/
+       Dashboard/Settings/Profile would make the centered row too
+       wide and blur which element is the primary action. */
     .gnav-add {
-      width: auto;
-      height: 38px;
-      border-radius: 999px;
-      gap: 7px;
-      padding: 0 16px 0 12px;
-      margin: 0 4px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 13.5px;
-      font-weight: 700;
-      box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
-      transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      gap: 0;
+      padding: 0;
+      margin: 0 6px;
+      flex-shrink: 0;
+      box-shadow: none;
+      transition: transform 160ms ease, background-color 160ms ease;
     }
 
     .gnav-add svg {
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
     }
 
     .gnav-add:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 0 rgba(34, 32, 28, 0.9);
+      transform: scale(1.06);
     }
 
     .gnav-add:active {
-      transform: translateY(1px);
-      box-shadow: none;
+      transform: scale(0.96);
     }
 
     .gnav-add-label {
-      display: inline;
+      display: none;
+    }
+  }
+
+  /* Between the desktop breakpoint and ~1050px the header's logo +
+     signup/hamburger cluster leaves too little room either side of a
+     fully-labeled centered nav, so titles fold back to icon-only in
+     that narrow band — same centered-in-header placement, just
+     without the label text competing for space. Comfortably past
+     1050px there's room for every title to show at once. */
+  @media (min-width: 860px) and (max-width: 1050px) {
+    .gnav-item-label {
+      display: none;
+    }
+
+    .gnav-item {
+      padding: 10px;
+      border-radius: 50%;
     }
   }
 
