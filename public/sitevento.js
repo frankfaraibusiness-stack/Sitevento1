@@ -1004,7 +1004,19 @@
         iframe.loading = 'lazy';
         iframe.referrerPolicy = 'no-referrer';
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
-        iframe.style.height = (widget.config && widget.config.height) || '480px';
+        // Expandable widgets (support-chat, faq-page, etc.) are fully
+        // sized by the stylesheet in mountAutoStyles() — collapsed
+        // launcher size, then full-viewport/floating-card size once
+        // open, driven by the sv-expanded class the postMessage bridge
+        // toggles. An inline height here would beat every one of those
+        // rules (inline style always outranks a stylesheet selector,
+        // regardless of specificity) and freeze the frame at a fixed
+        // size no matter what class JS adds — exactly the "tiny iframe
+        // that never resizes" bug. So only non-expandable widgets get
+        // the inline fallback height.
+        if (!EXPANDABLE_WIDGET_IDS[widget.id]) {
+          iframe.style.height = (widget.config && widget.config.height) || '480px';
+        }
         iframe.setAttribute('title', widget.name || widget.id || 'Sitevento widget');
         container.appendChild(iframe);
       } else {
@@ -1236,7 +1248,7 @@
         '[data-sitevento-widget="support-chat"]{width:56px;height:56px;}' +
         '[data-sitevento-widget="support-chat"] .sv-widget-frame{width:56px;height:56px;}' +
         '[data-sitevento-widget="support-chat"].sv-expanded.sv-chat-desktop{' +
-        'position:fixed;inset:auto;bottom:16px;left:16px;top:auto;right:auto;' +
+        'position:fixed;inset:auto;bottom:16px;right:16px;top:auto;left:auto;' +
         'width:384px;height:600px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);}';
       document.head.appendChild(style);
     }
