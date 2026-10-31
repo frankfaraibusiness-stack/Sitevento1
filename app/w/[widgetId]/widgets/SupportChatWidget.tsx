@@ -142,7 +142,14 @@ export function SupportChatWidget({ siteId, visitorId, config }: SupportChatWidg
   const brandLogoUrl = cfg.brandLogoUrl || '';
   const accentVars = accentCssVars(cfg.accentColor);
 
-  const [open, setOpen] = useState(true);
+  // Starts collapsed (just the launcher bubble) — this widget loads
+  // inside a small 56x56 host iframe (see sitevento.js's
+  // EXPANDABLE_WIDGET_IDS/mountAutoStyles) that only grows to
+  // full-screen/floating-card size once we tell it to via the
+  // postMessage below. Defaulting to true here used to render the
+  // whole full-screen chat markup clipped inside that tiny starting
+  // box before any message had a chance to go out.
+  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -154,6 +161,21 @@ export function SupportChatWidget({ siteId, visitorId, config }: SupportChatWidg
   useEffect(() => {
     sessionIdRef.current = getOrCreateSessionId(siteId);
   }, [siteId]);
+
+  // Tells the host page (sitevento.js's startExpandableWidgetBridge)
+  // to resize this widget's iframe: collapsed launcher size while
+  // closed, full-viewport on mobile or a floating 384x600 card on
+  // desktop while open. Without this the host has no way to know the
+  // chat opened, so its iframe never grows past the collapsed bubble
+  // size and the full-screen chat markup renders clipped inside it.
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.parent === window) return;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    window.parent.postMessage(
+      { source: 'sitevento-widget', widgetId: 'support-chat', open, isMobile },
+      '*'
+    );
+  }, [open]);
 
   useEffect(() => {
     if (scrollRef.current) {
