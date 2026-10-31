@@ -172,11 +172,12 @@
      bottom padding is needed there. */
   @media (max-width: 859px) {
     body {
-      /* Bar is 72px tall (global-nav.css) and now floats with a 14px
-         gap below it instead of sitting flush against the screen
-         edge, so clearance grows to match (82px → 96px) to keep page
-         content clear of both the pill and the gap under it. */
-      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+      /* Bar shrank to 56px tall (global-nav.css, was 72px) and floats
+         with a 10px gap below it, so clearance shrinks to match
+         (96px → 76px) to keep page content clear of both the pill
+         and the gap under it without leaving a big dead zone now
+         that the bar itself is smaller. */
+      padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     }
   }
 
@@ -201,7 +202,10 @@
     background: rgba(255, 255, 255, 0.4);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     backdrop-filter: blur(16px) saturate(160%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    /* Was a white-ish line — invisible on the lime page. Pure black,
+       not grey, so the header's bottom edge reads as a crisp, defined
+       line against the lime. */
+    border-bottom: 1px solid #000;
   }
 
   /* Must clear the fixed header above: 56px tall, flush at the top, so
