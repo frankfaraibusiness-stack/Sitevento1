@@ -1,0 +1,344 @@
+/* ============================================================
+ * styles/widgets/widgets-page.css
+ *
+ * Standalone stylesheet for the /widgets route
+ * (components/widgets/WidgetsPageClient.tsx). Deliberately its own
+ * file with its own `wgp-` class prefix rather than reusing the old
+ * dashboard-only `.wg-*` / `.feat-*` tokens (removed from
+ * styles/dashboard/dashboard.css) — this page is public/indexable, not part of
+ * the signed-in dashboard tree, so it shouldn't be coupled to that
+ * stylesheet's lifecycle. Shares the app's base --ink/--line/--bg
+ * variables from styles/base/base.css for visual consistency (card
+ * typography, borders) but every layout/color rule specific to this
+ * picker lives only here.
+ *
+ * .wgp-wrap used to be a flat `max-width: 760px` — fine on phone, but
+ * on a real desktop window (1440px+) it left the whole picker sitting
+ * as a narrow centered column with huge empty gutters on both sides,
+ * same fluid-cap bug the dashboard/agent/widget-designer pages already
+ * fixed with clamp(). Matches that same convention now, and .wgp-grid
+ * grows from 2 columns up to 4 as width allows instead of staying 2-up
+ * forever on a wide monitor.
+ * ============================================================ */
+
+.wgp-main {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 104px 16px 120px;
+  display: flex;
+  justify-content: center;
+}
+
+.wgp-wrap {
+  width: 100%;
+  max-width: clamp(760px, 62vw, 1320px);
+}
+
+/* ── Page head: icon tile + title + subtitle ─────────────────────── */
+.wgp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.wgp-head-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wgp-head-icon svg { width: 26px; height: 26px; }
+
+.wgp-head-text h1 {
+  margin: 2px 0 6px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.wgp-head-text p {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #5c6a72;
+  max-width: 44ch;
+}
+
+/* ── Search bar ───────────────────────────────────────────────────── */
+.wgp-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  margin-bottom: 20px;
+  background: var(--cream);
+  border: 2px solid var(--lime-ink);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--lime-ink);
+}
+.wgp-search:focus-within { box-shadow: 1.5px 1.5px 0 var(--lime-ink); transform: translate(1.5px, 1.5px); }
+
+.wgp-search-icon {
+  flex-shrink: 0;
+  display: flex;
+  color: #9a948a;
+}
+.wgp-search-icon svg { width: 18px; height: 18px; }
+
+.wgp-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: -apple-system, sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+.wgp-search input::placeholder { color: #9a948a; }
+
+.wgp-note {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  color: #6b655c;
+}
+
+.wgp-empty {
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  color: #6b655c;
+  padding: 24px 4px;
+  text-align: center;
+}
+
+/* ── Card grid ────────────────────────────────────────────────────── */
+/* Always 2-up, even on a 320px-wide phone — gap and card padding below
+   are sized so two columns fit without overflow at that width (320 -
+   2*16 wrap padding = 288 content; 288 = 2*134 + 1*20 gap). Was 1fr
+   (single column) below 640px; widened back out at >=640px only for
+   roomier cards, not because narrower viewports need to drop to one. */
+.wgp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 420px) {
+  .wgp-grid { gap: 14px; }
+}
+
+@media (min-width: 640px) {
+  .wgp-grid { gap: 16px; }
+}
+
+/* Desktop: more columns as the (now fluid) wrap gets wider, instead of
+   staying pinned at 2-up and leaving each card to stretch absurdly
+   wide on a large monitor. */
+@media (min-width: 860px) {
+  .wgp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+}
+@media (min-width: 1180px) {
+  .wgp-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+}
+
+/* Lime-cartoonic, thick-black-edge, 3D-cube card style — one
+   consistent look for every widget (was a 6-tone palette cycled
+   across the grid; now status, not a random color, is what each card
+   communicates). */
+.wgp-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 8px;
+  padding: 14px;
+  background: var(--cream);
+  border: 2.5px solid var(--lime-ink);
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 var(--lime-ink);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+@media (min-width: 420px) {
+  .wgp-card { gap: 10px; padding: 18px; border-radius: 18px; box-shadow: 5px 5px 0 var(--lime-ink); }
+}
+.wgp-card:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--lime-ink); }
+.wgp-card:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--lime-ink); }
+.wgp-card-live { background: var(--lime-mist); }
+
+.wgp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.wgp-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 2px solid var(--lime-ink);
+  flex-shrink: 0;
+}
+.wgp-card-icon svg { width: 18px; height: 18px; }
+@media (min-width: 420px) {
+  .wgp-card-icon { width: 48px; height: 48px; border-radius: 14px; }
+  .wgp-card-icon svg { width: 22px; height: 22px; }
+}
+
+/* Live/off status badge — the whole point is you can tell at a glance
+   without opening the widget. */
+.wgp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-family: -apple-system, sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 1.5px solid currentColor;
+  flex-shrink: 0;
+}
+.wgp-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.wgp-status-live { color: #0f5c2e; background: #d4f5df; }
+.wgp-status-off { color: #8a8478; background: var(--cream-deep); }
+
+.wgp-card-arrow svg { width: 14px; height: 14px; }
+@media (min-width: 420px) {
+  .wgp-card-arrow svg { width: 16px; height: 16px; }
+}
+
+.wgp-card-name {
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  word-break: break-word;
+}
+@media (min-width: 420px) {
+  .wgp-card-name { font-size: 17px; }
+}
+
+.wgp-card-desc {
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #4b5a62;
+  /* Keep card heights sane in a 2-up grid at narrow widths — the full
+     description is still in the title attr / on the designer page
+     this card now links to. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (min-width: 420px) {
+  .wgp-card-desc { font-size: 13px; -webkit-line-clamp: 4; }
+}
+
+.wgp-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 4px;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--lime-ink);
+}
+.wgp-card-cta svg { width: 13px; height: 13px; }
+
+/* ── "More widgets coming soon" footer row ───────────────────────── */
+.wgp-soon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  background: var(--lime-mist);
+  border: 2px solid var(--lime-ink);
+  border-radius: 18px;
+  box-shadow: 3px 3px 0 var(--lime-ink);
+}
+
+.wgp-soon-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 2px solid var(--lime-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wgp-soon-icon svg { width: 19px; height: 19px; }
+
+.wgp-soon-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wgp-soon-text strong {
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+.wgp-soon-text span {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  color: #5c6a72;
+}
+
+.wgp-soon-arrow {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--lime);
+  border: 1.5px solid var(--lime-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wgp-soon-arrow svg { width: 16px; height: 16px; }
+
+@media (max-width: 420px) {
+  .wgp-main { padding: 96px 12px 110px; }
+  .wgp-head-text h1 { font-size: 24px; }
+}

@@ -1,0 +1,620 @@
+/* ============================================================
+ * marketing-hero.css — FULL REBUILD (see components/marketing/Hero.tsx)
+ *
+ * Replaces the old hero entirely. The old hero's right column was a
+ * single static PNG forced to its own 1156x1361 aspect ratio — on
+ * desktop that made the right column far taller than the left
+ * column's short two-line headline + copy + buttons, so the two sides
+ * never matched height and the character either floated oddly high
+ * or dragged the whole row down. This version's right column is the
+ * animated mascot "stage" (glow + rings + orbiting shapes, sized in
+ * ems and centered within whatever height the left column sets) —
+ * the row's height comes from the LEFT column's real content, and the
+ * stage just fills and centers itself inside that, at every
+ * breakpoint, instead of imposing its own fixed aspect ratio on the
+ * row.
+ *
+ * Mobile and desktop are two separate rule blocks below 1024px /
+ * 1024px+, same as before — but every single rule in both blocks is
+ * new; nothing here reuses .hero-character-*, which no longer exists
+ * in the markup.
+ * ============================================================ */
+
+#marketingView {
+  background: var(--app-bg);
+}
+
+/* ============================================================
+ * Mascot stage — reuses the onboarding "rig" pattern (glow / two
+ * counter-spinning dashed rings / four orbiting shapes / a bobbing
+ * float layer + ground shadow) under its own hero-mascot-* class
+ * prefix so it can be sized independently of onboarding's version.
+ * Tone classes (lime/purple/blue/orange) are swapped by Hero.tsx on a
+ * 1s interval — only color values differ between them, structure and
+ * timing stay fixed, which is what makes the swap read as a color
+ * change rather than a re-animation.
+ * ============================================================ */
+
+.hero-mascot-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-mascot-float {
+  position: relative;
+  z-index: 3;
+  width: 72%;
+  aspect-ratio: 1156 / 1361;
+  animation: hero-mascot-bob 4.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes hero-mascot-bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-14px) rotate(1deg); }
+}
+
+.hero-mascot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* --hero-mascot-hue is set inline per tone (Hero.tsx) — a single
+     filter list combining the retint with the drop-shadow, so each
+     applies independently instead of one overwriting the other. The
+     hue shift eases over the same 1s cadence the tone cycles on. */
+  filter: drop-shadow(0 18px 22px rgba(26, 31, 10, 0.18)) hue-rotate(var(--hero-mascot-hue, 0deg));
+  transition: filter 900ms ease;
+}
+
+.hero-mascot-img.is-loading { opacity: 0; }
+.hero-mascot-img.is-loaded {
+  opacity: 1;
+  animation: hero-mascot-fade-in 420ms ease;
+}
+
+@keyframes hero-mascot-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hero-mascot-skeleton {
+  position: absolute;
+  inset: 8%;
+  border-radius: 24px;
+  background: linear-gradient(100deg, var(--cream-deep) 30%, var(--cream) 50%, var(--cream-deep) 70%);
+  background-size: 200% 100%;
+  animation: hero-mascot-shimmer 1.4s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-mascot-skeleton-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--lime-ink);
+  animation: hero-mascot-spin-skel 0.8s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes hero-mascot-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes hero-mascot-spin-skel {
+  to { transform: rotate(360deg); }
+}
+
+.hero-mascot-shadow {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 4%;
+  width: 52%;
+  height: 18px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(26, 31, 10, 0.22), transparent 72%);
+  border-radius: 50%;
+  animation: hero-mascot-shadow-pulse 4.2s ease-in-out infinite;
+}
+
+@keyframes hero-mascot-shadow-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  50% { transform: translateX(-50%) scale(0.82); opacity: 0.7; }
+}
+
+.hero-mascot-glow {
+  position: absolute;
+  z-index: 0;
+  inset: 6%;
+  border-radius: 50%;
+  filter: blur(32px);
+  opacity: 0.55;
+  animation: hero-mascot-glow-pulse 5s ease-in-out infinite;
+  transition: background 0.6s ease;
+}
+
+@keyframes hero-mascot-glow-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.07); }
+}
+
+.hero-mascot-ring {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  border: 1.5px dashed;
+  opacity: 0.35;
+  transition: border-color 0.6s ease;
+}
+
+.hero-mascot-ring-a {
+  inset: 16%;
+  animation: hero-mascot-spin 22s linear infinite;
+}
+
+.hero-mascot-ring-b {
+  inset: 24%;
+  animation: hero-mascot-spin 16s linear infinite reverse;
+}
+
+@keyframes hero-mascot-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hero-mascot-shape {
+  position: absolute;
+  z-index: 2;
+  border-radius: 50%;
+  animation: hero-mascot-shape-orbit 6s ease-in-out infinite;
+  transition: background-color 0.6s ease, border-color 0.6s ease;
+}
+
+.hero-mascot-shape-1 {
+  top: 10%;
+  left: 12%;
+  width: 16px;
+  height: 16px;
+  animation-delay: 0s;
+}
+
+.hero-mascot-shape-2 {
+  top: 20%;
+  right: 8%;
+  width: 11px;
+  height: 11px;
+  animation-delay: 1.4s;
+  animation-duration: 5s;
+}
+
+.hero-mascot-shape-3 {
+  bottom: 22%;
+  left: 6%;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  animation-delay: 0.7s;
+  animation-duration: 7s;
+}
+
+.hero-mascot-shape-4 {
+  bottom: 12%;
+  right: 12%;
+  width: 9px;
+  height: 9px;
+  animation-delay: 2.1s;
+  animation-duration: 5.6s;
+}
+
+@keyframes hero-mascot-shape-orbit {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+  50% { transform: translate(5px, -12px) scale(1.15); opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mascot-float,
+  .hero-mascot-shadow,
+  .hero-mascot-glow,
+  .hero-mascot-ring-a,
+  .hero-mascot-ring-b,
+  .hero-mascot-shape {
+    animation: none !important;
+  }
+}
+
+/* ---- Tone variants — swapped on a 1s interval by Hero.tsx ---- */
+
+.hero-mascot-lime .hero-mascot-glow { background: radial-gradient(circle, var(--lime), transparent 70%); }
+.hero-mascot-lime .hero-mascot-ring { border-color: var(--lime-ink); }
+.hero-mascot-lime .hero-mascot-shape-1,
+.hero-mascot-lime .hero-mascot-shape-3 { background: var(--lime); border: 1.5px solid var(--lime-ink); }
+.hero-mascot-lime .hero-mascot-shape-2,
+.hero-mascot-lime .hero-mascot-shape-4 { background: var(--lime-ink); }
+
+.hero-mascot-purple .hero-mascot-glow { background: radial-gradient(circle, var(--dash-purple), transparent 70%); }
+.hero-mascot-purple .hero-mascot-ring { border-color: var(--dash-purple-ink); }
+.hero-mascot-purple .hero-mascot-shape-1,
+.hero-mascot-purple .hero-mascot-shape-3 { background: var(--dash-purple-surface); border: 1.5px solid var(--dash-purple-ink); }
+.hero-mascot-purple .hero-mascot-shape-2,
+.hero-mascot-purple .hero-mascot-shape-4 { background: var(--dash-purple); }
+
+.hero-mascot-blue .hero-mascot-glow { background: radial-gradient(circle, var(--dash-blue), transparent 70%); }
+.hero-mascot-blue .hero-mascot-ring { border-color: var(--dash-blue-ink); }
+.hero-mascot-blue .hero-mascot-shape-1,
+.hero-mascot-blue .hero-mascot-shape-3 { background: var(--dash-blue-surface); border: 1.5px solid var(--dash-blue-ink); }
+.hero-mascot-blue .hero-mascot-shape-2,
+.hero-mascot-blue .hero-mascot-shape-4 { background: var(--dash-blue); }
+
+.hero-mascot-orange .hero-mascot-glow { background: radial-gradient(circle, var(--dash-orange), transparent 70%); }
+.hero-mascot-orange .hero-mascot-ring { border-color: var(--dash-orange-ink); }
+.hero-mascot-orange .hero-mascot-shape-1,
+.hero-mascot-orange .hero-mascot-shape-3 { background: var(--dash-orange-surface); border: 1.5px solid var(--dash-orange-ink); }
+.hero-mascot-orange .hero-mascot-shape-2,
+.hero-mascot-orange .hero-mascot-shape-4 { background: var(--dash-orange); }
+
+/* ============================================================
+ * HERO MASCOT SECTION — Hero now renders nothing but the animated
+ * mascot stage (the old headline/subcopy/CTA column was removed
+ * entirely, every breakpoint). This is its own standalone section —
+ * not one half of a two-column row anymore — so it's centered on the
+ * page with its own vertical rhythm, same --app-bg as the rest of
+ * #marketingView, sized up a little at wider viewports since it no
+ * longer shares a row with a text column that used to set the
+ * available height.
+ * ============================================================ */
+
+.hero-mascot-section {
+  position: relative;
+  max-width: min(96vw, 640px);
+  margin: 0 auto;
+  padding: 28px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-mascot-section .hero-mascot-stage {
+  width: min(70vw, 300px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-mascot-section {
+    max-width: min(90vw, 760px);
+    padding: 36px 24px;
+  }
+  .hero-mascot-section .hero-mascot-stage {
+    width: min(48vw, 380px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-mascot-section {
+    max-width: min(92vw, 1320px);
+    padding: 40px clamp(24px, 2.4vw, 40px);
+  }
+  .hero-mascot-section .hero-mascot-stage {
+    width: min(32vw, 460px);
+  }
+}
+
+/* ============================================================
+ * CONNECTED-SITE DEMO — now a compact section directly under the
+ * hero, acting as the "section under header" beat. The old version's
+ * typing/status readout sat in a status bar along the BOTTOM of the
+ * card, so it was the last thing a visitor noticed; it now sits right
+ * under the browser chrome at the TOP of the card instead (see
+ * .hero-demo-statusbar below and Hero.tsx's markup order).
+ * ============================================================ */
+
+.hero-showcase {
+  background: var(--app-bg);
+  padding: 8px 18px 48px;
+}
+
+.hero-showcase-inner {
+  max-width: min(96vw, 640px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hero-showcase-copy { display: none; }
+
+.hero-showcase-eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--walnut);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-showcase-title {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 5.4vw, 28px);
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-showcase-list {
+  margin: 0;
+  padding: 0 0 0 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-showcase-frame {
+  width: 100%;
+}
+
+.hero-demo-chrome {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--app-bg) 60%, var(--bg) 40%);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 44px -26px rgba(34, 32, 28, 0.28);
+}
+
+.hero-demo-chrome-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--ink) 4%, var(--app-bg) 96%);
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-demo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.hero-demo-dot:nth-child(1) { background: #c9b8ff; }
+.hero-demo-dot:nth-child(2) { background: #ffd8a8; }
+.hero-demo-dot:nth-child(3) { background: var(--lime); }
+
+.hero-demo-url {
+  margin-left: 8px;
+  font-size: 11.5px;
+  color: #928c80;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Status/typing readout — TOP of the card now, not the bottom. */
+.hero-demo-statusbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 3%, var(--app-bg) 97%);
+  min-height: 44px;
+}
+
+.hero-demo-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #c9c2b4;
+  transition: background-color 0.3s ease;
+}
+
+.hero-demo-status-dot--tracking { background: #2fbf5c; }
+.hero-demo-status-dot--connecting { background: #e6a23c; }
+
+.hero-demo-status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  white-space: nowrap;
+}
+
+.hero-demo-typing {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: 2px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #cdeb8f;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.hero-demo-typing-snippet {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  max-width: 220px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.hero-demo-caret {
+  display: inline-block;
+  width: 6px;
+  height: 11px;
+  margin-left: 1px;
+  background: var(--lime);
+  vertical-align: -1px;
+  animation: hero-demo-blink 0.9s steps(1) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes hero-demo-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.hero-demo-surface { position: relative; }
+
+.hero-demo-page {
+  position: relative;
+  height: 180px;
+  padding: 18px 16px;
+  overflow: hidden;
+  background: var(--bg);
+  transition: background-color 0.4s ease;
+}
+
+.hero-demo-page--tracking { background: var(--ink); }
+
+.hero-demo-page-bar {
+  width: 38%;
+  height: 9px;
+  border-radius: 5px;
+  background: var(--line);
+  margin-bottom: 16px;
+  transition: background-color 0.4s ease, opacity 0.4s ease;
+}
+
+.hero-demo-page--tracking .hero-demo-page-bar { background: rgba(255, 255, 255, 0.14); }
+
+.hero-demo-page-line {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--line);
+  margin-bottom: 10px;
+  transition: background-color 0.4s ease, opacity 0.4s ease;
+}
+
+.hero-demo-page-line--title { width: 62%; height: 10px; }
+.hero-demo-page-line--a { width: 88%; }
+.hero-demo-page-line--b { width: 72%; }
+
+.hero-demo-page--tracking .hero-demo-page-line { background: rgba(255, 255, 255, 0.1); }
+
+.hero-demo-page--pasting .hero-demo-page-line,
+.hero-demo-page--connecting .hero-demo-page-line {
+  opacity: 0.5;
+}
+
+.hero-demo-connecting {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--app-bg) 70%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-demo-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--walnut);
+  animation: hero-demo-spin 0.8s linear infinite;
+}
+
+@keyframes hero-demo-spin {
+  to { transform: rotate(360deg); }
+}
+
+.hero-demo-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1.5px solid #14120d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.35);
+  animation: hero-preview-pop-in 1.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes hero-preview-pop-in {
+  0% { opacity: 0; transform: translate(-50%, -40%) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -68%) scale(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-demo-chip {
+    animation: hero-preview-pop-fade 1.6s ease-out forwards;
+  }
+  .hero-demo-caret {
+    animation: none;
+    opacity: 1;
+  }
+  @keyframes hero-preview-pop-fade {
+    0% { opacity: 0; }
+    15%, 75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-showcase-inner { max-width: min(90vw, 720px); }
+}
+
+/* ---- Desktop: two-column row, proof copy left, demo card right ---- */
+@media (min-width: 1024px) {
+  .hero-showcase {
+    padding: 0 0 clamp(64px, 7vw, 96px);
+  }
+
+  .hero-showcase-inner {
+    flex-direction: row;
+    align-items: center;
+    max-width: min(92vw, 1320px);
+    padding: 0 clamp(24px, 2.4vw, 40px);
+    gap: clamp(40px, 5vw, 80px);
+  }
+
+  .hero-showcase-copy {
+    display: block;
+    flex: 1 1 36%;
+    max-width: 380px;
+  }
+
+  .hero-showcase-frame {
+    flex: 1 1 56%;
+    max-width: 520px;
+  }
+
+  .hero-demo-chrome { max-width: none; }
+}
