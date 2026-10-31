@@ -8,11 +8,13 @@
 // unaffected — it's mounted separately in AppRoot, outside this
 // component.
 //
-// Owns the open/closed state for HowItWorksModal — the full-screen
-// explainer Hero's "See how it works" button opens (replacing the old
-// scroll-to-#how-it-works behavior; that strip, rendered by
-// <HowItWorks /> below, stays as a short teaser further down the
-// page).
+// Owns the open/closed state for HowItWorksModal, the full-screen
+// explainer. Hero no longer has a "See how it works" button (its
+// headline/CTAs were removed entirely — Hero now only renders the
+// animated mascot), so nothing currently opens this modal; left wired
+// up rather than torn out in case a new trigger for it (e.g. on
+// <HowItWorks /> below, the short teaser strip further down the page)
+// gets added later.
 'use client';
 
 import { useState } from 'react';
@@ -38,7 +40,7 @@ export function MarketingPage({ onConnectClick }: MarketingPageProps) {
 
   return (
     <div id="marketingView">
-      <Hero onConnectClick={onConnectClick} onHowItWorksClick={() => setHowItWorksOpen(true)} />
+      <Hero />
       <ConnectedSiteShowcase />
       <ControlMoments />
       <LiveTracking />
