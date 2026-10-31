@@ -4,49 +4,27 @@ import { useEffect, useRef, useState } from 'react';
 
 // components/marketing/Hero.tsx
 //
-// Full rebuild (replaces the old split-image hero). The old hero put
-// a large static PNG of the mascot in a right-hand column that never
-// matched the left column's content height — tall on desktop with a
-// short two-line headline beside it, leaving a lot of dead space or
-// forcing an awkward vertical-center. This version drops the PNG
-// entirely: the mascot is now the same animated "stage" rig used on
-// onboarding (glow + spinning rings + orbiting shapes, see
+// Hero is now just the animated mascot "stage" (glow + spinning rings
+// + orbiting shapes, same rig as onboarding — see
 // components/onboarding/OnboardingMascot.tsx / styles/onboarding/
-// onboarding-shell.css), reused here as HeroMascotStage, sized and
-// vertically centered against the left column instead of forced to
-// its own image aspect ratio — so the two sides actually balance at
-// any height. The stage's accent color now cycles once a second
-// through the app's tone palette (lime/purple/blue/orange) instead of
-// being pinned to one tone, via a small interval in HeroMascotStage.
+// onboarding-shell.css), reused here as HeroMascotStage and rendered
+// on its own, inside its own standalone section
+// (.hero-mascot-section in marketing-hero.css). The stage's accent
+// color cycles once a second through the app's tone palette (lime/
+// purple/blue/orange) via a small interval in HeroMascotStage.
 //
-// Layout, structure and CSS are new top-to-bottom in
-// marketing-hero.css — nothing here reuses the old .hero-character-*
-// rules, which are removed.
+// The previous version of this file also rendered a left-column
+// headline ("Your website. Your rules."), subcopy, Connect site / See
+// how it works buttons, and a trust row — all of that is removed, on
+// every breakpoint, not just mobile. Those entry points still exist
+// elsewhere on the page (the Pricing section's CTA, the header's own
+// CTA); HowItWorksModal (components/marketing/HowItWorksModal.tsx) is
+// still rendered by MarketingPage but currently has no button that
+// opens it — see the note in MarketingPage.tsx.
 //
-// The scripted "connect → verify → track" demo (ConnectDemoSurface)
-// is also rebuilt below: it now sits directly under the header as its
-// own compact section immediately following the hero, with the
-// typing/status indicator moved to the TOP of the card instead of the
-// old bottom status bar, so the "live" state reads immediately instead
-// of being the last thing noticed.
-//
-// "See how it works" used to just scroll to the #how-it-works strip
-// further down the page. It now opens HowItWorksModal (see
-// components/marketing/HowItWorksModal.tsx), a full-screen explainer —
-// onHowItWorksClick is owned by MarketingPage, which renders the modal.
-
-interface HeroProps {
-  onConnectClick: () => void;
-  onHowItWorksClick: () => void;
-}
-
-function Sparkle({ className }: { className: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 0c0 5-1 9-3 11s-6 3-9 3c3 0 7 1 9 3s3 6 3 11c0-5 1-9 3-11s6-3 9-3c-3 0-7-1-9-3s-3-6-3-11z" />
-    </svg>
-  );
-}
+// The scripted "connect → verify → track" demo (ConnectedSiteShowcase,
+// below) is unaffected by this change — it's its own section, already
+// separate from Hero before this edit and still is now.
 
 // ---- Mascot stage: onboarding's animated rig, reused for the hero ----
 // Same visual language as OnboardingMascot.tsx (glow/rings/orbiting
@@ -136,84 +114,22 @@ function HeroMascotStage() {
   );
 }
 
-// Mobile-only (<640px) decorative cluster filling the dead space to
-// the right of the stacked CTA buttons — the actions column no longer
-// stretches full-width (see .hero .actions mobile rule), which left
-// that side of the row empty. Small bobbing stat chips + gem shapes,
-// same visual language as the connect-demo's tracking chips
-// (.hero-demo-chip) and the mascot stage's orbiting shapes, just
-// positioned here instead. Purely decorative/illustrative, not real
-// data — aria-hidden, no pointer events.
-function HeroActionsSideDecor() {
+// Hero used to be a two-column section: headline/subcopy/CTAs on the
+// left, the animated mascot on the right. The left column (eyebrow,
+// "Your website. Your rules." headline, subcopy, Connect site / See
+// how it works buttons, trust row, side decor) is removed entirely —
+// on mobile it read as generic/AI-templated, so rather than patch it
+// again it's gone on every breakpoint. What's left is just the mascot,
+// now its own standalone section (.hero-mascot-section in
+// marketing-hero.css) rather than one half of a two-column layout, so
+// it isn't carrying leftover column/grid styling meant for a column
+// that no longer exists. The Connect-site / How-it-works entry points
+// still live on: the Pricing section's buttons and the header's own
+// CTA (passed through from MarketingPage) cover that job now.
+export function Hero() {
   return (
-    <div className="hero-actions-decor" aria-hidden="true">
-      <span className="hero-actions-decor-chip hero-actions-decor-chip-1">
-        <span className="hero-actions-decor-chip-dot" />
-        247 live
-      </span>
-      <span className="hero-actions-decor-chip hero-actions-decor-chip-2">✓ Connected</span>
-      <span className="hero-actions-decor-gem hero-actions-decor-gem-1" />
-      <span className="hero-actions-decor-gem hero-actions-decor-gem-2" />
-      <span className="hero-actions-decor-spark hero-actions-decor-spark-1" />
-    </div>
-  );
-}
-
-export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
-  return (
-    <section className="hero">
-      <div className="hero-layout">
-        <div className="hero-left-col">
-          <p className="hero-eyebrow">
-            <Sparkle className="hero-eyebrow-sparkle" />
-            One tiny snippet. Live control.
-          </p>
-
-          <h1 className="hero-h1">
-            <span className="hero-h1-line">Your website.</span>
-            <span className="hero-highlight-wrap">
-              <span className="hero-highlight-shape" aria-hidden="true" />
-              <span className="hero-highlight-text">Your rules.</span>
-            </span>
-          </h1>
-
-          <p className="sub">
-            Connect once. Change what visitors see, anytime — without rebuilding your site.
-          </p>
-
-          <div className="actions-row">
-            <div className="actions">
-              <button className="btn-primary" onClick={onConnectClick}>
-                <span className="btn-primary-full">Connect your site</span>
-                <span className="btn-primary-short">Connect site</span>
-                <span className="btn-arrow" aria-hidden="true">
-                  →
-                </span>
-              </button>
-              <button className="btn-secondary btn-how-it-works" onClick={onHowItWorksClick}>
-                <span className="how-it-works-play" aria-hidden="true">
-                  <span className="how-it-works-play-pulse" />
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-                See how it works
-              </button>
-            </div>
-
-            <HeroActionsSideDecor />
-          </div>
-
-          <div className="hero-trust-row" aria-hidden="true">
-            <span className="hero-trust-dot" />
-            <span>No code. No rebuild. Live in minutes.</span>
-          </div>
-        </div>
-
-        <div className="hero-character-col">
-          <HeroMascotStage />
-        </div>
-      </div>
+    <section className="hero-mascot-section">
+      <HeroMascotStage />
     </section>
   );
 }
