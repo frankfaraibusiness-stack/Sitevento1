@@ -1004,17 +1004,21 @@
         iframe.loading = 'lazy';
         iframe.referrerPolicy = 'no-referrer';
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
-        // Expandable widgets (support-chat, faq-page, etc.) are fully
+        // Expandable widgets (faq-page, contact-us, etc.) are fully
         // sized by the stylesheet in mountAutoStyles() — collapsed
         // launcher size, then full-viewport/floating-card size once
         // open, driven by the sv-expanded class the postMessage bridge
-        // toggles. An inline height here would beat every one of those
-        // rules (inline style always outranks a stylesheet selector,
-        // regardless of specificity) and freeze the frame at a fixed
-        // size no matter what class JS adds — exactly the "tiny iframe
-        // that never resizes" bug. So only non-expandable widgets get
-        // the inline fallback height.
-        if (!EXPANDABLE_WIDGET_IDS[widget.id]) {
+        // toggles. Always-full-viewport widgets (support-chat,
+        // email-capture) are fully self-positioned via their own CSS
+        // and just need a full-size transparent frame at all times —
+        // see ALWAYS_FULLSCREEN_WIDGET_IDS below. An inline height
+        // here would beat every one of those rules (inline style
+        // always outranks a stylesheet selector, regardless of
+        // specificity) and freeze the frame at a fixed size no matter
+        // what the widget's own CSS says — exactly the "tiny iframe
+        // that never resizes" bug. So only neither-of-the-above
+        // widgets get the inline fallback height.
+        if (!EXPANDABLE_WIDGET_IDS[widget.id] && !ALWAYS_FULLSCREEN_WIDGET_IDS[widget.id]) {
           iframe.style.height = (widget.config && widget.config.height) || '480px';
         }
         iframe.setAttribute('title', widget.name || widget.id || 'Sitevento widget');
@@ -1229,27 +1233,24 @@
         'bottom:auto;left:auto;right:auto;top:auto;width:100%;height:100%;' +
         'max-width:none;max-height:none;z-index:2147483100;}' +
         '[data-sitevento-widget].sv-expandable .sv-widget-frame{width:100%;height:100%;background:transparent;}' +
-        // support-chat's desktop "open" size is a floating card, not a
-        // true fullscreen takeover — only its mobile open state (and
-        // spin-reward/appointment-booking's modal, which always wants
-        // a backdrop over the whole screen) use the inset:0 rule above.
-        // Collapsed support-chat: the mount DIV is sized 56x56 above,
-        // but that never constrained the <iframe> INSIDE it — the
-        // corner-container rule above sets the frame to width:336px
-        // and no rule here ever gave it a height, so it fell back to
-        // the browser's default iframe height (150px). That left a
-        // 336x150 transparent box sitting over the page instead of a
-        // tidy 56px circle, and since the launcher button inside the
-        // iframe is itself `position:fixed` to ITS OWN viewport, the
-        // button rendered somewhere inside that oversized, invisible
-        // frame rather than as a clickable bubble in the corner. This
-        // pins the frame to the same 56x56 box as its parent div so
-        // the two stay in lockstep while collapsed.
-        '[data-sitevento-widget="support-chat"]{width:56px;height:56px;}' +
-        '[data-sitevento-widget="support-chat"] .sv-widget-frame{width:56px;height:56px;}' +
-        '[data-sitevento-widget="support-chat"].sv-expanded.sv-chat-desktop{' +
-        'position:fixed;inset:auto;bottom:16px;right:16px;top:auto;left:auto;' +
-        'width:384px;height:600px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);}';
+        // support-chat no longer uses the expandable/postMessage-resize
+        // path above (that's spin-reward/appointment-booking/faq-page/
+        // contact-us/feedback-survey only now — see
+        // EXPANDABLE_WIDGET_IDS below). Its own component (see
+        // SupportChatWidget.tsx) always renders a self-positioned,
+        // bottom-right launcher bubble and, when open, a bottom-right
+        // floating card — never a full-screen takeover — exactly the
+        // same "always full-viewport, transparent, pointer-events
+        // managed entirely by the widget's own CSS" approach as
+        // EmailCaptureWidget. So its mount div and iframe just need to
+        // be full-viewport and transparent at all times; the widget
+        // itself decides what's actually visible/clickable within
+        // that, the same way EmailCaptureWidget's .ec-overlay does.
+        '[data-sitevento-widget="support-chat"]{position:fixed;inset:0;' +
+        'width:100%;height:100%;max-width:none;max-height:none;' +
+        'bottom:auto;right:auto;z-index:2147483100;}' +
+        '[data-sitevento-widget="support-chat"] .sv-widget-frame{' +
+        'width:100%;height:100%;background:transparent;}';
       document.head.appendChild(style);
     }
 
@@ -1260,8 +1261,19 @@
     // decides whether the shared full-viewport .sv-expanded rule above
     // (edge-to-edge, sticky header) or the widget's own desktop-sized
     // centered layout applies.
-    var EXPANDABLE_WIDGET_IDS = {
+    // Widgets that are always full-viewport + transparent, fully
+    // self-positioned by their own CSS (a corner launcher bubble, a
+    // centered or corner-anchored card) rather than relying on
+    // sitevento.js to size a collapsed vs. open state. support-chat
+    // mounts via the 'corner-bottom-right' catalog position (so it
+    // appears immediately, same as any other corner widget) but needs
+    // the full-viewport frame treatment in mountAutoStyles() above,
+    // not the 336px .sv-corner-frame box other corner widgets get.
+    var ALWAYS_FULLSCREEN_WIDGET_IDS = {
       'support-chat': 1,
+    };
+
+    var EXPANDABLE_WIDGET_IDS = {
       'spin-reward': 1,
       'appointment-booking': 1,
       'faq-page': 1,
@@ -1280,11 +1292,6 @@
         if (!el) return;
         el.classList.add('sv-expandable');
         el.classList.toggle('sv-expanded', !!data.open);
-        // support-chat only: desktop-open uses a floating card, not
-        // the shared fullscreen rule, so it needs its own class too.
-        if (data.widgetId === 'support-chat') {
-          el.classList.toggle('sv-chat-desktop', !!data.open && !data.isMobile);
-        }
       });
     }
 
@@ -1363,7 +1370,15 @@
               // the container) — only the two corner positions use
               // that fixed-footprint sizing; fixed-top/-bottom bars
               // size themselves differently and never get this class.
-              if (effectivePosition === 'corner-bottom-right' || effectivePosition === 'corner-bottom-left') {
+              // ALWAYS_FULLSCREEN_WIDGET_IDS widgets (support-chat)
+              // skip it entirely — they're fully self-positioned and
+              // get their own dedicated full-viewport rule instead
+              // (see the '[data-sitevento-widget="support-chat"]' rule
+              // in mountAutoStyles()).
+              if (
+                (effectivePosition === 'corner-bottom-right' || effectivePosition === 'corner-bottom-left') &&
+                !ALWAYS_FULLSCREEN_WIDGET_IDS[widget.id]
+              ) {
                 mount.className = 'sv-corner-frame';
               }
               container.appendChild(mount);
