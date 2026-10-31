@@ -172,12 +172,11 @@
      bottom padding is needed there. */
   @media (max-width: 859px) {
     body {
-      /* Bar shrank to 56px tall (global-nav.css, was 72px) and floats
-         with a 10px gap below it, so clearance shrinks to match
-         (96px → 76px) to keep page content clear of both the pill
-         and the gap under it without leaving a big dead zone now
-         that the bar itself is smaller. */
-      padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+      /* Bar is 64px tall (global-nav.css — labels came back, so it's
+         a bit taller than the 56px icon-only version, still well
+         under the original 72px) and floats with a 10px gap below
+         it, so clearance covers both. */
+      padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
     }
   }
 
