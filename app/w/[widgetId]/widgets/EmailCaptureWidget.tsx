@@ -475,9 +475,7 @@ const EMAIL_CAPTURE_CSS = `
     inset: 0;
     width: 100vw;
     height: 100dvh;
-    background: rgba(26, 31, 10, 0.45);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -486,6 +484,7 @@ const EMAIL_CAPTURE_CSS = `
     opacity: 1;
     transition: opacity 0.25s ease;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    pointer-events: none;
   }
   .ec-overlay.ec-hidden {
     opacity: 0;
@@ -503,6 +502,7 @@ const EMAIL_CAPTURE_CSS = `
     overflow: hidden;
     transform: scale(1) translateY(0);
     transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto;
   }
   .ec-overlay.ec-hidden .ec-card {
     transform: scale(0.92) translateY(16px);
