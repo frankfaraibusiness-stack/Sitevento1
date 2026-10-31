@@ -475,7 +475,7 @@ const EMAIL_CAPTURE_CSS = `
     inset: 0;
     width: 100vw;
     height: 100dvh;
-    background: transparent;
+    background: rgba(34, 32, 28, 0.45);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -484,7 +484,7 @@ const EMAIL_CAPTURE_CSS = `
     opacity: 1;
     transition: opacity 0.25s ease;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    pointer-events: none;
+    pointer-events: auto;
   }
   .ec-overlay.ec-hidden {
     opacity: 0;
