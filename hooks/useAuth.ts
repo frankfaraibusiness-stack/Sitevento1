@@ -67,22 +67,6 @@ export function useAuth() {
       }
     };
 
-    // Safety net: if the server said a uid IS signed in, authReady
-    // normally waits for the client SDK's onAuthStateChanged to also
-    // resolve (see comment above). That listener can in rare cases
-    // never fire at all (Firebase outage, IndexedDB restore stalling,
-    // an extension blocking the SDK's network calls, etc.), which
-    // previously meant authReady — and the boot splash gating on it —
-    // would hang forever with no way out. Cap the wait so the app
-    // always finishes booting even if the client SDK never confirms;
-    // `user` simply stays null in that edge case, same as "signed
-    // out," rather than freezing the whole app.
-    const forceReadyTimer = setTimeout(() => {
-      if (cancelled || clientResolvedRef.current) return;
-      clientResolvedRef.current = true;
-      setAuthReady(true);
-    }, 8000);
-
     // 1) Ask the server first — fast (one cookie-verifying request),
     // and not subject to the client SDK's storage-restore timing.
     readSession().then((session) => {
@@ -108,7 +92,6 @@ export function useAuth() {
       }
       return () => {
         cancelled = true;
-        clearTimeout(forceReadyTimer);
       };
     }
 
@@ -131,7 +114,6 @@ export function useAuth() {
 
     return () => {
       cancelled = true;
-      clearTimeout(forceReadyTimer);
       unsubscribe();
     };
   }, []);
