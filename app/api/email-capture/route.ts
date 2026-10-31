@@ -3,13 +3,21 @@
 // POST { siteId, email }
 //
 // Backs the Email Capture widget (app/w/[widgetId]/widgets/
-// EmailCaptureWidget.tsx) — the scroll-to-end signup prompt. Mirrors
+// EmailCaptureWidget.tsx) — the time-driven signup popup. Mirrors
 // app/api/overlay-notify/route.ts exactly: resolve siteId -> owning
 // site via the Admin SDK (never the client SDK, so no Firestore rule
 // needs to open up writes to anonymous visitors), then write into the
 // site's existing `leads` subcollection so captured addresses show up
 // in the dashboard's LeadsPanel alongside every other lead source,
 // tagged with source: 'email-capture' to distinguish them.
+//
+// Duplicate check: before writing, queries this site's `leads` for an
+// existing doc with the same (lowercased) email. If found, responds
+// { ok: false, reason: 'duplicate' } instead of writing a second lead
+// — the widget reads that reason specifically to show "You're already
+// subscribed" rather than its generic error copy. Scoped to this one
+// site's leads subcollection, not global across all of sitevento, so
+// the same address can sign up on two different sites independently.
 //
 // Same CORS-open, always-200 contract as the other visitor-facing
 // routes (/api/track, /api/overlay-track, /api/overlay-notify) — a
@@ -46,7 +54,11 @@ export async function POST(req: NextRequest) {
     if (!siteId || typeof siteId !== 'string') {
       return NextResponse.json({ ok: false, reason: 'missing siteId' }, { status: 200, headers: CORS_HEADERS });
     }
-    const trimmed = typeof email === 'string' ? email.trim().slice(0, 200) : '';
+    // Lowercased for both the uniqueness check and storage — so
+    // Visitor@Example.com and visitor@example.com are the same lead,
+    // not two. The EMAIL_RE shape check runs on the same lowercased
+    // value for simplicity; case never affects whether it's valid.
+    const trimmed = typeof email === 'string' ? email.trim().slice(0, 200).toLowerCase() : '';
     if (!EMAIL_RE.test(trimmed)) {
       return NextResponse.json({ ok: false, reason: 'invalid email' }, { status: 200, headers: CORS_HEADERS });
     }
@@ -92,6 +104,14 @@ export async function POST(req: NextRequest) {
     const floodCheck = await checkFormFlood({ db, siteRef, ip });
     if (floodCheck.blocked) {
       return NextResponse.json({ ok: false, reason: 'blocked' }, { status: 200, headers: CORS_HEADERS });
+    }
+
+    // Already subscribed on this site? Don't write a second lead —
+    // tell the widget so it can show "You're already subscribed"
+    // instead of treating this as a fresh signup.
+    const existing = await siteRef.collection('leads').where('email', '==', trimmed).limit(1).get();
+    if (!existing.empty) {
+      return NextResponse.json({ ok: false, reason: 'duplicate' }, { status: 200, headers: CORS_HEADERS });
     }
 
     await siteRef.collection('leads').add({

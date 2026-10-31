@@ -140,7 +140,8 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { allow } from '@/lib/rateLimit';
-import { isValidWidgetId, defaultConfigFor, getWidgetCatalogEntry, expectedCatalogDoc } from '@/lib/widgets';
+import { isValidWidgetId, defaultConfigFor, getWidgetCatalogEntry, expectedCatalogDoc, sanitizeEmailCaptureConfig } from '@/lib/widgets';
+import { getCallerPlan } from '@/lib/serverAuth';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -304,11 +305,23 @@ export async function POST(req: NextRequest) {
     const existingSnap = await widgetRef.get();
     const existing = existingSnap.exists ? existingSnap.data() : null;
 
-    const mergedConfig = {
+    let mergedConfig = {
       ...defaultConfigFor(widgetId),
       ...((existing?.config as Record<string, unknown>) || {}),
       ...cleanConfig,
     };
+
+    // Email Capture: clamp delaySeconds/visitThreshold to the catalog's
+    // declared bounds and re-check the plan gate on triggerType:'visits'
+    // server-side — never trust a raw client POST (or a stale draft
+    // saved before a downgrade) to persist a value the designer UI
+    // itself would never have produced. This is the one real write
+    // path (see this file's header comment), so this is the one real
+    // place this needs enforcing.
+    if (widgetId === 'email-capture') {
+      const planId = await getCallerPlan(db, uid);
+      mergedConfig = sanitizeEmailCaptureConfig(mergedConfig, planId);
+    }
 
     // Mirror useSiteWidget.ts's old enable() behavior: bump version on
     // every write so app/api/widget/route.ts's ETag reflects the

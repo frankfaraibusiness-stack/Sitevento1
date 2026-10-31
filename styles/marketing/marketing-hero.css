@@ -1,23 +1,14 @@
 /* ============================================================
- * marketing-hero.css — FULL REBUILD (see components/marketing/Hero.tsx)
+ * marketing-hero.css (see components/marketing/Hero.tsx)
  *
- * Replaces the old hero entirely. The old hero's right column was a
- * single static PNG forced to its own 1156x1361 aspect ratio — on
- * desktop that made the right column far taller than the left
- * column's short two-line headline + copy + buttons, so the two sides
- * never matched height and the character either floated oddly high
- * or dragged the whole row down. This version's right column is the
- * animated mascot "stage" (glow + rings + orbiting shapes, sized in
- * ems and centered within whatever height the left column sets) —
- * the row's height comes from the LEFT column's real content, and the
- * stage just fills and centers itself inside that, at every
- * breakpoint, instead of imposing its own fixed aspect ratio on the
- * row.
- *
- * Mobile and desktop are two separate rule blocks below 1024px /
- * 1024px+, same as before — but every single rule in both blocks is
- * new; nothing here reuses .hero-character-*, which no longer exists
- * in the markup.
+ * Hero section: headline/subcopy/two CTAs plus the animated mascot
+ * "stage" (glow + rings + orbiting shapes, sized in ems and centered
+ * within whatever height its column sets). On mobile the two stack,
+ * mascot first; on desktop (1024px+) they sit side by side, copy
+ * left / mascot right, with the row's height set by the copy
+ * column's real content rather than the stage imposing a fixed
+ * aspect ratio on the row. See .hero-section / .hero-inner below for
+ * the layout, .hero-mascot-stage further down for the stage itself.
  * ============================================================ */
 
 #marketingView {
@@ -271,39 +262,175 @@
  * available height.
  * ============================================================ */
 
-.hero-mascot-section {
+/* ============================================================
+ * HERO SECTION — headline, subcopy, two CTAs, plus the mascot stage.
+ * Mobile: stacked and centered, mascot first (the attention-grabber),
+ * copy and full-width buttons below it. Desktop (1024px+): a
+ * two-column row, copy left / mascot right, row height set by the
+ * copy column the way the old mascot-only version set it from the
+ * stage's own aspect ratio.
+ * ============================================================ */
+
+.hero-section {
   position: relative;
-  max-width: min(96vw, 640px);
-  margin: 0 auto;
-  padding: 28px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 36px 20px 8px;
 }
 
-.hero-mascot-section .hero-mascot-stage {
-  width: min(70vw, 300px);
+.hero-inner {
+  max-width: min(96vw, 640px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+/* Mobile: mascot stage first, sized the same as the old mascot-only
+   hero so nothing else in the page shifts. */
+.hero-stage {
+  order: -1;
+  width: min(62vw, 260px);
+  margin-bottom: 4px;
+}
+
+.hero-stage .hero-mascot-stage {
+  width: 100%;
   height: auto;
   aspect-ratio: 1 / 1;
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
-  .hero-mascot-section {
-    max-width: min(90vw, 760px);
-    padding: 36px 24px;
-  }
-  .hero-mascot-section .hero-mascot-stage {
-    width: min(48vw, 380px);
-  }
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
+.hero-eyebrow {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--walnut-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-title {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 8.6vw, 40px);
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-subtitle {
+  margin: 0 0 22px;
+  max-width: 46ch;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--walnut-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.hero-cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.hero-cta {
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  border: 2px solid var(--ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hero-cta:active {
+  transform: translateY(1px);
+}
+
+.hero-cta-primary {
+  background: var(--lime);
+  color: var(--lime-ink);
+  box-shadow: 0 4px 0 0 var(--ink);
+}
+
+.hero-cta-primary:hover {
+  box-shadow: 0 5px 0 0 var(--ink);
+  transform: translateY(-1px);
+}
+
+.hero-cta-secondary {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.hero-cta-secondary:hover {
+  background: var(--cream);
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-inner { max-width: min(90vw, 560px); }
+  .hero-stage { width: min(42vw, 300px); }
+  .hero-cta-row { flex-direction: row; max-width: none; }
+  .hero-cta { flex: 0 0 auto; }
+}
+
+/* ---- Desktop: two-column row, copy left / mascot stage right ---- */
 @media (min-width: 1024px) {
-  .hero-mascot-section {
-    max-width: min(92vw, 1320px);
-    padding: 40px clamp(24px, 2.4vw, 40px);
+  .hero-section {
+    padding: clamp(56px, 8vw, 104px) clamp(24px, 2.4vw, 40px) clamp(24px, 3vw, 40px);
   }
-  .hero-mascot-section .hero-mascot-stage {
-    width: min(32vw, 460px);
+
+  .hero-inner {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    max-width: min(92vw, 1320px);
+    gap: clamp(40px, 6vw, 96px);
+  }
+
+  .hero-stage {
+    order: 0;
+    flex: 1 1 42%;
+    max-width: 520px;
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  .hero-copy {
+    flex: 1 1 52%;
+    align-items: flex-start;
+  }
+
+  .hero-eyebrow { font-size: 14px; }
+
+  .hero-title {
+    font-size: clamp(44px, 4.6vw, 64px);
+  }
+
+  .hero-subtitle {
+    max-width: 42ch;
+    font-size: 17.5px;
+  }
+
+  .hero-cta-row {
+    flex-direction: row;
+    max-width: none;
+  }
+
+  .hero-cta {
+    flex: 0 0 auto;
+    padding: 16px 28px;
+    font-size: 16px;
   }
 }
 

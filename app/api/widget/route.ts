@@ -44,6 +44,7 @@ import { getAdminDb } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { allow } from '@/lib/rateLimit';
 import { assertWidgetWriteAllowed, WidgetWriteBlockedError } from '@/lib/serverAuth';
+import type { PlanId } from '@/lib/plans';
 import {
   isValidSiteId,
   isValidWidgetId,
@@ -52,6 +53,7 @@ import {
   widgetErrorBody,
   widgetErrorStatus,
   expectedCatalogDoc,
+  sanitizeEmailCaptureConfig,
   type WidgetDoc,
   type SiteWidgetDoc,
   type WidgetResponsePayload,
@@ -177,8 +179,16 @@ export async function POST(req: NextRequest) {
     // is resolved and before any config is read or returned, so an
     // over-cap site stops rendering its widgets instead of rendering
     // forever with silent, uncapped writes behind it.
+    let callerPlanId: PlanId = 'free';
     try {
-      await assertWidgetWriteAllowed(db, siteId);
+      const resolved = await assertWidgetWriteAllowed(db, siteId);
+      // uid was already confirmed above via siteIndex, so null here
+      // would only mean a razor-thin race (the site/index vanishing
+      // between that read and this one) — fall back to 'free' rather
+      // than crash on destructuring null; every downstream gate below
+      // (site doc, catalog, per-site permission) still re-checks for
+      // real and will reject a genuinely gone site on its own.
+      if (resolved) callerPlanId = resolved.planId;
     } catch (err) {
       if (err instanceof WidgetWriteBlockedError) {
         return jsonError('WRITE_LIMIT_REACHED');
@@ -277,12 +287,26 @@ export async function POST(req: NextRequest) {
     }
 
     // ---- 7. Structured success response ----
+    // Email Capture: re-check the visit-based-trigger plan gate at
+    // SERVE time too, not just at save time (app/api/site-widget/
+    // route.ts) — an account can be downgraded after a config with
+    // triggerType:'visits' was saved while still on a paid plan, and
+    // the visitor-facing widget must never render a feature the
+    // owner's current plan no longer has, regardless of what's sitting
+    // in Firestore. callerPlanId comes from the same
+    // assertWidgetWriteAllowed() call every other gate above already
+    // required, so this is a free re-use, not an extra read.
+    let servedConfig = siteWidget.config || {};
+    if (widgetId === 'email-capture') {
+      servedConfig = sanitizeEmailCaptureConfig(servedConfig, callerPlanId);
+    }
+
     const payload: WidgetResponsePayload = {
       id: widgetId,
       name: widget.name,
       type: widget.type,
       version: widget.version,
-      config: siteWidget.config || {},
+      config: servedConfig,
       bundleUrl: widget.bundleUrl,
     };
 
