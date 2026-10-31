@@ -172,16 +172,22 @@
      bottom padding is needed there. */
   @media (max-width: 859px) {
     body {
-      /* Bar grew 64px → 72px (global-nav.css) to fit labels back
-         under each icon, so clearance grows to match (70px → 82px). */
-      padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+      /* Bar is 72px tall (global-nav.css) and now floats with a 14px
+         gap below it instead of sitting flush against the screen
+         edge, so clearance grows to match (82px → 96px) to keep page
+         content clear of both the pill and the gap under it. */
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
     }
   }
 
-  /* Header now sits flush at the true top of the screen and blends
-     into the page via --app-header-bg (not a floating inset pill
-     anymore — see .pill-nav, marketing-content.css), full width, no
-     side margins/gap above it. */
+  /* Header now sits flush at the true top of the screen, full width,
+     no side margins/gap above it. It used to add its own lime tint
+     (--lime-glass) on top of the page, which doubled up on the page's
+     own lime background and read as a visible green band. The page
+     background is lime already (--app-bg), so the header no longer
+     needs a tint of its own at all — just blur + a touch of
+     transparency so page content shows through while scrolling, a
+     true "glass" effect rather than a colored bar. */
   header {
     position: fixed;
     top: 0;
@@ -192,12 +198,10 @@
     justify-content: center;
     height: calc(56px + env(safe-area-inset-top, 0px));
     padding-top: env(safe-area-inset-top, 0px);
-    /* Glassy lime: translucent tint + blur so page content shows
-       through while scrolling, instead of a flat opaque bar. */
-    background: var(--lime-glass);
+    background: rgba(255, 255, 255, 0.12);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     backdrop-filter: blur(16px) saturate(160%);
-    border-bottom: 1px solid var(--lime-glass-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   }
 
   /* Must clear the fixed header above: 56px tall, flush at the top, so
