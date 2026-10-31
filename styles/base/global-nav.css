@@ -128,29 +128,30 @@
       top: auto;
       bottom: 0;
       justify-content: center;
-      padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px));
+      padding: 0 14px calc(10px + env(safe-area-inset-bottom, 0px));
     }
 
+    /* Smaller, tighter pill — premium/compact rather than a big slab.
+       56px tall (was 72px), narrower max-width, smaller gap between
+       the two side groups so the whole thing reads as a neat capsule
+       instead of a large bar. */
     .gnav-pill {
       width: 100%;
-      max-width: 420px;
+      max-width: 340px;
       margin: 0;
       justify-content: center;
-      align-items: flex-end;
-      gap: 54px;
-      height: 72px;
-      padding: 0 14px 10px;
+      align-items: center;
+      gap: 40px;
+      height: 56px;
+      padding: 0 12px;
       background: var(--app-bg);
       backdrop-filter: blur(16px) saturate(170%);
       -webkit-backdrop-filter: blur(16px) saturate(170%);
-      /* Was var(--line) — a near-white #e8e4de border that all but
-         disappeared against the lime page background. A dark edge
-         (same --ink-family tone as the icons/text) actually reads as
-         a defined pill shape sitting on top of the lime instead of
-         bleeding into it. */
-      border: 1.5px solid rgba(26, 31, 10, 0.22);
-      border-radius: 26px;
-      box-shadow: 0 8px 28px rgba(34, 32, 28, 0.18);
+      /* Pure black, not grey — a defined edge against the lime page
+         instead of the near-white var(--line) this used to be. */
+      border: 1.5px solid #000;
+      border-radius: 22px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
       position: relative;
     }
 
@@ -161,49 +162,34 @@
        clumps pinned hard to the edges with a dead gap in the middle. */
     .gnav-group {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-around;
       gap: 0;
       flex: 1 1 0;
     }
 
-    /* Each of the four side tabs gets its own accent color, set once
-       here as a local --tab-tone var and referenced by the label,
-       icon stroke and active indicator below — "nice each option,
-       with its own css and uniqueness" rather than one shared
-       treatment for all four. No full-card fill on the active tab:
-       just a short pill-shaped line under the icon, colored to match
-       that tab's own tone.
-
-       These are deliberately NOT the --dash-* tokens used elsewhere
-       (those are soft pastels tuned to sit on white/cream cards) —
-       on the lime pill background they read as washed-out and barely
-       visible, especially the green. Picked instead for contrast
-       against lime specifically: saturated, darker-value tones (blue,
-       magenta/pink, deep purple, burnt orange) that stay legible both
-       as a small indicator line and as active-state text/icon color. */
+    /* Flat black for every tab, active or not — no per-tab accent
+       colors, no blue. Active state is carried entirely by the small
+       red dot above the icon (.gnav-item::before) instead of a color
+       or underline change, so the row stays visually quiet. Icon-only:
+       labels are hidden on mobile now to keep the pill small. */
     .gnav-item {
       flex-direction: column;
-      gap: 3px;
+      gap: 0;
       flex: 1 1 0;
       width: auto;
       max-width: none;
-      height: 52px;
-      padding: 6px 0 0;
+      height: 40px;
+      padding: 0;
       border-radius: 13px;
       background: transparent;
       border: none;
-      color: var(--ink);
-      opacity: 0.58;
+      color: #000;
+      opacity: 0.45;
       position: relative;
       z-index: 1;
-      transition: transform 160ms ease, opacity 160ms ease, color 160ms ease;
+      transition: transform 160ms ease, opacity 160ms ease;
     }
-
-    .gnav-group-left .gnav-item:nth-child(1) { --tab-tone: #1f6fd1; --tab-tone-ink: #0d3f80; }
-    .gnav-group-left .gnav-item:nth-child(2) { --tab-tone: #d1267a; --tab-tone-ink: #8c1152; }
-    .gnav-group-right .gnav-item:nth-child(1) { --tab-tone: #6a2cd1; --tab-tone-ink: #45198c; }
-    .gnav-group-right .gnav-item:nth-child(2) { --tab-tone: #c2410c; --tab-tone-ink: #822a08; }
 
     .gnav-item-icon {
       width: 21px;
@@ -223,40 +209,35 @@
       font-size: 10.5px;
     }
 
-    /* Labels back under each icon on mobile. */
+    /* Labels hidden on mobile — icon-only keeps the pill compact.
+       Still in the DOM for a11y/desktop, just not shown here. */
     .gnav-item-label {
-      display: block;
-      font-size: 9.5px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.01em;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      white-space: nowrap;
+      display: none;
     }
 
-    /* Small indicator line under the active tab instead of a full
-       highlighted card — sits just under the label, colored with
-       that tab's own tone. */
-    .gnav-item::after {
+    /* Small red dot above the active tab's icon instead of a colored
+       underline — compact (6px), doesn't add height to the bar the
+       way the old full-width indicator line did. */
+    .gnav-item::before {
       content: '';
       position: absolute;
-      bottom: -6px;
+      top: -2px;
       left: 50%;
-      width: 0;
-      height: 3px;
-      border-radius: 999px;
-      background: var(--tab-tone, var(--lime-ink));
-      transform: translateX(-50%);
-      transition: width 200ms ease;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e11d2e;
+      transform: translateX(-50%) scale(0);
+      transition: transform 160ms ease;
     }
 
     .gnav-item.is-active {
       opacity: 1;
-      color: var(--tab-tone-ink, var(--ink));
+      color: #000;
     }
 
-    .gnav-item.is-active::after {
-      width: 22px;
+    .gnav-item.is-active::before {
+      transform: translateX(-50%) scale(1);
     }
 
     .gnav-item:active {
@@ -266,14 +247,15 @@
     /* Raised center "+" — floats above the pill's own top edge,
        lifted so roughly its top half pokes above the bar itself.
        Absolutely positioned so it's centered regardless of how the
-       two side-tab groups wrap. */
+       two side-tab groups wrap. Scaled down slightly to match the
+       smaller pill overall. */
     .gnav-add {
       position: absolute;
       left: 50%;
-      top: -20px;
+      top: -18px;
       transform: translateX(-50%);
-      width: 60px;
-      height: 60px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       margin: 0;
       flex-shrink: 0;
@@ -283,8 +265,8 @@
     }
 
     .gnav-add svg {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
     }
 
     .gnav-add-label {
