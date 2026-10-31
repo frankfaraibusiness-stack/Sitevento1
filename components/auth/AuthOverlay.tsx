@@ -2,8 +2,9 @@
 
 // components/auth/AuthOverlay.tsx
 //
-// Full-page auth surface: a single clean lime canvas with its own
-// sticky glassy header (brand mark + close), and raw form fields
+// Full-page auth surface: sits on the same --app-bg page background
+// as the rest of the app (not a hardcoded flat lime fill), with its
+// own sticky glassy header (brand mark + close), and raw form fields
 // placed directly on that canvas — no floating card, no mascot, no
 // decorative background scene. Pane switching (sign in / sign up /
 // forgot password) is React state (currentPane) instead of toggling
@@ -212,7 +213,7 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
                     <button
                       type="button"
                       className="pw-toggle"
-                      style={{ color: showSiPass ? 'var(--lime-ink)' : undefined }}
+                      style={{ color: showSiPass ? 'var(--ink)' : undefined }}
                       onClick={() => setShowSiPass((v) => !v)}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
@@ -306,7 +307,7 @@ export function AuthOverlay({ open, initialPane, onClose, onAuthSucceeded }: Aut
                     <button
                       type="button"
                       className="pw-toggle"
-                      style={{ color: showSuPass ? 'var(--lime-ink)' : undefined }}
+                      style={{ color: showSuPass ? 'var(--ink)' : undefined }}
                       onClick={() => setShowSuPass((v) => !v)}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
