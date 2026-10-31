@@ -563,6 +563,13 @@ const SUPPORT_CHAT_CSS = `
 
   .chat-scroll-area {
     flex: 1;
+    /* Flex children default to min-height:auto, which refuses to
+       shrink below their own content's height — so without this,
+       long conversations grow the whole .app-container instead of
+       scrolling inside it (the card is overflow:hidden, so that
+       shows up as broken/unexpected scroll behavior on the card
+       itself rather than a contained, scrollable message list). */
+    min-height: 0;
     overflow-y: auto;
     padding: 24px 20px;
     display: flex;
