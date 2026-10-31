@@ -198,6 +198,24 @@ function tryGroqGemma(
   return tryGroqModel('gemma2-9b-it', history, greeting, siteContext, faqs);
 }
 
+// Pulls the actual answer out of a Gemini API response, skipping any
+// part explicitly marked `thought: true` (see the thinkingConfig
+// comment above tryGemini) and joining the rest — a thinking-capable
+// model can in principle split its answer across more than one
+// non-thought part, so this concatenates all of them rather than
+// assuming parts[0] is the whole reply.
+function extractGeminiReplyText(data: unknown): string | null {
+  const parts = (data as { candidates?: Array<{ content?: { parts?: Array<{ text?: string; thought?: boolean }> } }> })
+    ?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return null;
+  const answer = parts
+    .filter((p) => p && typeof p.text === 'string' && !p.thought)
+    .map((p) => p.text)
+    .join('')
+    .trim();
+  return answer || null;
+}
+
 async function tryGemini(
   history: ChatTurn[],
   greeting: string,
@@ -220,7 +238,21 @@ async function tryGemini(
             role: t.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: t.content }],
           })),
-          generationConfig: { maxOutputTokens: 300, temperature: 0.6 },
+          // Gemma-4-on-Gemini-API is a thinking-capable model: with no
+          // thinkingConfig at all it can still emit internal reasoning
+          // as a `parts[]` entry ahead of the actual answer, which is
+          // why extracting parts[0].text alone could previously surface
+          // raw "thinking" text instead of the final reply. Explicitly
+          // disabling thinking (thinkingBudget: 0) is the primary fix;
+          // filtering out any part.thought === true below (see
+          // extractGeminiReplyText) is the defensive second layer, in
+          // case a future model swap here ignores thinkingBudget or
+          // still returns a `thought` part regardless.
+          generationConfig: {
+            maxOutputTokens: 300,
+            temperature: 0.6,
+            thinkingConfig: { thinkingBudget: 0 },
+          },
         }),
         signal: AbortSignal.timeout(8000),
       }
@@ -230,7 +262,7 @@ async function tryGemini(
       return null;
     }
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = extractGeminiReplyText(data);
     return typeof text === 'string' && text.trim() ? text.trim() : null;
   } catch (err) {
     console.error('[aiReply] Gemma (via Gemini API) error', err);
