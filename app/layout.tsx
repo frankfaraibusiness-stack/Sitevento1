@@ -73,11 +73,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Muted/toned-down lime — keeps the brand tint on mobile chrome
-  // without the full-saturation #c6ff3d shouting at the user. Lower
-  // saturation + slightly deeper value than var(--lime), not a plain
-  // neutral like --app-bg.
-  themeColor: '#b9d98f',
+  // Matches --app-bg in styles/base/base.css, the actual html/body
+  // background color, so the browser chrome (mobile address bar,
+  // etc.) blends with the real page background instead of showing a
+  // different, slightly duller lime of its own.
+  themeColor: '#cbff70',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
