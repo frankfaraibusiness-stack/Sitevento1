@@ -1011,15 +1011,28 @@
         // toggles. Always-full-viewport widgets (support-chat,
         // email-capture) are fully self-positioned via their own CSS
         // and just need a full-size transparent frame at all times —
-        // see ALWAYS_FULLSCREEN_WIDGET_IDS below. An inline height
-        // here would beat every one of those rules (inline style
-        // always outranks a stylesheet selector, regardless of
-        // specificity) and freeze the frame at a fixed size no matter
-        // what the widget's own CSS says — exactly the "tiny iframe
-        // that never resizes" bug. So only neither-of-the-above
-        // widgets get the inline fallback height.
-        if (!EXPANDABLE_WIDGET_IDS[widget.id] && !ALWAYS_FULLSCREEN_WIDGET_IDS[widget.id]) {
+        // see ALWAYS_FULLSCREEN_WIDGET_IDS below. announcement-bar is
+        // its own third case: not expandable, not full-viewport —
+        // just a slim in-flow bar — so it gets its own small fixed
+        // frame height via the '.sv-bar-frame' rule in
+        // mountAutoStyles() instead of either the 480px fallback
+        // (way too tall for a one-line bar) or a full-viewport frame
+        // (unnecessary — it never covers more than a thin top strip).
+        // An inline height here would beat every one of those rules
+        // (inline style always outranks a stylesheet selector,
+        // regardless of specificity) and freeze the frame at a fixed
+        // size no matter what the widget's own CSS says — exactly the
+        // "tiny iframe that never resizes" bug. So only
+        // none-of-the-above widgets get the inline fallback height.
+        if (
+          !EXPANDABLE_WIDGET_IDS[widget.id] &&
+          !ALWAYS_FULLSCREEN_WIDGET_IDS[widget.id] &&
+          !BAR_FRAME_WIDGET_IDS[widget.id]
+        ) {
           iframe.style.height = (widget.config && widget.config.height) || '480px';
+        }
+        if (BAR_FRAME_WIDGET_IDS[widget.id]) {
+          iframe.className += ' sv-bar-frame';
         }
         iframe.setAttribute('title', widget.name || widget.id || 'Sitevento widget');
         container.appendChild(iframe);
@@ -1179,6 +1192,16 @@
         // this stylesheet implies they should.
         '.sv-corner-frame .sv-widget-frame{' +
         'width:336px;max-width:calc(100vw - 32px);background:transparent;}' +
+        // announcement-bar: a slim top bar, never taller than its own
+        // CSS's max-height (160px — see AnnouncementBarWidget.tsx's
+        // .ab-bar rule), so the outer iframe is sized to match rather
+        // than either the 480px generic fallback or a full-viewport
+        // frame. height:auto with this as a cap (not a fixed height)
+        // lets the bar's own slide-up-and-collapse close animation
+        // actually play inside it rather than getting clipped by a
+        // frame that's already shrunk to 0.
+        '.sv-bar-frame{display:block;width:100%;height:auto;max-height:160px;' +
+        'background:transparent;}' +
         // scroll-end mounts full-viewport by default (the widget itself
         // decides overlay vs. corner-card layout from its config), so
         // its frame covers the screen with a transparent background —
@@ -1271,6 +1294,15 @@
     // not the 336px .sv-corner-frame box other corner widgets get.
     var ALWAYS_FULLSCREEN_WIDGET_IDS = {
       'support-chat': 1,
+    };
+
+    // Widgets that are a slim, always-in-flow bar rather than a
+    // launcher/overlay — just need a small fixed-height frame instead
+    // of the 480px generic fallback or a full-viewport one. See the
+    // '.sv-bar-frame' rule in mountAutoStyles() and the height-
+    // assignment comment near where this is read in renderWidget().
+    var BAR_FRAME_WIDGET_IDS = {
+      'announcement-bar': 1,
     };
 
     var EXPANDABLE_WIDGET_IDS = {
