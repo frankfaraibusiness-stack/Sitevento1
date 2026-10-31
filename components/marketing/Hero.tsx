@@ -57,28 +57,40 @@ function Sparkle({ className }: { className: string }) {
 const MASCOT_TONES = ['lime', 'purple', 'blue', 'orange'] as const;
 type MascotTone = (typeof MASCOT_TONES)[number];
 
-// Two hero images that crossfade back and forth, looping forever. Both
-// are preloaded up front and the rotation only starts once BOTH have
-// finished loading, so the swap never reveals a half-loaded image.
-const MASCOT_IMAGES = ['/mascot/hero-bunny.png', '/mascot/hero-bunny-laptop.png'] as const;
-const MASCOT_SWAP_MS = 2500; // swap every 2–3s
+// Single hero image — the second image (a differently-framed, wide
+// landscape character on a totally different aspect ratio) used to
+// crossfade in here too, but stretched into the same tall box it
+// scaled unevenly and sat top-anchored instead of centered like the
+// first image, which read as a layout glitch on every swap. Simplest
+// correct fix: one image, recoloured instead of replaced. The bunny
+// art is almost entirely flat lime-green fills, so a CSS hue-rotate
+// filter can retint it convincingly through the same tone cycle that
+// already drives the glow/rings/shapes (MASCOT_TONES, 1s interval) —
+// see HERO_MASCOT_TONE_FILTERS below for the per-tone rotate() value,
+// and .hero-mascot-img in marketing-hero.css for where it's applied.
+const MASCOT_IMAGE = '/mascot/hero-bunny.png';
+
+// One hue-rotate() degree value per tone, applied as a CSS filter on
+// the <img> itself — rotates the source lime (~77°) to land on each
+// tone's actual hue. Lime is 0 (no rotation, the image's native
+// colour); the others were solved from the app's real tone hex values
+// (--dash-purple/--dash-blue/--dash-orange in styles/base/base.css).
+const HERO_MASCOT_TONE_FILTERS: Record<MascotTone, number> = {
+  lime: 0,
+  purple: 175,
+  blue: 130,
+  orange: -48,
+};
 
 function HeroMascotStage() {
   const [toneIndex, setToneIndex] = useState(0);
-  const [loadedCount, setLoadedCount] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
-  const allLoaded = loadedCount >= MASCOT_IMAGES.length;
-
-  // Catch images that were already cached/complete by the time the
-  // refs attach (onLoad won't fire again for those).
+  // Catch the image if it was already cached/complete by the time the
+  // ref attaches (onLoad won't fire again for that case).
   useEffect(() => {
-    let already = 0;
-    imgRefs.current.forEach((el) => {
-      if (el?.complete) already += 1;
-    });
-    if (already > 0) setLoadedCount((c) => Math.max(c, already));
+    if (imgRef.current?.complete) setLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -87,16 +99,6 @@ function HeroMascotStage() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // Infinite rotation between the two images — only runs once both
-  // are fully loaded.
-  useEffect(() => {
-    if (!allLoaded) return;
-    const interval = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % MASCOT_IMAGES.length);
-    }, MASCOT_SWAP_MS);
-    return () => clearInterval(interval);
-  }, [allLoaded]);
 
   const tone: MascotTone = MASCOT_TONES[toneIndex];
 
@@ -112,33 +114,47 @@ function HeroMascotStage() {
       <span className="hero-mascot-shape hero-mascot-shape-4" />
 
       <div className="hero-mascot-float">
-        {!allLoaded && (
+        {!loaded && (
           <span className="hero-mascot-skeleton" aria-hidden="true">
             <span className="hero-mascot-skeleton-spinner" />
           </span>
         )}
-        {MASCOT_IMAGES.map((src, i) => {
-          const isActive = allLoaded && i === activeIndex;
-          return (
-            <img
-              key={src}
-              ref={(el) => {
-                imgRefs.current[i] = el;
-              }}
-              className={`hero-mascot-img hero-mascot-img--swap${
-                allLoaded ? ' is-loaded' : ' is-loading'
-              }${isActive ? ' is-active' : ''}`}
-              src={src}
-              alt=""
-              width={1156}
-              height={1361}
-              onLoad={() => setLoadedCount((c) => c + 1)}
-            />
-          );
-        })}
+        <img
+          ref={imgRef}
+          className={`hero-mascot-img${loaded ? ' is-loaded' : ' is-loading'}`}
+          style={{ ['--hero-mascot-hue' as string]: `${HERO_MASCOT_TONE_FILTERS[tone]}deg` }}
+          src={MASCOT_IMAGE}
+          alt=""
+          width={1156}
+          height={1361}
+          onLoad={() => setLoaded(true)}
+        />
       </div>
 
       <div className="hero-mascot-shadow" />
+    </div>
+  );
+}
+
+// Mobile-only (<640px) decorative cluster filling the dead space to
+// the right of the stacked CTA buttons — the actions column no longer
+// stretches full-width (see .hero .actions mobile rule), which left
+// that side of the row empty. Small bobbing stat chips + gem shapes,
+// same visual language as the connect-demo's tracking chips
+// (.hero-demo-chip) and the mascot stage's orbiting shapes, just
+// positioned here instead. Purely decorative/illustrative, not real
+// data — aria-hidden, no pointer events.
+function HeroActionsSideDecor() {
+  return (
+    <div className="hero-actions-decor" aria-hidden="true">
+      <span className="hero-actions-decor-chip hero-actions-decor-chip-1">
+        <span className="hero-actions-decor-chip-dot" />
+        247 live
+      </span>
+      <span className="hero-actions-decor-chip hero-actions-decor-chip-2">✓ Connected</span>
+      <span className="hero-actions-decor-gem hero-actions-decor-gem-1" />
+      <span className="hero-actions-decor-gem hero-actions-decor-gem-2" />
+      <span className="hero-actions-decor-spark hero-actions-decor-spark-1" />
     </div>
   );
 }
@@ -165,23 +181,27 @@ export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
             Connect once. Change what visitors see, anytime — without rebuilding your site.
           </p>
 
-          <div className="actions">
-            <button className="btn-primary" onClick={onConnectClick}>
-              <span className="btn-primary-full">Connect your site</span>
-              <span className="btn-primary-short">Connect site</span>
-              <span className="btn-arrow" aria-hidden="true">
-                →
-              </span>
-            </button>
-            <button className="btn-secondary btn-how-it-works" onClick={onHowItWorksClick}>
-              <span className="how-it-works-play" aria-hidden="true">
-                <span className="how-it-works-play-pulse" />
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-              See how it works
-            </button>
+          <div className="actions-row">
+            <div className="actions">
+              <button className="btn-primary" onClick={onConnectClick}>
+                <span className="btn-primary-full">Connect your site</span>
+                <span className="btn-primary-short">Connect site</span>
+                <span className="btn-arrow" aria-hidden="true">
+                  →
+                </span>
+              </button>
+              <button className="btn-secondary btn-how-it-works" onClick={onHowItWorksClick}>
+                <span className="how-it-works-play" aria-hidden="true">
+                  <span className="how-it-works-play-pulse" />
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+                See how it works
+              </button>
+            </div>
+
+            <HeroActionsSideDecor />
           </div>
 
           <div className="hero-trust-row" aria-hidden="true">
