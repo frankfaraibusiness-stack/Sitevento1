@@ -404,20 +404,27 @@
     }
   }
 
-  /* Between the desktop breakpoint and ~1050px the header's logo +
-     signup/hamburger cluster leaves too little room either side of a
-     fully-labeled centered nav, so titles fold back to icon-only in
-     that narrow band — same centered-in-header placement, just
-     without the label text competing for space. Comfortably past
-     1050px there's room for every title to show at once. */
+  /* Labels always show at every desktop width (>=860px) — icon-only
+     nav items are unclear about what they link to, so the title stays
+     next to the icon even in the narrower 860–1050px band. The row
+     shrinks its own gaps/padding here instead of dropping text, so it
+     still fits beside the header's logo + signup/hamburger cluster. */
   @media (min-width: 860px) and (max-width: 1050px) {
-    .gnav-item-label {
-      display: none;
+    .gnav-pill {
+      gap: 2px;
     }
 
     .gnav-item {
-      padding: 10px;
-      border-radius: 50%;
+      gap: 5px;
+      padding: 8px 9px;
+    }
+
+    .gnav-item-label {
+      font-size: 12px;
+    }
+
+    .gnav-add {
+      margin: 0 3px;
     }
   }
 
