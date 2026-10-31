@@ -8,13 +8,21 @@
 // about the look was changed.
 //
 // Timing contract:
-//   - While `authReady` is false: the progress bar fills in a slow
-//     indeterminate creep (never reaching 100%) and blobs keep
-//     dropping from the ship on a loop, however long auth takes.
-//   - The instant `authReady` becomes true: the bar snaps to 100%,
-//     blob-dropping stops, and a 4 second hold begins.
-//   - After that 4s hold, onDone() fires once so the parent can
-//     unmount/hide this loader.
+//   - Runs on a FLAT, UNCONDITIONAL timer: the progress bar fills and
+//     blobs keep dropping from the ship for TOTAL_BOOT_MS, then
+//     onDone() fires once. This no longer waits on `authReady` at
+//     all — auth resolving earlier or later doesn't change anything.
+//   - Previously the bar only snapped to 100% once `authReady` became
+//     true, with a fixed 4s hold after that. If auth never resolved
+//     (client SDK listener stalls, Firebase hiccup, slow network,
+//     etc.) there was no fallback and the splash could stay up
+//     forever. A flat timer can't get stuck this way: it always
+//     finishes 6s after mount no matter what auth is doing.
+//   - `authReady` is still accepted as a prop (existing call sites
+//     pass it) but is now purely cosmetic: if auth resolves before
+//     the timer is up, the bar snaps to 100% early; if it hasn't
+//     resolved by the time the timer ends, the bar still finishes to
+//     100% and onDone() still fires on schedule.
 //
 // Usage:
 //   const [authReady, setAuthReady] = useState(false);
@@ -24,15 +32,20 @@
 import { useEffect, useRef, useState } from 'react';
 
 interface BootLoaderProps {
-  /** True once real auth/session has resolved. The loader will not
-   * leave its "waiting" state before this flips true. */
+  /** True once real auth/session has resolved. Purely cosmetic now —
+   * lets the bar snap to 100% a little early if auth comes back
+   * before the flat timer below finishes. Never required for the
+   * loader to close. */
   authReady: boolean;
-  /** Called once, after the 4s post-auth hold completes. */
+  /** Called once, after TOTAL_BOOT_MS has elapsed since mount. */
   onDone?: () => void;
 }
 
 const LOGO_URL = 'https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png';
-const POST_AUTH_HOLD_MS = 4000;
+// Flat, unconditional boot duration — the splash always closes this
+// long after mount, regardless of auth state. See timing contract
+// above for why this replaced the old "wait for authReady" gating.
+const TOTAL_BOOT_MS = 6000;
 
 // --- blob SVG markup, ported 1:1 from the prototype's blobSVG() ---
 const EYE_SETS = [
@@ -76,8 +89,6 @@ export function BootLoader({ authReady, onDone }: BootLoaderProps) {
   const fieldRef = useRef<HTMLDivElement>(null);
   const [pct, setPct] = useState(0);
   const [complete, setComplete] = useState(false);
-  const authReadyRef = useRef(authReady);
-  authReadyRef.current = authReady;
 
   function hatchPoint() {
     const stage = stageRef.current!.getBoundingClientRect();
@@ -124,12 +135,13 @@ export function BootLoader({ authReady, onDone }: BootLoaderProps) {
     setTimeout(() => el.remove(), fallDur + 200);
   }
 
-  // Blob-dropping loop: runs continuously while waiting on auth,
-  // stops the moment authReady flips true.
+  // Blob-dropping loop: runs on a loop for as long as the splash is
+  // up, stops once `complete` flips true (either because auth came
+  // back early, or because the flat boot timer below finished).
   useEffect(() => {
     let dropTimer: ReturnType<typeof setTimeout>;
     const startDelay = setTimeout(function keepDropping() {
-      if (authReadyRef.current) return;
+      if (complete) return;
       dropBlob();
       dropTimer = setTimeout(keepDropping, 550);
     }, 1200);
@@ -138,24 +150,37 @@ export function BootLoader({ authReady, onDone }: BootLoaderProps) {
       clearTimeout(dropTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [complete]);
 
-  // Progress bar: indeterminate creep toward ~92% while waiting,
-  // snaps to 100% once auth resolves, then holds 4s before onDone.
+  // Progress bar + close timing: a flat, unconditional timer that
+  // always fires TOTAL_BOOT_MS after mount, independent of auth. If
+  // authReady flips true earlier, the bar snaps to 100% right away as
+  // a nice-to-have, but onDone() always fires on the fixed schedule
+  // either way — so the splash can never get stuck open.
   useEffect(() => {
     if (complete) return;
-    if (!authReady) {
-      const tick = setInterval(() => {
-        setPct((p) => (p < 92 ? p + (92 - p) * 0.045 : p));
-      }, 80);
-      return () => clearInterval(tick);
-    }
-    // auth just resolved
-    setPct(100);
-    setComplete(true);
-    const hold = setTimeout(() => onDone?.(), POST_AUTH_HOLD_MS);
-    return () => clearTimeout(hold);
+    const tick = setInterval(() => {
+      setPct((p) => (p < 92 ? p + (92 - p) * 0.045 : p));
+    }, 80);
+    const finish = setTimeout(() => {
+      setPct(100);
+      setComplete(true);
+      onDone?.();
+    }, TOTAL_BOOT_MS);
+    return () => {
+      clearInterval(tick);
+      clearTimeout(finish);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [complete]);
+
+  // Cosmetic only: if auth resolves before the flat timer is up, snap
+  // the bar to 100% early so it doesn't look stuck at ~92% even
+  // though onDone() won't fire until TOTAL_BOOT_MS regardless.
+  useEffect(() => {
+    if (authReady && !complete) {
+      setPct((p) => (p < 100 ? 100 : p));
+    }
   }, [authReady, complete]);
 
   return (
