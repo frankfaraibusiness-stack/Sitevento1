@@ -10,8 +10,15 @@
 // and styles/settings/settings-page.css + base.css read those attributes to
 // resize text and tighten spacing across the dashboard, not just this
 // page. Dashboard Landing View is persisted and read by
-// DashboardClient on load to pick the opening panel.
+// DashboardClient on load to pick the opening panel. Theme Colour
+// works the same way: hooks/useAppliedAppearance.ts applies
+// settings.themeColor as an inline --app-bg override on <html> the
+// moment it loads or changes, and base.css's `html, body { background:
+// var(--app-bg) }` (the single source of truth for the page background
+// everywhere) picks it up automatically.
+import { useEffect, useState } from 'react';
 import type { UserSettings } from '@/hooks/useUserSettings';
+import { THEME_COLOR_PRESETS, isValidThemeColor, normalizeThemeColorInput } from '@/lib/theme';
 
 const FONT_SIZES: { key: UserSettings['fontSize']; label: string; glyphSize: string }[] = [
   { key: 'small', label: 'Small', glyphSize: '0.72rem' },
@@ -34,6 +41,42 @@ interface AppearancePanelProps {
 }
 
 export default function AppearancePanel({ settings, settingsLoaded, settingsSaving, updateSettings }: AppearancePanelProps) {
+  // Local draft for the free-text hex field — kept separate from
+  // settings.themeColor so the input can hold invalid/in-progress text
+  // (e.g. "#d3f") without that ever reaching updateSettings, which only
+  // fires once normalizeThemeColorInput confirms a complete, valid hex.
+  const [hexDraft, setHexDraft] = useState(settings.themeColor);
+  const [hexError, setHexError] = useState(false);
+
+  // settings.themeColor can change out from under this draft — most
+  // commonly the initial Firestore load resolving just after mount
+  // (settings starts as DEFAULT_SETTINGS, then the real value arrives),
+  // or a sync from another tab/device. Only resync while the field
+  // isn't showing a validation error, so this doesn't stomp someone
+  // actively correcting a typo.
+  useEffect(() => {
+    if (!hexError) setHexDraft(settings.themeColor);
+  }, [settings.themeColor, hexError]);
+
+  function applyHex(raw: string) {
+    setHexDraft(raw);
+    const normalized = normalizeThemeColorInput(raw);
+    if (normalized === null) {
+      setHexError(true);
+      return;
+    }
+    setHexError(false);
+    if (normalized !== settings.themeColor) {
+      updateSettings({ themeColor: normalized });
+    }
+  }
+
+  function applyPreset(hex: string) {
+    setHexDraft(hex);
+    setHexError(false);
+    updateSettings({ themeColor: hex });
+  }
+
   return (
     <>
       <div className="settings-panel-header">
@@ -99,6 +142,62 @@ export default function AppearancePanel({ settings, settingsLoaded, settingsSavi
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="settings-input-group">
+        <label>Theme Colour</label>
+        <p className="settings-field-desc">
+          Sets the app&rsquo;s background colour. Pick a preset or enter your own hex code. Saved automatically.
+        </p>
+        <div className="settings-picker-row">
+          {THEME_COLOR_PRESETS.map((hex) => {
+            const active = settings.themeColor === hex;
+            return (
+              <button
+                key={hex}
+                type="button"
+                className={`settings-picker-btn settings-swatch-btn${active ? ' active' : ''}`}
+                disabled={!settingsLoaded}
+                onClick={() => applyPreset(hex)}
+                aria-label={`Use ${hex} as the theme colour`}
+              >
+                <span className="settings-swatch-dot" style={{ background: hex }} />
+                <span>{hex}</span>
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            className={`settings-picker-btn settings-swatch-btn${!settings.themeColor ? ' active' : ''}`}
+            disabled={!settingsLoaded}
+            onClick={() => applyPreset('')}
+          >
+            <span className="settings-swatch-dot settings-swatch-dot--default" />
+            <span>Default</span>
+          </button>
+        </div>
+        <div className="settings-field-row" style={{ marginTop: '0.5rem' }}>
+          <input
+            type="text"
+            inputMode="text"
+            className="settings-text-input"
+            placeholder="#d3fcaa"
+            maxLength={7}
+            value={hexDraft}
+            disabled={!settingsLoaded}
+            onChange={(e) => applyHex(e.target.value)}
+            aria-invalid={hexError}
+          />
+          <input
+            type="color"
+            className="settings-swatch-picker"
+            value={settings.themeColor && isValidThemeColor(settings.themeColor) ? settings.themeColor : '#cbff70'}
+            disabled={!settingsLoaded}
+            onChange={(e) => applyHex(e.target.value)}
+            aria-label="Pick a custom theme colour"
+          />
+        </div>
+        {hexError && <span className="settings-hint settings-hint-error">Enter a valid hex code, like #d3fcaa.</span>}
       </div>
 
       {settingsSaving && <span className="settings-hint">Saving…</span>}

@@ -34,6 +34,12 @@ export interface UserSettings {
   fontSize: 'small' | 'medium' | 'large';
   compactMode: boolean;
   landingView: 'overview' | 'visits' | 'leads' | 'sites';
+  // '' means "use the default --app-bg" (lib/theme.ts). Any other
+  // value is a validated #rrggbb hex string — either one of the
+  // curated THEME_COLOR_PRESETS or a visitor's own custom pick — see
+  // lib/theme.ts for the shared validation both the client and
+  // app/api/user-action/route.ts's doUpdateSettings use.
+  themeColor: string;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -47,6 +53,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   fontSize: 'medium',
   compactMode: false,
   landingView: 'overview',
+  themeColor: '',
 };
 
 function sanitize(raw: unknown): UserSettings {

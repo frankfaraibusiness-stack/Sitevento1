@@ -52,6 +52,7 @@ import {
 import { sanitizeSiteOverlay } from '@/lib/siteAlert';
 import { sanitizeVisitorMessage } from '@/lib/visitorMessage';
 import { CONNECT_PERMISSIONS, isPermissionAllowedForPlan } from '@/lib/connectPermissions';
+import { isValidThemeColor } from '@/lib/theme';
 import type { PlanId } from '@/lib/plans';
 
 export const maxDuration = 10;
@@ -166,6 +167,14 @@ async function doUpdateSettings(
   if (patch.landingView !== undefined) {
     if (!VALID_LANDING_VIEWS.has(patch.landingView as string)) throw new ValidationError('Invalid landingView.');
     clean.landingView = patch.landingView;
+  }
+  if (patch.themeColor !== undefined) {
+    // Re-validate server-side rather than trusting the client's own
+    // check (lib/theme.ts's isValidThemeColor) — this route doesn't
+    // require the request to come from AppearancePanel.tsx. '' is
+    // allowed through too: it's the valid "use the default" value.
+    if (!isValidThemeColor(patch.themeColor)) throw new ValidationError('Invalid themeColor.');
+    clean.themeColor = patch.themeColor;
   }
   if (Object.keys(clean).length === 0) throw new ValidationError('Nothing to update.');
 

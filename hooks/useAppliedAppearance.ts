@@ -7,9 +7,9 @@
 // not just while /settings is mounted. Call this once near the root of
 // every real entry point (AppRoot.tsx for the legacy "/" view-switcher,
 // DashboardClient.tsx for the standalone /dashboard routes,
-// SettingsPageClient.tsx for /settings itself) so Font Size and
-// Compact Mode actually change how the app looks everywhere, not just
-// on the page where they were set.
+// SettingsPageClient.tsx for /settings itself) so Font Size, Compact
+// Mode, and Theme Colour actually change how the app looks everywhere,
+// not just on the page where they were set.
 //
 // Reads are cheap: useUserSettings already de-dupes its Firestore
 // listener per uid at the SDK level (onSnapshot), so mounting this
@@ -19,6 +19,7 @@
 import { useEffect } from 'react';
 import type { User } from 'firebase/auth';
 import { useUserSettings } from '@/hooks/useUserSettings';
+import { isValidThemeColor } from '@/lib/theme';
 
 export function useAppliedAppearance(user: User | null) {
   const { settings, loaded } = useUserSettings(user);
@@ -27,11 +28,24 @@ export function useAppliedAppearance(user: User | null) {
     if (!loaded) return;
     document.documentElement.setAttribute('data-font-size', settings.fontSize);
     document.documentElement.toggleAttribute('data-compact', settings.compactMode);
+    // base.css reads --app-bg as the single source of truth for the
+    // page background everywhere (marketing, dashboard, settings,
+    // onboarding, widgets) — overriding it inline on <html> re-colors
+    // the whole app surface with this one assignment. Re-validated
+    // here (not just trusted from Firestore) since isValidThemeColor
+    // is cheap and a corrupted/old doc shouldn't be able to inject
+    // arbitrary CSS into the custom property.
+    if (settings.themeColor && isValidThemeColor(settings.themeColor)) {
+      document.documentElement.style.setProperty('--app-bg', settings.themeColor);
+    } else {
+      document.documentElement.style.removeProperty('--app-bg');
+    }
     return () => {
       document.documentElement.removeAttribute('data-font-size');
       document.documentElement.removeAttribute('data-compact');
+      document.documentElement.style.removeProperty('--app-bg');
     };
-  }, [loaded, settings.fontSize, settings.compactMode]);
+  }, [loaded, settings.fontSize, settings.compactMode, settings.themeColor]);
 
   return { settings, loaded };
 }

@@ -635,6 +635,64 @@
   box-shadow: 0 2px 0 var(--lime-ink);
 }
 
+/* Theme Colour preset swatches — same .settings-picker-btn base as
+   Font Size, plus a small colour dot so each preset is recognizable
+   by colour, not just by its hex label. */
+.settings-swatch-btn .settings-swatch-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--set-glass-border-strong);
+  display: block;
+}
+
+/* "Default" option's dot has no single color of its own (it just
+   means "no override, use the app's standard --app-bg") — a dashed
+   ring instead of a fill communicates that without implying a flat
+   color swatch. */
+.settings-swatch-dot--default {
+  background: transparent;
+  border-style: dashed;
+}
+
+.settings-swatch-btn.active .settings-swatch-dot {
+  border-color: var(--lime-ink);
+}
+
+/* Native <input type="color"> paired with the free-text hex field —
+   same row via .settings-field-row, sized as a small square swatch
+   rather than the browser's default wide picker so it reads as "pick
+   visually" next to "type the code" rather than competing with it for
+   width. */
+.settings-swatch-picker {
+  flex: 0 0 auto;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 1px solid var(--set-glass-border);
+  border-radius: 0.6rem;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.settings-swatch-picker::-webkit-color-swatch-wrapper {
+  padding: 3px;
+}
+
+.settings-swatch-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.4rem;
+}
+
+.settings-swatch-picker:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.settings-hint-error {
+  color: var(--danger-ink);
+}
+
 /* Select dropdown */
 .settings-select {
   background-color: var(--bg);
