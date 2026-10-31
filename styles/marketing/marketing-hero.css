@@ -95,7 +95,12 @@
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 18px 22px rgba(26, 31, 10, 0.18));
+  /* --hero-mascot-hue is set inline per tone (Hero.tsx) — a single
+     filter list combining the retint with the drop-shadow, so each
+     applies independently instead of one overwriting the other. The
+     hue shift eases over the same 1s cadence the tone cycles on. */
+  filter: drop-shadow(0 18px 22px rgba(26, 31, 10, 0.18)) hue-rotate(var(--hero-mascot-hue, 0deg));
+  transition: filter 900ms ease;
 }
 
 .hero-mascot-img.is-loading { opacity: 0; }
@@ -107,29 +112,6 @@
 @keyframes hero-mascot-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-/* Two hero images stacked in the same spot, crossfading in an
-   infinite loop. Both stay mounted (and preloaded) the whole time;
-   only opacity toggles which one is visible, so the swap is a smooth
-   fade rather than a layout jump, and nothing shows until both
-   images have finished loading. */
-.hero-mascot-img--swap {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 900ms ease;
-}
-
-.hero-mascot-img--swap.is-loading { opacity: 0; }
-
-.hero-mascot-img--swap.is-loaded {
-  opacity: 0;
-  animation: none;
-}
-
-.hero-mascot-img--swap.is-loaded.is-active {
-  opacity: 1;
 }
 
 .hero-mascot-skeleton {
@@ -453,6 +435,14 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* Wraps .actions; plain block by default (desktop/tablet, where
+   .actions already lays itself out fine) — becomes a side-by-side row
+   on mobile only, to seat HeroActionsSideDecor next to the buttons
+   instead of leaving that space empty. */
+.hero .actions-row {
+  margin-bottom: 18px;
+}
+
 .hero .actions {
   display: flex;
   flex-direction: column;
@@ -460,7 +450,6 @@
   gap: 10px;
   width: 100%;
   max-width: 320px;
-  margin-bottom: 18px;
 }
 
 .hero .btn-primary,
@@ -484,10 +473,148 @@
   .hero .btn-secondary {
     width: auto;
   }
+
+  .hero .actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
 }
 
 .btn-primary-full { display: none; }
 .btn-primary-short { display: inline; }
+
+/* ============================================================
+ * Mobile-only decorative cluster beside the stacked CTAs — fills the
+ * empty column to their right with small bobbing stat chips + gem
+ * shapes, same visual language as the connect-demo's tracking chips
+ * and the mascot stage's orbiting shapes. Pure decoration (aria-hidden
+ * in the markup), each piece on its own float/pop timing so the
+ * cluster reads as a little alive scene rather than a static graphic.
+ * ============================================================ */
+.hero-actions-decor {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .hero-actions-decor {
+    display: block;
+    position: relative;
+    width: 108px;
+    height: 128px;
+    flex-shrink: 0;
+  }
+}
+
+.hero-actions-decor-chip {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 10.5px;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  box-shadow: 0 4px 10px -3px rgba(26, 31, 10, 0.25);
+  animation: hero-actions-decor-float 3.6s ease-in-out infinite;
+}
+
+.hero-actions-decor-chip-1 {
+  top: 2px;
+  right: 2px;
+  animation-delay: 0s;
+}
+
+.hero-actions-decor-chip-2 {
+  top: 58px;
+  right: 22px;
+  color: var(--lime-ink);
+  animation-delay: 1.1s;
+}
+
+.hero-actions-decor-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2fbf5c;
+  flex-shrink: 0;
+  animation: hero-actions-decor-pulse 1.6s ease-in-out infinite;
+}
+
+.hero-actions-decor-gem {
+  position: absolute;
+  border-radius: 28%;
+  animation: hero-actions-decor-float 4.2s ease-in-out infinite;
+}
+
+.hero-actions-decor-gem-1 {
+  width: 20px;
+  height: 20px;
+  bottom: 14px;
+  right: 8px;
+  background: linear-gradient(160deg, var(--lime), var(--lime-ink));
+  transform: rotate(16deg);
+  animation-delay: 0.5s;
+}
+
+.hero-actions-decor-gem-2 {
+  width: 14px;
+  height: 14px;
+  top: 36px;
+  right: 86px;
+  background: linear-gradient(160deg, #a78bfa, var(--dash-purple-ink));
+  transform: rotate(-10deg);
+  animation-delay: 1.6s;
+}
+
+.hero-actions-decor-spark {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--dash-purple);
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  animation: hero-actions-decor-twinkle 2.2s ease-in-out infinite;
+}
+
+.hero-actions-decor-spark-1 {
+  top: 2px;
+  right: 90px;
+  animation-delay: 0.3s;
+}
+
+@keyframes hero-actions-decor-float {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-7px) rotate(var(--rot, 0deg)); }
+}
+
+.hero-actions-decor-gem-1 { --rot: 16deg; }
+.hero-actions-decor-gem-2 { --rot: -10deg; }
+
+@keyframes hero-actions-decor-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.75); }
+}
+
+@keyframes hero-actions-decor-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(25deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-actions-decor-chip,
+  .hero-actions-decor-gem,
+  .hero-actions-decor-chip-dot,
+  .hero-actions-decor-spark {
+    animation: none;
+  }
+}
 
 .hero .btn-primary {
   display: inline-flex;
