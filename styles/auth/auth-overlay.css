@@ -2,12 +2,15 @@
  * auth-overlay.css — sign in / sign up / forgot password overlay
  *
  * Full rebuild: no floating "sticker" card, no drifting cartoon
- * blobs, no mascot. The page is one clean lime surface with its own
+ * blobs, no mascot. The page sits on the same --app-bg surface as
+ * the rest of the app (not a hardcoded flat lime fill) with its own
  * sticky glassy header (same recipe as the site's main header:
  * --lime-glass + backdrop blur) and a wide, centered form column
  * sitting directly on that surface. Inputs are raw fields on the
- * lime page itself — not boxed into a white card — with a quiet
+ * page itself — not boxed into a white card — with a quiet
  * ink-bordered style that reads as premium rather than playful.
+ * All page-content text/borders use --ink (and color-mix tints of
+ * it) rather than --lime-ink, so they track the real body color.
  * ============================================================ */
 
   /* ============ Auth overlay (sign in / sign up / forgot) ============ */
@@ -15,7 +18,7 @@
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: var(--lime);
+    background: var(--app-bg);
     opacity: 0;
     pointer-events: none;
     transform: translateY(14px);
@@ -65,7 +68,7 @@
     height: 38px;
     flex-shrink: 0;
     border-radius: 50%;
-    border: 1.5px solid rgba(26,31,10,0.22);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
     background: transparent;
     cursor: pointer;
     display: flex;
@@ -75,8 +78,8 @@
   }
 
   .auth-overlay .auth-exit:hover {
-    background: rgba(26,31,10,0.08);
-    border-color: var(--lime-ink);
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+    border-color: var(--ink);
   }
 
   .auth-overlay .auth-exit:active { transform: scale(0.94); }
@@ -84,10 +87,10 @@
   .auth-overlay .auth-exit svg {
     width: 16px;
     height: 16px;
-    stroke: var(--lime-ink);
+    stroke: var(--ink);
   }
 
-  /* ---- Page body: one clean lime canvas, no scene/blobs ---- */
+  /* ---- Page body: one clean canvas on --app-bg, no scene/blobs ---- */
   .auth-overlay .stage {
     position: relative;
     min-height: calc(100% - 64px);
@@ -101,7 +104,7 @@
     .auth-overlay .stage { padding: 36px 20px 56px; }
   }
 
-  /* ---- Form column — raw fields directly on the lime page, no card,
+  /* ---- Form column — raw fields directly on the page, no card,
      no border, no shadow box. Just generous spacing and quiet rules. ---- */
   .auth-overlay .form-wrap {
     width: 100%;
@@ -118,28 +121,28 @@
     font-weight: 400;
     margin: 0 0 10px;
     letter-spacing: -0.01em;
-    color: var(--lime-ink);
+    color: var(--ink);
   }
 
   .auth-overlay .form-header p {
     font-size: 15px;
     line-height: 1.5;
-    color: rgba(26,31,10,0.65);
+    color: color-mix(in srgb, var(--ink) 65%, transparent);
     margin: 0;
   }
 
   .auth-overlay .form-header p a,
   .auth-overlay .switcher-link {
-    color: var(--lime-ink);
+    color: var(--ink);
     font-weight: 600;
     text-decoration: underline;
-    text-decoration-color: rgba(26,31,10,0.35);
+    text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
     text-underline-offset: 3px;
     cursor: pointer;
   }
 
   .auth-overlay .form-header p a:hover,
-  .auth-overlay .switcher-link:hover { text-decoration-color: var(--lime-ink); }
+  .auth-overlay .switcher-link:hover { text-decoration-color: var(--ink); }
 
   /* ---- Pane transition (sign in ⇄ sign up ⇄ forgot) ---- */
   .auth-overlay .panes {
@@ -189,7 +192,7 @@
     .auth-overlay .panes.is-switching .pane.is-leaving { display: none; }
   }
 
-  /* ---- OAuth button — plain outlined field on the lime page ---- */
+  /* ---- OAuth button — plain outlined field on the page ---- */
   .auth-overlay .oauth-btn {
     width: 100%;
     display: flex;
@@ -198,9 +201,9 @@
     gap: 10px;
     padding: 14px 16px;
     border-radius: 10px;
-    border: 1.5px solid rgba(26,31,10,0.28);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
     background: transparent;
-    color: var(--lime-ink);
+    color: var(--ink);
     font-size: 14.5px;
     font-weight: 600;
     cursor: pointer;
@@ -209,7 +212,7 @@
 
   .auth-overlay .oauth-btn:hover {
     background: rgba(255,255,255,0.3);
-    border-color: var(--lime-ink);
+    border-color: var(--ink);
   }
 
   .auth-overlay .oauth-btn:active { transform: scale(0.99); }
@@ -221,7 +224,7 @@
     align-items: center;
     gap: 14px;
     margin: 24px 0;
-    color: rgba(26,31,10,0.55);
+    color: color-mix(in srgb, var(--ink) 55%, transparent);
     font-size: 12.5px;
   }
 
@@ -230,11 +233,11 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: rgba(26,31,10,0.2);
+    background: color-mix(in srgb, var(--ink) 20%, transparent);
   }
 
   /* ---- Raw input fields — no surrounding card, just the field itself
-     sitting on the lime, with a clean ink-toned border. ---- */
+     sitting on the page, with a clean ink-toned border. ---- */
   .auth-overlay .field {
     margin-bottom: 18px;
   }
@@ -244,7 +247,7 @@
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--lime-ink);
+    color: var(--ink);
   }
 
   .auth-overlay .input-shell {
@@ -257,19 +260,19 @@
     font-size: 15px;
     font-family: inherit;
     border-radius: 10px;
-    border: 1.5px solid rgba(26,31,10,0.28);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
     background: rgba(255,255,255,0.4);
     color: var(--ink);
     transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .auth-overlay .field input::placeholder { color: rgba(26,31,10,0.42); }
+  .auth-overlay .field input::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); }
 
   .auth-overlay .field input:focus {
     outline: none;
-    border-color: var(--lime-ink);
+    border-color: var(--ink);
     background: rgba(255,255,255,0.6);
-    box-shadow: 0 0 0 4px rgba(26,31,10,0.1);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 10%, transparent);
   }
 
   .auth-overlay .field.has-error input {
@@ -293,7 +296,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: rgba(26,31,10,0.5);
+    color: color-mix(in srgb, var(--ink) 50%, transparent);
     padding: 4px;
     display: flex;
   }
@@ -312,7 +315,7 @@
     align-items: center;
     gap: 9px;
     font-size: 13.5px;
-    color: rgba(26,31,10,0.65);
+    color: color-mix(in srgb, var(--ink) 65%, transparent);
     cursor: pointer;
     user-select: none;
   }
@@ -322,7 +325,7 @@
     width: 17px;
     height: 17px;
     border-radius: 5px;
-    border: 1.5px solid rgba(26,31,10,0.32);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 32%, transparent);
     background: rgba(255,255,255,0.4);
     cursor: pointer;
     position: relative;
@@ -342,16 +345,16 @@
     top: 1.5px;
     width: 4px;
     height: 8px;
-    border: solid var(--lime);
+    border: solid var(--app-bg);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
 
   .auth-overlay .forgot-link {
     font-size: 13.5px;
-    color: var(--lime-ink);
+    color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: rgba(26,31,10,0.32);
+    text-decoration-color: color-mix(in srgb, var(--ink) 32%, transparent);
     text-underline-offset: 3px;
     font-weight: 600;
     background: none;
@@ -360,13 +363,13 @@
     padding: 0;
   }
 
-  .auth-overlay .forgot-link:hover { text-decoration-color: var(--lime-ink); }
+  .auth-overlay .forgot-link:hover { text-decoration-color: var(--ink); }
 
   /* ---- Submit — the one solid, dark, confident element on the page ---- */
   .auth-overlay .submit-btn {
     width: 100%;
     background: var(--ink);
-    color: var(--lime);
+    color: var(--app-bg);
     border: none;
     border-radius: 10px;
     padding: 15px 20px;
@@ -392,8 +395,8 @@
     position: absolute;
     width: 18px;
     height: 18px;
-    border: 2.5px solid rgba(184,232,67,0.3);
-    border-top-color: var(--lime);
+    border: 2.5px solid rgba(34,32,28,0.15);
+    border-top-color: var(--app-bg);
     border-radius: 50%;
     animation: auth-spin 0.7s linear infinite;
   }
@@ -417,7 +420,7 @@
   .auth-overlay .reset-sent-check svg {
     width: 24px;
     height: 24px;
-    stroke: var(--lime);
+    stroke: var(--app-bg);
   }
 
   .auth-overlay .reset-sent {
@@ -425,8 +428,8 @@
     padding: 4px 0;
   }
 
-  .auth-overlay .reset-sent h2 { color: var(--lime-ink); margin: 0 0 10px; font-size: 24px; font-weight: 400; }
-  .auth-overlay .reset-sent p { color: rgba(26,31,10,0.65); font-size: 14.5px; margin: 0; line-height: 1.5; }
+  .auth-overlay .reset-sent h2 { color: var(--ink); margin: 0 0 10px; font-size: 24px; font-weight: 400; }
+  .auth-overlay .reset-sent p { color: color-mix(in srgb, var(--ink) 65%, transparent); font-size: 14.5px; margin: 0; line-height: 1.5; }
 
   .auth-overlay .back-link {
     display: inline-flex;
@@ -434,7 +437,7 @@
     gap: 7px;
     font-size: 13.5px;
     font-weight: 600;
-    color: var(--lime-ink);
+    color: var(--ink);
     text-decoration: none;
     margin-bottom: 24px;
     background: none;
@@ -447,20 +450,20 @@
 
   .auth-overlay .terms-note {
     font-size: 12.5px;
-    color: rgba(26,31,10,0.55);
+    color: color-mix(in srgb, var(--ink) 55%, transparent);
     text-align: left;
     margin-top: 28px;
     line-height: 1.6;
   }
 
   .auth-overlay .terms-note a {
-    color: var(--lime-ink);
+    color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: rgba(26,31,10,0.32);
+    text-decoration-color: color-mix(in srgb, var(--ink) 32%, transparent);
     font-weight: 600;
   }
 
-  .auth-overlay .terms-note a:hover { text-decoration-color: var(--lime-ink); }
+  .auth-overlay .terms-note a:hover { text-decoration-color: var(--ink); }
 
   .auth-overlay .strength-meter {
     display: flex;
@@ -472,7 +475,7 @@
     height: 3px;
     flex: 1;
     border-radius: 2px;
-    background: rgba(26,31,10,0.18);
+    background: color-mix(in srgb, var(--ink) 18%, transparent);
     transition: background 0.2s ease;
   }
 
