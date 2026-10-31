@@ -31,7 +31,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { PLANS } from '@/lib/plans';
 import type { AuthPane } from '@/hooks/useAuthForms';
-import { getWidgetCatalogEntry, UNIVERSAL_CONFIG_FIELDS, isPrizeList, isFaqList, type WidgetFieldDef, type Prize, type FaqItem } from '@/lib/widgets';
+import {
+  getWidgetCatalogEntry,
+  UNIVERSAL_CONFIG_FIELDS,
+  isPrizeList,
+  isFaqList,
+  canUseVisitBasedTrigger,
+  type WidgetFieldDef,
+  type Prize,
+  type FaqItem,
+} from '@/lib/widgets';
 import { AppSkeleton } from '@/components/AppSkeleton';
 import { WidgetStatusPopup, UpsellPopup, type WidgetStatusPopupProps } from '@/components/widgets/WidgetStatusPopup';
 import { CustomSelect } from './CustomSelect';
@@ -109,9 +118,20 @@ function FieldControl({
           className="wdg-input"
           type="number"
           inputMode="decimal"
+          min={field.min}
+          max={field.max}
           value={strValue}
           placeholder={field.placeholder}
-          onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
+          onChange={(e) => {
+            if (e.target.value === '') {
+              onChange('');
+              return;
+            }
+            let n = Number(e.target.value);
+            if (typeof field.min === 'number') n = Math.max(field.min, n);
+            if (typeof field.max === 'number') n = Math.min(field.max, n);
+            onChange(n);
+          }}
         />
       );
     case 'url':
@@ -181,6 +201,11 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
   const { activeSiteId, activeSite } = useSites(user?.uid ?? null, user);
   const { planId } = useUserProfile(user);
   const canUseLogoBranding = PLANS.find((p) => p.id === planId)?.limits.customLogoBranding ?? false;
+  // Email Capture's visit-based trigger (triggerType:'visits') is a
+  // paid-plan feature — see lib/widgets.ts's canUseVisitBasedTrigger.
+  // useUserProfile defaults planId to 'free' until the real doc loads,
+  // which is also the right fallback here (no premature premium flash).
+  const canUseVisitTrigger = canUseVisitBasedTrigger(planId);
   const entry = getWidgetCatalogEntry(widgetId);
 
   const { draft, loading, busy, dirty, isLive, liveStatus, patchConfig, saveConfig, enable, disable } = useSiteWidget(
@@ -500,21 +525,59 @@ export function WidgetDesigner({ widgetId }: { widgetId: string }) {
                   <section className="wdg-section">
                     <h4 className="wdg-section-title">Design it</h4>
                     <div className="wdg-group">
-                      {entry.configFields.map((field) => (
-                        <div
-                          key={field.key}
-                          className={`wdg-row wdg-row-top${field.type === 'prizeList' || field.type === 'faqList' ? ' wdg-row-stacked' : ''}`}
-                        >
-                          <span className="wdg-row-label">{field.label}</span>
-                          <FieldControl
-                            field={field}
-                            value={draft.config[field.key]}
-                            onChange={(v) => patchConfig({ [field.key]: v })}
-                            siteId={activeSite?.id}
-                            siteUrl={activeSite?.url}
-                          />
-                        </div>
-                      ))}
+                      {entry.configFields.map((field) => {
+                        // Email Capture only: 'delaySeconds' and
+                        // 'visitThreshold' are two alternative triggers
+                        // for the same popup, not two settings used
+                        // together — only show the one matching the
+                        // current triggerType (defaulting to 'time' if
+                        // unset, matching the catalog default).
+                        if (widgetId === 'email-capture') {
+                          const triggerType = (draft.config.triggerType as string) || 'time';
+                          if (field.key === 'delaySeconds' && triggerType !== 'time') return null;
+                          if (field.key === 'visitThreshold' && triggerType !== 'visits') return null;
+                        }
+
+                        // The 'visits' option on triggerType is only
+                        // offered to plans that pass canUseVisitTrigger
+                        // — left out of the dropdown entirely (same
+                        // discoverable-but-not-selectable pattern as
+                        // brandMode's 'logo' option above) rather than
+                        // letting it be picked and then silently never
+                        // actually gated anywhere.
+                        const resolvedField =
+                          field.key === 'triggerType' && !canUseVisitTrigger
+                            ? { ...field, options: field.options?.filter((o) => o.value !== 'visits') }
+                            : field;
+
+                        return (
+                          <div
+                            key={field.key}
+                            className={`wdg-row wdg-row-top${field.type === 'prizeList' || field.type === 'faqList' ? ' wdg-row-stacked' : ''}`}
+                          >
+                            <span className="wdg-row-label">{field.label}</span>
+                            <FieldControl
+                              field={resolvedField}
+                              value={draft.config[field.key]}
+                              onChange={(v) => {
+                                // Falling back off 'visits' to 'time'
+                                // when switching away isn't needed here
+                                // (the dropdown can't offer 'visits' to
+                                // begin with on a Free plan) — this just
+                                // writes whatever the control produced.
+                                patchConfig({ [field.key]: v });
+                              }}
+                              siteId={activeSite?.id}
+                              siteUrl={activeSite?.url}
+                            />
+                            {field.key === 'triggerType' && !canUseVisitTrigger && (
+                              <span className="wdg-upgrade-pill">
+                                Want to trigger this by return visits instead of a timer? <a href="/dashboard/plans">Upgrade your plan</a>.
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </section>
                 )}

@@ -8,11 +8,12 @@
 // own self-contained interaction (countdown ticking, chat input, etc.).
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { SupportChatWidget } from './widgets/SupportChatWidget';
+import { EmailCaptureWidget } from './widgets/EmailCaptureWidget';
 
 // Previous 11 widgets were retired to be rebuilt from scratch as
 // premium widgets — see lib/widgets.ts's WIDGET_CATALOG. Add new
 // widget components + their id below as each one ships.
-const KNOWN_WIDGET_IDS: string[] = ['support-chat'];
+const KNOWN_WIDGET_IDS: string[] = ['support-chat', 'email-capture'];
 
 export interface WidgetHashPayload {
   siteId: string;
@@ -86,6 +87,14 @@ export function WidgetRenderer({ widgetId }: { widgetId: string }) {
     return (
       <div style={WRAP_STYLE}>
         <SupportChatWidget siteId={siteId} visitorId={visitorId} config={config} />
+      </div>
+    );
+  }
+
+  if (widgetId === 'email-capture') {
+    return (
+      <div style={WRAP_STYLE}>
+        <EmailCaptureWidget siteId={siteId} visitorId={visitorId} config={config} />
       </div>
     );
   }
