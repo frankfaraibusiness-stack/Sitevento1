@@ -1,0 +1,299 @@
+/* ============================================================
+ * styles/widgets/preview/preview-base.css
+ *
+ * Shared shell for the per-widget-type live preview
+ * (components/widgets/designer/WidgetPreview.tsx and its stage
+ * components in components/widgets/designer/stages/). Replaces the old
+ * one-size-fits-all phone mockup (wdg-phone-*, now removed from
+ * widget-designer.css) with a card whose OUTER chrome — header,
+ * device-size tabs, caption, loading/blocked states — is identical for
+ * every widget, while the INNER "stage" (mock-viewport layout showing
+ * where on a page the widget actually sits) swaps per widget position.
+ *
+ * Adding an 11th widget to WIDGET_CATALOG never touches this file: it
+ * only needs a `position` that already maps to one of the four stage
+ * kinds in WidgetPreview.tsx (bar / corner / takeover / inline). New
+ * stage KINDS (if a future widget's position doesn't fit those four)
+ * add their own `wdgp-stage--<kind>` rules here, appended at the
+ * bottom, without touching the shared rules above them.
+ *
+ * Prefix: `wdgp-` ("widget designer preview"), sibling to `wdg-`
+ * (widget-designer.css) and `wgp-` (widgets-page.css) — reuses the
+ * app's base --ink/--line/--bg/--cream/--lime tokens for chrome, but
+ * the mock viewport itself uses its own neutral slate scale (defined
+ * below) so it reads as "a website" rather than "this app", which is
+ * what makes the widget sitting on it the thing your eye lands on.
+ * ============================================================ */
+
+.wdgp {
+  --wdgp-slate-50: #f4f5f1;
+  --wdgp-slate-100: #eef0ea;
+  --wdgp-slate-200: #dfe3d6;
+  --wdgp-slate-300: #c9cfbd;
+  --wdgp-slate-400: #a9b096;
+  --wdgp-slate-ink: #4b5240;
+  --wdgp-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* ── Card shell ───────────────────────────────────────────────────── */
+.wdgp-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--wdgp-radius);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(34, 32, 28, 0.04), 0 14px 32px rgba(34, 32, 28, 0.06);
+}
+
+/* ── Header: title + context pill + device switcher ──────────────── */
+.wdgp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--cream);
+}
+
+.wdgp-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wdgp-eyebrow {
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #9a948a;
+}
+
+.wdgp-context {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Desktop / Mobile toggle — same switch-pill pattern as other custom
+   controls in this app (CustomSelect etc.), own markup since it's a
+   simple two-way toggle rather than a dropdown. */
+.wdgp-devices {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 3px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.wdgp-device-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: #8a8477;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.wdgp-device-btn svg { width: 13px; height: 13px; }
+.wdgp-device-btn:hover { color: var(--ink); }
+.wdgp-device-btn.is-active {
+  background: var(--ink);
+  color: var(--lime);
+}
+
+/* ── Stage frame: the mock "webpage" the widget previews against ─── */
+.wdgp-stage-wrap {
+  position: relative;
+  background: var(--wdgp-slate-100);
+  padding: 22px;
+  display: flex;
+  justify-content: center;
+}
+
+.wdgp-stage {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 1px rgba(34, 32, 28, 0.04), 0 10px 28px rgba(34, 32, 28, 0.08);
+  transition: max-width 0.22s ease;
+}
+
+/* Mobile mode narrows the mock viewport to a phone-ish column instead
+   of swapping in a device chrome shell — keeps the same stage markup/
+   layout logic working at both sizes rather than branching per
+   device, and the widget components already have their own real
+   mobile behavior (see CountdownBarWidget's isMobile resize listener)
+   which this triggers naturally just by being narrow. */
+.wdgp-stage.is-mobile {
+  max-width: 300px;
+}
+
+/* Fake browser chrome top bar on the stage, shared by every stage
+   kind so the "this is a mock page" framing stays consistent. */
+.wdgp-stage-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: var(--wdgp-slate-50);
+  border-bottom: 1px solid var(--wdgp-slate-200);
+}
+.wdgp-stage-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wdgp-slate-300);
+}
+.wdgp-stage-url {
+  margin-left: 4px;
+  flex: 1;
+  height: 16px;
+  border-radius: 5px;
+  background: var(--wdgp-slate-200);
+  max-width: 140px;
+}
+
+/* Scrollable viewport body — fixed aspect so bar/corner/takeover
+   widgets have a consistent "page" to sit on; inline stage overrides
+   height to auto (content-sized) since it's not simulating a viewport. */
+.wdgp-stage-body {
+  position: relative;
+  height: 360px;
+  overflow: hidden;
+  background: #fff;
+}
+.wdgp-stage.is-mobile .wdgp-stage-body { height: 420px; }
+
+/* Mock page content — skeleton paragraph/heading blocks used by every
+   stage kind to suggest "a real page" without literally rendering
+   one. Kept intentionally plain (no copy, no imagery) so nothing here
+   competes with the actual widget for attention. */
+.wdgp-skel-block { padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; }
+.wdgp-skel-heading {
+  width: 62%;
+  height: 13px;
+  border-radius: 4px;
+  background: var(--wdgp-slate-200);
+}
+.wdgp-skel-line {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--wdgp-slate-100);
+  border: 1px solid var(--wdgp-slate-200);
+}
+.wdgp-skel-line.w-full { width: 100%; }
+.wdgp-skel-line.w-80 { width: 80%; }
+.wdgp-skel-line.w-60 { width: 60%; }
+.wdgp-skel-card {
+  margin-top: 6px;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--wdgp-slate-100);
+  border: 1px solid var(--wdgp-slate-200);
+}
+
+/* The actual rendered widget — one shared iframe wrapper, positioned
+   differently per stage kind via the stage's own CSS below. */
+.wdgp-widget-frame {
+  border: none;
+  background: transparent;
+}
+
+/* ── Caption + notes ──────────────────────────────────────────────── */
+.wdgp-foot {
+  padding: 12px 16px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wdgp-caption {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8a8477;
+}
+.wdgp-note {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #9a948a;
+}
+
+/* ── Loading / blocked placeholder states inside the stage body ───── */
+.wdgp-stage-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  color: var(--wdgp-slate-400);
+}
+
+/* ── Collapsed / toggle-off state (reuses old wdg-phone-showbtn look,
+   now under the wdgp- prefix so it lives alongside the rest of this
+   file instead of split across two stylesheets) ───────────────────── */
+.wdgp-showbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.wdgp-showbtn svg { width: 18px; height: 18px; }
+.wdgp-showbtn:hover { background: var(--cream-deep); }
+
+.wdgp-hidebar {
+  display: flex;
+  justify-content: flex-end;
+}
+.wdgp-hidebtn {
+  border: none;
+  background: transparent;
+  color: var(--walnut);
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (max-width: 420px) {
+  .wdgp-stage-wrap { padding: 16px 12px; }
+  .wdgp-head { padding: 12px 14px; flex-wrap: wrap; }
+}

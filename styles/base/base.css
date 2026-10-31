@@ -1,0 +1,230 @@
+/* ============================================================
+ * base.css — CSS variables, reset, html/body/header/main base layout
+ * Split from app/globals.css for maintainability.
+ * ============================================================ */
+
+  :root {
+    --bg: #ffffff;
+    --cream: #f6f2e7;
+    --cream-deep: #efe7d3;
+    --ink: #22201c;
+    --walnut: #6b4a34;
+    --walnut-dark: #4f3626;
+    --line: #e8e4de;
+    --lime: #b8e843;
+    --lime-ink: #1a1f0a;
+    /* Translucent lime used for glass surfaces (header, floating
+       pills) — same hue as --lime, alpha'd down so page content
+       shows through under a backdrop-filter blur. */
+    --lime-glass: rgba(184, 232, 67, 0.22);
+    --lime-glass-border: rgba(184, 232, 67, 0.55);
+
+    /* New app-feel page background (replaces the flat --lime page
+       background on the stripped-down marketing hero + header) —
+       sampled directly from the reference design: a soft warm
+       off-white, not pure white and not the bright lime field. */
+    --app-bg: #cbff70;
+    /* Header's own background on top of --app-bg: same hue family as
+       --app-bg but with a faint lime tint, matching the reference's
+       hamburger-pill tone — "blends in" rather than floating as a
+       separate glass pill. */
+    --app-header-bg: var(--lime-glass);
+
+    /* Card/panel surface used for in-page sections that sit on top of
+       the lime page background (dashboard panels, site cards, profile
+       cards, pill buttons). A soft near-white instead of pure white so
+       these surfaces read as "on lime" rather than as leftover white
+       boxes from the pre-lime theme. Modals/bottom-sheets intentionally
+       keep --bg (pure white) since those float above the page, not in
+       it. */
+    /* Was a near-white #fbfdf2, which read as a plain white box on the
+       lime page. Pulled toward --cream with a visible lime tint so it
+       stands out as its own surface the same way --dnx-glass does. */
+    --surface: color-mix(in srgb, var(--lime) 26%, var(--cream) 74%);
+    --surface-border: #c7dba0;
+
+    /* Dashboard accent set — four tones used to colour-code the stat
+       cards, Quick Tools tiles, and status banners on /dashboard. Each
+       has a soft tinted surface + border for card backgrounds and a
+       deeper "ink" shade for icons/text on that tint. */
+    --dash-green: #16a34a;
+    --dash-green-ink: #0f5c2e;
+    --lime-mist: #f4ffe0;
+    --dash-green-surface: #eafaf0;
+    --dash-green-border: #c3ecd3;
+
+    --dash-purple: #7c5cfc;
+    --dash-purple-ink: #4a2fd1;
+    --dash-purple-surface: #f1edff;
+    --dash-purple-border: #ded3fe;
+
+    --dash-blue: #2f8fe0;
+    --dash-blue-ink: #175a92;
+    --dash-blue-surface: #eaf5ff;
+    --dash-blue-border: #cbe6fb;
+
+    --dash-orange: #e5832c;
+    --dash-orange-ink: #9a5313;
+    --dash-orange-surface: #fff1e4;
+    --dash-orange-border: #fad9b8;
+
+    /* Muted text tones — used across cards, forms, and secondary copy
+       app-wide. Three steps from "quiet caption" to "near-ink body". */
+    --muted: #8a8477;
+    --muted-mid: #6b665e;
+    --muted-dark: #51493e;
+
+    /* Status/semantic colors — success, warning/pending, danger — each
+       with an ink-level shade for text/icons on a light surface. */
+    --success: #6ba84f;
+    --success-ink: #2f5c1d;
+    --success-surface: #eafaf0;
+    --success-border: #c3ecd3;
+
+    --warning: #d99a2b;
+    --warning-ink: #9a5313;
+
+    --danger: #b3432b;
+    --danger-ink: #7a2c18;
+    --danger-surface: #fdeee9;
+
+    --border-soft: #d8d2c5;
+    --placeholder: #a8a295;
+
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Site-wide: no text selection (no drag-select highlight, no
+     long-press "Copy" callout on touch). Form fields are explicitly
+     exempted below so typing, selecting, and copying out of an actual
+     input/textarea still works the normal way — this only blocks
+     selecting the surrounding UI copy/labels. */
+  html {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  a, button, summary, input {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a:focus,
+  button:focus,
+  summary:focus,
+  input:focus {
+    outline: none;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--app-bg);
+    /* Safety net: no single section (long unbroken text, a fixed-width
+       child, etc.) should ever be able to force the whole page wider
+       than the viewport and push other sections/scroll sideways. */
+    max-width: 100%;
+    overflow-x: hidden;
+    transition: background-color 450ms ease;
+  }
+
+  /* While BootSplash is in its boot phase (see components/BootSplash.tsx
+     and .boot-splash.is-lime in boot-splash.css), mirror that same
+     background onto html itself so mobile rubber-band overscroll —
+     which bounces past the fixed, viewport-covering splash and reveals
+     html/body underneath — shows the same background instead of
+     flashing to something else. The splash no longer washes the full
+     screen in lime (too loud/unprofessional), so this now mirrors
+     --app-bg, matching the html, body rule above — kept as its own
+     rule (rather than removed) so the class stays a harmless no-op if
+     a future change ever makes the two diverge again. BootSplash
+     adds/removes this class itself and always removes it on unmount.
+     Same transition timing as the splash's own fade for a matched
+     handoff. */
+  html.is-boot-lime,
+  html.is-boot-lime body {
+    background: var(--app-bg);
+  }
+
+  body {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    color: var(--ink);
+    padding-top: env(safe-area-inset-top, 0px);
+    width: 100%;
+  }
+
+  /* Clearance for GlobalNav's fixed bottom bar (styles/base/global-nav.css),
+     applied globally (not just on the dashboard) so marketing-page
+     content — including its footer — never sits underneath the nav on
+     phones. Desktop's GlobalNav floats near the top instead, so no
+     bottom padding is needed there. */
+  @media (max-width: 859px) {
+    body {
+      /* Bar is 64px tall (global-nav.css — labels came back, so it's
+         a bit taller than the 56px icon-only version, still well
+         under the original 72px) and floats with a 10px gap below
+         it, so clearance covers both. */
+      padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  /* Header now sits flush at the true top of the screen, full width,
+     no side margins/gap above it. It used to add its own lime tint
+     (--lime-glass) on top of the page, which doubled up on the page's
+     own lime background and read as a visible green band. The page
+     background is lime already (--app-bg), so the header no longer
+     needs a colored tint — just a visible white wash + blur so page
+     content shows through while scrolling, a true "glass" effect
+     rather than a colored bar. */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    height: calc(56px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    background: rgba(255, 255, 255, 0.4);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    /* Was a white-ish line — invisible on the lime page. Pure black,
+       not grey, so the header's bottom edge reads as a crisp, defined
+       line against the lime. */
+    border-bottom: 1px solid #000;
+  }
+
+  /* Must clear the fixed header above: 56px tall, flush at the top, so
+     content needs 56px of top padding plus the shared safe-area inset
+     (already added once by header's own padding, so main only adds a
+     small breathing gap on top of 56px, not double safe-area). */
+  main {
+    padding-top: calc(56px + 16px + env(safe-area-inset-top, 0px));
+  }
+
+  /* Settings > Appearance ("Font Size" / "Compact Mode") — applied
+     globally here (not just on /settings) via <html data-font-size>/
+     [data-compact], set from components/settings/SettingsPageClient.tsx
+     the moment that saved preference loads from Firestore (see
+     hooks/useUserSettings.ts). Scoped to `main` so the fixed header/
+     sidebar chrome keeps its own fixed sizing. */
+  html[data-font-size='small'] main { font-size: 0.92em; }
+  html[data-font-size='large'] main { font-size: 1.12em; }
+
+  html[data-compact] .dash-wrap { padding-top: 18px; padding-bottom: 56px; }
+  html[data-compact] .dash-panel-body { padding-top: 2px; padding-bottom: 10px; }
+  html[data-compact] .dash-panel { margin-bottom: 12px; }
+
