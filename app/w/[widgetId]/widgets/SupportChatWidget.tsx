@@ -3,10 +3,13 @@
 // app/w/[widgetId]/widgets/SupportChatWidget.tsx
 //
 // First widget rebuilt into the new (post wipe) WIDGET_CATALOG — see
-// lib/widgets.ts's 'support-chat' entry. Full-screen AI support chat,
-// ported from the tested standalone HTML/CSS prototype
-// (styles/widgets/drafts/support-chat.css — kept byte-for-byte as the
-// CSS here) straight into a real component wired to the live backend:
+// lib/widgets.ts's 'support-chat' entry. AI support chat that opens
+// as a floating bottom-right card (not a full-screen takeover — see
+// the note below), originally ported from a full-screen standalone
+// HTML/CSS prototype (styles/widgets/drafts/support-chat.css — most
+// of its chat-UI CSS below is still unchanged from that prototype;
+// only the outer container/launcher positioning was reworked) into a
+// real component wired to the live backend:
 //
 //   - Every message the visitor types is POSTed to /api/chat, which
 //     (a) resolves siteId -> the owning account via siteIndex,
@@ -26,8 +29,14 @@
 // Closed-state launcher: a cartoon pill FAB, bottom-right, that
 // collapses to a plain round bubble (icon only, no label) under
 // 768px so it doesn't crowd small screens — see the @media rule
-// below. Opening it is always the same full-screen takeover on every
-// breakpoint; only the CLOSED bubble's shape changes on mobile.
+// below. Opening it reveals a floating card anchored to the same
+// bottom-right corner (never a full-screen takeover) — same
+// architecture as EmailCaptureWidget: this component's own outer
+// wrapper is always a full-viewport, pointer-events:none, fixed
+// layer (sitevento.js gives it a permanently full-size transparent
+// iframe, no postMessage resize bridge needed), and only the
+// launcher button / open card themselves re-enable pointer-events,
+// same as EmailCaptureWidget's .ec-overlay/.ec-card split.
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 
 export interface SupportChatConfig {
@@ -142,13 +151,15 @@ export function SupportChatWidget({ siteId, visitorId, config }: SupportChatWidg
   const brandLogoUrl = cfg.brandLogoUrl || '';
   const accentVars = accentCssVars(cfg.accentColor);
 
-  // Starts collapsed (just the launcher bubble) — this widget loads
-  // inside a small 56x56 host iframe (see sitevento.js's
-  // EXPANDABLE_WIDGET_IDS/mountAutoStyles) that only grows to
-  // full-screen/floating-card size once we tell it to via the
-  // postMessage below. Defaulting to true here used to render the
-  // whole full-screen chat markup clipped inside that tiny starting
-  // box before any message had a chance to go out.
+  // Starts collapsed (just the launcher bubble). This widget's outer
+  // wrapper is a permanently full-viewport, pointer-events:none fixed
+  // layer — same as EmailCaptureWidget's .ec-overlay — so there's no
+  // iframe-resize step needed at all: the host page's iframe for this
+  // widget is just always full-size and transparent, and this
+  // component decides its own on-screen footprint (a small bottom-
+  // right launcher, or a bottom-right floating card) entirely with
+  // its own CSS, by re-enabling pointer-events only on the launcher
+  // button / open card themselves.
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -161,21 +172,6 @@ export function SupportChatWidget({ siteId, visitorId, config }: SupportChatWidg
   useEffect(() => {
     sessionIdRef.current = getOrCreateSessionId(siteId);
   }, [siteId]);
-
-  // Tells the host page (sitevento.js's startExpandableWidgetBridge)
-  // to resize this widget's iframe: collapsed launcher size while
-  // closed, full-viewport on mobile or a floating 384x600 card on
-  // desktop while open. Without this the host has no way to know the
-  // chat opened, so its iframe never grows past the collapsed bubble
-  // size and the full-screen chat markup renders clipped inside it.
-  useEffect(() => {
-    if (typeof window === 'undefined' || window.parent === window) return;
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    window.parent.postMessage(
-      { source: 'sitevento-widget', widgetId: 'support-chat', open, isMobile },
-      '*'
-    );
-  }, [open]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -257,7 +253,7 @@ export function SupportChatWidget({ siteId, visitorId, config }: SupportChatWidg
   const handleSend = () => sendMessage(input);
 
   return (
-    <div style={accentVars as CSSProperties}>
+    <div className="sc-wrap" style={accentVars as CSSProperties}>
       <style>{SUPPORT_CHAT_CSS}</style>
 
       {!open && (
@@ -410,6 +406,23 @@ export function SupportChatWidget({ siteId, visitorId, config }: SupportChatWidg
 // risk of colliding with host-page styles to guard against here, same
 // reasoning as WidgetRenderer's own WRAP_STYLE.
 const SUPPORT_CHAT_CSS = `
+  * { box-sizing: border-box; }
+
+  /* Outer wrapper: this widget's iframe is always sized full-viewport
+     and transparent by sitevento.js (same as EmailCaptureWidget — no
+     postMessage resize step needed). pointer-events:none here means
+     the invisible rest of this layer never blocks clicks on the
+     host page; only the launcher button and the open card below
+     turn pointer-events back on for themselves. */
+  .sc-wrap {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
   .app-container, .app-container * {
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -432,6 +445,7 @@ const SUPPORT_CHAT_CSS = `
     box-shadow: 4px 4px 0px var(--sv-accent-ink);
     transition: transform 0.1s, box-shadow 0.1s;
     z-index: 100;
+    pointer-events: auto;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   #reopen-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--sv-accent-ink); }
@@ -444,17 +458,28 @@ const SUPPORT_CHAT_CSS = `
     #reopen-btn svg { width: 26px; height: 26px; }
   }
 
+  /* Floating card, bottom-right — never full-screen, on any
+     breakpoint. Fixed footprint capped to the viewport so it still
+     fits on small phones without covering the whole screen. */
   .app-container {
-    width: 100vw;
-    height: 100dvh;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 384px;
+    height: 600px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);
     background: linear-gradient(180deg, #ffffff 0%, var(--sv-accent-soft) 35%, var(--sv-accent-soft-2) 100%);
     display: flex;
     flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: auto;
+    transform-origin: bottom right;
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
-  .app-container.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
+  .app-container.hidden { opacity: 0; pointer-events: none; transform: scale(0.95) translateY(12px); }
 
   .app-header {
     position: sticky;
@@ -707,11 +732,4 @@ const SUPPORT_CHAT_CSS = `
   .sitevento-credit .bolt { width: 12px; height: 12px; fill: #4b7a1f; flex-shrink: 0; }
   .sitevento-credit .brand-link { color: var(--sv-accent-ink); font-weight: 800; text-decoration: none; }
   .sitevento-credit .brand-link:hover { text-decoration: underline; }
-
-  @media (min-width: 768px) {
-    .message { max-width: 70%; }
-    .app-header { padding: 16px 32px; }
-    .chat-scroll-area { padding: 32px; }
-    .input-area { padding: 16px 32px 32px 32px; }
-  }
 `;
