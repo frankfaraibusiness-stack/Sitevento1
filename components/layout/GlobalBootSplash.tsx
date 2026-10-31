@@ -2,11 +2,11 @@
 
 // components/layout/GlobalBootSplash.tsx
 //
-// Mounted once from app/layout.tsx so the full brand-arrival boot
-// sequence (components/BootSplash.tsx) shows on every route, not just
-// `/`. Previously this only lived inside components/AppRoot.tsx (the
-// marketing page's client tree), so it never appeared when someone's
-// first real page load was e.g. `/dashboard` directly.
+// Mounted once from app/layout.tsx so the full lime UFO / blob-drop
+// boot loader (components/BootLoader.tsx) shows on every route, not
+// just `/`. Previously this only lived inside components/AppRoot.tsx
+// (the marketing page's client tree), so it never appeared when
+// someone's first real page load was e.g. `/dashboard` directly.
 //
 // Must fire on every real browser page load (hard refresh, typing a
 // URL, opening a link in a new tab) and NEVER on in-app client-side
@@ -29,7 +29,7 @@ let hasBootedThisPageLoad = false;
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BootSplash } from '@/components/BootSplash';
+import { BootLoader } from '@/components/BootLoader';
 import { useAuth } from '@/hooks/useAuth';
 import { useScrollLock } from '@/hooks/useScrollLock';
 
@@ -51,8 +51,8 @@ export function GlobalBootSplash() {
   if (suppressed) return null;
 
   return (
-    <BootSplash
-      ready={authReady}
+    <BootLoader
+      authReady={authReady}
       onDone={() => {
         hasBootedThisPageLoad = true;
         setSplashDone(true);
