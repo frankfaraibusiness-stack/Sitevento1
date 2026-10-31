@@ -1,0 +1,326 @@
+/* ============================================================
+ * legal.css — Terms of Service & Privacy Policy pages
+ * (app/terms/page.tsx, app/privacy/page.tsx, both rendering
+ * components/legal/LegalPage.tsx).
+ *
+ * ---- Design direction ----------------------------------------
+ * These are the only two pages in the app whose entire job is to be
+ * read carefully, start to end — not scanned, not clicked through.
+ * Everywhere else in sitevento (dashboard, settings) is built from
+ * rounded cards on a soft shadow; repeating that card language here
+ * would make a legal document look like another dashboard widget.
+ * Instead this leans into what the content actually is — a numbered,
+ * sequential set of terms — the way a printed policy or statute is
+ * typeset: a running number beside each section (in the nav AND the
+ * heading itself, so the two numbering systems always agree), a plain
+ * rule under the masthead instead of a boxed hero, and a serif
+ * reading column sized for long-form text (matches the ~68 character
+ * measure the brand's own marketing copy already sets in Georgia).
+ * One accent color (the brand's lime) used exactly once per section —
+ * the number — rather than scattered across borders/badges/dots.
+ *
+ * Deliberately its own small header/footer, not the app shell's
+ * Header/MarketingFooter — those live inside components/AppRoot.tsx's
+ * client-side view switch (logo click = state change, not a real nav),
+ * which doesn't fit a plain statically-rendered content route. A real
+ * <a href="/"> back-link plays better with SEO/crawlers anyway.
+ * ============================================================ */
+
+  .legal-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--cream);
+    /* Clears the real fixed header (ContentHeader, 56px tall — see
+       the global `header`/`main` rules in styles/base/base.css). */
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
+  }
+
+  /* ---- Masthead -----------------------------------------------
+   * A plain rule under the title, not a boxed/tinted hero panel —
+   * the content starts reading like a document immediately, instead
+   * of sitting inside another card. */
+  .legal-hero {
+    padding: 56px 24px 36px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .legal-hero-inner {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .legal-kicker {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--walnut-dark);
+    margin: 0 0 10px;
+  }
+
+  .legal-hero h1 {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: clamp(34px, 6vw, 52px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+
+  .legal-updated {
+    font-size: 13.5px;
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+  }
+
+  .legal-body {
+    flex: 1;
+    padding: 44px 24px 96px;
+  }
+
+  .legal-body-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* ---- Table of contents ----------------------------------------
+   * Hidden on narrow screens (the in-page anchors in each heading
+   * number still work via scroll); becomes a sticky numbered index
+   * beside the reading column once there's room — see the min-width:
+   * 1040px breakpoint below, where the grid itself grows a column. */
+  .legal-toc {
+    position: sticky;
+    top: 32px;
+    display: none;
+  }
+
+  .legal-toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 18px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .legal-toc a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 0;
+    font-size: 13.5px;
+    line-height: 1.35;
+    color: var(--muted-mid);
+    text-decoration: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .legal-toc-num {
+    font-variant-numeric: tabular-nums;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .legal-toc a:hover {
+    color: var(--ink);
+  }
+
+  .legal-toc a:hover .legal-toc-num {
+    color: var(--lime-ink);
+  }
+
+  /* ---- Reading column --------------------------------------------
+   * Serif body, line length kept under ~68 characters via max-width,
+   * generous line-height for long-form reading. */
+  .legal-content {
+    min-width: 0;
+    max-width: 62ch;
+  }
+
+  .legal-intro {
+    margin-bottom: 44px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .legal-intro p {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  .legal-content section {
+    margin-bottom: 44px;
+    scroll-margin-top: 24px;
+  }
+
+  .legal-content section:last-child {
+    margin-bottom: 0;
+  }
+
+  /* The running number sits beside the heading, in the lime accent —
+     the one place color is used as a structural marker rather than
+     decoration, echoed by the same number in the TOC above. */
+  .legal-content h2 {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 1.3;
+    margin: 0 0 16px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .legal-section-num {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--lime-ink);
+    background: var(--lime);
+    border-radius: 7px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+  }
+
+  .legal-content p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--muted-dark);
+    margin: 0 0 14px;
+  }
+
+  .legal-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .legal-content ul,
+  .legal-content ol.legal-list {
+    margin: 0 0 14px;
+    padding-left: 22px;
+  }
+
+  .legal-content li {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--muted-dark);
+    margin-bottom: 7px;
+  }
+
+  .legal-content li:last-child {
+    margin-bottom: 0;
+  }
+
+  .legal-content a {
+    color: var(--walnut-dark);
+    text-decoration-color: var(--border-soft);
+    text-underline-offset: 2px;
+  }
+
+  .legal-content a:hover {
+    color: var(--ink);
+    text-decoration-color: currentColor;
+  }
+
+  .legal-content strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Callout — a quiet inset rule, not a tinted/bordered card, so it
+     reads as an aside in the document rather than another UI widget. */
+  .legal-content .legal-callout {
+    border-left: 2px solid var(--lime-ink);
+    padding: 2px 0 2px 18px;
+    margin: 0 0 20px;
+  }
+
+  .legal-content .legal-callout p {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .legal-content .legal-callout p + p {
+    margin-top: 8px;
+  }
+
+  @media (min-width: 1040px) {
+    .legal-hero-inner,
+    .legal-body-inner {
+      max-width: 880px;
+    }
+
+    .legal-body-inner {
+      grid-template-columns: 180px 1fr;
+      gap: 64px;
+    }
+
+    .legal-toc {
+      display: block;
+    }
+  }
+
+  /* Pricing (app/pricing) no longer reuses this .legal-* shell — it's
+     now components/marketing/PricingPage.tsx, its own component with
+     its own stylesheet (styles/marketing/pricing-page.css), built
+     mobile-first as a stacked card list instead of a horizontally-
+     scrolling comparison table. See that file for the full rationale. */
+
+  /* ---- Status page (app/status) ---- */
+  .status-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .status-list-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .status-list-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #3fae5c;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .status-list-name {
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-list-ok {
+    font-size: 12px;
+    font-weight: 600;
+    color: #3fae5c;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .status-list-note {
+    font-size: 14px;
+    color: var(--muted-mid);
+    margin: 4px 0 0;
+    line-height: 1.6;
+  }
