@@ -143,6 +143,30 @@ function HeroMascotStage() {
   );
 }
 
+// Mobile-only character placeholder (<640px). The real mascot artwork
+// for this spot is coming later — this is just a reserved stage with
+// the same floating-gem/glow scene used elsewhere, sized and
+// positioned to match where the final character art will sit, so
+// swapping in the real asset later is a drop-in (just the <img> inside
+// .hero-char-placeholder-art). Kept as a separate element from
+// HeroMascotStage (rendered alongside it, shown/hidden by CSS per
+// breakpoint) rather than reusing the animated stage, since the
+// animated rings/shapes/colour-cycle are tuned for the tablet/desktop
+// mascot and don't need to carry into this placeholder.
+function HeroCharacterPlaceholder() {
+  return (
+    <div className="hero-char-placeholder" aria-hidden="true">
+      <span className="hero-char-gem hero-char-gem-1" />
+      <span className="hero-char-gem hero-char-gem-2" />
+      <span className="hero-char-gem hero-char-gem-3" />
+      <span className="hero-char-gem hero-char-gem-4" />
+      <div className="hero-char-placeholder-art">
+        <span className="hero-char-placeholder-label">Character art coming soon</span>
+      </div>
+    </div>
+  );
+}
+
 export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
   return (
     <section className="hero">
@@ -191,6 +215,10 @@ export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
         </div>
 
         <div className="hero-character-col">
+          {/* Shown/hidden per breakpoint in marketing-hero.css — the
+              placeholder below 640px, the real animated stage at
+              640px and up. */}
+          <HeroCharacterPlaceholder />
           <HeroMascotStage />
         </div>
       </div>
