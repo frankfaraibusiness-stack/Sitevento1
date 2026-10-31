@@ -2,11 +2,11 @@
  * global-nav.css — GlobalNav (components/layout/GlobalNav.tsx).
  *
  * One nav, rendered once from app/layout.tsx, present on every route.
- * Mobile (<860px): sticky, always-on, FULL-WIDTH bottom bar (edge to
- * edge, not a floating compact pill) with a curved notch cut into its
- * top edge around a raised circular lime "+" Add site button sitting
- * in the middle, straddling the bar's top edge — the one loud shape,
- * same idea as a native app's tab bar with a center FAB. Side tabs
+ * Mobile (<860px): sticky, always-on, FLOATING PILL bottom bar (inset
+ * from the screen edges, not full-width/edge-to-edge) with a raised
+ * circular lime "+" Add site button sitting in the middle, straddling
+ * the bar's top edge — the one loud shape, same idea as a native
+ * app's tab bar with a center FAB. Side tabs
  * (Home/Dashboard left, Settings/Profile right) are quiet icon
  * buttons either side of the notch. Desktop (>=860px): the same five
  * items now sit centered inside the sticky top header's own row,
@@ -104,40 +104,42 @@
   }
 
   /* ============================================================
-   * Mobile: sticky, always-on, FULL-WIDTH bottom bar, <860px.
+   * Mobile: sticky, always-on FLOATING PILL bottom bar, <860px.
    *
-   * .gnav-root is the fixed, edge-to-edge positioning wrapper;
-   * .gnav-pill is the bar itself, now stretched to the full viewport
-   * width with its own rounded top corners and a scooped notch
-   * (.gnav-pill::before, a page-background-colored disc) cut out of
-   * its top edge — the center "+" sits inside that notch, straddling
-   * the bar's top edge, same visual language a native app's tab-bar
-   * FAB uses. Side tabs stay quiet icon buttons either side of the
-   * notch. ----------------------------------------------------------- */
+   * .gnav-root is the fixed positioning wrapper, inset from the
+   * bottom edge instead of stretched flush to it; .gnav-pill is the
+   * bar itself, now an inset rounded-all-corners pill that floats
+   * above the page background with space showing around it, rather
+   * than a full-width bar glued to the screen edge. Its background
+   * uses the same --app-bg token as html/body (see base.css) instead
+   * of its own hardcoded cream/lime mix, so it always matches the
+   * real page background and never drifts out of sync if that
+   * variable changes. The "+" button still straddles the bar's top
+   * edge, same visual language a native app's tab-bar FAB uses. Side
+   * tabs stay quiet icon buttons either side of it. ---------------- */
   @media (max-width: 859px) {
     .gnav-root {
       top: auto;
       bottom: 0;
-      justify-content: stretch;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      justify-content: center;
+      padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px));
     }
 
     .gnav-pill {
       width: 100%;
-      max-width: none;
+      max-width: 420px;
       margin: 0;
       justify-content: center;
       align-items: flex-end;
       gap: 54px;
       height: 72px;
-      padding: 0 14px calc(10px + env(safe-area-inset-bottom, 0px));
-      background: color-mix(in srgb, var(--cream) 92%, var(--lime) 8%);
+      padding: 0 14px 10px;
+      background: var(--app-bg);
       backdrop-filter: blur(16px) saturate(170%);
       -webkit-backdrop-filter: blur(16px) saturate(170%);
       border: 1.5px solid var(--line);
-      border-bottom: none;
-      border-radius: 26px 26px 0 0;
-      box-shadow: 0 -8px 28px rgba(34, 32, 28, 0.12);
+      border-radius: 26px;
+      box-shadow: 0 8px 28px rgba(34, 32, 28, 0.18);
       position: relative;
     }
 
@@ -243,10 +245,10 @@
       transform: scale(0.92);
     }
 
-    /* Raised center "+" — sits inside the notch cut into the bar's
-       top edge (.gnav-pill::before, above), lifted so roughly its top
-       half pokes above the bar itself. Absolutely positioned so it's
-       centered regardless of how the two side-tab groups wrap. */
+    /* Raised center "+" — floats above the pill's own top edge,
+       lifted so roughly its top half pokes above the bar itself.
+       Absolutely positioned so it's centered regardless of how the
+       two side-tab groups wrap. */
     .gnav-add {
       position: absolute;
       left: 50%;
