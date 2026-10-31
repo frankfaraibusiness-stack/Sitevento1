@@ -328,10 +328,12 @@ export function previewStageKindFor(position: WidgetPosition): PreviewStageKind 
 // it to show up everywhere (the /widgets picker page, the designer,
 // the admin status table) with zero other changes.
 //
-// support-chat is the first one rebuilt. It's a full-screen (see
-// 'scroll-end'... actually rendered as a manual/fixed full takeover by
-// its own component, not auto-mounted inline) AI support chat. Unlike
-// the old version, every site's chat is grounded in what THAT site is
+// support-chat is the first one rebuilt. It's an AI support chat that
+// opens as a floating bottom-right card (never a full-screen
+// takeover) — fully self-positioned by its own component
+// (SupportChatWidget.tsx), same "always full-viewport, transparent
+// frame" approach as EmailCaptureWidget. Unlike the old version,
+// every site's chat is grounded in what THAT site is
 // actually about via `siteContext` below — a free-text field the
 // owner fills in once ("We sell handmade candles", "Personal blog
 // about hiking", "B2B SaaS for dentists") — so the same widget code
@@ -344,14 +346,14 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
   {
     id: 'support-chat',
     name: 'Support Chat',
-    description: 'A full-screen AI chat assistant that answers visitor questions using what you tell it about your site.',
-    // Floating launcher bottom-right, opening into a full-screen
-    // takeover — not one of the simpler bar/corner positions, since
-    // the open state is a full app, not a small embedded element.
-    // 'corner-bottom-right' drives the closed-state FAB placement;
-    // the widget's own component renders the full-screen overlay
-    // itself once opened (same pattern note as WidgetPosition's doc
-    // comment for 'scroll-end').
+    description: 'A floating AI chat assistant that answers visitor questions using what you tell it about your site.',
+    // Floating launcher bottom-right, opening into a floating card
+    // anchored to that same corner — never a full-screen takeover.
+    // 'corner-bottom-right' drives this widget's immediate mount (same
+    // as any other corner widget); its own component then renders
+    // entirely self-positioned (launcher bubble, then card) rather
+    // than relying on sitevento.js to size a collapsed vs. open state
+    // — see ALWAYS_FULLSCREEN_WIDGET_IDS in sitevento.js.
     position: 'corner-bottom-right',
     configFields: [
       {
