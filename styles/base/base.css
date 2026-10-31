@@ -23,7 +23,7 @@
        background on the stripped-down marketing hero + header) —
        sampled directly from the reference design: a soft warm
        off-white, not pure white and not the bright lime field. */
-    --app-bg: #faf9f0;
+    --app-bg: #e3ef4f;
     /* Header's own background on top of --app-bg: same hue family as
        --app-bg but with a faint lime tint, matching the reference's
        hamburger-pill tone — "blends in" rather than floating as a
