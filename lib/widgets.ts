@@ -31,6 +31,9 @@
 // it inside a sandboxed iframe (see public/sitevento.js), never eval()s
 // or otherwise executes it in the host page's own context.
 
+import type { PlanId } from './plans';
+import { planAtLeast } from './limits';
+
 export type WidgetType = 'iframe';
 
 export interface WidgetDoc {
@@ -174,6 +177,12 @@ export interface WidgetFieldDef {
   help?: string;
   options?: WidgetFieldOption[];
   maxLength?: number;
+  // 'number' fields only — inclusive bounds enforced both in the
+  // designer input (min/max attrs) and server-side wherever the
+  // config is consumed, so a value can't be saved or read as
+  // something the UI itself would never have allowed.
+  min?: number;
+  max?: number;
 }
 
 // ── Spin-reward prize table ──────────────────────────────────────────
@@ -371,6 +380,100 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
       },
     ],
   },
+  {
+    // Visit-based triggering (config.triggerType === 'visits') is a
+    // paid-plan feature — Free stays on the time-based trigger only.
+    // Checked both client-side (WidgetDesigner.tsx hides the option
+    // and EmailCaptureWidget.tsx falls back to time-based if a stale
+    // config somehow still has 'visits' saved on a now-downgraded
+    // account) and server-side (app/api/email-capture/route.ts has no
+    // enforcement to do here since the trigger never touches the
+    // server — it's a pure client-side localStorage visit counter,
+    // same as the existing dismissed-flag — but the DESIGNER save
+    // path still re-validates this so a raw API call can't persist
+    // 'visits' onto a Free site's config either).
+    id: 'email-capture',
+    name: 'Email Capture',
+    description: 'A time-driven popup that asks visitors for their email, with no manual trigger needed.',
+    // Opens itself on a timer and is dismissed for good (per visitor)
+    // once closed or submitted — see EmailCaptureWidget.tsx's header
+    // comment. 'scroll-end' is the closest existing position (a
+    // full-takeover-style popup rather than an always-present bar or
+    // corner element), even though the actual trigger here is time,
+    // not scroll position — there's no dedicated WidgetPosition for
+    // "appears once on a timer" yet, and this is visually/structurally
+    // the same kind of moment (centered overlay, not a persistent
+    // page element) as the other scroll-end widget.
+    position: 'scroll-end',
+    configFields: [
+      {
+        key: 'heading',
+        label: 'Heading',
+        type: 'text',
+        default: "Don't miss what's next",
+        maxLength: 60,
+        help: 'The bold line at the top of the popup.',
+      },
+      {
+        key: 'subtext',
+        label: 'Subtext',
+        type: 'textarea',
+        default: "Drop your email and we'll send new posts straight to your inbox — no spam, unsubscribe any time.",
+        maxLength: 200,
+        help: 'One or two short sentences under the heading explaining what signing up gets them.',
+      },
+      {
+        key: 'buttonLabel',
+        label: 'Button text',
+        type: 'text',
+        default: 'Notify me',
+        maxLength: 30,
+      },
+      {
+        // Which signal opens the popup. 'time' (the original and only
+        // behavior) is on every plan; 'visits' is paid-plan-only — see
+        // EMAIL_CAPTURE_MIN_PAID_PLAN below and WidgetDesigner.tsx's
+        // handling of this field, which filters the 'visits' option
+        // out of the dropdown entirely for Free (same pattern as
+        // UNIVERSAL_CONFIG_FIELDS' brandMode/'logo' gating) rather than
+        // letting it be picked and then silently not working.
+        key: 'triggerType',
+        label: 'Show popup based on',
+        type: 'select',
+        default: 'time',
+        options: [
+          { value: 'time', label: 'Time on page' },
+          { value: 'visits', label: 'Return visits (premium)' },
+        ],
+        help: 'Choose whether the popup opens after a delay, or once a visitor has been to the site a number of times.',
+      },
+      {
+        key: 'delaySeconds',
+        label: 'Delay before showing (seconds)',
+        type: 'number',
+        default: 4,
+        min: 1,
+        max: 3600,
+        help: 'How long a visitor is on the page before the popup appears (1 second to 1 hour). Only used when "Show popup based on" is set to Time on page. It only ever shows once per visitor — see "Never shows twice" below.',
+      },
+      {
+        key: 'visitThreshold',
+        label: 'Show on visit number',
+        type: 'number',
+        default: 3,
+        min: 2,
+        max: 100,
+        help: 'The popup opens the moment a visitor reaches this many visits to the site (their first visit counts as 1). Only used when "Show popup based on" is set to Return visits. Premium plans only.',
+      },
+      {
+        key: 'accentColor',
+        label: 'Accent colour',
+        type: 'color',
+        default: '#a3e635',
+        help: "Matches your site's colors: the badge, button, and input focus ring. Defaults to Sitevento's signature lime.",
+      },
+    ],
+  },
 ];
 
 export function getWidgetCatalogEntry(id: string): WidgetCatalogEntry | undefined {
@@ -461,6 +564,53 @@ export const UNIVERSAL_CONFIG_FIELDS: WidgetFieldDef[] = [
   { key: 'brandText', label: 'Custom text', type: 'text', default: '', maxLength: 60 },
   { key: 'brandLogoUrl', label: 'Custom logo', type: 'url', default: '' },
 ];
+
+// ── Email Capture: visit-based trigger plan gate ─────────────────────
+//
+// Single source of truth for which plans may use triggerType:'visits'
+// on the email-capture widget — mirrors Plan.limits.customLogoBranding's
+// role for brandMode:'logo' (lib/plans.ts), except this isn't a
+// per-plan boolean on PlanLimits because it's specific to one widget's
+// one config field rather than an account-wide capability, so it lives
+// here next to the widget definition instead.
+export const EMAIL_CAPTURE_VISIT_TRIGGER_MIN_PLAN: PlanId = 'starter';
+
+export function canUseVisitBasedTrigger(planId: PlanId): boolean {
+  return planAtLeast(planId, EMAIL_CAPTURE_VISIT_TRIGGER_MIN_PLAN);
+}
+
+// Clamp a config's delaySeconds/visitThreshold to the catalog's
+// declared min/max, and silently fall a Free account's triggerType
+// back to 'time' if it's somehow 'visits' (downgrade, direct API
+// write, stale data) — called wherever a saved email-capture config is
+// actually consumed (the designer's save path, and the live widget
+// route) rather than trusted as-is from Firestore.
+export function sanitizeEmailCaptureConfig(
+  config: Record<string, unknown>,
+  planId: PlanId
+): Record<string, unknown> {
+  const entry = getWidgetCatalogEntry('email-capture');
+  if (!entry) return config;
+  const out = { ...config };
+
+  const delayField = entry.configFields.find((f) => f.key === 'delaySeconds');
+  if (delayField) {
+    const raw = typeof out.delaySeconds === 'number' ? out.delaySeconds : Number(delayField.default);
+    out.delaySeconds = Math.min(Math.max(raw, delayField.min ?? raw), delayField.max ?? raw);
+  }
+
+  const visitField = entry.configFields.find((f) => f.key === 'visitThreshold');
+  if (visitField) {
+    const raw = typeof out.visitThreshold === 'number' ? out.visitThreshold : Number(visitField.default);
+    out.visitThreshold = Math.min(Math.max(raw, visitField.min ?? raw), visitField.max ?? raw);
+  }
+
+  if (out.triggerType === 'visits' && !canUseVisitBasedTrigger(planId)) {
+    out.triggerType = 'time';
+  }
+
+  return out;
+}
 
 export function defaultConfigFor(id: string): Record<string, unknown> {
   const entry = getWidgetCatalogEntry(id);
