@@ -114,22 +114,56 @@ function HeroMascotStage() {
   );
 }
 
-// Hero used to be a two-column section: headline/subcopy/CTAs on the
-// left, the animated mascot on the right. The left column (eyebrow,
-// "Your website. Your rules." headline, subcopy, Connect site / See
-// how it works buttons, trust row, side decor) is removed entirely —
-// on mobile it read as generic/AI-templated, so rather than patch it
-// again it's gone on every breakpoint. What's left is just the mascot,
-// now its own standalone section (.hero-mascot-section in
-// marketing-hero.css) rather than one half of a two-column layout, so
-// it isn't carrying leftover column/grid styling meant for a column
-// that no longer exists. The Connect-site / How-it-works entry points
-// still live on: the Pricing section's buttons and the header's own
-// CTA (passed through from MarketingPage) cover that job now.
-export function Hero() {
+// Hero, rebuilt: a two-column section on desktop (headline/subcopy/
+// two CTAs on the left, the animated mascot stage on the right,
+// matched to the left column's real height instead of imposing its
+// own) and a centered, stacked layout on mobile (mascot first as the
+// attention-grabber, headline/copy/CTAs below it, full-width stacked
+// buttons). Headline names what the product actually does — one tag,
+// full visibility and control over the site — rather than generic
+// "grow your business" marketing copy. Both CTAs are real entry
+// points: Connect site opens the same auth/connect flow as every
+// other CTA on the page (onConnectClick, threaded through from
+// MarketingPage → AppRoot), How it works opens HowItWorksModal, the
+// existing full-screen explainer that previously had no trigger.
+interface HeroProps {
+  onConnectClick: () => void;
+  onHowItWorksClick: () => void;
+}
+
+export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
   return (
-    <section className="hero-mascot-section">
-      <HeroMascotStage />
+    <section className="hero-section">
+      <div className="hero-inner">
+        <div className="hero-copy">
+          <p className="hero-eyebrow">One tag. Total control.</p>
+          <h1 className="hero-title">
+            See your site.
+            <br />
+            Run your site.
+            <br />
+            From one tab.
+          </h1>
+          <p className="hero-subtitle">
+            Paste a single tag into your site&apos;s head and sitevento turns
+            into live mission control: every visitor, click, and conversion
+            streaming in, with widgets, alerts, and access controls you can
+            flip on without touching code again.
+          </p>
+          <div className="hero-cta-row">
+            <button type="button" className="hero-cta hero-cta-primary" onClick={onConnectClick}>
+              Connect your site
+            </button>
+            <button type="button" className="hero-cta hero-cta-secondary" onClick={onHowItWorksClick}>
+              See how it works
+            </button>
+          </div>
+        </div>
+
+        <div className="hero-stage">
+          <HeroMascotStage />
+        </div>
+      </div>
     </section>
   );
 }
