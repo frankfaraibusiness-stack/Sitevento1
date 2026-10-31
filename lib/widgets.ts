@@ -476,6 +476,73 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
       },
     ],
   },
+  {
+    // A slim bar pinned to the very top of the page — heading/message
+    // on the left, a CTA button on the right, closeable (and then
+    // permanently dismissed for that visitor, same per-site-keyed
+    // localStorage pattern as every other widget's dismissal — see
+    // AnnouncementBarWidget.tsx). 'fixed-top' is the one WidgetPosition
+    // that's actually built for this (sticky bar at the top of the
+    // viewport), unlike email-capture's 'scroll-end' borrow — so this
+    // is the first widget to use it since sitevento.js's
+    // AUTO_MOUNT_CONTAINER_IDS/mountAutoStyles added the container for
+    // it. See AnnouncementBarWidget.tsx's header comment for the
+    // self-sizing iframe approach (ANNOUNCEMENT_BAR_WIDGET_ID in
+    // sitevento.js) — a slim bar needs a real but small fixed height,
+    // not the 480px fallback every other non-fullscreen widget gets,
+    // and not a full-viewport frame either (that's for overlay/corner
+    // widgets that need to cover the whole screen while collapsed).
+    id: 'announcement-bar',
+    name: 'Announcement Bar',
+    description: 'A bar across the top of your site with a message and a call-to-action button — great for sales, launches, or updates.',
+    position: 'fixed-top',
+    configFields: [
+      {
+        key: 'heading',
+        label: 'Message',
+        type: 'text',
+        default: 'Free shipping on orders over $50 — this week only.',
+        maxLength: 140,
+        help: 'The text shown on the left side of the bar.',
+      },
+      {
+        key: 'ctaLabel',
+        label: 'Button text',
+        type: 'text',
+        default: 'Shop now',
+        maxLength: 30,
+        help: 'Leave blank to show the bar as a plain message with no button.',
+      },
+      {
+        key: 'ctaUrl',
+        label: 'Button link',
+        type: 'url',
+        default: '',
+        help: 'Where the button sends visitors. Opens in the same tab.',
+      },
+      {
+        key: 'backgroundColor',
+        label: 'Background colour',
+        type: 'color',
+        default: '#1a2e05',
+        help: "The bar's background. Defaults to a near-black so light text reads well on it.",
+      },
+      {
+        key: 'textColor',
+        label: 'Text colour',
+        type: 'color',
+        default: '#f4ffe8',
+        help: 'The message, button text, and close icon all use this colour.',
+      },
+      {
+        key: 'buttonColor',
+        label: 'Button colour',
+        type: 'color',
+        default: '#a3e635',
+        help: "The CTA button's own background — kept separate from the bar's background/text so it can stand out against either.",
+      },
+    ],
+  },
 ];
 
 export function getWidgetCatalogEntry(id: string): WidgetCatalogEntry | undefined {
