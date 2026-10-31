@@ -75,12 +75,18 @@
     display: block;
   }
 
+  /* Was var(--cream-deep) (#efe7d3) — a flat, slightly dingy beige/
+     brown that read as "dirty" rather than intentional. A dark
+     ink-to-charcoal gradient disc with a crisp off-white initial on
+     top reads as a deliberate premium avatar placeholder instead of
+     a muddy neutral, and still has strong contrast sitting on the
+     lime pill. */
   .gnav-avatar-initial {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--cream-deep);
-    color: var(--ink);
+    background: linear-gradient(145deg, #2b2f27, #14160f);
+    color: #f6f7f0;
     font-weight: 700;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
@@ -137,7 +143,12 @@
       background: var(--app-bg);
       backdrop-filter: blur(16px) saturate(170%);
       -webkit-backdrop-filter: blur(16px) saturate(170%);
-      border: 1.5px solid var(--line);
+      /* Was var(--line) — a near-white #e8e4de border that all but
+         disappeared against the lime page background. A dark edge
+         (same --ink-family tone as the icons/text) actually reads as
+         a defined pill shape sitting on top of the lime instead of
+         bleeding into it. */
+      border: 1.5px solid rgba(26, 31, 10, 0.22);
       border-radius: 26px;
       box-shadow: 0 8px 28px rgba(34, 32, 28, 0.18);
       position: relative;
@@ -156,14 +167,21 @@
       flex: 1 1 0;
     }
 
-    /* Each of the four side tabs gets its own accent color (the
-       --dash-* tone tokens already used across the dashboard), set
-       once here as a local --tab-tone var and referenced by the
-       label, icon stroke and active indicator below — "nice each
-       option, with its own css and uniqueness" rather than one
-       shared lime treatment for all four. No full-card fill on the
-       active tab anymore: just a short pill-shaped line under the
-       icon, colored to match that tab's own tone. */
+    /* Each of the four side tabs gets its own accent color, set once
+       here as a local --tab-tone var and referenced by the label,
+       icon stroke and active indicator below — "nice each option,
+       with its own css and uniqueness" rather than one shared
+       treatment for all four. No full-card fill on the active tab:
+       just a short pill-shaped line under the icon, colored to match
+       that tab's own tone.
+
+       These are deliberately NOT the --dash-* tokens used elsewhere
+       (those are soft pastels tuned to sit on white/cream cards) —
+       on the lime pill background they read as washed-out and barely
+       visible, especially the green. Picked instead for contrast
+       against lime specifically: saturated, darker-value tones (blue,
+       magenta/pink, deep purple, burnt orange) that stay legible both
+       as a small indicator line and as active-state text/icon color. */
     .gnav-item {
       flex-direction: column;
       gap: 3px;
@@ -182,10 +200,10 @@
       transition: transform 160ms ease, opacity 160ms ease, color 160ms ease;
     }
 
-    .gnav-group-left .gnav-item:nth-child(1) { --tab-tone: var(--dash-green); --tab-tone-ink: var(--dash-green-ink); }
-    .gnav-group-left .gnav-item:nth-child(2) { --tab-tone: var(--dash-blue); --tab-tone-ink: var(--dash-blue-ink); }
-    .gnav-group-right .gnav-item:nth-child(1) { --tab-tone: var(--dash-purple); --tab-tone-ink: var(--dash-purple-ink); }
-    .gnav-group-right .gnav-item:nth-child(2) { --tab-tone: var(--dash-orange); --tab-tone-ink: var(--dash-orange-ink); }
+    .gnav-group-left .gnav-item:nth-child(1) { --tab-tone: #1f6fd1; --tab-tone-ink: #0d3f80; }
+    .gnav-group-left .gnav-item:nth-child(2) { --tab-tone: #d1267a; --tab-tone-ink: #8c1152; }
+    .gnav-group-right .gnav-item:nth-child(1) { --tab-tone: #6a2cd1; --tab-tone-ink: #45198c; }
+    .gnav-group-right .gnav-item:nth-child(2) { --tab-tone: #c2410c; --tab-tone-ink: #822a08; }
 
     .gnav-item-icon {
       width: 21px;
