@@ -174,11 +174,17 @@
 .wlt-col-wide { min-width: 0; }
 
 .wlt-card {
-  background: #fff;
-  border: 1px solid #e6eae2;
+  /* Was a flat hardcoded #fff / #e6eae2 border — now the shared
+     glass tokens (theme-tokens.css) so this card follows --app-bg
+     like every other card in the app instead of staying pinned to
+     the old lime-page white. */
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-edge);
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 2px 6px rgba(26, 35, 19, 0.03);
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
   animation: wltFadeUp 0.4s ease both;
 }
 
@@ -190,20 +196,26 @@
 .wlt-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
 
 .wlt-preset {
+  /* Was hardcoded #e6eae2 / #fafbf8 — now the shared glass edge/
+     surface tokens so this chip follows --app-bg. */
   padding: 11px 6px;
   border-radius: 12px;
-  border: 1.5px solid #e6eae2;
-  background: #fafbf8;
+  border: 1.5px solid var(--surface-edge);
+  background: var(--surface-glass);
   color: #30372b;
   font: 720 14px/1 Inter, sans-serif;
   cursor: pointer;
   transition: border-color 0.14s ease, background 0.14s ease, transform 0.1s ease;
 }
-.wlt-preset:hover { border-color: #cdd9bc; background: #f3f7eb; }
+.wlt-preset:hover { border-color: var(--surface-edge-strong); background: var(--surface-glass-strong); }
 .wlt-preset:active { transform: scale(0.97); }
 .wlt-preset.is-active {
+  /* Active/selected state keeps its own accent hue (lime brand
+     color — this is a deliberate highlight, not a generic card
+     surface) but the light wash behind it is now the shared
+     success-style tint mix instead of a one-off hardcoded pastel. */
   border-color: #b8e843;
-  background: #eaf7d4;
+  background: var(--dash-green-surface);
   color: #3a5416;
   box-shadow: 0 0 0 3px rgba(184, 232, 67, 0.22);
 }
@@ -212,14 +224,14 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  border: 1.5px solid #e6eae2;
+  border: 1.5px solid var(--surface-edge);
   border-radius: 12px;
   padding: 0 14px;
   margin-bottom: 14px;
-  background: #fafbf8;
+  background: var(--surface-glass);
   transition: border-color 0.14s ease;
 }
-.wlt-custom-amount:focus-within { border-color: #b8e843; background: #fff; }
+.wlt-custom-amount:focus-within { border-color: #b8e843; background: var(--surface-glass-solid); }
 .wlt-custom-prefix { font-size: 15px; font-weight: 700; color: #7e8678; }
 .wlt-custom-amount input {
   flex: 1;
@@ -237,9 +249,9 @@
 
 .wlt-form-error {
   font-size: 12.5px;
-  color: #b3461f;
-  background: #fdf1ea;
-  border: 1px solid #f3d9bf;
+  color: var(--danger-ink);
+  background: var(--danger-surface);
+  border: 1px solid var(--danger-border);
   border-radius: 10px;
   padding: 8px 12px;
   margin: 0 0 12px;
@@ -360,9 +372,12 @@
   justify-content: center;
 }
 .wlt-ledger-icon svg { width: 17px; height: 17px; }
-.wlt-ledger-icon-deposit { background: #eaf7df; color: #4b8122; }
-.wlt-ledger-icon-overage-debit { background: #fff0e4; color: #c36a20; }
-.wlt-ledger-icon-adjustment { background: #e8f3ff; color: #2877bc; }
+/* Was hardcoded per-type pastel hex — now the shared --dash-*
+   surface/ink tokens, so each ledger icon's light wash follows
+   --app-bg instead of staying pinned to the old lime-page colors. */
+.wlt-ledger-icon-deposit { background: var(--dash-green-surface); color: var(--dash-green-ink); }
+.wlt-ledger-icon-overage-debit { background: var(--dash-orange-surface); color: var(--dash-orange-ink); }
+.wlt-ledger-icon-adjustment { background: var(--dash-blue-surface); color: var(--dash-blue-ink); }
 
 .wlt-ledger-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .wlt-ledger-label { font-size: 13.5px; font-weight: 640; color: #262c22; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -398,14 +413,14 @@
   margin-top: 14px;
   padding: 11px;
   border-radius: 11px;
-  border: 1px solid #e6eae2;
-  background: #fafbf8;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-glass);
   color: #4e722b;
   font: 680 13px/1 Inter, sans-serif;
   cursor: pointer;
   transition: background 0.14s ease;
 }
-.wlt-load-more:hover:not(:disabled) { background: #f1f7e8; }
+.wlt-load-more:hover:not(:disabled) { background: var(--surface-glass-strong); }
 .wlt-load-more:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Toast ──────────────────────────────────────────────────── */

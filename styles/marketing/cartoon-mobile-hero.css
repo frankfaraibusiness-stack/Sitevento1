@@ -29,12 +29,7 @@
     z-index: 9999;
     display: grid;
     place-items: center;
-    /* Was a hardcoded pale lime (#EAF7C9) that didn't match the real
-       landing-page background — now the same var(--app-bg) the whole
-       rest of the app (body, header, every marketing section) uses,
-       so the loader reads as part of the page instead of a
-       differently-tinted screen flashed in front of it. */
-    background: var(--app-bg);
+    background: #EAF7C9;
     overflow: hidden;
     animation: loaderExit 0.6s ease 5s forwards;
   }
@@ -196,6 +191,7 @@
      ============================================================ */
   .hero {
     --lime: #C6F24E;
+    --lime-bg: #EAF7C9;
     --ink: #12100A;
     --ink-soft: #4A4732;
     --cream: #FFFDF5;
@@ -204,12 +200,7 @@
     isolation: isolate;
     overflow: hidden;
     padding: 22px 22px 52px;
-    /* Was its own local --lime-bg (#EAF7C9) — a different, paler tone
-       than the rest of the landing page's var(--app-bg). Now the hero
-       shares that same token, so its background IS the page background
-       (no visible seam where the hero section ends and the next one
-       begins), and that's the color the loader above now matches too. */
-    background: var(--app-bg);
+    background: var(--lime-bg);
     color: var(--ink);
   }
 

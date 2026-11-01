@@ -8,6 +8,7 @@
  */
 
 @import "../styles/base/base.css";
+@import "../styles/base/theme-tokens.css";
 @import "../styles/dashboard/dashboard.css";
 @import "../styles/dashboard/dashboard-premium.css";
 @import "../styles/dashboard/daily-limit-card.css";

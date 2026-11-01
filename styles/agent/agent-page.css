@@ -42,14 +42,15 @@
 }
 
 .agt-back {
+  /* Was var(--bg)/var(--line) (flat white, fixed border) — now the
+     shared glass tokens so this pill follows --app-bg. */
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 9px 14px 9px 10px;
   margin-bottom: 18px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg);
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-glass);
   color: var(--ink);
   font-family: -apple-system, sans-serif;
   font-size: 13.5px;
@@ -58,7 +59,7 @@
   transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 .agt-back svg { width: 16px; height: 16px; flex-shrink: 0; }
-.agt-back:hover { background: #fff; box-shadow: 0 2px 0 rgba(34, 32, 28, 0.12); transform: translateY(-1px); }
+.agt-back:hover { background: var(--surface-glass-strong); box-shadow: 0 2px 0 rgba(34, 32, 28, 0.12); transform: translateY(-1px); }
 .agt-back:active { transform: translateY(0) scale(0.98); box-shadow: none; }
 
 /* ── Page head — the one "hero" moment on the page: a dark card with a
@@ -169,11 +170,17 @@ p.agt-row-note {
 }
 
 .agt-group {
-  background: var(--bg);
-  border: 1px solid var(--line);
+  /* Was var(--bg) (flat #ffffff) + var(--line) (fixed #e8e4de) —
+     a hardcoded card unrelated to the page background. Now the
+     shared glass tokens so this card follows --app-bg like every
+     other card in the app. */
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-edge);
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 1px 0 rgba(34, 32, 28, 0.04);
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
 }
 
 .agt-row {
@@ -213,12 +220,16 @@ p.agt-row-note {
 }
 
 .agt-cost-pill {
+  /* Was hardcoded #efeaff / #6d3df0 — now the same shared purple
+     accent tokens as every other purple badge in the app, so this
+     re-tints with --app-bg instead of staying its own one-off
+     purple. */
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #efeaff;
-  color: #6d3df0;
+  background: var(--dash-purple-surface);
+  color: var(--dash-purple-ink);
   font-family: -apple-system, sans-serif;
   font-size: 10.5px;
   font-weight: 700;

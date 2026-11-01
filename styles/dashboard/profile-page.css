@@ -195,7 +195,7 @@
 .pfx-input {
   flex: 1;
   min-width: 0;
-  background: #ffffff;
+  background: var(--surface-glass-solid);
   border: 1.5px solid var(--dnx-glass-border-strong);
   border-radius: 12px;
   padding: 10px 13px;
@@ -518,7 +518,7 @@
 }
 .pfx-sheet {
   width: 100%; max-width: 420px;
-  background: #ffffff;
+  background: var(--surface-glass-solid);
   border: 1px solid var(--surface-border); border-bottom: none;
   border-radius: 20px 20px 0 0;
   padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));

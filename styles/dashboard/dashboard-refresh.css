@@ -5,14 +5,20 @@
    ============================================================ */
 
 .dnx-wrap {
-  --dnx-glass: #ffffff;
-  --dnx-glass-strong: #f7f9f5;
-  --dnx-glass-border: #e6e9e2;
-  --dnx-glass-border-strong: #d8ddd2;
-  --dnx-ink-soft: #697166;
-  --dnx-ink-faint: #858d81;
-  --dnx-shadow: 0 2px 8px rgba(25, 35, 17, .035), 0 1px 2px rgba(25, 35, 17, .025);
-  --dnx-shadow-lg: 0 12px 28px rgba(25, 35, 17, .08), 0 2px 5px rgba(25, 35, 17, .035);
+  /* Was hardcoded (#ffffff / #e6e9e2 / etc.) — now aliases the
+     global tokens in styles/base/theme-tokens.css so dashboard
+     cards follow --app-bg instead of staying pinned to a flat
+     white that stopped matching once the page background changed.
+     See theme-tokens.css to retheme every card surface/edge at
+     once. */
+  --dnx-glass: var(--surface-glass);
+  --dnx-glass-strong: var(--surface-glass-strong);
+  --dnx-glass-border: var(--surface-edge);
+  --dnx-glass-border-strong: var(--surface-edge-strong);
+  --dnx-ink-soft: var(--surface-ink-soft);
+  --dnx-ink-faint: var(--surface-ink-faint);
+  --dnx-shadow: var(--surface-shadow);
+  --dnx-shadow-lg: var(--surface-shadow-lg);
   --dnx-radius: 18px;
   --dnx-radius-sm: 14px;
   max-width: 1380px;
@@ -35,13 +41,15 @@
 .dnx-connect-cta:hover { background: #39452a; box-shadow: 0 5px 12px rgba(20, 25, 16, .12); transform: translateY(-1px); }
 .dnx-connect-cta:active { transform: scale(.98); }
 
-.dnx-switcher-trigger { background: #fff; border: 1px solid #e4e8df; box-shadow: 0 1px 2px rgba(25,35,17,.03); backdrop-filter: none; -webkit-backdrop-filter: none; padding: 6px 12px 6px 6px; }
-.dnx-switcher-trigger.is-switchable:hover { box-shadow: 0 5px 14px rgba(25,35,17,.07); }
+.dnx-switcher-trigger { background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); padding: 6px 12px 6px 6px; }
+.dnx-switcher-trigger.is-switchable:hover { box-shadow: var(--dnx-shadow-lg); }
 .dnx-switcher-avatar { background: #eaf5dc; color: #42651d; border: 1px solid #dcebc7; }
 .dnx-switcher-name { font-size: 13px; color: #30372b; }
 .dnx-switcher-status { font-size: 10px; letter-spacing: .035em; }
 .dnx-switcher-dot { animation: none; }
-.dnx-switcher-menu { background: #fff; border: 1px solid #e5e8e0; box-shadow: 0 18px 50px rgba(27,34,20,.14); }
+/* Dropdown menu: opaque so page content never shows through list
+   items the user is about to click. */
+.dnx-switcher-menu { background: var(--surface-glass-solid); border: 1px solid var(--dnx-glass-border); box-shadow: var(--dnx-shadow-lg); }
 .dnx-switcher-opt.is-selected { background: #f1f7e8; }
 .dnx-switcher-add { background: #252b20; }
 
@@ -49,52 +57,58 @@
 .dnx-section-head h2, .dnx-sites-head h3, .dnx-qt-head h3 { color: #262c22; font-family: inherit; font-size: 16px; font-weight: 760; letter-spacing: -.025em; }
 .dnx-section-head h2 { font-size: 17px; }
 .dnx-stat-grid { gap: 13px; margin-bottom: 18px; }
-.dnx-stat-tile { min-width: 0; gap: 9px; padding: 17px; background: #fff; border: 1px solid #e7eae4; border-radius: 17px; box-shadow: 0 2px 5px rgba(26,35,19,.025); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.dnx-stat-tile { min-width: 0; gap: 9px; padding: 17px; background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); border-radius: 17px; box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); }
 .dnx-stat-tile::after { display: none; }
-.dnx-stat-tile:hover { transform: translateY(-2px); border-color: #dce2d5; box-shadow: 0 9px 20px rgba(26,35,19,.06); }
+.dnx-stat-tile:hover { transform: translateY(-2px); border-color: var(--dnx-glass-border-strong); box-shadow: var(--dnx-shadow-lg); }
 .dnx-stat-icon { width: 36px; height: 36px; border-radius: 11px; }
-.dnx-tone-green .dnx-stat-icon, .dnx-tone-green .dnx-qt-card-icon { background: #eaf7df; color: #4b8122; }
-.dnx-tone-purple .dnx-stat-icon, .dnx-tone-purple .dnx-qt-card-icon { background: #f0eaff; color: #7652d6; }
-.dnx-tone-blue .dnx-stat-icon, .dnx-tone-blue .dnx-qt-card-icon { background: #e8f3ff; color: #2877bc; }
-.dnx-tone-orange .dnx-stat-icon, .dnx-tone-orange .dnx-qt-card-icon { background: #fff0e4; color: #c36a20; }
+/* Was hardcoded pastel hex per tone (#eaf7df, #f0eaff, ...) — now
+   the shared --dash-*-surface tokens (theme-tokens.css), a
+   color-mix of each accent hue with --app-bg, so these icon tints
+   re-derive from the page background instead of staying pinned to
+   colors picked for the old lime page. The hue itself (icon color)
+   is unchanged — only the light wash behind it now follows --app-bg. */
+.dnx-tone-green .dnx-stat-icon, .dnx-tone-green .dnx-qt-card-icon { background: var(--dash-green-surface); color: var(--dash-green-ink); }
+.dnx-tone-purple .dnx-stat-icon, .dnx-tone-purple .dnx-qt-card-icon { background: var(--dash-purple-surface); color: var(--dash-purple-ink); }
+.dnx-tone-blue .dnx-stat-icon, .dnx-tone-blue .dnx-qt-card-icon { background: var(--dash-blue-surface); color: var(--dash-blue-ink); }
+.dnx-tone-orange .dnx-stat-icon, .dnx-tone-orange .dnx-qt-card-icon { background: var(--dash-orange-surface); color: var(--dash-orange-ink); }
 .dnx-stat-num { color: #20251d; font-size: clamp(25px, 2vw, 31px); letter-spacing: -.045em; }
 .dnx-stat-label { color: #333a2e; font-size: 12px; font-weight: 700; }
 .dnx-stat-sub { color: #899083; font-size: 11px; font-weight: 500; }
 .dnx-spark { opacity: .65; }
 
-.dnx-usage-strip { gap: 18px; margin-bottom: 28px; padding: 17px 18px; background: #fff; border: 1px solid #e5e9df; border-radius: 17px; box-shadow: var(--dnx-shadow); }
+.dnx-usage-strip { gap: 18px; margin-bottom: 28px; padding: 17px 18px; background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); border-radius: 17px; box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); }
 .dnx-usage-strip.is-at-limit { background: #fffaf4; border-color: #f3d9bf; }
 .dnx-usage-plan-pill { background: #edf6df; color: #4e722b; font-size: 10px; letter-spacing: .06em; }
 .dnx-usage-count { color: #6d7568; font-size: 12px; font-weight: 600; }
 .dnx-usage-bar-track { background: #edf0e9; height: 7px; }
 .dnx-usage-bar-fill { background: #a3cf55; }
-.dnx-usage-cta { background: #f8faf5; border: 1px solid #e5e9df; box-shadow: none; border-radius: 12px; }
-.dnx-usage-cta:hover { box-shadow: 0 4px 12px rgba(26,35,19,.06); }
+.dnx-usage-cta { background: var(--dnx-glass-strong); border: 1px solid var(--dnx-glass-border); box-shadow: none; border-radius: 12px; }
+.dnx-usage-cta:hover { box-shadow: var(--dnx-shadow); }
 .dnx-usage-cta svg { color: #5a762f; }
 .dnx-usage-cta-text strong { font-size: 12.5px; }
 .dnx-usage-cta-text span { color: #7e8678; }
 
 .dnx-sites-root { margin-bottom: 30px; }
 .dnx-sites-head { margin-bottom: 13px; }
-.dnx-sites-add-btn { color: #4f672f; border-color: #dce4d1; background: #fff; }
-.dnx-sites-add-btn:hover { background: #f5f9ef; }
+.dnx-sites-add-btn { color: #4f672f; border-color: var(--dnx-glass-border); background: var(--dnx-glass); }
+.dnx-sites-add-btn:hover { background: var(--dnx-glass-strong); }
 .dnx-sites-scroller { gap: 12px; padding: 2px 2px 9px; }
 .dnx-sites-scroller::-webkit-scrollbar-thumb { background: #dfe5d8; }
-.dnx-site-card { background: #fff; border: 1px solid #e5e9e0; border-radius: 16px; box-shadow: 0 2px 5px rgba(26,35,19,.025); }
-.dnx-site-card.is-active { border-color: #b9d59a; background: #fbfdf8; }
-.dnx-site-card:hover { box-shadow: 0 8px 18px rgba(26,35,19,.055); }
+.dnx-site-card { background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); border-radius: 16px; box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); }
+.dnx-site-card.is-active { border-color: #b9d59a; background: var(--dnx-glass-strong); }
+.dnx-site-card:hover { box-shadow: var(--dnx-shadow-lg); }
 .dnx-site-card-icon { background: #f0f5e8; color: #587b31; }
 .dnx-site-card-url { color: #81897b; }
 .dnx-site-card-manage { background: #252b20; border-radius: 10px; }
-.dnx-site-card-disconnect { border-color: #e6e9e2; color: #838b7d; }
-.dnx-site-card-add { border-color: #d6dfcc; color: #5a713a; }
-.dnx-site-card-add:hover { background: #f6f9f2; }
+.dnx-site-card-disconnect { border-color: var(--dnx-glass-border); color: #838b7d; }
+.dnx-site-card-add { border-color: var(--dnx-glass-border-strong); color: #5a713a; }
+.dnx-site-card-add:hover { background: var(--dnx-glass-strong); }
 
 .dnx-qt-section { margin: 26px 0 28px; }
 .dnx-qt-head { margin-bottom: 13px; }
 .dnx-qt-grid { gap: 12px; margin-bottom: 0; }
-.dnx-qt-card { min-height: 145px; gap: 13px; padding: 16px; background: #fff; border: 1px solid #e6eae2; border-radius: 16px; box-shadow: 0 2px 5px rgba(26,35,19,.025); }
-.dnx-qt-card:hover { border-color: #d7e0cd; box-shadow: 0 9px 20px rgba(26,35,19,.06); }
+.dnx-qt-card { min-height: 145px; gap: 13px; padding: 16px; background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); border-radius: 16px; box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); }
+.dnx-qt-card:hover { border-color: var(--dnx-glass-border-strong); box-shadow: var(--dnx-shadow-lg); }
 .dnx-qt-card-icon { width: 38px; height: 38px; border-radius: 12px; }
 .dnx-qt-card-name { font-size: 13px; font-weight: 750; color: #2b3127; }
 .dnx-qt-card-sub { font-size: 11.5px; font-weight: 500; color: #7e8678; line-height: 1.45; }
@@ -102,18 +116,18 @@
 
 /* Existing activity panels remain functional, but now sit inside the
    same restrained card system as the refreshed overview. */
-.dnx-wrap .dash-panel { background: #fff; border: 1px solid #e6eae2; border-radius: 17px; box-shadow: 0 2px 5px rgba(26,35,19,.025); margin-bottom: 16px; }
+.dnx-wrap .dash-panel { background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); border-radius: 17px; box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); margin-bottom: 16px; }
 .dnx-wrap .dash-panel-head { padding: 19px 19px 10px; }
 .dnx-wrap .dash-panel-head h3 { color: #292f25; font-family: inherit; font-size: 15px; font-weight: 760; }
 .dnx-wrap .dash-panel-head .dp-sub { color: #828a7d; line-height: 1.5; }
 .dnx-wrap .dash-panel-body { padding: 7px 19px 19px; }
-.dnx-wrap .ac-panel { width: 100%; max-width: none; margin-left: 0; margin-right: 0; border-radius: 17px; border: 1px solid #e6eae2; }
-.dnx-wrap .ac-chart-card { background: #fafbf8; border-color: #e8ece4; }
-.dnx-wrap .ac-range-switch { background: #f0f2ed; border-color: #e7eae2; }
-.dnx-wrap .ac-range-btn.is-active { background: #fff; }
-.dnx-wrap .empty-row { background: #fafbf8; border-color: #e9ede5; color: #7f8779; border-radius: 11px; }
-.dnx-wrap .lead-row { border-color: #edf0e9; }
-.dnx-wrap .ghost-btn { background: #fff; border-color: #e3e8dc; box-shadow: none; }
+.dnx-wrap .ac-panel { width: 100%; max-width: none; margin-left: 0; margin-right: 0; border-radius: 17px; border: 1px solid var(--dnx-glass-border); }
+.dnx-wrap .ac-chart-card { background: var(--dnx-glass-strong); border-color: var(--dnx-glass-border); }
+.dnx-wrap .ac-range-switch { background: var(--dnx-glass-strong); border-color: var(--dnx-glass-border); }
+.dnx-wrap .ac-range-btn.is-active { background: var(--dnx-glass); }
+.dnx-wrap .empty-row { background: var(--dnx-glass-strong); border-color: var(--dnx-glass-border); color: #7f8779; border-radius: 11px; }
+.dnx-wrap .lead-row { border-color: var(--dnx-glass-border); }
+.dnx-wrap .ghost-btn { background: var(--dnx-glass); border-color: var(--dnx-glass-border); box-shadow: none; }
 .dnx-wrap .ghost-btn.live { background: #edf6df; border-color: #d9e8c5; color: #42651d; }
 
 .dnx-verify-banner { background: #fff9f2; border: 1px solid #f1dcc5; border-radius: 15px; box-shadow: none; }
@@ -123,7 +137,7 @@
 .dnx-verify-cta { border-radius: 10px; }
 
 .dnx-sheet-backdrop { background: rgba(22, 28, 17, .42); }
-.dnx-sheet { border: 1px solid #e7eae3; box-shadow: 0 -12px 44px rgba(20,28,14,.16); }
+.dnx-sheet { background: var(--surface-glass-solid); border: 1px solid var(--dnx-glass-border); box-shadow: var(--surface-shadow-lg); }
 
 @media (min-width: 860px) {
   .dnx-wrap { padding-top: 30px; }

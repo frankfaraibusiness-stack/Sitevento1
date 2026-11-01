@@ -25,20 +25,23 @@
  * ============================================================ */
 
 :root {
-  /* Frosted glass surfaces, all derived from --lime so every card reads
-     as cut from the same lime material rather than a stray white box
-     dropped onto a lime page. Base is --cream (not pure white) and the
-     lime mix is strong enough that cards read as a distinct, slightly
-     deeper tone against the saturated lime page background instead of
-     blending into a flat white. */
-  --dnx-glass: color-mix(in srgb, var(--lime) 30%, var(--cream) 70%);
-  --dnx-glass-strong: color-mix(in srgb, var(--lime) 42%, var(--cream) 58%);
-  --dnx-glass-border: color-mix(in srgb, var(--lime-ink) 20%, transparent);
-  --dnx-glass-border-strong: color-mix(in srgb, var(--lime-ink) 32%, transparent);
-  --dnx-ink-soft: color-mix(in srgb, var(--lime-ink) 62%, transparent);
-  --dnx-ink-faint: color-mix(in srgb, var(--lime-ink) 44%, transparent);
-  --dnx-shadow: 0 10px 28px color-mix(in srgb, var(--lime-ink) 16%, transparent), 0 2px 7px color-mix(in srgb, var(--lime-ink) 10%, transparent);
-  --dnx-shadow-lg: 0 18px 46px color-mix(in srgb, var(--lime-ink) 20%, transparent), 0 4px 12px color-mix(in srgb, var(--lime-ink) 12%, transparent);
+  /* Frosted glass surfaces now defer to the global tokens in
+     styles/base/theme-tokens.css (--surface-glass*, --surface-edge*,
+     --surface-shadow*) — the single source of truth for every card
+     surface/edge app-wide, derived from --app-bg instead of a
+     hardcoded --lime mix. Kept as dnx-* aliases so every existing
+     var(--dnx-glass) / var(--dnx-glass-border) / etc. usage across
+     dashboard + profile updates automatically. dashboard-refresh.css
+     (imported later) scopes its own copy of these same aliases onto
+     .dnx-wrap specifically — see that file. */
+  --dnx-glass: var(--surface-glass);
+  --dnx-glass-strong: var(--surface-glass-strong);
+  --dnx-glass-border: var(--surface-edge);
+  --dnx-glass-border-strong: var(--surface-edge-strong);
+  --dnx-ink-soft: var(--surface-ink-soft);
+  --dnx-ink-faint: var(--surface-ink-faint);
+  --dnx-shadow: var(--surface-shadow);
+  --dnx-shadow-lg: var(--surface-shadow-lg);
   --dnx-radius: 22px;
   --dnx-radius-sm: 14px;
   --dnx-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

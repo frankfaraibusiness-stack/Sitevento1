@@ -37,36 +37,38 @@
        boxes from the pre-lime theme. Modals/bottom-sheets intentionally
        keep --bg (pure white) since those float above the page, not in
        it. */
-    /* Was a near-white #fbfdf2, which read as a plain white box on the
-       lime page. Pulled toward --cream with a visible lime tint so it
-       stands out as its own surface the same way --dnx-glass does. */
-    --surface: color-mix(in srgb, var(--lime) 26%, var(--cream) 74%);
-    --surface-border: #c7dba0;
+    /* --surface / --surface-border now defer to the global glass/edge
+       tokens in styles/base/theme-tokens.css (imported right after
+       this file) — the single source of truth for every card surface
+       and border app-wide, so they follow --app-bg automatically
+       instead of staying pinned to the old lime mix. Kept as aliases
+       here rather than removed so every existing var(--surface) /
+       var(--surface-border) usage across the app updates for free. */
+    --surface: var(--surface-glass-strong, #fbfdf2);
+    --surface-border: var(--surface-edge, #c7dba0);
 
     /* Dashboard accent set — four tones used to colour-code the stat
-       cards, Quick Tools tiles, and status banners on /dashboard. Each
-       has a soft tinted surface + border for card backgrounds and a
-       deeper "ink" shade for icons/text on that tint. */
+       cards, Quick Tools tiles, and status banners on /dashboard. The
+       hue itself (--dash-green, --dash-purple, ...) and its "ink"
+       shade are the fixed semantic color and stay defined here.
+       The -surface/-border pair (the soft tinted background each
+       chip/card sits on) is intentionally NOT set here — it's defined
+       once in theme-tokens.css, imported right after this file, as a
+       color-mix of each hue with --app-bg instead of a fixed pastel
+       hex, so it re-tints automatically whenever the page background
+       changes. See theme-tokens.css for --dash-*-surface/-border. */
     --dash-green: #16a34a;
     --dash-green-ink: #0f5c2e;
     --lime-mist: #f4ffe0;
-    --dash-green-surface: #eafaf0;
-    --dash-green-border: #c3ecd3;
 
     --dash-purple: #7c5cfc;
     --dash-purple-ink: #4a2fd1;
-    --dash-purple-surface: #f1edff;
-    --dash-purple-border: #ded3fe;
 
     --dash-blue: #2f8fe0;
     --dash-blue-ink: #175a92;
-    --dash-blue-surface: #eaf5ff;
-    --dash-blue-border: #cbe6fb;
 
     --dash-orange: #e5832c;
     --dash-orange-ink: #9a5313;
-    --dash-orange-surface: #fff1e4;
-    --dash-orange-border: #fad9b8;
 
     /* Muted text tones — used across cards, forms, and secondary copy
        app-wide. Three steps from "quiet caption" to "near-ink body". */
@@ -75,18 +77,18 @@
     --muted-dark: #51493e;
 
     /* Status/semantic colors — success, warning/pending, danger — each
-       with an ink-level shade for text/icons on a light surface. */
+       with an ink-level shade for text/icons on a light surface. As
+       with the --dash-* set above, the -surface/-border tint each
+       sits on is defined in theme-tokens.css as a color-mix with
+       --app-bg, not fixed here. */
     --success: #6ba84f;
     --success-ink: #2f5c1d;
-    --success-surface: #eafaf0;
-    --success-border: #c3ecd3;
 
     --warning: #d99a2b;
     --warning-ink: #9a5313;
 
     --danger: #b3432b;
     --danger-ink: #7a2c18;
-    --danger-surface: #fdeee9;
 
     --border-soft: #d8d2c5;
     --placeholder: #a8a295;
