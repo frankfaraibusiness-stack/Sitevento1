@@ -84,10 +84,6 @@ interface CartoonHeroContentProps {
 function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroContentProps) {
   return (
     <section className="hero" aria-labelledby="hero-title">
-      <div className="hero__pattern" aria-hidden="true" />
-      <div className="hero__blob hero__blob--a" aria-hidden="true" />
-      <div className="hero__blob hero__blob--b" aria-hidden="true" />
-
       <div className="hero__layout">
         <div className="hero__inner">
           <h1 className="hero__title" id="hero-title">
@@ -108,34 +104,12 @@ function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroCo
           </p>
 
           <div className="hero__ctas">
-            <button type="button" className="btn btn--primary" onClick={onConnectClick}>
-              Connect Site
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
+            <button type="button" className="btn btn-primary" onClick={onConnectClick}>
+              Connect Site <span aria-hidden="true">➔</span>
             </button>
 
-            <button type="button" className="btn btn--ghost" onClick={onHowItWorksClick}>
-              <span className="btn__icon">
-                <svg className="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M7 4.5v15l13-7.5z" />
-                </svg>
-                <svg className="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <rect x="6.5" y="4.5" width="4" height="15" rx="1" />
-                  <rect x="13.5" y="4.5" width="4" height="15" rx="1" />
-                </svg>
-              </span>
-              Watch Demo
+            <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
+              <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
             </button>
           </div>
 

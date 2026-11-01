@@ -83,13 +83,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={lexend.variable}>
       <head>
-        {/* Baloo 2 / Fredoka — used by the cartoon mobile hero
+        {/* Baloo 2 / Fredoka / Nunito — used by the cartoon mobile hero
             (components/marketing/CartoonMobileHero.tsx /
-            styles/marketing/cartoon-mobile-hero.css) only. */}
+            styles/marketing/cartoon-mobile-hero.css) only. Nunito
+            800/900 is for the hero CTA buttons specifically. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&family=Nunito:wght@800;900&display=swap"
           rel="stylesheet"
         />
       </head>

@@ -210,11 +210,11 @@
     /* Pulled up by the fixed header's own height so the background
        image starts at the true top of the viewport, behind the
        header's glass bar, instead of beginning underneath it — then
-       padding-top adds the same amount back so the hero's actual
-       content (title, CTAs, etc.) still clears the header and isn't
-       hidden behind it. */
+       padding-top adds just that height back (plus a few px, not the
+       old 22px) so the title sits almost flush under the header
+       instead of leaving a visible gap. */
     margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
-    padding: calc(56px + env(safe-area-inset-top, 0px) + 22px) 22px 52px;
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 6px) 22px 52px;
     color: var(--ink);
 
     /* Mascot/building photo fills the hero only — scoped here rather
@@ -224,48 +224,6 @@
     background-size: cover;
     background-position: top center;
     background-repeat: no-repeat;
-  }
-
-  .hero__pattern {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-image: radial-gradient(circle, rgba(18, 16, 10, 0.14) 1.2px, transparent 1.3px);
-    background-size: 20px 20px;
-    -webkit-mask-image: radial-gradient(120% 80% at 20% 20%, #000 25%, transparent 72%);
-    mask-image: radial-gradient(120% 80% at 20% 20%, #000 25%, transparent 72%);
-  }
-
-  /* Blobs: one true lime, one true purple (previously both lime-only
-     greens) — drifting slowly so the two brand hues visibly mix in
-     the blurred overlap between them rather than reading as a single
-     flat tint. */
-  .hero__blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(70px);
-    pointer-events: none;
-    z-index: 0;
-    animation: heroBlobDrift 9s ease-in-out infinite;
-  }
-  .hero__blob--a {
-    width: 340px; height: 340px;
-    top: -150px; left: -140px;
-    background: rgba(198, 242, 78, 0.95);
-    animation-delay: 0s;
-  }
-  .hero__blob--b {
-    width: 280px; height: 280px;
-    bottom: -140px; right: -120px;
-    background: rgba(124, 92, 252, 0.55);
-    animation-delay: -4.5s;
-    animation-direction: reverse;
-  }
-
-  @keyframes heroBlobDrift {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(18px, -22px) scale(1.08); }
   }
 
   .hero__layout {
@@ -312,9 +270,6 @@
     overflow: hidden;
     text-align: center;
     font-size: clamp(24px, 9vw, 60px);
-    border-bottom: 3px solid var(--lime);
-    box-shadow: 0 4px 0 0 var(--lime), 0 4px 0 2.5px var(--lime);
-    padding: 0 0.06em 0.04em;
   }
   .rotator__word {
     grid-area: 1 / 1;
@@ -344,111 +299,83 @@
   }
 
   /* ---------- description ---------- */
+  /* White text with a black outline/shadow so it reads clearly
+     against the hero photo regardless of what's behind it, now that
+     the dimming tint layers (pattern + blobs) are gone. */
   .cartoon-hero .hero__sub {
     margin: 22px auto 0;
     max-width: 42ch;
     font-family: 'Fredoka', sans-serif;
     font-size: 16px;
     line-height: 1.62;
-    font-weight: 500;
-    color: var(--ink-soft);
+    font-weight: 600;
+    color: #FFFFFF;
     letter-spacing: 0.005em;
     text-align: center;
+    text-shadow:
+      0 1px 0 #000,
+      0 -1px 0 #000,
+      1px 0 0 #000,
+      -1px 0 0 #000,
+      0 2px 6px rgba(0, 0, 0, 0.55);
+    -webkit-text-stroke: 0.4px #000;
+    paint-order: stroke fill;
   }
   .cartoon-hero .hero__sub strong {
-    font-weight: 700;
-    color: var(--ink);
+    font-weight: 800;
+    color: #FFFFFF;
   }
 
   /* ---------- CTAs ---------- */
+  /* Flat pill buttons — replaces the previous "cartoon" 3D-slab
+     style (thick border, offset drop shadow, bouncy press) with a
+     simpler rounded-pill look: solid fill, thin black border, a flat
+     4px black shadow that collapses on press. */
   .cartoon-hero .hero__ctas {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    align-items: center;
+    gap: 10px;
     margin-top: 28px;
   }
 
   .cartoon-hero .btn {
-    position: relative;
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 10px;
-    min-height: 56px;
-    padding: 0 26px;
-    border-radius: 16px;
-    border: 2.5px solid var(--ink);
-    font-family: 'Fredoka', sans-serif;
+    font-family: 'Nunito', 'Fredoka', sans-serif;
     font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.005em;
-    color: var(--ink);
+    font-weight: 900;
+    padding: 10px 25px;
+    border: 2px solid #000;
+    border-radius: 50px;
     cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 0 #000;
+    transition: all 0.1s ease;
+    width: max-content;
+    min-width: 200px;
     -webkit-tap-highlight-color: transparent;
-    box-shadow: 5px 5px 0 0 var(--ink);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-    white-space: nowrap;
-    width: auto;
-    align-self: flex-start;
   }
   .cartoon-hero .btn:active {
-    transform: translate(3px, 3px);
-    box-shadow: 2px 2px 0 0 var(--ink);
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #000;
   }
 
-  /* Was a flat, deep purple (--lime: #7C5CFC) with dark ink text,
-     which read as muddy/heavy. Brighter, more saturated purple —
-     matching the "YOURS" headline accent (#7C5CFF) — with white text
-     for real contrast and pop, like a link rather than a dark slab. */
-  .cartoon-hero .btn--primary {
-    background: linear-gradient(135deg, #9B7CFF 0%, #7C5CFF 60%, #6A3FFC 100%);
-    color: #fff;
-    border-color: #12100A;
-  }
-  .cartoon-hero .btn--primary svg { transition: transform 0.22s ease; }
-  .cartoon-hero .btn--primary:active svg { transform: translateX(4px); }
-
-  .cartoon-hero .btn--ghost { background: var(--cream); }
-
-  .cartoon-hero .btn__icon {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: #7C5CFF;
-    overflow: hidden;
-  }
-  .cartoon-hero .btn__icon::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 2px solid #7C5CFF;
-    animation: ringPulse 4s ease-out infinite;
-    pointer-events: none;
-  }
-  @keyframes ringPulse {
-    0%   { opacity: 0.9; transform: scale(0.85); }
-    45%  { opacity: 0;   transform: scale(1.45); }
-    100% { opacity: 0;   transform: scale(1.45); }
+  .cartoon-hero .btn-primary {
+    background-color: #b3ff00;
+    color: #000;
   }
 
-  .cartoon-hero .btn__icon svg { position: absolute; width: 12px; height: 12px; }
-  .cartoon-hero .icon-play { animation: showPlay 4s steps(1, end) infinite; }
-  .cartoon-hero .icon-pause { animation: showPause 4s steps(1, end) infinite; }
-  @keyframes showPlay {
-    0%, 49.99%  { opacity: 1; transform: scale(1); }
-    50%, 100%   { opacity: 0; transform: scale(0.7); }
+  .cartoon-hero .btn-secondary {
+    background-color: #1a1a1a;
+    color: #ffffff;
   }
-  @keyframes showPause {
-    0%, 49.99%  { opacity: 0; transform: scale(0.7); }
-    50%, 100%   { opacity: 1; transform: scale(1); }
+
+  .cartoon-hero .play-icon {
+    font-size: 0.9rem;
   }
 
   /* ---------- brand marquee ---------- */
@@ -675,11 +602,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .cartoon-hero .hero { animation: none; background-position: 30% 50%; }
-    .cartoon-hero .hero__blob { animation: none; }
-    .cartoon-hero .btn__icon::after { animation: none; }
-    .cartoon-hero .icon-play, .cartoon-hero .icon-pause { animation: none; }
-    .cartoon-hero .icon-play { opacity: 1; }
-    .cartoon-hero .icon-pause { opacity: 0; }
     .cartoon-hero .rotator__word { animation: none; opacity: 0; transform: none; }
     .cartoon-hero .rotator__word:nth-child(1) { opacity: 1; }
     .cartoon-hero .btn { transition: none; }
