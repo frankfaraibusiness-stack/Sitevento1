@@ -299,27 +299,26 @@
   }
 
   /* ---------- description ---------- */
-  /* White text with a black outline/shadow so it reads clearly
-     against the hero photo regardless of what's behind it, now that
-     the dimming tint layers (pattern + blobs) are gone. */
+  /* The photo itself is already high-contrast, so instead of an
+     outlined white-on-anything treatment, this sits on its own
+     small dimmed scrim (dark, soft-edged, blurred) with plain dark
+     text on top — reads like a label on the image rather than text
+     fighting the image. */
   .cartoon-hero .hero__sub {
     margin: 22px auto 0;
     max-width: 42ch;
+    padding: 10px 16px;
+    border-radius: 14px;
+    background: rgba(18, 16, 10, 0.42);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     font-family: 'Fredoka', sans-serif;
     font-size: 16px;
     line-height: 1.62;
     font-weight: 600;
-    color: #FFFFFF;
+    color: #FFFDF5;
     letter-spacing: 0.005em;
     text-align: center;
-    text-shadow:
-      0 1px 0 #000,
-      0 -1px 0 #000,
-      1px 0 0 #000,
-      -1px 0 0 #000,
-      0 2px 6px rgba(0, 0, 0, 0.55);
-    -webkit-text-stroke: 0.4px #000;
-    paint-order: stroke fill;
   }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
@@ -327,40 +326,39 @@
   }
 
   /* ---------- CTAs ---------- */
-  /* Flat pill buttons — replaces the previous "cartoon" 3D-slab
-     style (thick border, offset drop shadow, bouncy press) with a
-     simpler rounded-pill look: solid fill, thin black border, a flat
-     4px black shadow that collapses on press. */
+  /* Flat pill buttons, sized down from the original spec and left-
+     aligned under the (centered) headline/description instead of
+     centered, so they read as a compact, tucked-in action pair. */
   .cartoon-hero .hero__ctas {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-top: 28px;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 22px;
   }
 
   .cartoon-hero .btn {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
     font-family: 'Nunito', 'Fredoka', sans-serif;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 900;
-    padding: 10px 25px;
-    border: 2px solid #000;
+    padding: 7px 18px;
+    border: 1.5px solid #000;
     border-radius: 50px;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: 0 4px 0 #000;
+    box-shadow: 0 3px 0 #000;
     transition: all 0.1s ease;
     width: max-content;
-    min-width: 200px;
+    min-width: 150px;
     -webkit-tap-highlight-color: transparent;
   }
   .cartoon-hero .btn:active {
-    transform: translateY(4px);
+    transform: translateY(3px);
     box-shadow: 0 0 0 #000;
   }
 
