@@ -240,6 +240,10 @@
   }
 
   /* ---------- headline ---------- */
+  /* White fill with a solid black outline so it pops off the photo
+     instead of blending into it, now that the hero sits on the
+     image rather than the flat lime/purple gradient it was
+     designed for. */
   .hero__title {
     margin: 0;
     font-family: 'Baloo 2', 'Fredoka', sans-serif;
@@ -247,12 +251,12 @@
     line-height: 1.05;
     letter-spacing: -0.025em;
     font-weight: 800;
-    color: var(--ink);
+    color: #FFFFFF;
     text-align: center;
     text-shadow:
-      0 1.5px 0 rgba(18, 16, 10, 0.18),
-      0 3px 0 rgba(18, 16, 10, 0.12);
-    -webkit-text-stroke: 0.6px var(--ink);
+      0 1.5px 0 #000,
+      0 3px 0 rgba(0, 0, 0, 0.35);
+    -webkit-text-stroke: 1.4px #000;
     paint-order: stroke fill;
   }
 
@@ -280,6 +284,11 @@
     animation: rotatorCycle 21s cubic-bezier(.6,.05,.3,1) infinite;
     text-align: center;
     justify-self: center;
+    /* Black stroke on every color so each word stays legible on the
+       photo instead of just its flat fill color. */
+    text-shadow: 0 1.5px 0 #000, 0 3px 0 rgba(0, 0, 0, 0.35);
+    -webkit-text-stroke: 1.2px #000;
+    paint-order: stroke fill;
   }
 
   .rotator__word:nth-child(1) { color: #7C5CFF; animation-delay: 0s; }
@@ -299,26 +308,24 @@
   }
 
   /* ---------- description ---------- */
-  /* The photo itself is already high-contrast, so instead of an
-     outlined white-on-anything treatment, this sits on its own
-     small dimmed scrim (dark, soft-edged, blurred) with plain dark
-     text on top — reads like a label on the image rather than text
-     fighting the image. */
+  /* No card/box — just blurs the photo directly behind the text
+     (transparent background, no border, no radius, no fill) so the
+     image stays visible but soft back there, with plain white text
+     on top. Small and left-aligned, not centered with the headline. */
   .cartoon-hero .hero__sub {
-    margin: 22px auto 0;
-    max-width: 42ch;
-    padding: 10px 16px;
-    border-radius: 14px;
-    background: rgba(18, 16, 10, 0.42);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    margin: 18px 0 0;
+    margin-left: 0;
+    margin-right: auto;
+    max-width: 30ch;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     font-family: 'Fredoka', sans-serif;
-    font-size: 16px;
-    line-height: 1.62;
+    font-size: 13px;
+    line-height: 1.55;
     font-weight: 600;
-    color: #FFFDF5;
+    color: #FFFFFF;
     letter-spacing: 0.005em;
-    text-align: center;
+    text-align: left;
   }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
