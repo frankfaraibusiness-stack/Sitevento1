@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 // components/marketing/CartoonMobileHero.tsx
 //
 // New mobile hero, replacing the old one entirely. Markup and CSS are
@@ -26,7 +28,35 @@ interface CartoonMobileHeroProps {
   onHowItWorksClick: () => void;
 }
 
+// The loader covers the screen (position: fixed, see .cartoon-hero
+// .loader in cartoon-mobile-hero.css) but "fixed" alone doesn't stop
+// the page underneath from scrolling — on touch devices a swipe while
+// the loader is up scrolls the real hero behind it, which then jumps
+// into view the instant the loader fades out. Locks body scroll for
+// exactly as long as the loader is on screen (5s hold + the 0.6s
+// loaderExit fade, matching LOADER_EXIT_MS/LOADER_HOLD_MS below,
+// which mirror the CSS's own `animation: loaderExit 0.6s ease 5s
+// forwards`) and restores whatever overflow value was there before.
+const LOADER_HOLD_MS = 5000;
+const LOADER_EXIT_MS = 600;
+
+function useLoaderScrollLock() {
+  useEffect(() => {
+    const { body } = document;
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = 'hidden';
+    const timer = setTimeout(() => {
+      body.style.overflow = previousOverflow;
+    }, LOADER_HOLD_MS + LOADER_EXIT_MS);
+    return () => {
+      clearTimeout(timer);
+      body.style.overflow = previousOverflow;
+    };
+  }, []);
+}
+
 function CartoonLoader() {
+  useLoaderScrollLock();
   return (
     <div className="loader" role="status" aria-live="polite" aria-label="Loading">
       <div className="loader__card">
