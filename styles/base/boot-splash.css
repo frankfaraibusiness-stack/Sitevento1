@@ -68,7 +68,7 @@
     height: 62vmax;
     top: -22vmax;
     left: -18vmax;
-    background: radial-gradient(circle, color-mix(in srgb, var(--lime) 58%, transparent), transparent 70%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--dash-purple) 58%, transparent), transparent 70%);
     animation-duration: 14s;
   }
 
@@ -146,7 +146,7 @@
     font-size: clamp(22px, 6.4vw, 30px);
     line-height: 1.18;
     font-weight: 800;
-    color: var(--lime-ink);
+    color: var(--dash-purple-ink);
     letter-spacing: -0.01em;
     opacity: 0;
     transform: translateY(14px);
@@ -163,7 +163,7 @@
   .boot-splash-highlight-shape {
     position: absolute;
     inset: 8% -6% 2%;
-    background: var(--lime);
+    background: var(--dash-purple);
     border-radius: 6px 10px 6px 10px;
     transform: rotate(-1deg);
     z-index: 0;
@@ -276,13 +276,13 @@
     height: 26px;
     border-radius: 50%;
     border: 3.5px solid var(--cream-deep);
-    border-top-color: var(--lime-ink);
+    border-top-color: var(--dash-purple-ink);
     animation: boot-spin 850ms linear infinite;
   }
 
   .boot-splash-spinner.is-complete {
     animation: none;
-    border-top-color: var(--lime);
+    border-top-color: var(--dash-purple);
     opacity: 0.85;
   }
 
@@ -297,7 +297,7 @@
     font-size: 14.5px;
     line-height: 1.4;
     font-weight: 700;
-    color: var(--lime-ink);
+    color: var(--dash-purple-ink);
     animation: boot-line-swap 320ms ease both;
   }
 
@@ -312,7 +312,7 @@
     height: 16px;
     border-radius: 999px;
     background: var(--cream-deep);
-    border: 2.5px solid var(--lime-ink);
+    border: 2.5px solid var(--dash-purple-ink);
     box-shadow: inset 0 2px 3px rgba(26, 31, 10, 0.12);
     overflow: hidden;
   }
@@ -323,7 +323,7 @@
     bottom: -1px;
     left: 0;
     border-radius: 999px;
-    background: linear-gradient(180deg, var(--lime) 0%, color-mix(in srgb, var(--lime) 75%, var(--dash-green, #16a34a)) 100%);
+    background: linear-gradient(180deg, var(--dash-purple) 0%, var(--dash-purple-ink) 100%);
     box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5);
     width: 42%;
     animation: boot-rail-sweep 1.5s cubic-bezier(0.37, 0, 0.63, 1) infinite;
@@ -367,7 +367,7 @@
       opacity: 1;
       transform: none;
     }
-    .boot-splash-spinner { border-top-color: var(--lime); opacity: 0.6; }
+    .boot-splash-spinner { border-top-color: var(--dash-purple); opacity: 0.6; }
     .boot-splash-rail-fill { left: 0; width: 65%; }
     .boot-splash-rail.is-complete .boot-splash-rail-fill { width: 100%; }
   }

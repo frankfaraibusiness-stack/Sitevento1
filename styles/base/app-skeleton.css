@@ -1,6 +1,6 @@
 /* ============================================================
  * app-skeleton.css — components/AppSkeleton.tsx
- * One shared loading state: the same orbiting lime dot ring used by
+ * One shared loading state: the same orbiting purple dot ring used by
  * BootSplash's "spinning" phase (see styles/base/boot-splash.css), with no
  * blob, no logo, and no shimmering placeholder rows. Reused by
  * /settings, /dashboard, /dashboard/profile, /dashboard/sites/[siteId],
@@ -35,8 +35,8 @@
      exactly — this is the same "still loading" state continued, so it
      shouldn't start on a different background than the boot screen it
      follows. Full-screen lime read as too loud/unprofessional, so both
-     now share the standard app background; lime stays only as a small
-     accent on the dots themselves. */
+     now share the standard app background; a purple accent is used on
+     the dots themselves instead of lime. */
   background: var(--app-bg);
   padding-top: calc(3rem + env(safe-area-inset-top, 0px));
 }
@@ -53,8 +53,8 @@
   top: 50%;
   left: 50%;
   border-radius: 50%;
-  background: var(--lime);
-  border: 1.5px solid var(--lime-ink);
+  background: var(--dash-purple);
+  border: 1.5px solid var(--dash-purple-ink);
   transform: translate(-50%, -50%) translate(var(--dot-x), var(--dot-y));
   animation: app-skel-dot-pulse 1.4s ease-in-out infinite;
 }

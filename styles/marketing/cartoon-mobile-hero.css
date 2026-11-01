@@ -21,7 +21,7 @@
 
   .cartoon-hero .loader {
     --ink: #12100A;
-    --lime: #C6F24E;
+    --lime: #7C5CFC;
     --cream: #FFFDF5;
 
     position: fixed;
@@ -29,7 +29,7 @@
     z-index: 9999;
     display: grid;
     place-items: center;
-    background: #EAF7C9;
+    background: #E7E1FC;
     overflow: hidden;
     animation: loaderExit 0.6s ease 5s forwards;
   }
@@ -190,8 +190,8 @@
      HERO
      ============================================================ */
   .hero {
-    --lime: #C6F24E;
-    --lime-bg: #EAF7C9;
+    --lime: #7C5CFC;
+    --lime-bg: #E7E1FC;
     --ink: #12100A;
     --ink-soft: #4A4732;
     --cream: #FFFDF5;
@@ -572,7 +572,7 @@
 
   /* active pill state */
   .cartoon-hero .navbar__item.is-active {
-    background: #C6F24E;
+    background: #7C5CFC;
     border: 2px solid #12100A;
     box-shadow: 2px 2px 0 0 #12100A;
   }
@@ -590,7 +590,7 @@
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: #C6F24E;
+    background: #7C5CFC;
     border: 2.5px solid #12100A;
     box-shadow: 0 4px 0 0 #12100A, 0 8px 16px -6px rgba(18, 16, 10, 0.4);
     color: #12100A;
