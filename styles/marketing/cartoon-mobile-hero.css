@@ -210,26 +210,18 @@
     padding: 22px 22px 52px;
     color: var(--ink);
 
-    /* Was a flat --lime-bg fill (a single static light-purple field).
-       Now a slow-drifting lime→purple→app-bg gradient so the two
-       brand colors genuinely blend and move instead of sitting as one
-       flat wash — the background itself is part of the "alive" motion,
-       not just the blobs floating on top of it. */
+    /* Flat split: full-width lime band across the top, then the rest
+       of the hero drops to the same --app-bg purple the rest of the
+       page (html, body) uses, so the hero's lower portion blends
+       straight into the page background instead of being its own
+       color. No gradient, no motion. */
     background: linear-gradient(
-      -45deg,
+      180deg,
       #C6F24E 0%,
+      #C6F24E 30%,
       var(--app-bg, #c1b5f7) 30%,
-      var(--lime) 60%,
-      var(--lime-bg) 100%
+      var(--app-bg, #c1b5f7) 100%
     );
-    background-size: 300% 300%;
-    animation: heroGradientShift 14s ease-in-out infinite;
-  }
-
-  @keyframes heroGradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
   }
 
   .hero__pattern {
@@ -283,7 +275,8 @@
 
   .hero__inner {
     max-width: 470px;
-    text-align: left;
+    margin: 0 auto;
+    text-align: center;
   }
 
   /* ---------- headline ---------- */
@@ -295,7 +288,7 @@
     letter-spacing: -0.025em;
     font-weight: 800;
     color: var(--ink);
-    text-align: left;
+    text-align: center;
     text-shadow:
       0 1.5px 0 rgba(18, 16, 10, 0.18),
       0 3px 0 rgba(18, 16, 10, 0.12);
@@ -317,8 +310,8 @@
     overflow: hidden;
     text-align: center;
     font-size: clamp(24px, 9vw, 60px);
-    border-bottom: 3px solid var(--ink);
-    box-shadow: 0 4px 0 0 var(--lime), 0 4px 0 2.5px var(--ink);
+    border-bottom: 3px solid var(--lime);
+    box-shadow: 0 4px 0 0 var(--lime), 0 4px 0 2.5px var(--lime);
     padding: 0 0.06em 0.04em;
   }
   .rotator__word {
@@ -363,8 +356,6 @@
   .cartoon-hero .hero__sub strong {
     font-weight: 700;
     color: var(--ink);
-    background: linear-gradient(180deg, transparent 62%, rgba(198, 242, 78, 0.95) 62%);
-    padding: 0 0.08em;
   }
 
   /* ---------- CTAs ---------- */
