@@ -1,0 +1,561 @@
+/* ============================================================
+ * auth-overlay.css — sign in / sign up / forgot password overlay
+ *
+ * Full rebuild: no floating "sticker" card, no drifting cartoon
+ * blobs, no mascot. The page sits on the same --app-bg surface as
+ * the rest of the app (not a hardcoded flat lime fill), reuses the
+ * site's real <header> directly (components/layout/Header.tsx, auth
+ * mode) instead of a second hand-built header, and has a wide,
+ * centered form column sitting directly on that surface. Inputs are
+ * raw fields on the page itself — not boxed into a white card — with
+ * a quiet ink-bordered style that reads as premium rather than playful.
+ * All page-content text/borders use --ink (and color-mix tints of
+ * it) rather than --lime-ink, so they track the real body color.
+ * ============================================================ */
+
+  /* ============ Auth overlay (sign in / sign up / forgot) ============ */
+  .auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--app-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(14px);
+    transition: opacity 0.35s cubic-bezier(0.22,1,0.36,1), transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .auth-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay { transition: opacity 0.2s ease; transform: none !important; }
+  }
+
+  /* ---- Header: the real site <header> (components/layout/Header.tsx)
+   * is rendered here directly in its "auth" mode — same fixed glass
+   * bar, same flush-left logo, just the hamburger/signup swapped for
+   * a bare close button (styles/marketing/marketing-content.css
+   * .nav-close). No second header markup/CSS to maintain here. ---- */
+
+  /* ---- Page body: one clean canvas on --app-bg, no scene/blobs ----
+   * Offset clears the real fixed <header> (56px + safe-area, see
+   * styles/base/base.css), not a header built specifically for this
+   * overlay. */
+  .auth-overlay .stage {
+    position: relative;
+    min-height: calc(100% - 56px - env(safe-area-inset-top, 0px));
+    margin-top: calc(56px + env(safe-area-inset-top, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 24px 72px;
+  }
+
+  @media (max-width: 640px) {
+    .auth-overlay .stage { padding: 36px 20px 56px; }
+  }
+
+  /* ---- Split layout wrapper ----------------------------------------
+   * Mobile/tablet (below 960px): a single centered column — exactly
+   * the old behavior, .auth-aside never renders any visible layout.
+   * Desktop (960px+): a real two-column split, brand/context on the
+   * left, the form on the right — instead of one narrow card
+   * floating in a sea of empty page on a wide screen. */
+  .auth-overlay .auth-split {
+    width: 100%;
+    max-width: 408px;
+    display: flex;
+    justify-content: center;
+  }
+  .auth-overlay .auth-aside { display: none; }
+
+  @media (min-width: 960px) {
+    .auth-overlay .auth-split {
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+      gap: clamp(48px, 6vw, 96px);
+      align-items: center;
+    }
+    .auth-overlay .auth-aside {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding-right: 8px;
+    }
+  }
+
+  /* ---- Left panel content (desktop only) ---- */
+  .auth-overlay .auth-aside-blob {
+    width: 84px;
+    margin-bottom: 28px;
+  }
+  .auth-overlay .auth-aside-title {
+    font-size: clamp(32px, 3vw, 40px);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    color: var(--ink);
+    max-width: 14ch;
+  }
+  .auth-overlay .auth-aside-copy {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--ink) 68%, transparent);
+    margin: 0 0 28px;
+    max-width: 38ch;
+  }
+  .auth-overlay .auth-aside-points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .auth-overlay .auth-aside-points li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .auth-overlay .auth-aside-points li::before {
+    content: "";
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--ink);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;
+  }
+
+  /* ---- Form column — raw fields directly on the page, no card,
+     no border, no shadow box. Just generous spacing and quiet rules. ---- */
+  .auth-overlay .form-wrap {
+    width: 100%;
+    max-width: 408px;
+  }
+  @media (min-width: 960px) {
+    .auth-overlay .form-wrap { max-width: none; }
+  }
+
+  .auth-overlay .form-header {
+    margin-bottom: 32px;
+    text-align: left;
+  }
+
+  .auth-overlay .form-header h2 {
+    font-size: clamp(26px, 3.4vw, 32px);
+    font-weight: 400;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .auth-overlay .form-header p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--ink) 65%, transparent);
+    margin: 0;
+  }
+
+  .auth-overlay .form-header p a,
+  .auth-overlay .switcher-link {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .auth-overlay .form-header p a:hover,
+  .auth-overlay .switcher-link:hover { text-decoration-color: var(--ink); }
+
+  /* ---- Pane transition (sign in ⇄ sign up ⇄ forgot) ---- */
+  .auth-overlay .panes {
+    position: relative;
+    transition: height 0.32s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+  }
+
+  .auth-overlay .pane {
+    display: none;
+  }
+
+  .auth-overlay .pane.active {
+    display: block;
+    animation: auth-pane-in 0.32s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .auth-overlay .panes.is-switching .pane.active {
+    animation: auth-pane-in 0.32s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .auth-overlay .panes.is-switching .pane.is-leaving {
+    display: block;
+    position: absolute;
+    inset: 0;
+    animation: auth-pane-out 0.2s cubic-bezier(0.4,0,1,1) both;
+    pointer-events: none;
+  }
+
+  @keyframes auth-pane-in {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes auth-pane-out {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-6px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-overlay .panes { transition: none; }
+    .auth-overlay .pane.active,
+    .auth-overlay .panes.is-switching .pane.active,
+    .auth-overlay .panes.is-switching .pane.is-leaving {
+      animation: none !important;
+    }
+    .auth-overlay .panes.is-switching .pane.is-leaving { display: none; }
+  }
+
+  /* ---- OAuth button — plain outlined field on the page ---- */
+  .auth-overlay .oauth-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
+    background: transparent;
+    color: var(--ink);
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .auth-overlay .oauth-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: var(--ink);
+  }
+
+  .auth-overlay .oauth-btn:active { transform: scale(0.99); }
+
+  .auth-overlay .oauth-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .auth-overlay .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 24px 0;
+    color: color-mix(in srgb, var(--ink) 55%, transparent);
+    font-size: 12.5px;
+  }
+
+  .auth-overlay .divider::before,
+  .auth-overlay .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--ink) 20%, transparent);
+  }
+
+  /* ---- Raw input fields — no surrounding card, just the field itself
+     sitting on the page, with a clean ink-toned border. ---- */
+  .auth-overlay .field {
+    margin-bottom: 18px;
+  }
+
+  .auth-overlay .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .auth-overlay .input-shell {
+    position: relative;
+  }
+
+  .auth-overlay .field input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    border-radius: 10px;
+    border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
+    background: rgba(255,255,255,0.4);
+    color: var(--ink);
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .auth-overlay .field input::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); }
+
+  .auth-overlay .field input:focus {
+    outline: none;
+    border-color: var(--ink);
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+
+  .auth-overlay .field.has-error input {
+    border-color: var(--danger);
+  }
+
+  .auth-overlay .field .err-msg {
+    display: none;
+    font-size: 12.5px;
+    color: var(--danger);
+    margin-top: 7px;
+  }
+
+  .auth-overlay .field.has-error .err-msg { display: block; }
+
+  .auth-overlay .pw-toggle {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: color-mix(in srgb, var(--ink) 50%, transparent);
+    padding: 4px;
+    display: flex;
+  }
+
+  .auth-overlay .pw-toggle svg { width: 18px; height: 18px; }
+
+  .auth-overlay .row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 0 24px;
+  }
+
+  .auth-overlay .check-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    color: color-mix(in srgb, var(--ink) 65%, transparent);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .auth-overlay .check-row input[type="checkbox"] {
+    appearance: none;
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+    border: 1.5px solid color-mix(in srgb, var(--ink) 32%, transparent);
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .auth-overlay .check-row input[type="checkbox"]:checked {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .auth-overlay .check-row input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1.5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--app-bg);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .auth-overlay .forgot-link {
+    font-size: 13.5px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--ink) 32%, transparent);
+    text-underline-offset: 3px;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .auth-overlay .forgot-link:hover { text-decoration-color: var(--ink); }
+
+  /* ---- Submit — the one solid, dark, confident element on the page ---- */
+  .auth-overlay .submit-btn {
+    width: 100%;
+    background: var(--ink);
+    color: var(--app-bg);
+    border: none;
+    border-radius: 10px;
+    padding: 15px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.08s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    position: relative;
+  }
+
+  .auth-overlay .submit-btn:hover { opacity: 0.92; }
+  .auth-overlay .submit-btn:active { transform: scale(0.99); }
+  .auth-overlay .submit-btn:disabled { cursor: default; }
+
+  .auth-overlay .submit-btn.loading .btn-text { opacity: 0; }
+
+  .auth-overlay .spinner {
+    display: none;
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(34,32,28,0.15);
+    border-top-color: var(--app-bg);
+    border-radius: 50%;
+    animation: auth-spin 0.7s linear infinite;
+  }
+
+  .auth-overlay .submit-btn.loading .spinner { display: block; }
+
+  @keyframes auth-spin { to { transform: rotate(360deg); } }
+
+  /* ---- Reset-sent inline confirmation (forgot-password pane) ---- */
+  .auth-overlay .reset-sent-check {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 22px;
+  }
+
+  .auth-overlay .reset-sent-check svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--app-bg);
+  }
+
+  .auth-overlay .reset-sent {
+    text-align: left;
+    padding: 4px 0;
+  }
+
+  .auth-overlay .reset-sent h2 { color: var(--ink); margin: 0 0 10px; font-size: 24px; font-weight: 400; }
+  .auth-overlay .reset-sent p { color: color-mix(in srgb, var(--ink) 65%, transparent); font-size: 14.5px; margin: 0; line-height: 1.5; }
+
+  .auth-overlay .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    margin-bottom: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .auth-overlay .back-link:hover { text-decoration: underline; }
+
+  .auth-overlay .terms-note {
+    font-size: 12.5px;
+    color: color-mix(in srgb, var(--ink) 55%, transparent);
+    text-align: left;
+    margin-top: 28px;
+    line-height: 1.6;
+  }
+
+  .auth-overlay .terms-note a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--ink) 32%, transparent);
+    font-weight: 600;
+  }
+
+  .auth-overlay .terms-note a:hover { text-decoration-color: var(--ink); }
+
+  .auth-overlay .strength-meter {
+    display: flex;
+    gap: 5px;
+    margin-top: 9px;
+  }
+
+  .auth-overlay .strength-meter .bar {
+    height: 3px;
+    flex: 1;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--ink) 18%, transparent);
+    transition: background 0.2s ease;
+  }
+
+  .auth-overlay .err-msg {
+    font-size: 13px;
+    color: var(--danger);
+    margin: -6px 0 18px;
+  }
+
+  /* ---- AuthBlob (components/auth/AuthOverlay.tsx desktop left panel)
+   * Same body-path technique as AgentBlob/ConnectBlob, but — per
+   * AuthBlob.tsx's own comment — inverted coloring (ink body, lime
+   * face) since it sits directly on the lime page background here. ---- */
+  .auth-blob { display: block; line-height: 0; }
+  .auth-blob-svg { width: 100%; height: auto; overflow: visible; }
+  .auth-blob-wrap {
+    transform-origin: 60px 100px;
+    animation: auth-blob-idle 3.8s ease-in-out infinite;
+  }
+  .auth-blob-body {
+    fill: var(--ink);
+    stroke: var(--ink);
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+  }
+  .auth-blob-shine { fill: var(--lime); opacity: 0.28; transform: rotate(-16deg); transform-origin: 46px 46px; }
+  .auth-blob-shadow { fill: var(--ink); opacity: 0.12; }
+  .auth-blob-eye-white { fill: var(--lime); }
+  .auth-blob-eye-pupil { fill: var(--ink); }
+  .auth-blob-eye { transform-origin: center; transition: transform 120ms ease-out; }
+  .auth-blob-eyes.is-blinking .auth-blob-eye { transform: scaleY(0.08); }
+  .auth-blob-mouth { fill: none; stroke: var(--lime); stroke-width: 2.4; stroke-linecap: round; }
+
+  @keyframes auth-blob-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.02, 0.97); }
+    50%  { transform: scale(0.985, 1.02); }
+    75%  { transform: scale(1.012, 0.99); }
+    100% { transform: scale(1, 1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .auth-blob-wrap { animation: none !important; }
+  }
