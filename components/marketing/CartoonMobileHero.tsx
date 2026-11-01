@@ -69,13 +69,6 @@ const ROTATOR_WORDS = [
   'YOURS TO SHAPE',
 ];
 
-const BRAND_ITEMS = [
-  { key: 'shopify', modifier: 'brand--shopify', logo: 'S', label: 'Shopify' },
-  { key: 'wordpress', modifier: 'brand--wordpress', logo: 'W', label: 'WordPress' },
-  { key: 'webflow', modifier: 'brand--webflow', logo: 'W', label: 'Webflow' },
-  { key: 'custom', modifier: 'brand--custom', logo: 'C', label: 'Custom' },
-] as const;
-
 interface CartoonHeroContentProps {
   onConnectClick: () => void;
   onHowItWorksClick: () => void;
@@ -111,27 +104,6 @@ function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroCo
             <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
               <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
             </button>
-          </div>
-
-          <div className="brands">
-            <p className="brands__label">Works with your stack</p>
-            <div className="marquee">
-              <div className="marquee__track">
-                {BRAND_ITEMS.map((brand) => (
-                  <div className={`brand ${brand.modifier}`} key={brand.key}>
-                    <span className="brand__logo" aria-hidden="true">{brand.logo}</span>
-                    <span>{brand.label}</span>
-                  </div>
-                ))}
-                {/* Duplicate set for the -50% seamless marquee loop */}
-                {BRAND_ITEMS.map((brand) => (
-                  <div className={`brand ${brand.modifier}`} key={`${brand.key}-dup`} aria-hidden="true">
-                    <span className="brand__logo">{brand.logo}</span>
-                    <span>{brand.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 

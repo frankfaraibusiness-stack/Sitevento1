@@ -468,9 +468,37 @@
  * .hero-demo-statusbar below and Hero.tsx's markup order).
  * ============================================================ */
 
+/* No longer the flat --app-bg page color. Same hero photo as the
+   mobile hero above it, duplicated here as this section's own
+   background — tinted with a dark overlay and blurred so it reads
+   as a soft backdrop behind the demo card rather than a second,
+   competing sharp image. */
 .hero-showcase {
-  background: var(--app-bg);
+  position: relative;
+  isolation: isolate;
   padding: 8px 18px 48px;
+  overflow: hidden;
+}
+
+.hero-showcase::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  z-index: -1;
+  background-image: url('/mascot/hero-bg-mobile.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(18px);
+  transform: scale(1.1);
+}
+
+.hero-showcase::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(18, 16, 10, 0.55);
 }
 
 .hero-showcase-inner {

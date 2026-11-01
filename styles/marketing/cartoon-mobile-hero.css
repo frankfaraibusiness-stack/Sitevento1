@@ -379,86 +379,6 @@
     font-size: 0.9rem;
   }
 
-  /* ---------- brand marquee ---------- */
-  .cartoon-hero .brands { margin-top: 32px; }
-  .cartoon-hero .brands__label {
-    margin: 0 0 12px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink);
-    text-align: center;
-  }
-
-  .cartoon-hero .marquee {
-    position: relative;
-    overflow: hidden;
-    margin-inline: -22px;
-    padding: 6px 0;
-    touch-action: pan-y;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  .cartoon-hero .marquee__track {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: max-content;
-    padding-inline: 22px;
-    animation: marqueeScroll 24s linear infinite;
-    will-change: transform;
-  }
-  .marquee:hover .marquee__track,
-  .marquee:active .marquee__track,
-  .cartoon-hero .marquee:focus-within .marquee__track {
-    animation-play-state: running;
-  }
-  @keyframes marqueeScroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
-
-  /* Was a bordered, drop-shadowed cartoon "pill" per brand — on a
-     page already full of thick black outlines and chunky shadows
-     (buttons, nav, loader card), another boxed treatment here just
-     competed for attention instead of reading as a quiet trust
-     signal. Now just the logo mark + name, no card, no border, no
-     background — sits quietly in the row instead of shouting. */
-  .cartoon-hero .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-    height: 44px;
-    padding: 0 4px;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.005em;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-
-  /* No tile, no card — just the letter itself in the brand's own
-     color, sitting inline with the name. */
-  .cartoon-hero .brand__logo {
-    display: grid;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    flex: 0 0 20px;
-    font-size: 15px;
-    font-weight: 800;
-    font-family: 'Baloo 2', sans-serif;
-    -webkit-text-stroke: 0.5px var(--ink);
-    paint-order: stroke fill;
-  }
-  .cartoon-hero .brand--shopify .brand__logo { color: #95BF47; }
-  .cartoon-hero .brand--wordpress .brand__logo { color: #21759B; }
-  .cartoon-hero .brand--webflow .brand__logo { color: #4353FF; }
-  .cartoon-hero .brand--custom .brand__logo { color: #7C5CFF; }
-
   .cartoon-hero .hero__visual { display: none; }
 
   /* ============================================================
@@ -596,8 +516,6 @@
       color: rgba(18, 16, 10, 0.35);
       letter-spacing: 0.02em;
     }
-    .cartoon-hero .marquee { margin-inline: -40px; }
-    .cartoon-hero .marquee__track { padding-inline: 40px; }
     .cartoon-hero .navbar { bottom: 24px; }
   }
 
@@ -606,7 +524,6 @@
     .cartoon-hero .rotator__word { animation: none; opacity: 0; transform: none; }
     .cartoon-hero .rotator__word:nth-child(1) { opacity: 1; }
     .cartoon-hero .btn { transition: none; }
-    .cartoon-hero .marquee__track { animation-duration: 60s; }
     .cartoon-hero .loader__card, .cartoon-hero .loader__mark, .cartoon-hero .loader__bar::after, .cartoon-hero .loader__dots span { animation: none; }
     .cartoon-hero .loader__bar::after { display: none; }
     .cartoon-hero .navbar__upload::after { animation: none; }
