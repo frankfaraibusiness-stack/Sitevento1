@@ -304,17 +304,15 @@
   }
 
   /* ---------- description ---------- */
-  /* No card/box — just blurs the photo directly behind the text
-     (transparent background, no border, no radius, no fill) so the
-     image stays visible but soft back there, with bold black text
-     on top. Small and left-aligned, not centered with the headline. */
+  /* No card/box, no blur behind it either — the blur was reading as
+     a visible soft rectangle over the photo. Text sits directly on
+     the image now, kept legible with the text-shadow below instead.
+     Small and left-aligned, not centered with the headline. */
   .cartoon-hero .hero__sub {
     margin: 18px 0 0;
     margin-left: 0;
     margin-right: auto;
     max-width: 30ch;
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
     line-height: 1.55;
@@ -322,6 +320,9 @@
     color: #12100A;
     letter-spacing: 0.005em;
     text-align: left;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.55),
+      0 1px 6px rgba(255, 255, 255, 0.55);
   }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
@@ -391,8 +392,8 @@
     margin-top: 24px;
     margin-left: 0;
     margin-right: auto;
-    width: 120px;
-    height: 120px;
+    width: 170px;
+    height: 170px;
     aspect-ratio: 1 / 1;
     object-fit: contain;
   }

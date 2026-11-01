@@ -140,7 +140,13 @@ export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
           styles/marketing/cartoon-mobile-hero.css. */}
       <CartoonMobileHero onConnectClick={onConnectClick} onHowItWorksClick={onHowItWorksClick} />
 
-      {/* Desktop (1024px+): unchanged mascot-stage hero, hidden below
+      {/* Desktop (1024px+): the landscape mascot/building photo as a
+          full-bleed background, with the copy placed over the empty
+          sky/grass on the photo's left side — the mascot and building
+          sit naturally on the photo's own right side, so nothing is
+          layered or cropped on top of them. Replaces the old
+          animated mascot-stage column (HeroMascotStage is kept below,
+          unused, in case it's wanted elsewhere later). Hidden below
           1024px via .hero-section-desktop gating in
           styles/marketing/marketing-hero.css. */}
       <section className="hero-section hero-section-desktop">
@@ -168,10 +174,6 @@ export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
                 See how it works
               </button>
             </div>
-          </div>
-
-          <div className="hero-stage">
-            <HeroMascotStage />
           </div>
         </div>
       </section>

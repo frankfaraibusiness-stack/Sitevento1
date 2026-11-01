@@ -405,14 +405,40 @@
   .hero-cta { flex: 0 0 auto; }
 }
 
-/* ---- Desktop: two-column row, copy left / mascot stage right ---- */
+/* ---- Desktop: full-bleed landscape photo, copy on its empty left
+   side ---- */
+/* The photo (hero-bg-desktop.jpg) already has the mascot/building on
+   its right two-thirds and open sky + grass on the left third — so
+   the copy sits directly in that empty space instead of a separate
+   column fighting it for room. No stage/column split, no overlap
+   with the mascot: clean and spacious rather than packed like the
+   mobile hero. */
 @media (min-width: 1024px) {
   .hero-section-desktop {
     display: block;
   }
 
   .hero-section {
-    padding: clamp(56px, 8vw, 104px) clamp(24px, 2.4vw, 40px) clamp(24px, 3vw, 40px);
+    position: relative;
+    isolation: isolate;
+    padding: 0;
+    min-height: 640px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+
+    background-image:
+      linear-gradient(
+        90deg,
+        rgba(8, 20, 36, 0.58) 0%,
+        rgba(8, 20, 36, 0.4) 28%,
+        rgba(8, 20, 36, 0.08) 52%,
+        rgba(8, 20, 36, 0) 68%
+      ),
+      url('/mascot/hero-bg-desktop.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   .hero-inner {
@@ -420,31 +446,34 @@
     align-items: center;
     text-align: left;
     max-width: min(92vw, 1320px);
-    gap: clamp(40px, 6vw, 96px);
-  }
-
-  .hero-stage {
-    order: 0;
-    flex: 1 1 42%;
-    max-width: 520px;
-    width: auto;
-    margin-bottom: 0;
+    width: 100%;
+    margin: 0 auto;
+    padding: clamp(64px, 9vw, 112px) clamp(24px, 4vw, 64px);
   }
 
   .hero-copy {
-    flex: 1 1 52%;
+    flex: 1 1 50%;
+    max-width: 560px;
     align-items: flex-start;
   }
 
-  .hero-eyebrow { font-size: 14px; }
+  .hero-eyebrow {
+    font-size: 14px;
+    color: #FFFFFF;
+    opacity: 0.92;
+  }
 
   .hero-title {
     font-size: clamp(44px, 4.6vw, 64px);
+    color: #FFFFFF;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
   }
 
   .hero-subtitle {
     max-width: 42ch;
     font-size: 17.5px;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
   }
 
   .hero-cta-row {
@@ -456,6 +485,14 @@
     flex: 0 0 auto;
     padding: 16px 28px;
     font-size: 16px;
+  }
+
+  .hero-cta-secondary {
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .hero-cta-secondary:hover {
+    background: #FFFFFF;
   }
 }
 
