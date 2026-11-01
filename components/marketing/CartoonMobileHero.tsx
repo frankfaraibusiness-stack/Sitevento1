@@ -74,7 +74,13 @@ interface CartoonHeroContentProps {
   onHowItWorksClick: () => void;
 }
 
-function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroContentProps) {
+// Exported so the desktop hero (components/marketing/Hero.tsx) can
+// render this exact same markup — same title/rotator, same
+// description, same custom pill CTAs, same platforms badge — instead
+// of a separate, re-typed desktop copy block. Only the CSS differs
+// per breakpoint (see .hero-section-desktop .cartoon-hero in
+// marketing-hero.css), the content and classes are identical.
+export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroContentProps) {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero__layout">

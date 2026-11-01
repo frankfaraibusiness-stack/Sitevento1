@@ -28,6 +28,17 @@
   }
 }
 
+/* Same dead-gap fix as above, now also for the desktop hero: main's
+   extra 16px breathing room (on top of the 56px header clearance)
+   would otherwise leave a visible strip above the photo before
+   .cartoon-hero--desktop .hero's own -56px margin-top pulls it up
+   to the true top of the viewport. */
+@media (min-width: 1024px) {
+  #marketingView {
+    margin-top: -16px;
+  }
+}
+
 /* ============================================================
  * Mascot stage — reuses the onboarding "rig" pattern (glow / two
  * counter-spinning dashed rings / four orbiting shapes / a bobbing
@@ -405,27 +416,35 @@
   .hero-cta { flex: 0 0 auto; }
 }
 
-/* ---- Desktop: full-bleed landscape photo, copy on its empty left
-   side ---- */
-/* The photo (hero-bg-desktop.jpg) already has the mascot/building on
-   its right two-thirds and open sky + grass on the left third — so
-   the copy sits directly in that empty space instead of a separate
-   column fighting it for room. No stage/column split, no overlap
-   with the mascot: clean and spacious rather than packed like the
-   mobile hero. */
+/* ---- Desktop: the exact mobile hero content (CartoonHeroContent —
+   same title/rotator, same description, same custom pill CTAs, same
+   platforms badge) over the landscape photo, full-bleed from the
+   true top of the viewport ---- */
+/* .hero-section-desktop here wraps CartoonHeroContent's own markup
+   (.hero/.hero__layout/.hero__inner/etc, all scoped under
+   .cartoon-hero--desktop so they don't collide with the mobile
+   .cartoon-hero rules in cartoon-mobile-hero.css, which are gated off
+   at this breakpoint). The photo already has the mascot/building on
+   its right two-thirds and open sky + grass on the left third, so
+   the left-aligned copy sits directly in that empty space — same
+   idea as mobile, just with desktop-sized type/spacing and no mobile-
+   only pieces (no loader, no sticky bottom nav; the real nav is
+   GlobalNav, mounted site-wide). */
 @media (min-width: 1024px) {
   .hero-section-desktop {
     display: block;
   }
 
-  .hero-section {
-    position: relative;
-    isolation: isolate;
-    padding: 0;
+  .cartoon-hero--desktop .hero {
+    /* Same trick as mobile: pull up by the fixed header's height so
+       the photo starts at the true top of the viewport, behind the
+       header's glass bar, instead of beginning underneath it — then
+       pad that height back so the content clears the header. */
+    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 56px) clamp(24px, 4vw, 64px) 96px;
     min-height: 640px;
     display: flex;
     align-items: center;
-    overflow: hidden;
 
     background-image:
       linear-gradient(
@@ -437,62 +456,58 @@
       ),
       url('/mascot/hero-bg-desktop.jpg');
     background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-position: top center;
   }
 
-  .hero-inner {
-    flex-direction: row;
-    align-items: center;
-    text-align: left;
+  .cartoon-hero--desktop .hero__layout {
     max-width: min(92vw, 1320px);
     width: 100%;
-    margin: 0 auto;
-    padding: clamp(64px, 9vw, 112px) clamp(24px, 4vw, 64px);
   }
 
-  .hero-copy {
-    flex: 1 1 50%;
+  .cartoon-hero--desktop .hero__inner {
     max-width: 560px;
-    align-items: flex-start;
+    margin: 0;
+    text-align: left;
   }
 
-  .hero-eyebrow {
-    font-size: 14px;
-    color: #FFFFFF;
-    opacity: 0.92;
+  .cartoon-hero--desktop .hero__title {
+    text-align: left;
+    font-size: clamp(40px, 4.2vw, 60px);
   }
 
-  .hero-title {
-    font-size: clamp(44px, 4.6vw, 64px);
-    color: #FFFFFF;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+  .cartoon-hero--desktop .hero__titleLine {
+    font-size: clamp(32px, 3.4vw, 48px);
   }
 
-  .hero-subtitle {
-    max-width: 42ch;
-    font-size: 17.5px;
-    color: rgba(255, 255, 255, 0.92);
-    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+  .cartoon-hero--desktop .rotator {
+    place-items: start;
+    text-align: left;
+    font-size: clamp(40px, 4.6vw, 64px);
   }
 
-  .hero-cta-row {
-    flex-direction: row;
-    max-width: none;
+  .cartoon-hero--desktop .rotator__word {
+    text-align: left;
+    justify-self: start;
   }
 
-  .hero-cta {
-    flex: 0 0 auto;
-    padding: 16px 28px;
+  .cartoon-hero--desktop .hero__sub {
+    margin-left: 0;
     font-size: 16px;
+    max-width: 42ch;
   }
 
-  .hero-cta-secondary {
-    background: rgba(255, 255, 255, 0.92);
+  .cartoon-hero--desktop .hero__ctas {
+    flex-direction: row;
+    align-items: center;
   }
 
-  .hero-cta-secondary:hover {
-    background: #FFFFFF;
+  .cartoon-hero--desktop .hero__platformsBadge {
+    width: 190px;
+    height: 190px;
+  }
+
+  .cartoon-hero--desktop .hero__visual {
+    display: none;
   }
 }
 

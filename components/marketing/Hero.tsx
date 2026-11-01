@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CartoonMobileHero } from './CartoonMobileHero';
+import { CartoonMobileHero, CartoonHeroContent } from './CartoonMobileHero';
 
 // components/marketing/Hero.tsx
 //
@@ -140,42 +140,19 @@ export function Hero({ onConnectClick, onHowItWorksClick }: HeroProps) {
           styles/marketing/cartoon-mobile-hero.css. */}
       <CartoonMobileHero onConnectClick={onConnectClick} onHowItWorksClick={onHowItWorksClick} />
 
-      {/* Desktop (1024px+): the landscape mascot/building photo as a
-          full-bleed background, with the copy placed over the empty
-          sky/grass on the photo's left side — the mascot and building
-          sit naturally on the photo's own right side, so nothing is
-          layered or cropped on top of them. Replaces the old
-          animated mascot-stage column (HeroMascotStage is kept below,
-          unused, in case it's wanted elsewhere later). Hidden below
-          1024px via .hero-section-desktop gating in
+      {/* Desktop (1024px+): same content as the mobile hero — same
+          title/rotator, same description, same custom pill CTAs,
+          same platforms badge (CartoonHeroContent, shared with
+          CartoonMobileHero.tsx) — laid out over the landscape photo
+          as a full-bleed background that starts at the true top of
+          the viewport behind the header, exactly like mobile does.
+          The old desktop-only copy ("See your site. Run your site.")
+          and the old mascot-stage column are both gone; HeroMascotStage
+          is kept below, unused, in case it's wanted elsewhere later.
+          Hidden below 1024px via .hero-section-desktop gating in
           styles/marketing/marketing-hero.css. */}
-      <section className="hero-section hero-section-desktop">
-        <div className="hero-inner">
-          <div className="hero-copy">
-            <p className="hero-eyebrow">One tag. Total control.</p>
-            <h1 className="hero-title">
-              See your site.
-              <br />
-              Run your site.
-              <br />
-              From one tab.
-            </h1>
-            <p className="hero-subtitle">
-              Paste a single tag into your site&apos;s head and sitevento turns
-              into live mission control: every visitor, click, and conversion
-              streaming in, with widgets, alerts, and access controls you can
-              flip on without touching code again.
-            </p>
-            <div className="hero-cta-row">
-              <button type="button" className="hero-cta hero-cta-primary" onClick={onConnectClick}>
-                Connect your site
-              </button>
-              <button type="button" className="hero-cta hero-cta-secondary" onClick={onHowItWorksClick}>
-                See how it works
-              </button>
-            </div>
-          </div>
-        </div>
+      <section className="hero-section-desktop cartoon-hero--desktop">
+        <CartoonHeroContent onConnectClick={onConnectClick} onHowItWorksClick={onHowItWorksClick} />
       </section>
     </>
   );
