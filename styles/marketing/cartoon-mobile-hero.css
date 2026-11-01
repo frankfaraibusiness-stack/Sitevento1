@@ -32,14 +32,10 @@
     overflow: hidden;
     animation: loaderExit 0.6s ease 5s forwards;
 
-    /* Was a flat purple fill (#E7E1FC). Now the same living
-       lime+purple mix as the hero behind it (base.css
-       --brand-mix-gradient), so the boot moment and the hero it hands
-       off to read as one continuous background instead of two
-       separately-colored screens. */
-    background: var(--brand-mix-gradient);
-    background-size: 300% 300%;
-    animation: loaderExit 0.6s ease 5s forwards, heroGradientShift 14s ease-in-out infinite;
+    /* Single flat fill — the same solid --app-bg purple the rest of
+       the app's html/body uses, not the animated lime+purple mix.
+       No moving gradient, no lime tint, just one color. */
+    background: var(--app-bg, #c1b5f7);
   }
 
   .cartoon-hero .loader::before {
@@ -310,7 +306,7 @@
   /* ---------- description ---------- */
   /* No card/box — just blurs the photo directly behind the text
      (transparent background, no border, no radius, no fill) so the
-     image stays visible but soft back there, with plain white text
+     image stays visible but soft back there, with bold black text
      on top. Small and left-aligned, not centered with the headline. */
   .cartoon-hero .hero__sub {
     margin: 18px 0 0;
@@ -322,14 +318,14 @@
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
     line-height: 1.55;
-    font-weight: 600;
-    color: #FFFFFF;
+    font-weight: 700;
+    color: #12100A;
     letter-spacing: 0.005em;
     text-align: left;
   }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
-    color: #FFFFFF;
+    color: #12100A;
   }
 
   /* ---------- CTAs ---------- */
