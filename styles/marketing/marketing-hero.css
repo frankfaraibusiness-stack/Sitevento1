@@ -492,18 +492,53 @@
 
   .cartoon-hero--desktop .hero__sub {
     margin-left: 0;
-    font-size: 16px;
-    max-width: 42ch;
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 46ch;
+    /* Base mobile rule sets this to near-black (#12100A), meant for
+       sitting on open sky. On desktop the description sits over the
+       dark-gradient left edge of the photo, where dark text is
+       unreadable — white + bold instead, with a real text-shadow
+       (not the mobile hard outline) since the surface is dark rather
+       than light. */
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  .cartoon-hero--desktop .hero__sub strong {
+    color: #FFFFFF;
+    font-weight: 800;
   }
 
   .cartoon-hero--desktop .hero__ctas {
     flex-direction: row;
     align-items: center;
+    gap: 16px;
+    margin-top: 32px;
   }
 
+  /* Base mobile .btn rule (font-size: 13px, padding: 7px 18px) is
+     sized for a small phone screen — desktop had no override at all,
+     so the CTAs were rendering at that same tiny mobile size. Scaled
+     up to a size that actually reads as a primary desktop CTA. */
+  .cartoon-hero--desktop .btn {
+    font-size: 16px;
+    padding: 14px 30px;
+    min-width: 0;
+    border-width: 2px;
+    box-shadow: 0 4px 0 #000;
+  }
+
+  .cartoon-hero--desktop .play-icon {
+    font-size: 1rem;
+  }
+
+  /* Platforms badge is mobile-only — desktop keeps the hero focused
+     on the headline/description/CTAs over the photo, no extra image
+     stacked underneath them. */
   .cartoon-hero--desktop .hero__platformsBadge {
-    width: 190px;
-    height: 190px;
+    display: none;
   }
 
   .cartoon-hero--desktop .hero__visual {
