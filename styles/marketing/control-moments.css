@@ -33,7 +33,11 @@
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  color: #6b665e;
+  /* Was a faint grey, nearly invisible against the purple page
+     background. A deep ink tone with reduced opacity reads clearly
+     against --app-bg while still sitting a step quieter than the
+     heading above it. */
+  color: rgba(34, 32, 28, 0.72);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -62,31 +66,40 @@
 }
 
 /* ---- The panel itself: a tiny browser-chrome mockup ----
-   Section sits directly on the lime page background with nothing but
-   a soft shadow under each panel — the ink/lime/red panel fills read
-   fine, but with no defined edge they blend into the lime around them
-   on mobile where the shadow barely shows. A solid black border gives
-   every panel (including the lime-toned one, which otherwise had
-   zero contrast against its own lime surroundings) a crisp outline
-   that stands out on the page. */
+   One consistent card surface across all three panels instead of
+   three competing solid colors (black/lime/red) fighting the purple
+   page background. A clean off-white surface with a thin accent bar
+   on top carries just enough color per moment to tell them apart,
+   without turning the whole card into a loud block of color. */
 .cm-panel {
+  position: relative;
   border-radius: 16px;
   overflow: hidden;
-  border: 2px solid #000;
+  background: var(--bg);
+  border: 1px solid rgba(34, 32, 28, 0.08);
   box-shadow: 0 18px 38px -24px rgba(34, 32, 28, 0.35);
+}
+
+.cm-panel::before {
+  content: "";
+  display: block;
+  height: 4px;
+  background: var(--cm-accent, var(--ink));
 }
 
 .cm-panel-chrome {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 12px;
+  padding: 10px 12px 9px;
+  border-bottom: 1px solid rgba(34, 32, 28, 0.08);
 }
 
 .cm-panel-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
+  background: rgba(34, 32, 28, 0.14);
 }
 
 .cm-panel-url {
@@ -95,6 +108,7 @@
   font-weight: 600;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0.01em;
+  color: rgba(34, 32, 28, 0.45);
 }
 
 .cm-panel-body {
@@ -111,9 +125,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 4px;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cm-accent, var(--ink)) 12%, transparent);
+  color: var(--cm-accent, var(--ink));
 }
 
 .cm-panel-glyph svg {
@@ -125,81 +142,24 @@
   font-size: 16px;
   font-weight: 700;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
 }
 
 .cm-panel-sub {
   font-size: 12.5px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: rgba(34, 32, 28, 0.6);
 }
 
-/* ---- Panel tones ---- */
+/* ---- Per-moment accent (used only for the top bar + glyph) ---- */
 .cm-panel-ink {
-  background: var(--ink);
+  --cm-accent: #4C3BCB;
 }
-.cm-panel-ink .cm-panel-chrome {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.cm-panel-ink .cm-panel-dot {
-  background: rgba(255, 255, 255, 0.18);
-}
-.cm-panel-ink .cm-panel-url {
-  color: rgba(255, 255, 255, 0.45);
-}
-.cm-panel-ink .cm-panel-glyph {
-  color: var(--lime);
-}
-.cm-panel-ink .cm-panel-headline {
-  color: #fff;
-}
-.cm-panel-ink .cm-panel-sub {
-  color: rgba(255, 255, 255, 0.55);
-}
-
 .cm-panel-lime {
-  background: var(--lime);
+  --cm-accent: #5FA419;
 }
-.cm-panel-lime .cm-panel-chrome {
-  border-bottom: 1px solid rgba(26, 31, 10, 0.12);
-}
-.cm-panel-lime .cm-panel-dot {
-  background: rgba(26, 31, 10, 0.22);
-}
-.cm-panel-lime .cm-panel-url {
-  color: rgba(26, 31, 10, 0.5);
-}
-.cm-panel-lime .cm-panel-glyph {
-  color: var(--lime-ink);
-}
-.cm-panel-lime .cm-panel-headline {
-  color: var(--lime-ink);
-}
-.cm-panel-lime .cm-panel-sub {
-  color: rgba(26, 31, 10, 0.65);
-}
-
-/* Was var(--walnut), a muddy brown that doesn't read as "blocked" —
-   swapped for a punchy, slightly cartoonish red (not a harsh pure
-   #ff0000) that actually communicates "access denied" at a glance. */
 .cm-panel-walnut {
-  background: #e4432f;
-}
-.cm-panel-walnut .cm-panel-chrome {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-}
-.cm-panel-walnut .cm-panel-dot {
-  background: rgba(255, 255, 255, 0.22);
-}
-.cm-panel-walnut .cm-panel-url {
-  color: rgba(255, 255, 255, 0.55);
-}
-.cm-panel-walnut .cm-panel-glyph {
-  color: #fff;
-}
-.cm-panel-walnut .cm-panel-headline {
-  color: #fff;
-}
-.cm-panel-walnut .cm-panel-sub {
-  color: rgba(255, 255, 255, 0.68);
+  --cm-accent: #C23B2E;
 }
 
 /* ---- Caption under each panel ---- */
@@ -215,7 +175,9 @@
   margin: -8px 0 0;
   font-size: 13.5px;
   line-height: 1.55;
-  color: #6b665e;
+  /* Was the same faint grey as the heading sub — bumped to a deeper
+     ink tone so it holds up against the purple page background. */
+  color: rgba(34, 32, 28, 0.68);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   max-width: 42ch;
 }
