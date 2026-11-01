@@ -210,16 +210,15 @@
     padding: 22px 22px 52px;
     color: var(--ink);
 
-    /* Flat split: full-width lime band across the top, then the rest
-       of the hero drops to the same --app-bg purple the rest of the
-       page (html, body) uses, so the hero's lower portion blends
-       straight into the page background instead of being its own
-       color. No gradient, no motion. */
+    /* Lime across the top, fading out as it goes rather than cutting
+       flat, then blending smoothly into the same --app-bg purple the
+       rest of the page (html, body) uses — no hard edge where the
+       two colors meet. */
     background: linear-gradient(
       180deg,
       #C6F24E 0%,
-      #C6F24E 30%,
-      var(--app-bg, #c1b5f7) 30%,
+      #C6F24E 8%,
+      var(--app-bg, #c1b5f7) 55%,
       var(--app-bg, #c1b5f7) 100%
     );
   }
