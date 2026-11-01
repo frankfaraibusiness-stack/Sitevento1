@@ -1,0 +1,1110 @@
+/* ============================================================
+ * marketing-content.css — top nav, logo marquee, FAQ, testimonials, stats, how-it-works steps, pricing
+ * Split from app/globals.css for maintainability.
+ * ============================================================ */
+
+  /* Header now blends flat into the page background (--app-bg) instead
+     of floating as a separate glass pill — the outer <header> element
+     itself (styles/base/base.css) is what's fixed/full-width; .pill-nav is
+     just its inner row, no longer a visually distinct capsule. */
+  /* Full-bleed row: logo flush to the left edge, nav-right flush to
+     the right edge. No max-width/auto-margin centering — those were
+     capping the bar at 640px and centering it in the middle of the
+     full-width <header>, which is what pushed the logo away from the
+     left edge and the avatar/hamburger away from the right edge. */
+  .pill-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 56px;
+    padding: 0 16px;
+    background: transparent;
+    color: var(--ink);
+  }
+
+  @media (min-width: 1024px) {
+    .pill-nav {
+      padding: 0 clamp(24px, 2.4vw, 40px);
+    }
+  }
+
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 44px;
+    height: 44px;
+    background: var(--app-header-bg);
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 3.5px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .hamburger:hover span {
+    background: var(--walnut);
+  }
+
+  /* Close (X) button that swaps in for the hamburger in the header's
+     auth mode (see Header.tsx isAuthMode). Same slot/size as
+     .hamburger so the row doesn't reflow, but bare — no pill
+     background, no border/tint — just the icon, per the "clean close,
+     no line" ask for the auth screen. */
+  .nav-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    color: var(--ink);
+    transition: background 0.15s ease, transform 0.15s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .nav-close:hover {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+
+  .nav-close:active { transform: scale(0.94); }
+
+  .nav-close svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+  }
+
+  .signup {
+    background: var(--lime);
+    color: var(--lime-ink);
+    border: 1.5px solid #22201c;
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .pill-nav .brand {
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    font-size: 15px;
+  }
+
+  .pill-nav .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .pill-nav .nav-logo {
+    height: 44px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .pill-nav .nav-profile {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 0;
+    border: 1.5px solid var(--ink);
+    background: var(--cream-deep);
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pill-nav .nav-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pill-nav .nav-profile .nav-profile-initial {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--walnut);
+    color: var(--cream);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--walnut-dark);
+    outline-offset: 2px;
+  }
+
+  main {
+    min-height: 60vh;
+  }
+
+  /* ---- Marquee (auto-scrolling logo strip) ----
+     Glass strip on the lime page (same translucent-white + blur
+     language as the header pill), chips instead of bare names, and a
+     soft edge fade so the loop reads as a clean continuous belt
+     rather than hard-cutting at the container edge. */
+  .marquee-wrap {
+    border-top: 1px solid rgba(34, 32, 28, 0.12);
+    border-bottom: 1px solid rgba(34, 32, 28, 0.12);
+    background: rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    padding: 26px 0;
+    overflow: hidden;
+  }
+
+  .marquee-label {
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lime-ink);
+    opacity: 0.55;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0 0 18px;
+  }
+
+  .marquee-fade {
+    position: relative;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    gap: 14px;
+    animation: marquee-scroll 32s linear infinite;
+  }
+
+  /* Pause-on-hover only for devices that actually have hover (mouse/
+     trackpad). Without the (hover: hover) guard, a tap on a touchscreen
+     can leave the element "stuck" in :hover (iOS Safari in particular
+     keeps it active until something else is tapped), which reads as the
+     marquee permanently freezing the moment it's touched. Touch devices
+     never pause it this way. */
+  @media (hover: hover) {
+    .marquee-wrap:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .marquee-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    white-space: nowrap;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--lime-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.01em;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(34, 32, 28, 0.14);
+    border-radius: 999px;
+    padding: 9px 18px 9px 14px;
+  }
+
+  .marquee-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    opacity: 0.35;
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; overflow-x: auto; }
+    .marquee-fade { mask-image: none; -webkit-mask-image: none; }
+  }
+
+  /* ---- Capabilities (icon grid + detail grid) ----
+     Shared by TopCapabilities (4 cols, icon + title + body) and
+     DetailCapabilities, which reuses the same .capabilities/.cap
+     classes directly under the "What sitevento actually does"
+     .section-heading — same raised-card language as .price-card /
+     .testi-card / .step above (ink border, offset shadow pop). */
+  .capabilities {
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .cap {
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 22px 20px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  /* TopCapabilities cards are registered with useScrollReveal, which
+     tags them [data-reveal] and adds .is-visible once scrolled into
+     view (see the hook's own comment) — only those start hidden/
+     offset and animate in. DetailCapabilities cards carry no ref, so
+     they're untagged and render visible immediately. */
+  .cap[data-reveal] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: transform 220ms ease, box-shadow 220ms ease, opacity 420ms ease, transform 420ms ease;
+  }
+
+  .cap[data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (hover: hover) {
+    .cap:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.3);
+    }
+  }
+
+  .cap-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--lime-ink);
+    flex-shrink: 0;
+  }
+
+  .cap-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cap h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .cap p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #6b665e;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* DetailCapabilities cards carry no icon — just title + body, so
+     they read as a denser, text-first second pass over the same
+     ground the top icon row already covered. */
+  .capabilities .cap:not(:has(.cap-icon)) {
+    padding-top: 20px;
+  }
+
+  /* Below 980px cards go 2-per-row and stay there — including down to
+     320px-wide phones. A full-width single column here made the page
+     feel very long for very little info per screen, which tended to
+     make people stop scrolling before reaching everything below.
+     Padding/gaps/type tighten up further down so two cards keep
+     fitting comfortably side by side even on the narrowest phones. */
+  @media (max-width: 980px) {
+    .capabilities { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .capabilities { gap: 10px; padding: 0 16px; }
+    .cap { padding: 16px 14px; gap: 8px; border-radius: 14px; }
+    .cap-icon { width: 32px; height: 32px; border-radius: 9px; }
+    .cap-icon svg { width: 17px; height: 17px; }
+    .cap h3 { font-size: 13.5px; }
+    .cap p { font-size: 12.5px; line-height: 1.48; }
+  }
+
+  @media (max-width: 374px) {
+    .capabilities { gap: 8px; padding: 0 12px; }
+    .cap { padding: 13px 11px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cap { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ---- Section shared ---- */
+  .section-heading {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+    text-align: left;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 400;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .section-heading p {
+    font-size: 16px;
+    color: #6b665e;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    max-width: 50ch;
+  }
+
+  .mark {
+    background: var(--lime);
+    padding: 0 6px;
+    border-radius: 4px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  /* ---- FAQ accordion ---- */
+  .faq {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .faq-item summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 4px;
+    cursor: pointer;
+    font-size: 17px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 500;
+  }
+
+  .faq-item summary::-webkit-details-marker { display: none; }
+
+  .faq-item .faq-icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .faq-item .faq-icon::before,
+  .faq-item .faq-icon::after {
+    content: "";
+    position: absolute;
+    background: var(--ink);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .faq-item .faq-icon::before {
+    width: 10px;
+    height: 1.5px;
+  }
+
+  .faq-item .faq-icon::after {
+    width: 1.5px;
+    height: 10px;
+  }
+
+  .faq-item[open] .faq-icon::after {
+    transform: rotate(90deg);
+    opacity: 0;
+  }
+
+  .faq-item[open] summary {
+    color: var(--walnut-dark);
+  }
+
+  .faq-answer {
+    padding: 0 4px 22px;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #6b665e;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 62ch;
+  }
+
+  /* ---- Testimonials (grid) ----
+     Lives directly on the page's lime background (no cream patch) so
+     it reads as part of the same brand surface as the rest of the
+     page, with dark-ink-edged cards that "pop" off lime via an offset
+     shadow — same raised-card language as .testi-card and .price-card
+     — instead of flat white tiles with a pale cream hairline. Corner
+     blob mascot (.testi-grid-blob-peek, the dark colorway of the mini
+     blob) is styled further down alongside .testi-blob-peek so both
+     testimonial sections share one definition. */
+  .testimonials-wrap {
+    position: relative;
+    padding: 72px 0 80px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+
+  .testimonials {
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .testimonial-card {
+    background: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 24px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--cream);
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.3);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: testimonial-card-in 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  @keyframes testimonial-card-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (hover: hover) {
+    .testimonial-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.3);
+    }
+  }
+
+  .testimonial-card p.quote {
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--cream);
+  }
+
+  .testimonial-card .person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .testimonial-card .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--lime-ink);
+    flex-shrink: 0;
+  }
+
+  .testimonial-card .person .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cream);
+  }
+
+  .testimonial-card .person .role {
+    font-size: 13px;
+    color: rgba(246, 242, 231, 0.6);
+  }
+
+  @media (max-width: 760px) {
+    .testimonials { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testimonial-card { animation: none; opacity: 1; transform: none; }
+    .testi-grid-blob-peek { animation: none; }
+  }
+
+  /* ---- Stats: light-lime "live scanner" card ----
+     A single glassy panel (not flat white tiles on cream) with a live
+     header, a sweeping highlight that drifts across the card on a
+     loop, and count-up numbers (see useCountUp / StatCard) rather
+     than static text — reads as a live instrument reading, not a
+     printed spec sheet. */
+  .stats-scanner {
+    position: relative;
+    max-width: 900px;
+    margin: 24px auto 80px;
+    padding: 20px 4px 4px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.3) 100%);
+    border: 1px solid rgba(34, 32, 28, 0.14);
+    box-shadow: 0 16px 40px -20px rgba(34, 32, 28, 0.25);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    overflow: hidden;
+  }
+
+  .stats-scanner-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 24px 18px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lime-ink);
+    opacity: 0.6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .stats-scanner-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .stats-scanner-dot::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: var(--lime-ink);
+    opacity: 0.45;
+    animation: pulse-ring 1.6s ease-out infinite;
+  }
+
+  /* Soft lime highlight that sweeps left-to-right across the whole
+     card on a slow loop — the "scanner" read. Sits above the base
+     panel but below the stat content (z-index on .stats below). */
+  .stats-scanner-sweep {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -40%;
+    width: 40%;
+    background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--lime) 55%, transparent) 50%, transparent 100%);
+    filter: blur(6px);
+    animation: stats-sweep 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes stats-sweep {
+    0%   { left: -40%; }
+    100% { left: 100%; }
+  }
+
+  .stats {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(34, 32, 28, 0.1);
+    border-top: 1px solid rgba(34, 32, 28, 0.1);
+    border-radius: 0 0 23px 23px;
+    overflow: hidden;
+  }
+
+  .stat {
+    background: rgba(255, 255, 255, 0.55);
+    padding: 26px 16px 28px;
+    text-align: center;
+  }
+
+  .stat .stat-num {
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--lime-ink);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .stat .stat-label {
+    font-size: 12.5px;
+    color: var(--lime-ink);
+    opacity: 0.6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stats-scanner-sweep { animation: none; display: none; }
+    .stats-scanner-dot::after { animation: none; display: none; }
+  }
+
+  /* ---- Auto-scrolling testimonials ----
+     Cartoonic lime section instead of a hardcoded black band, with a
+     small blob mascot peeking in from the top corner (same brand
+     "jelly" look as HeroSlime/BootSplash). Background is a plain,
+     explicit hex (not color-mix()) — color-mix() support is spotty on
+     some mobile browsers/webviews and falls back to an unstyled
+     background there, which can read as black against this dark-ink
+     page chrome. #f2ffd4 is the same pale lime-white color-mix(in
+     srgb, var(--lime) 22%, #fff) resolves to, just pre-computed. */
+  .testi-marquee-wrap {
+    position: relative;
+    background: #f2ffd4;
+    border-top: 1.5px solid var(--lime-ink);
+    border-bottom: 1.5px solid var(--lime-ink);
+    padding: 56px 0;
+    overflow: hidden;
+  }
+
+  /* ---- Mini blob mascot (corner peek, both testimonial sections) ----
+     Same jelly body/eyes/mouth as HeroSlime, scaled down to a small
+     fixed-size corner character. Width/height are set in px (not %),
+     so it can never inflate to fill its wrapper. Breathing (squash/
+     stretch) + bob run continuously via CSS; blinking is driven by
+     real timed React state (see MiniBlob), same as HeroSlime, so it
+     reads as alive rather than a static sticker with a CSS wiggle. */
+  .testi-blob-peek,
+  .testi-grid-blob-peek {
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    max-width: 72px;
+    max-height: 72px;
+    pointer-events: none;
+    animation: mini-blob-bob 3.6s ease-in-out infinite;
+    filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.1));
+  }
+
+  .testi-blob-peek {
+    top: -26px;
+    right: 6%;
+  }
+
+  .testi-grid-blob-peek {
+    top: -22px;
+    left: 7%;
+  }
+
+  .mini-blob-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .mini-blob-body-wrap {
+    transform-origin: 60px 60px;
+    animation: mini-blob-idle 3.6s ease-in-out infinite;
+  }
+
+  .mini-blob-body {
+    fill: var(--lime);
+    stroke: var(--lime-ink);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+
+  .testi-grid-blob-peek .mini-blob-body {
+    fill: var(--ink);
+    stroke: var(--ink);
+  }
+
+  .mini-blob-eye {
+    fill: var(--lime-ink);
+    transform-origin: center;
+    transition: transform 120ms ease-out;
+  }
+
+  .testi-grid-blob-peek .mini-blob-eye {
+    fill: var(--lime);
+  }
+
+  .mini-blob-eyes.is-blinking .mini-blob-eye {
+    transform: scaleY(0.08);
+  }
+
+  .mini-blob-mouth {
+    fill: none;
+    stroke: var(--lime-ink);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+  }
+
+  .testi-grid-blob-peek .mini-blob-mouth {
+    stroke: var(--lime);
+  }
+
+  @keyframes mini-blob-bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(5px) rotate(3deg); }
+  }
+
+  @keyframes mini-blob-idle {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.03, 0.96); }
+    50%  { transform: scale(0.975, 1.035); }
+    75%  { transform: scale(1.02, 0.98); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testi-blob-peek,
+    .testi-grid-blob-peek,
+    .mini-blob-body-wrap {
+      animation: none !important;
+    }
+  }
+
+  .testi-marquee-wrap .section-heading h2,
+  .testi-marquee-wrap .section-heading p {
+    color: var(--lime-ink);
+  }
+
+  .testi-marquee-wrap .section-heading p {
+    opacity: 0.7;
+  }
+
+  .testi-track {
+    display: flex;
+    width: max-content;
+    gap: 18px;
+    margin-top: 32px;
+    animation: testi-scroll 42s linear infinite;
+    padding: 0 24px;
+  }
+
+  /* Same (hover: hover) guard as .marquee-wrap above — a touch tap
+     must never leave this stuck mid-pause. */
+  @media (hover: hover) {
+    .testi-marquee-wrap:hover .testi-track {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes testi-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .testi-track { animation: none; overflow-x: auto; }
+  }
+
+  .testi-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1.5px solid var(--lime-ink);
+    border-radius: 18px;
+    padding: 22px 20px;
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 4px 0 rgba(26, 31, 10, 0.18);
+  }
+
+  .testi-card p.quote {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--lime-ink);
+  }
+
+  .testi-card .person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .testi-card .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--lime);
+    border: 1.5px solid var(--lime-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--lime-ink);
+    flex-shrink: 0;
+  }
+
+  .testi-card .person .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lime-ink);
+    display: block;
+  }
+
+  .testi-card .person .role {
+    font-size: 12px;
+    color: var(--lime-ink);
+    opacity: 0.6;
+  }
+
+  /* ---- How it works ---- */
+  .steps {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+
+  .step {
+    border-top: 2px solid var(--ink);
+    padding-top: 16px;
+  }
+
+  .step .step-num {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    color: var(--walnut-dark);
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .step h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .step p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #6b665e;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  @media (max-width: 640px) {
+    .steps { grid-template-columns: 1fr; }
+  }
+
+  /* ---- Pricing ----
+     Sits on the page's lime background. Cards get a solid dark-ink
+     edge plus an offset drop-shadow "pop" (same raised-card language
+     used by .testi-card / .testimonial-card above) instead of a pale
+     cream hairline, so they read as deliberate cut-out cards on lime
+     rather than flat panels waiting on a cream section to sit in. A
+     small blob accent and a staggered rise-in give the section the
+     same bit of life the testimonial sections have. */
+  .pricing-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pricing-blob-peek {
+    position: absolute;
+    top: -20px;
+    right: 8%;
+    width: 60px;
+    height: 60px;
+    opacity: 0.9;
+    animation: pricing-blob-bob 4s ease-in-out infinite;
+    filter: drop-shadow(0 6px 0 rgba(26, 31, 10, 0.12));
+  }
+
+  @keyframes pricing-blob-bob {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50%      { transform: translateY(6px) rotate(4deg); }
+  }
+
+  .pricing {
+    /* Same fluid-cap approach as .dash-wrap (styles/dashboard/dashboard.css). */
+    max-width: clamp(1180px, 76vw, 1680px);
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+
+  .price-card {
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 26px 22px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.3);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: price-card-in 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  @keyframes price-card-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (hover: hover) {
+    .price-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.3);
+    }
+  }
+
+  .price-card.featured {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--cream);
+    position: relative;
+    box-shadow: 0 6px 0 rgba(26, 31, 10, 0.45);
+  }
+
+  @media (hover: hover) {
+    .price-card.featured:hover {
+      box-shadow: 0 10px 0 rgba(26, 31, 10, 0.45);
+    }
+  }
+
+  .price-card .plan-name {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0 0 6px;
+  }
+
+  .price-card .plan-price {
+    font-size: 34px;
+    margin: 0 0 4px;
+    font-weight: 400;
+  }
+
+  .price-card .plan-price span {
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    opacity: 0.65;
+  }
+
+  .price-card .plan-desc {
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    opacity: 0.75;
+    margin: 0 0 22px;
+  }
+
+  .price-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+  }
+
+  .price-card li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .price-card li::before {
+    content: "+";
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: var(--walnut);
+    flex-shrink: 0;
+  }
+
+  .price-card.featured li::before {
+    color: var(--lime);
+  }
+
+  .price-card .plan-btn {
+    border-radius: 999px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .price-card.featured .plan-btn {
+    background: var(--lime);
+    color: var(--lime-ink);
+    border-color: var(--lime);
+  }
+
+  @media (max-width: 980px) {
+    .pricing { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .pricing { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .price-card { animation: none; opacity: 1; transform: none; }
+    .pricing-blob-peek { animation: none; }
+  }
+
