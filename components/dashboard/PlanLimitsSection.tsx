@@ -12,7 +12,7 @@
 // DashboardShell.tsx already passes each of them today, so the
 // backend-wiring step is a straight copy of that call site.
 import type { PlanId } from '@/lib/plans';
-import type { TokenUsage } from '@/lib/limits';
+import type { TokenUsage } from '@/hooks/useAccountLimits';
 import type { WalletSummary } from '@/lib/wallet';
 import { PlanUsageStrip } from './PlanUsageStrip';
 import { DailyLimitCard } from './DailyLimitCard';
