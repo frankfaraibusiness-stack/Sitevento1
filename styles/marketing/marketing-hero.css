@@ -15,6 +15,19 @@
   background: var(--app-bg);
 }
 
+/* Kill the gap between the fixed header and the mobile cartoon hero.
+   `main` normally adds 56px (header height) + 16px breathing room above
+   its content (styles/base/base.css); that extra 16px, stacked on top
+   of .hero's own 40px top padding (cartoon-mobile-hero.css), read as a
+   dead strip of empty lime between the header's bottom border and the
+   headline. Scoped to the marketing view only — other pages still want
+   that breathing gap under the header. */
+@media (max-width: 1023px) {
+  #marketingView {
+    margin-top: -16px;
+  }
+}
+
 /* ============================================================
  * Mascot stage — reuses the onboarding "rig" pattern (glow / two
  * counter-spinning dashed rings / four orbiting shapes / a bobbing

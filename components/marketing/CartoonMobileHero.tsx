@@ -129,6 +129,20 @@ function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroCo
               </span>
               Watch Demo
             </button>
+
+            {/* Fills the empty space to the right of the stacked CTA
+                buttons on mobile (they're left-aligned/auto-width, not
+                full-width, which left a dead gap next to them). Purely
+                decorative, hidden once the layout goes two-column at
+                720px+ and .hero__visual takes over that space. */}
+            <img
+              className="hero__ctaPet"
+              src="/mascot/hero-cta-pet.gif"
+              alt=""
+              aria-hidden="true"
+              width={220}
+              height={220}
+            />
           </div>
 
           <div className="brands">

@@ -199,7 +199,7 @@
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding: 40px 22px 52px;
+    padding: 22px 22px 52px;
     background: var(--lime-bg);
     color: var(--ink);
   }
@@ -328,11 +328,33 @@
 
   /* ---------- CTAs ---------- */
   .cartoon-hero .hero__ctas {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
     margin-top: 28px;
+  }
+
+  /* Decorative pet filling the dead space to the right of the
+     left-aligned CTA buttons (see CartoonMobileHero.tsx). Pinned to
+     that empty area rather than flowed inline, so it never pushes the
+     buttons around or forces the column narrower. */
+  .cartoon-hero .hero__ctaPet {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(6deg);
+    width: clamp(84px, 24vw, 128px);
+    height: auto;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 10px rgba(18, 16, 10, 0.18));
+    animation: ctaPetFloat 3.2s ease-in-out infinite;
+  }
+
+  @keyframes ctaPetFloat {
+    0%, 100% { transform: translateY(-50%) rotate(6deg); }
+    50%      { transform: translateY(calc(-50% - 8px)) rotate(2deg); }
   }
 
   .cartoon-hero .btn {
@@ -629,9 +651,11 @@
     .cartoon-hero .marquee { margin-inline: -40px; }
     .cartoon-hero .marquee__track { padding-inline: 40px; }
     .cartoon-hero .navbar { bottom: 24px; }
+    .cartoon-hero .hero__ctaPet { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .cartoon-hero .hero__ctaPet { animation: none; }
     .cartoon-hero .btn__icon::after { animation: none; }
     .cartoon-hero .icon-play, .cartoon-hero .icon-pause { animation: none; }
     .cartoon-hero .icon-play { opacity: 1; }

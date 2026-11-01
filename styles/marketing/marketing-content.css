@@ -123,19 +123,35 @@
     flex-shrink: 0;
   }
 
+  /* 3D cartoonic avatar button, matching the cartoon hero's button
+     language (lime fill, thick ink border, hard offset shadow) instead
+     of a flat brown circle. The offset shadow + active "press" state
+     is what reads as 3D/tactile rather than a plain flat chip. */
   .pill-nav .nav-profile {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     padding: 0;
-    border: 1.5px solid var(--ink);
-    background: var(--cream-deep);
+    border: 2px solid var(--lime-ink);
+    background: var(--lime);
+    box-shadow: 0 2.5px 0 var(--lime-ink);
     cursor: pointer;
     overflow: hidden;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .pill-nav .nav-profile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3.5px 0 var(--lime-ink);
+  }
+
+  .pill-nav .nav-profile:active {
+    transform: translateY(2px);
+    box-shadow: 0 0.5px 0 var(--lime-ink);
   }
 
   .pill-nav .nav-profile img {
@@ -151,10 +167,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--walnut);
-    color: var(--cream);
-    font-weight: 600;
-    font-size: 14px;
+    background: radial-gradient(circle at 32% 28%, #e4ffa8 0%, var(--lime) 55%, #a8d93a 100%);
+    color: var(--lime-ink);
+    font-weight: 800;
+    font-size: 15px;
+    font-family: 'Baloo 2', 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
   a:focus-visible,
