@@ -210,14 +210,14 @@
     padding: 22px 22px 52px;
     color: var(--ink);
 
-    /* Lime across the top, fading out as it goes rather than cutting
-       flat, then blending smoothly into the same --app-bg purple the
-       rest of the page (html, body) uses — no hard edge where the
-       two colors meet. */
+    /* Lime across the top, dimmed down rather than full brightness,
+       fading out as it goes rather than cutting flat, then blending
+       smoothly into the same --app-bg purple the rest of the page
+       (html, body) uses — no hard edge where the two colors meet. */
     background: linear-gradient(
       180deg,
-      #C6F24E 0%,
-      #C6F24E 8%,
+      color-mix(in srgb, #C6F24E 70%, var(--app-bg, #c1b5f7)) 0%,
+      color-mix(in srgb, #C6F24E 70%, var(--app-bg, #c1b5f7)) 8%,
       var(--app-bg, #c1b5f7) 55%,
       var(--app-bg, #c1b5f7) 100%
     );
@@ -456,7 +456,7 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #6B6847;
+    color: var(--ink);
     text-align: center;
   }
 
@@ -505,7 +505,7 @@
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.005em;
-    color: var(--ink-soft);
+    color: var(--ink);
     white-space: nowrap;
   }
 
@@ -520,6 +520,8 @@
     font-size: 15px;
     font-weight: 800;
     font-family: 'Baloo 2', sans-serif;
+    -webkit-text-stroke: 0.5px var(--ink);
+    paint-order: stroke fill;
   }
   .cartoon-hero .brand--shopify .brand__logo { color: #95BF47; }
   .cartoon-hero .brand--wordpress .brand__logo { color: #21759B; }

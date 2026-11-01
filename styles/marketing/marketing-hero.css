@@ -644,7 +644,7 @@
   transition: background-color 0.4s ease;
 }
 
-.hero-demo-page--tracking { background: var(--ink); }
+.hero-demo-page--tracking { background: var(--app-bg, #c1b5f7); }
 
 .hero-demo-page-bar {
   width: 38%;
@@ -707,7 +707,7 @@
   position: absolute;
   transform: translate(-50%, -50%);
   background: var(--lime);
-  color: var(--lime-ink);
+  color: #FFFFFF;
   font-weight: 700;
   font-size: 11px;
   line-height: 1;
