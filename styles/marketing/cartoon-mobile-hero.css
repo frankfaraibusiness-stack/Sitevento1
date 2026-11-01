@@ -207,20 +207,23 @@
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding: 22px 22px 52px;
+    /* Pulled up by the fixed header's own height so the background
+       image starts at the true top of the viewport, behind the
+       header's glass bar, instead of beginning underneath it — then
+       padding-top adds the same amount back so the hero's actual
+       content (title, CTAs, etc.) still clears the header and isn't
+       hidden behind it. */
+    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 22px) 22px 52px;
     color: var(--ink);
 
-    /* Lime across the top, dimmed down rather than full brightness,
-       fading out as it goes rather than cutting flat, then blending
-       smoothly into the same --app-bg purple the rest of the page
-       (html, body) uses — no hard edge where the two colors meet. */
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, #C6F24E 70%, var(--app-bg, #c1b5f7)) 0%,
-      color-mix(in srgb, #C6F24E 70%, var(--app-bg, #c1b5f7)) 8%,
-      var(--app-bg, #c1b5f7) 55%,
-      var(--app-bg, #c1b5f7) 100%
-    );
+    /* Mascot/building photo fills the hero only — scoped here rather
+       than full-page so it hands off cleanly into the --app-bg purple
+       of the section below instead of scrolling behind everything. */
+    background-image: url('/mascot/hero-bg-mobile.jpg');
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
   }
 
   .hero__pattern {
