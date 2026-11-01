@@ -187,15 +187,6 @@
        body's padding-bottom in styles/base/base.css). Leaving this at
        110px stacked that clearance twice and showed up as a large
        dead gap right under the hero. */
-
-    /* Stops .hero's negative margin-top (above) from collapsing
-       through .page's top edge — without this, that negative margin
-       was also shifting .page itself upward, dragging the showcase
-       section that follows it up along with it and causing the
-       section to overlap the hero instead of sitting cleanly under
-       it. A hairline padding is enough to break the collapse; it has
-       no visible effect otherwise. */
-    padding-top: 1px;
   }
   @keyframes pageFadeIn { to { opacity: 1; } }
 
@@ -217,22 +208,7 @@
        header's glass bar, instead of beginning underneath it — then
        padding-top adds just that height back (plus a few px, not the
        old 22px) so the title sits almost flush under the header
-       instead of leaving a visible gap.
-
-       This negative margin-top must stay scoped to .hero only — it
-       should not also drag the showcase section below up with it.
-       Margins only collapse/propagate through an element's OWN
-       top/bottom edge into its parent when that parent has no
-       padding/border/overflow of its own between them; .page (the
-       parent wrapping .hero and sitting right above the showcase
-       section in flow) has none of those, so without something to
-       stop it, .hero's negative margin-top was collapsing up through
-       .page's top edge and shifting .page itself — and everything
-       after .page in flow, the showcase section — up by the same
-       56px, causing the overlap. padding-top: 1px on .page (below)
-       is the fix: a non-zero padding on the parent breaks margin
-       collapsing, so the negative margin now only moves .hero inside
-       its own parent instead of leaking out to affect siblings. */
+       instead of leaving a visible gap. */
     margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
     padding: calc(56px + env(safe-area-inset-top, 0px) + 6px) 22px 52px;
     color: var(--ink);
@@ -404,6 +380,22 @@
   }
 
   .cartoon-hero .hero__visual { display: none; }
+
+  /* ---------- platforms badge ---------- */
+  /* Drops into the existing gap below the CTAs (the hero's own
+     bottom padding) instead of adding new space. Square (1:1),
+     small, and left-aligned under the left-aligned CTAs/description
+     rather than centered with the headline. */
+  .cartoon-hero .hero__platformsBadge {
+    display: block;
+    margin-top: 24px;
+    margin-left: 0;
+    margin-right: auto;
+    width: 120px;
+    height: 120px;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+  }
 
   /* ============================================================
      STICKY GLASSY BOTTOM NAV

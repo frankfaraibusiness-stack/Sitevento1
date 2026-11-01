@@ -105,6 +105,17 @@ function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroCo
               <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
             </button>
           </div>
+
+          {/* Platforms badge — sits in the gap below the CTAs, left-
+              aligned to match the left-aligned CTAs/description above
+              it, square (1:1) and small. */}
+          <img
+            className="hero__platformsBadge"
+            src="/mascot/platforms-badge.png"
+            alt="Works with Shopify, Webflow, WordPress, and Custom sites"
+            width={600}
+            height={600}
+          />
         </div>
 
         {/* desktop placeholder for the image */}
