@@ -302,14 +302,20 @@
   }
 
   @media (max-width: 859px) {
+    /* Was sized like a primary surface (near full-width, 50px-tall
+       items, thick border + heavy drop shadow) for something that's
+       just navigation chrome, not the app itself — it visually
+       dominated the bottom of the screen. Shrunk across the board so
+       it reads as a small, secondary floating bar instead of a big
+       dock. */
     .gnav-cartoon-root {
       position: fixed;
       left: 50%;
-      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
       transform: translateX(-50%);
       z-index: 30;
-      width: min(440px, calc(100vw - 24px));
-      padding: 8px 10px;
+      width: min(340px, calc(100vw - 48px));
+      padding: 6px 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -318,11 +324,11 @@
       background: rgba(255, 253, 245, 0.55);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       backdrop-filter: blur(20px) saturate(180%);
-      border: 2.5px solid #12100A;
-      border-radius: 22px;
+      border: 2px solid #12100A;
+      border-radius: 18px;
       box-shadow:
-        0 10px 0 -3px rgba(18, 16, 10, 0.9),
-        0 20px 40px -12px rgba(18, 16, 10, 0.35),
+        0 6px 0 -2px rgba(18, 16, 10, 0.9),
+        0 14px 28px -12px rgba(18, 16, 10, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
 
@@ -343,14 +349,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      min-height: 50px;
-      padding: 6px 4px;
+      gap: 2px;
+      min-height: 38px;
+      padding: 4px 3px;
       background: transparent;
-      border-radius: 14px;
+      border-radius: 11px;
       color: #12100A;
       font-family: 'Fredoka', sans-serif;
-      font-size: 10px;
+      font-size: 8.5px;
       font-weight: 600;
       letter-spacing: 0.02em;
       text-align: center;
@@ -361,14 +367,19 @@
     .gnav-cartoon-item:active { transform: scale(0.94); }
 
     .gnav-cartoon-item svg {
-      width: 22px;
-      height: 22px;
+      width: 17px;
+      height: 17px;
       display: block;
     }
 
-    /* active pill state */
+    /* active pill state — was flat lime (#C6F24E), now the brand's
+       living lime+purple mix (see --brand-mix-gradient, base.css) so
+       it matches the rest of the re-themed app instead of a leftover
+       single-color accent. */
     .gnav-cartoon-item.is-active {
-      background: #C6F24E;
+      background: var(--brand-mix-gradient);
+      background-size: 200% 200%;
+      animation: gnavCartoonMixShift 6s ease-in-out infinite;
       border: 2px solid #12100A;
       box-shadow: 2px 2px 0 0 #12100A;
     }
@@ -376,34 +387,41 @@
       color: #12100A;
     }
 
-    /* upload circle — centre accent */
+    /* upload circle — centre accent (shrunk along with the rest of
+       the bar, below) */
     .gnav-cartoon-upload {
       all: unset;
       box-sizing: border-box;
       position: relative;
       flex: 0 0 auto;
-      width: 58px;
-      height: 58px;
-      margin: -22px 4px 0;
+      width: 44px;
+      height: 44px;
+      margin: -16px 2px 0;
       display: grid;
       place-items: center;
       border-radius: 50%;
-      background: #C6F24E;
-      border: 2.5px solid #12100A;
-      box-shadow: 0 4px 0 0 #12100A, 0 8px 16px -6px rgba(18, 16, 10, 0.4);
+      background: var(--brand-mix-gradient);
+      background-size: 200% 200%;
+      animation: gnavCartoonMixShift 6s ease-in-out infinite;
+      border: 2px solid #12100A;
+      box-shadow: 0 3px 0 0 #12100A, 0 6px 12px -6px rgba(18, 16, 10, 0.4);
       color: #12100A;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
+    @keyframes gnavCartoonMixShift {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
     .gnav-cartoon-upload:active {
       transform: translateY(3px);
-      box-shadow: 0 1px 0 0 #12100A, 0 4px 10px -6px rgba(18, 16, 10, 0.4);
+      box-shadow: 0 1px 0 0 #12100A, 0 3px 8px -6px rgba(18, 16, 10, 0.4);
     }
     .gnav-cartoon-upload::after {
       content: "";
       position: absolute;
-      inset: -6px;
+      inset: -5px;
       border-radius: 50%;
       border: 2px dashed rgba(18, 16, 10, 0.35);
       animation: gnavCartoonUploadRing 8s linear infinite;
@@ -414,13 +432,17 @@
       to   { transform: rotate(360deg); }
     }
     .gnav-cartoon-upload svg {
-      width: 24px;
-      height: 24px;
+      width: 19px;
+      height: 19px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .gnav-cartoon-upload::after {
+      animation: none;
+    }
+    .gnav-cartoon-item.is-active,
+    .gnav-cartoon-upload {
       animation: none;
     }
   }

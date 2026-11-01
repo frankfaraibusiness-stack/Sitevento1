@@ -17,7 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     background_color: '#f6f2e7', // var(--cream)
-    theme_color: '#cbff70', // var(--app-bg) — matches the real html/body background
+    theme_color: '#c1b5f7', // var(--app-bg) — matches the real html/body background
     icons: [
       {
         src: '/icon.png',

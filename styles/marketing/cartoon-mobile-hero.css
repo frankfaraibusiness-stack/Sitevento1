@@ -29,9 +29,17 @@
     z-index: 9999;
     display: grid;
     place-items: center;
-    background: #E7E1FC;
     overflow: hidden;
     animation: loaderExit 0.6s ease 5s forwards;
+
+    /* Was a flat purple fill (#E7E1FC). Now the same living
+       lime+purple mix as the hero behind it (base.css
+       --brand-mix-gradient), so the boot moment and the hero it hands
+       off to read as one continuous background instead of two
+       separately-colored screens. */
+    background: var(--brand-mix-gradient);
+    background-size: 300% 300%;
+    animation: loaderExit 0.6s ease 5s forwards, heroGradientShift 14s ease-in-out infinite;
   }
 
   .cartoon-hero .loader::before {
@@ -51,7 +59,7 @@
     width: 380px;
     height: 380px;
     border-radius: 50%;
-    background: rgba(198, 242, 78, 0.85);
+    background: rgba(124, 92, 252, 0.55);
     filter: blur(80px);
     pointer-events: none;
   }
@@ -78,25 +86,20 @@
     50%      { transform: translateY(-6px) rotate(0.4deg); }
   }
 
+  /* Was a small boxed tile with a lone "S" standing in for the brand
+     — the real logo is already a full wordmark (see BootSplash.tsx),
+     so it's shown at its own aspect ratio here too, not squeezed into
+     a square icon. */
   .cartoon-hero .loader__mark {
-    width: 46px;
-    height: 46px;
-    display: grid;
-    place-items: center;
+    display: block;
+    width: min(70%, 220px);
+    height: auto;
     margin-bottom: 18px;
-    border-radius: 14px;
-    background: var(--lime);
-    border: 3px solid var(--ink);
-    box-shadow: 3px 3px 0 0 var(--ink);
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 800;
-    font-size: 22px;
-    color: var(--ink);
     animation: markSpin 3.2s ease-in-out infinite;
   }
   @keyframes markSpin {
-    0%, 100% { transform: rotate(-4deg); }
-    50%      { transform: rotate(6deg); }
+    0%, 100% { transform: rotate(-1.5deg); }
+    50%      { transform: rotate(1.5deg); }
   }
 
   .cartoon-hero .loader__bar {
@@ -118,7 +121,7 @@
     transform: translateX(-100%);
     background: linear-gradient(100deg,
       transparent 0%, rgba(255,253,245,0) 30%,
-      rgba(255,253,245,0.9) 50%, rgba(198,242,78,0.65) 62%,
+      rgba(255,253,245,0.9) 50%, rgba(124,92,252,0.55) 62%,
       rgba(255,253,245,0) 80%, transparent 100%);
     animation: shimmer 1.6s ease-in-out infinite;
   }
@@ -181,8 +184,13 @@
   .cartoon-hero .page {
     opacity: 0;
     animation: pageFadeIn 0.8s ease 5s forwards;
-    /* room for the sticky footer */
-    padding-bottom: 110px;
+    /* No longer reserving room for a sticky footer here — the old
+       in-hero nav this padding was sized for has been removed (the
+       real nav now lives in components/layout/GlobalNav.tsx, mounted
+       once site-wide, which already reserves its own clearance via
+       body's padding-bottom in styles/base/base.css). Leaving this at
+       110px stacked that clearance twice and showed up as a large
+       dead gap right under the hero. */
   }
   @keyframes pageFadeIn { to { opacity: 1; } }
 
@@ -200,8 +208,28 @@
     isolation: isolate;
     overflow: hidden;
     padding: 22px 22px 52px;
-    background: var(--lime-bg);
     color: var(--ink);
+
+    /* Was a flat --lime-bg fill (a single static light-purple field).
+       Now a slow-drifting lime→purple→app-bg gradient so the two
+       brand colors genuinely blend and move instead of sitting as one
+       flat wash — the background itself is part of the "alive" motion,
+       not just the blobs floating on top of it. */
+    background: linear-gradient(
+      -45deg,
+      #C6F24E 0%,
+      var(--app-bg, #c1b5f7) 30%,
+      var(--lime) 60%,
+      var(--lime-bg) 100%
+    );
+    background-size: 300% 300%;
+    animation: heroGradientShift 14s ease-in-out infinite;
+  }
+
+  @keyframes heroGradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   .hero__pattern {
@@ -215,22 +243,35 @@
     mask-image: radial-gradient(120% 80% at 20% 20%, #000 25%, transparent 72%);
   }
 
+  /* Blobs: one true lime, one true purple (previously both lime-only
+     greens) — drifting slowly so the two brand hues visibly mix in
+     the blurred overlap between them rather than reading as a single
+     flat tint. */
   .hero__blob {
     position: absolute;
     border-radius: 50%;
     filter: blur(70px);
     pointer-events: none;
     z-index: 0;
+    animation: heroBlobDrift 9s ease-in-out infinite;
   }
   .hero__blob--a {
     width: 340px; height: 340px;
     top: -150px; left: -140px;
     background: rgba(198, 242, 78, 0.95);
+    animation-delay: 0s;
   }
   .hero__blob--b {
     width: 280px; height: 280px;
     bottom: -140px; right: -120px;
-    background: rgba(180, 235, 90, 0.55);
+    background: rgba(124, 92, 252, 0.55);
+    animation-delay: -4.5s;
+    animation-direction: reverse;
+  }
+
+  @keyframes heroBlobDrift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(18px, -22px) scale(1.08); }
   }
 
   .hero__layout {
@@ -336,27 +377,6 @@
     margin-top: 28px;
   }
 
-  /* Decorative pet filling the dead space to the right of the
-     left-aligned CTA buttons (see CartoonMobileHero.tsx). Pinned to
-     that empty area rather than flowed inline, so it never pushes the
-     buttons around or forces the column narrower. */
-  .cartoon-hero .hero__ctaPet {
-    position: absolute;
-    right: -6px;
-    top: 50%;
-    transform: translateY(-50%) rotate(6deg);
-    width: clamp(84px, 24vw, 128px);
-    height: auto;
-    pointer-events: none;
-    filter: drop-shadow(0 6px 10px rgba(18, 16, 10, 0.18));
-    animation: ctaPetFloat 3.2s ease-in-out infinite;
-  }
-
-  @keyframes ctaPetFloat {
-    0%, 100% { transform: translateY(-50%) rotate(6deg); }
-    50%      { transform: translateY(calc(-50% - 8px)) rotate(2deg); }
-  }
-
   .cartoon-hero .btn {
     position: relative;
     display: inline-flex;
@@ -385,7 +405,15 @@
     box-shadow: 2px 2px 0 0 var(--ink);
   }
 
-  .cartoon-hero .btn--primary { background: var(--lime); }
+  /* Was a flat, deep purple (--lime: #7C5CFC) with dark ink text,
+     which read as muddy/heavy. Brighter, more saturated purple —
+     matching the "YOURS" headline accent (#7C5CFF) — with white text
+     for real contrast and pop, like a link rather than a dark slab. */
+  .cartoon-hero .btn--primary {
+    background: linear-gradient(135deg, #9B7CFF 0%, #7C5CFF 60%, #6A3FFC 100%);
+    color: #fff;
+    border-color: #12100A;
+  }
   .cartoon-hero .btn--primary svg { transition: transform 0.22s ease; }
   .cartoon-hero .btn--primary:active svg { transform: translateX(4px); }
 
@@ -400,7 +428,7 @@
     flex: 0 0 30px;
     border-radius: 50%;
     background: var(--ink);
-    color: var(--lime);
+    color: #7C5CFF;
     overflow: hidden;
   }
   .cartoon-hero .btn__icon::after {
@@ -408,7 +436,7 @@
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    border: 2px solid var(--lime);
+    border: 2px solid #7C5CFF;
     animation: ringPulse 4s ease-out infinite;
     pointer-events: none;
   }
@@ -471,45 +499,42 @@
     to   { transform: translateX(-50%); }
   }
 
+  /* Was a bordered, drop-shadowed cartoon "pill" per brand — on a
+     page already full of thick black outlines and chunky shadows
+     (buttons, nav, loader card), another boxed treatment here just
+     competed for attention instead of reading as a quiet trust
+     signal. Now just the logo mark + name, no card, no border, no
+     background — sits quietly in the row instead of shouting. */
   .cartoon-hero .brand {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
     flex: 0 0 auto;
     height: 44px;
-    padding: 0 16px 0 12px;
-    border-radius: 14px;
-    border: 2.5px solid var(--ink);
-    background: var(--cream);
-    box-shadow: 3px 3px 0 0 var(--ink);
+    padding: 0 4px;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.005em;
-    color: var(--ink);
+    color: var(--ink-soft);
     white-space: nowrap;
   }
 
+  /* No tile, no card — just the letter itself in the brand's own
+     color, sitting inline with the name. */
   .cartoon-hero .brand__logo {
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
-    flex: 0 0 26px;
-    border-radius: 8px;
-    border: 2px solid var(--ink);
-    color: #fff;
-    font-size: 13px;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    font-size: 15px;
     font-weight: 800;
     font-family: 'Baloo 2', sans-serif;
   }
-  .cartoon-hero .brand--shopify .brand__logo { background: #95BF47; }
-  .cartoon-hero .brand--wordpress .brand__logo { background: #21759B; }
-  .cartoon-hero .brand--webflow .brand__logo { background: #4353FF; }
-  .cartoon-hero .brand--custom .brand__logo { background: #7C5CFF; }
-  .cartoon-hero .brand--shopify { background: #F0F9DC; }
-  .cartoon-hero .brand--wordpress { background: #E1F1F8; }
-  .cartoon-hero .brand--webflow { background: #E6E8FF; }
-  .cartoon-hero .brand--custom { background: #EFE9FF; }
+  .cartoon-hero .brand--shopify .brand__logo { color: #95BF47; }
+  .cartoon-hero .brand--wordpress .brand__logo { color: #21759B; }
+  .cartoon-hero .brand--webflow .brand__logo { color: #4353FF; }
+  .cartoon-hero .brand--custom .brand__logo { color: #7C5CFF; }
 
   .cartoon-hero .hero__visual { display: none; }
 
@@ -651,11 +676,11 @@
     .cartoon-hero .marquee { margin-inline: -40px; }
     .cartoon-hero .marquee__track { padding-inline: 40px; }
     .cartoon-hero .navbar { bottom: 24px; }
-    .cartoon-hero .hero__ctaPet { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .cartoon-hero .hero__ctaPet { animation: none; }
+    .cartoon-hero .hero { animation: none; background-position: 30% 50%; }
+    .cartoon-hero .hero__blob { animation: none; }
     .cartoon-hero .btn__icon::after { animation: none; }
     .cartoon-hero .icon-play, .cartoon-hero .icon-pause { animation: none; }
     .cartoon-hero .icon-play { opacity: 1; }

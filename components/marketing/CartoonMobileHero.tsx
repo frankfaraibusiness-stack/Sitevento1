@@ -26,11 +26,19 @@ interface CartoonMobileHeroProps {
   onHowItWorksClick: () => void;
 }
 
+// Same wordmark asset used by the real app boot splash
+// (components/BootSplash.tsx) — the loader below previously showed a
+// small boxed "S" standing in for the brand instead of the actual
+// logo. Shown at its own aspect ratio, not squeezed into a square
+// icon tile.
+const LOADER_LOGO_URL =
+  'https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png';
+
 function CartoonLoader() {
   return (
     <div className="loader" role="status" aria-live="polite" aria-label="Loading">
       <div className="loader__card">
-        <div className="loader__mark" aria-hidden="true">S</div>
+        <img className="loader__mark" src={LOADER_LOGO_URL} alt="sitevento" />
         <div className="loader__bar loader__bar--title" aria-hidden="true" />
         <div className="loader__bar loader__bar--title short" aria-hidden="true" />
         <div className="loader__bar loader__bar--line" aria-hidden="true" />
@@ -129,20 +137,6 @@ function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroCo
               </span>
               Watch Demo
             </button>
-
-            {/* Fills the empty space to the right of the stacked CTA
-                buttons on mobile (they're left-aligned/auto-width, not
-                full-width, which left a dead gap next to them). Purely
-                decorative, hidden once the layout goes two-column at
-                720px+ and .hero__visual takes over that space. */}
-            <img
-              className="hero__ctaPet"
-              src="/mascot/hero-cta-pet.gif"
-              alt=""
-              aria-hidden="true"
-              width={220}
-              height={220}
-            />
           </div>
 
           <div className="brands">

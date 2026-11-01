@@ -75,8 +75,8 @@ export const viewport: Viewport = {
   // Matches --app-bg in styles/base/base.css, the actual html/body
   // background color, so the browser chrome (mobile address bar,
   // etc.) blends with the real page background instead of showing a
-  // different, slightly duller lime of its own.
-  themeColor: '#cbff70',
+  // different, mismatched color of its own.
+  themeColor: '#c1b5f7',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

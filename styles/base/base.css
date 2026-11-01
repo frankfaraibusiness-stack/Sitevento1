@@ -24,6 +24,24 @@
        sampled directly from the reference design: a soft warm
        off-white, not pure white and not the bright lime field. */
     --app-bg: #c1b5f7;
+
+    /* ---- Brand mix: the two brand colors (lime + purple) blended
+       into one living accent, used anywhere the design calls for a
+       "lime and purple mixed, in motion" treatment (hero backdrop,
+       active nav states) instead of either color flat on its own.
+       --brand-mix is the static blended color (a single flat value,
+       for places that can't animate); --brand-mix-gradient is the
+       same two hues as a soft diagonal gradient meant to be animated
+       via background-position (see hero-section-gradient.css /
+       global-nav.css), so it reads as alive rather than static. */
+    --brand-mix: color-mix(in srgb, var(--lime) 50%, var(--dash-purple) 50%);
+    --brand-mix-gradient: linear-gradient(
+      120deg,
+      var(--lime) 0%,
+      var(--dash-purple) 35%,
+      var(--app-bg) 60%,
+      var(--lime) 100%
+    );
     /* Header's own background on top of --app-bg: same hue family as
        --app-bg but with a faint lime tint, matching the reference's
        hamburger-pill tone — "blends in" rather than floating as a
@@ -174,11 +192,12 @@
      bottom padding is needed there. */
   @media (max-width: 859px) {
     body {
-      /* Bar is 64px tall (global-nav.css — labels came back, so it's
-         a bit taller than the 56px icon-only version, still well
-         under the original 72px) and floats with a 10px gap below
-         it, so clearance covers both. */
-      padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+      /* Cartoon bottom nav (global-nav.css) was shrunk from a near
+         full-width, ~80px-tall dock down to a smaller ~46px bar
+         floating 14px off the bottom edge — clearance follows it
+         down so there isn't a leftover oversized gap above the now-
+         smaller bar. */
+      padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
     }
   }
 
