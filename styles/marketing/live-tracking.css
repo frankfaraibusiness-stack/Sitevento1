@@ -1,0 +1,256 @@
+/* ============================================================
+ * live-tracking.css — LiveTracking marketing section
+ * (components/marketing/LiveTracking.tsx)
+ *
+ * Replaces the old one-line .status-strip pill with a full-width,
+ * animated "search your live traffic" showcase: typewriter search
+ * bar + streaming visit rows. Same raised-card / ink-border language
+ * as .cap / .dp-frame elsewhere on the page.
+ * ============================================================ */
+
+  .lt-section {
+    background: var(--app-bg);
+    padding: 32px 20px 12px;
+  }
+
+  .lt-head {
+    max-width: 640px;
+    margin: 0 auto 28px;
+    text-align: center;
+  }
+
+  .lt-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--walnut);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .lt-eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dash-green);
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+    animation: lt-eyebrow-pulse 1.8s ease-out infinite;
+  }
+
+  @keyframes lt-eyebrow-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45); }
+    70% { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+  }
+
+  .lt-title {
+    margin: 0 0 12px;
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    font-weight: 400;
+    font-size: clamp(24px, 5.6vw, 34px);
+    line-height: 1.22;
+    color: var(--ink);
+  }
+
+  .lt-sub {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted-mid);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* ---- Panel ---- */
+  .lt-panel {
+    max-width: min(94vw, 760px);
+    margin: 0 auto;
+    border-radius: 18px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--app-bg) 55%, var(--bg) 45%);
+    border: 1.5px solid var(--ink);
+    box-shadow: 0 10px 0 rgba(26, 31, 10, 0.16), 0 28px 60px -30px rgba(34, 32, 28, 0.35);
+  }
+
+  .lt-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--ink) 0%, #2b2720 100%);
+    color: var(--cream);
+  }
+
+  .lt-search-icon {
+    display: flex;
+    flex-shrink: 0;
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  .lt-search-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .lt-search-text {
+    flex: 1;
+    min-width: 0;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13.5px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .lt-caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 14px;
+    margin-left: 1px;
+    vertical-align: -3px;
+    background: var(--lime);
+    animation: lt-caret-blink 0.9s steps(1) infinite;
+  }
+
+  @keyframes lt-caret-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .lt-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 5px 12px 5px 10px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--lime);
+    white-space: nowrap;
+  }
+
+  .lt-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--lime);
+    flex-shrink: 0;
+    animation: lt-eyebrow-pulse 1.8s ease-out infinite;
+  }
+
+  /* ---- Streaming rows ---- */
+  .lt-rows {
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .lt-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "page time"
+      "loc device";
+    gap: 2px 8px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    animation: lt-row-in 420ms ease both;
+  }
+
+  .lt-row:nth-child(odd) {
+    background: color-mix(in srgb, var(--app-bg) 55%, var(--bg) 45%);
+  }
+
+  @keyframes lt-row-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lt-row-page {
+    grid-area: page;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+    font-family: "SFMono-Regular", Consolas, monospace;
+  }
+
+  .lt-row-time {
+    grid-area: time;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    white-space: nowrap;
+  }
+
+  .lt-row-loc {
+    grid-area: loc;
+    justify-self: start;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .lt-row-device {
+    grid-area: device;
+    justify-self: end;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lt-eyebrow::before,
+    .lt-live-dot,
+    .lt-caret { animation: none; }
+    .lt-row { animation: none; }
+  }
+
+  /* ============================================================
+   * Desktop (1024px+)
+   * ============================================================ */
+  @media (min-width: 1024px) {
+    .lt-section {
+      padding: 48px 0 12px;
+    }
+
+    .lt-head {
+      max-width: 720px;
+      margin: 0 auto 40px;
+    }
+
+    .lt-search-bar {
+      padding: 16px 22px;
+    }
+
+    .lt-search-text {
+      font-size: 14.5px;
+    }
+
+    .lt-rows {
+      padding: 10px;
+    }
+
+    .lt-row {
+      grid-template-columns: 1fr auto auto auto;
+      grid-template-areas: "page loc device time";
+      align-items: center;
+      padding: 10px 14px;
+    }
+
+    .lt-row-loc::after {
+      content: " · ";
+      color: var(--line);
+    }
+  }
