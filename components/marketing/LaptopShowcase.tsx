@@ -2,6 +2,18 @@
 
 import { useEffect, useRef } from 'react';
 
+// This whole mockup used to run unconditionally the moment it mounted
+// — the cursor-move/click JS loop below, plus a dozen `infinite` CSS
+// animations and several backdrop-filter/filter blurs in
+// laptop-showcase.css, all repainting every frame forever, whether or
+// not the section was ever scrolled into view. That's what was making
+// the page feel laggy on scroll: the browser had to keep compositing
+// all of it on every scroll frame regardless of visibility.
+//
+// An IntersectionObserver now toggles `.is-paused` on the root section
+// so both the JS sequence and the CSS animations (gated off that class
+// in laptop-showcase.css) stop entirely while it's off-screen, and
+// resume only once it's actually visible again.
 export function LaptopShowcase() {
   const rootRef = useRef<HTMLElement>(null);
 
@@ -19,6 +31,12 @@ export function LaptopShowcase() {
     if (!screen || !cursor || !ring || !chatBtn || !card2 || !card3) return;
 
     let cancelled = false;
+    let visible = false;
+    // Guards against two playSequence() loops running at once if the
+    // section scrolls in/out/in again before the observer's callback
+    // and the loop's own exit check line up.
+    let loopRunning = false;
+
     const wait = (ms: number) => new Promise<void>((resolve) => {
       window.setTimeout(resolve, ms);
     });
@@ -45,44 +63,78 @@ export function LaptopShowcase() {
       if (hint) hint.style.opacity = '1';
     };
 
+    // Every wait() below is followed by a `if (!visible) break` check,
+    // so scrolling the section off-screen stops the loop within one
+    // step (at most ~650ms) instead of only at the top of the outer
+    // while loop.
     const playSequence = async () => {
-      while (!cancelled) {
+      if (loopRunning) return;
+      loopRunning = true;
+      while (!cancelled && visible) {
         screen.classList.add('loaded');
         if (hint) hint.style.opacity = '0';
         await wait(500);
-        if (cancelled) break;
+        if (cancelled || !visible) break;
 
+        let brokeEarly = false;
         for (const [card, pause] of [[card2, 1400], [card3, 1300]] as const) {
           const p = position(card);
           moveCursor(p.x, p.y);
           await wait(650);
-          if (cancelled) break;
+          if (cancelled || !visible) { brokeEarly = true; break; }
           clickAt(p.x, p.y);
           card.classList.add('active');
           await wait(pause);
           card.classList.remove('active');
+          if (cancelled || !visible) { brokeEarly = true; break; }
         }
-        if (cancelled) break;
+        if (brokeEarly || cancelled || !visible) break;
 
         const p = position(chatBtn);
         moveCursor(p.x, p.y);
         await wait(650);
-        if (cancelled) break;
+        if (cancelled || !visible) break;
         clickAt(p.x, p.y);
         await wait(1200);
+        if (cancelled || !visible) break;
         await wait(600);
         cursor.style.opacity = '0';
         await wait(500);
         resetCycle();
         await wait(900);
       }
+      loopRunning = false;
     };
 
     resetCycle();
-    const start = window.setTimeout(() => { void playSequence(); }, 3000);
+
+    let start: number | undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        root.classList.toggle('is-paused', !visible);
+        if (visible) {
+          // Same 3s delay as the original first run, so scrolling the
+          // section into view doesn't yank straight into the
+          // animation — but only on the very first time it becomes
+          // visible; after that, resume immediately.
+          if (start === undefined) {
+            start = window.setTimeout(() => { void playSequence(); }, 3000);
+          } else {
+            void playSequence();
+          }
+        } else {
+          resetCycle();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(root);
+
     return () => {
       cancelled = true;
-      window.clearTimeout(start);
+      observer.disconnect();
+      if (start !== undefined) window.clearTimeout(start);
     };
   }, []);
 

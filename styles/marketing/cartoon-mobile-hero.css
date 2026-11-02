@@ -243,18 +243,20 @@
     background-repeat: no-repeat;
   }
 
-  /* Dark tint over the lower part of the photo, behind the content
-     (z-index 1, between the photo on .hero itself and
-     .hero__layout's z-index 2). Clear near the top, under the
-     header, where only the white-stroked headline sits — it's
-     already legible straight over the bright sky. Builds up going
-     down so the description/CTAs over the busier part of the photo
-     stand out, then eases into the page's own --app-bg purple
+  /* Dark tint over the whole photo, behind the content (z-index 1,
+     between the photo on .hero itself and .hero__layout's z-index
+     2). A light tint even at the very top (under the header, where
+     the headline sits) — the raw photo was still full brightness/
+     contrast there, which read as a jarring bright patch against the
+     tinted content below it; the headline's white fill + black
+     outline stays legible over a light tint just fine. Builds up
+     going down so the description/CTAs over the busier part of the
+     photo stand out, then eases into the page's own --app-bg purple
      (same color as the section below) right at the bottom edge —
-     fading to transparent here instead would just uncover the raw
-     photo again and leave a hard photo/purple seam exactly where
-     the hero ends. Ending on the actual page color instead makes the
-     photo visually dissolve into the rest of the page. */
+     fading to transparent there instead would uncover the raw photo
+     again and leave a hard photo/purple seam exactly where the hero
+     ends. Ending on the actual page color instead makes the photo
+     visually dissolve into the rest of the page. */
   .hero::after {
     content: "";
     position: absolute;
@@ -263,8 +265,8 @@
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      rgba(8, 10, 20, 0) 0%,
-      rgba(8, 10, 20, 0) 30%,
+      rgba(8, 10, 20, 0.22) 0%,
+      rgba(8, 10, 20, 0.3) 30%,
       rgba(8, 10, 20, 0.55) 62%,
       rgba(8, 10, 20, 0.78) 88%,
       var(--app-bg, #c1b5f7) 100%

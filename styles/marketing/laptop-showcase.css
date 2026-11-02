@@ -499,4 +499,20 @@
     .sv-laptop-demo .fake-cursor{ transition:none !important; }
   }
 
+  /* Scroll-performance fix: this mockup has ~8 `infinite` CSS
+     animations (shimmer, spin, blink, pulse, the progress-bar sweep)
+     running non-stop since mount, plus several backdrop-filter/filter
+     blurs — all of it kept repainting on every scroll frame even
+     while this section was off-screen, which is what made the page
+     feel laggy on scroll. LaptopShowcase.tsx now toggles `.is-paused`
+     via IntersectionObserver when the section leaves the viewport;
+     this forces every animation on it to actually stop (not just the
+     JS cursor sequence) instead of continuing to run unseen. */
+  .sv-laptop-demo.is-paused,
+  .sv-laptop-demo.is-paused *,
+  .sv-laptop-demo.is-paused *::before,
+  .sv-laptop-demo.is-paused *::after {
+    animation-play-state: paused !important;
+  }
+
 

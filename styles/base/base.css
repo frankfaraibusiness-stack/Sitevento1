@@ -158,6 +158,22 @@
     max-width: 100%;
     overflow-x: hidden;
     transition: background-color 450ms ease;
+
+    /* Hide the browser's own scrollbar app-wide — Firefox. */
+    scrollbar-width: none;
+    /* Hide the browser's own scrollbar app-wide — old Edge/IE. */
+    -ms-overflow-style: none;
+  }
+
+  /* Hide the browser's own scrollbar app-wide — WebKit/Chromium
+     (Chrome, Safari, Edge). Scrolling itself still works everywhere
+     above; this only removes the visible track/thumb, same as the
+     two properties on html, body above do for their browsers. */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 
   /* While BootSplash is in its boot phase (see components/BootSplash.tsx
