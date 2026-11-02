@@ -437,6 +437,72 @@
 
   .cartoon-hero .hero__visual { display: none; }
 
+  /* ---------- how-it-works steps ---------- */
+  /* Fills the empty stretch of photo under the CTAs (open sky/grass
+     on the left, same column the headline/description/CTAs already
+     sit in) with a quick 4-step list. Same 30ch max-width as
+     .hero__sub and same left alignment, so it stays inside that left
+     column and never reaches into the bunny/building on the right —
+     deliberately NOT full-width. Dimmed and small on purpose: a
+     secondary hook, not something that competes with the headline or
+     the CTAs for attention. */
+  .cartoon-hero .hero__steps {
+    list-style: none;
+    margin: 28px 0 0;
+    margin-right: auto;
+    padding: 0;
+    max-width: 30ch;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cartoon-hero .hero__step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  /* Thin connecting line running down through each step's number,
+     like a vertical timeline/checklist — stops short of the last
+     step's number since there's nothing after it to connect to. */
+  .cartoon-hero .hero__step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 26px;
+    bottom: -8px;
+    width: 1.5px;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .cartoon-hero .hero__stepNum {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    background: rgba(8, 10, 20, 0.35);
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  .cartoon-hero .hero__stepText {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.72);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
   /* ---------- platforms badge ---------- */
   /* Drops into the existing gap below the CTAs (the hero's own
      bottom padding) instead of adding new space. Square (1:1),

@@ -69,6 +69,19 @@ const ROTATOR_WORDS = [
   'YOURS TO SHAPE',
 ];
 
+// Quick how-it-works steps, stacked under the CTAs on mobile — fills
+// the empty stretch of photo between the CTAs and the bottom nav, and
+// doubles as a hook into what the product actually does. Desktop
+// doesn't render this (.hero__inner, which wraps it, is display:none
+// at the 1024px+ breakpoint — see .cartoon-hero--desktop .hero__inner
+// in marketing-hero.css).
+const HOW_IT_WORKS_STEPS = [
+  'Connect your site',
+  'Verify the meta tag',
+  'Connected',
+  'Control everything — block users, view statistics',
+];
+
 interface CartoonHeroContentProps {
   onConnectClick: () => void;
   onHowItWorksClick: () => void;
@@ -111,6 +124,15 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
               <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
             </button>
           </div>
+
+          <ol className="hero__steps" aria-label="How it works">
+            {HOW_IT_WORKS_STEPS.map((step, index) => (
+              <li className="hero__step" key={step}>
+                <span className="hero__stepNum" aria-hidden="true">{index + 1}</span>
+                <span className="hero__stepText">{step}</span>
+              </li>
+            ))}
+          </ol>
         </div>
 
         {/* desktop placeholder for the image */}
