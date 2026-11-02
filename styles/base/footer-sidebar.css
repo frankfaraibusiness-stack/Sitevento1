@@ -21,8 +21,24 @@
      color inside is picked for contrast against --ink rather than
      against --bg, so nothing is grey-on-lime anymore. */
   .site-footer {
-    margin: 72px 0 0;
-    padding: 0;
+    /* Was `margin: 72px 0 0` — that gap sat *outside* this element's
+       own `background: var(--ink)`, so it rendered whatever was
+       behind the footer instead of the footer's own dark surface.
+       On every page with real content above the footer that's
+       invisible (the content's own background fills it). On the
+       marketing page, where the hero is the last thing before the
+       footer and the hero doesn't own the full page background, that
+       72px showed through as a flat band of `body`'s lavender
+       --app-bg between the hero photo and the footer's lime top
+       border — the gap complained about above.
+       Switched to padding-top so the same 72px of breathing room
+       above the footer's own heading content is now painted in the
+       footer's --ink background (and sits *below* the lime top
+       border, which still marks the true start of the footer on
+       every page). Visually identical everywhere else; fixes the
+       marketing page without touching any other route. */
+    margin: 0;
+    padding: 72px 0 0;
     background: var(--ink);
     color: #e8e4de;
     border-top: 3px solid var(--lime);
@@ -31,7 +47,15 @@
   .site-footer-inner {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 56px 24px 32px;
+    /* Was `padding: 56px 24px 32px`. The 56px top padding used to be
+       the only space between the footer's lime border and its
+       heading; now .site-footer itself contributes 72px of padding-
+       top (see above), so keeping both would stack to 128px — far
+       more breathing room than before. Dropped the top value here
+       (left/right/bottom unchanged) so .site-footer's 72px is the
+       only space before the heading, matching the original 72px gap
+       exactly rather than compounding it. */
+    padding: 0 24px 32px;
   }
 
   .footer-capture {
@@ -214,7 +238,11 @@
   }
 
   @media (max-width: 760px) {
-    .site-footer-inner { padding: 44px 20px 28px; }
+    /* Top padding now lives on .site-footer (72px, unchanged across
+       breakpoints — see above), so only left/right/bottom shrink
+       here; a top value in this shorthand would stack on top of
+       that 72px instead of replacing it. */
+    .site-footer-inner { padding: 0 20px 28px; }
     .footer-grid { grid-template-columns: 1fr 1fr; row-gap: 32px; }
     .footer-capture { align-items: flex-start; }
     .email-form { width: 100%; }

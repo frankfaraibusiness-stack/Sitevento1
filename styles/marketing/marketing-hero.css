@@ -32,6 +32,19 @@
   min-height: 0;
 }
 
+/* NOTE: a `body:has(#marketingView) { padding-bottom: 0; }` rule used
+   to live here, meant to kill a lavender gap between the hero and the
+   footer. That padding-bottom (styles/base/base.css) is real reserved
+   clearance so page content — footer included — never sits underneath
+   GlobalNav's fixed bottom bar (styles/base/global-nav.css) on phones.
+   Zeroing it for the marketing page removed that clearance along with
+   the gap, so the fixed bottom nav started overlapping the footer's
+   text instead. The actual source of the lavender gap was the
+   footer's own top spacing being `margin` (outside its dark
+   background) instead of `padding` (inside it) — fixed at the source
+   in styles/base/footer-sidebar.css (.site-footer), so this override
+   isn't needed here and bottom-nav clearance stays intact. */
+
 /* Kill the gap between the fixed header and the mobile cartoon hero.
    `main` normally adds 56px (header height) + 16px breathing room above
    its content (styles/base/base.css); that extra 16px, stacked on top
