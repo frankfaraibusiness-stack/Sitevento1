@@ -79,7 +79,8 @@ const HOW_IT_WORKS_STEPS = [
   'Connect your site',
   'Verify the meta tag',
   'Connected',
-  'Control everything — block users, view statistics',
+  'Control everything',
+  '24/7 Security',
 ];
 
 interface CartoonHeroContentProps {
