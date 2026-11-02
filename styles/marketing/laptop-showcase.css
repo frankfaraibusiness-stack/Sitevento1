@@ -491,3 +491,17 @@
   }
 
 
+
+/* Pull the laptop showcase up to meet the cartoon hero on mobile. */
+@media (max-width: 1023px) {
+  .sv-laptop-demo {
+    margin-top: -140px;
+    padding-top: 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .sv-laptop-demo .stage {
+    margin-top: 0;
+  }
+}
