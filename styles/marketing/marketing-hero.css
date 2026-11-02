@@ -195,3 +195,21 @@
     display: none;
   }
 }
+
+
+/* Marketing layout spacing: keep the laptop showcase directly after the
+   mobile hero. The gap came from the hero's bottom padding combined with
+   the following section's top padding and stage margin. */
+@media (max-width: 1023px) {
+  #marketingView > .cartoon-hero .hero {
+    padding-bottom: 0;
+  }
+
+  #marketingView > .sv-laptop-demo {
+    padding-top: 0;
+  }
+
+  #marketingView > .sv-laptop-demo > .stage {
+    margin-top: 0;
+  }
+}
