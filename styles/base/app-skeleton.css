@@ -1,0 +1,74 @@
+/* ============================================================
+ * app-skeleton.css — components/AppSkeleton.tsx
+ * The one shared loading state across the app, used both full-screen
+ * (route-level navigation, app/loading.tsx) and inline (in place of
+ * loading content inside a page's own chrome) — see /settings,
+ * /dashboard, /dashboard/profile, /dashboard/sites/[siteId], /widgets,
+ * /widgets/[widgetId], and the widget designer.
+ *
+ * The spinner itself now uses the same simple ring style as
+ * BootSplash's own status spinner (.boot-splash-spinner in
+ * styles/base/boot-splash.css — a plain border ring with one accent
+ * segment, spinning), instead of the previous orbiting-dot ring, so
+ * the boot screen and every in-app loading state read as one
+ * consistent design language rather than two different spinner
+ * styles. Same .app-skel/.app-skel-full wrapper and the
+ * AppSkeleton.tsx component API (label, fullScreen) are unchanged —
+ * only the spinner's own visual design and markup changed, so all
+ * existing call sites keep working as-is.
+ * ============================================================ */
+
+.app-skel {
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.app-skel-full {
+  position: fixed;
+  inset: 0;
+  /* Above the sticky header (z-index: 10 in base.css) and the bottom
+     nav (z-index: 30 in global-nav.css), matching BootSplash's own
+     .boot-splash (z-index: 9999) — a full-page loading state should
+     be fully exclusive, not sit behind the page chrome, since nothing
+     under it is usable yet. Body scroll is locked for the duration
+     via a useEffect in AppSkeleton.tsx, same convention as
+     AuthOverlay/ConnectSiteWizard/Sidebar/UpsellOverlay. */
+  z-index: 9999;
+  min-height: 100dvh;
+  /* Match BootSplash's .boot-splash background (styles/base/boot-splash.css)
+     exactly — this is the same "still loading" state continued, so it
+     shouldn't start on a different background than the boot screen it
+     follows. */
+  background: var(--app-bg);
+  padding-top: calc(3rem + env(safe-area-inset-top, 0px));
+}
+
+/* Plain ring spinner — same construction as .boot-splash-spinner
+   (a bordered circle with one accent-colored segment, rotating),
+   scaled up to read clearly as the page's main loading indicator
+   rather than a small inline status icon. */
+.app-skel-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 4.5px solid var(--cream-deep);
+  border-top-color: var(--dash-purple-ink);
+  animation: app-skel-spin 850ms linear infinite;
+}
+
+@keyframes app-skel-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-skel-ring {
+    animation: none;
+    border-top-color: var(--dash-purple);
+    opacity: 0.85;
+  }
+}
