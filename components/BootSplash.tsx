@@ -14,26 +14,38 @@
 // same token the rest of the app's <body> uses, so the splash reads
 // as part of the app rather than a separate flat-colored screen.
 //
-// Phases, same contract as before (see MIN_CONFIRMED_HOLD_MS):
+// Phases:
 //   1. "arriving"   (~700ms)  — content fades/rises in.
-//   2. "connecting" (auth-gated) — status line cycles, progress bar
-//                                fills in indeterminate sweeps. Does
-//                                NOT advance until `ready` is true.
-//   3. "confirmed"  (~3000ms hold) — status line settles on the final
-//                                line, bar completes to 100%.
+//   2. "connecting" (up to BOOT_TIMEOUT_MS) — status line cycles,
+//                                progress bar fills in indeterminate
+//                                sweeps, while we wait for `ready`
+//                                (Firebase auth settling).
+//   3. "confirmed"  (~3000ms hold) — reached once `ready` becomes
+//                                true within the boot window; status
+//                                line settles on the final line, bar
+//                                completes to 100%.
 //   4. "leaving"    (~480ms)  — splash fades + lifts out, onDone()
 //                                fires once.
 //
+// Boot timeout: the splash no longer waits indefinitely on `ready`.
+// It boots for BOOT_TIMEOUT_MS (5s) and then checks: if auth settled
+// (`ready`) by then, it proceeds straight to "confirmed" as before.
+// If auth still hasn't settled, the splash closes anyway (onDone()
+// fires) instead of hanging — the caller is responsible for showing
+// the "no network" retry toast in that case (onTimeout).
+//
 // Reduced-motion: skips the loops/sweeps, single short cross-fade,
-// same auth gate + hold.
+// same timeout + hold logic.
 import { useEffect, useRef, useState } from 'react';
 
 type Phase = 'arriving' | 'connecting' | 'confirmed' | 'leaving';
 
 interface BootSplashProps {
-  /** True once the real app is actually ready to show (authReady in AppRoot). The splash will never leave "connecting" before this flips true, however fast or slow that is. */
+  /** True once the real app is actually ready to show (authReady in AppRoot). */
   ready: boolean;
   onDone?: () => void;
+  /** Fired once, if the boot window elapses before `ready` ever becomes true. The splash still closes either way — this is just the signal to surface the "no network" retry toast. */
+  onTimeout?: () => void;
 }
 
 const LOGO_URL = 'https://cdn.phototourl.com/member/2026-10-16-c4f6fc3d-2a68-40c8-9241-fa770df8a99f.png';
@@ -46,14 +58,22 @@ const MIN_CONFIRMED_HOLD_MS = 3000;
 const ARRIVE_MS = 700;
 const LEAVE_MS = 480;
 
+// How long the splash waits on auth before giving up and closing
+// anyway. Not a hardcoded "always wait this long" — it's a ceiling:
+// if `ready` arrives sooner, the splash moves on immediately.
+const BOOT_TIMEOUT_MS = 5000;
+
 const CONNECTING_LINES = ['Connecting to your site…', 'Syncing your dashboard…', 'Almost there…'];
 const CONFIRMED_LINE = "You're all set.";
 
-export function BootSplash({ ready, onDone }: BootSplashProps) {
+export function BootSplash({ ready, onDone, onTimeout }: BootSplashProps) {
   const [phase, setPhase] = useState<Phase>('arriving');
   const [lineIndex, setLineIndex] = useState(0);
   const readyRef = useRef(ready);
   readyRef.current = ready;
+  // Guards against double-firing onTimeout / proceeding twice once the
+  // boot window has already been judged (timed out or not).
+  const settledRef = useRef(false);
 
   const reducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -75,11 +95,37 @@ export function BootSplash({ ready, onDone }: BootSplashProps) {
     return () => clearInterval(interval);
   }, [phase]);
 
-  // Phase 2 → 3: only once auth has actually resolved.
+  // Phase 2 → 3: once auth has actually resolved — but only while
+  // still inside the boot window (the timeout effect below handles
+  // what happens if `ready` never arrives in time).
   useEffect(() => {
-    if (phase !== 'connecting' || !ready) return;
+    if (phase !== 'connecting' || !ready || settledRef.current) return;
+    settledRef.current = true;
     setPhase('confirmed');
   }, [phase, ready]);
+
+  // Phase 2 timeout: boots for BOOT_TIMEOUT_MS, then checks whether
+  // auth has settled. If it has (readyRef caught up right at the
+  // boundary), fall through to "confirmed" same as above. If not,
+  // close anyway and tell the caller so it can show the "no network"
+  // retry toast — the splash itself never hangs past the boot window.
+  useEffect(() => {
+    if (phase !== 'connecting') return;
+    const t = setTimeout(
+      () => {
+        if (settledRef.current) return;
+        settledRef.current = true;
+        if (readyRef.current) {
+          setPhase('confirmed');
+        } else {
+          onTimeout?.();
+          setPhase('leaving');
+        }
+      },
+      reducedMotion ? 300 : BOOT_TIMEOUT_MS
+    );
+    return () => clearTimeout(t);
+  }, [phase, reducedMotion, onTimeout]);
 
   // Phase 3 → 4: the deliberate 3s buffer AFTER auth resolves — gives
   // background pages/images time to settle and preload before the

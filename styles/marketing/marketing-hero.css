@@ -882,6 +882,17 @@
     max-width: 380px;
   }
 
+  /* The showcase background is a dark, blurred photo with a dark
+     overlay (see .hero-showcase::before/::after above) — the copy's
+     default ink/walnut text colors are near-black and unreadable on
+     it. White instead, only here on desktop where this copy column
+     is actually shown (it's display:none below 1024px). */
+  .hero-showcase-eyebrow,
+  .hero-showcase-title,
+  .hero-showcase-list {
+    color: #fff;
+  }
+
   .hero-showcase-frame {
     flex: 1 1 56%;
     max-width: 520px;

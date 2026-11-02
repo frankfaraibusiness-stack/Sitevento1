@@ -2,18 +2,104 @@
  * control-moments.css — ControlMoments marketing section
  * (components/marketing/ControlMoments.tsx)
  *
- * Three static, screenshot-like control panels (maintenance mode,
- * site banner, blocked visitor) — no flip interaction, no emoji.
- * Single column on mobile, 3-up row on desktop. One orchestrated
- * reveal-on-scroll for the whole row; everything else is still.
+ * Fully redesigned section: an animated "protected purple" backdrop
+ * (deeper purple wash + drifting shield glyphs/dots + vignette fade)
+ * behind three still, screenshot-like control panels (maintenance
+ * mode, site banner, 24/7 security). Single column on mobile, 3-up
+ * row on desktop. One orchestrated reveal-on-scroll for the whole
+ * row; everything else (cards) is still — only the backdrop moves.
  * ============================================================ */
 
 .cm-section {
-  background: var(--app-bg);
-  padding: 8px 20px 32px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 48px 20px 52px;
+}
+
+/* ---- Animated "protected purple" backdrop ----
+   A deeper, "protected" purple wash (not the flat --app-bg lilac used
+   elsewhere) with a soft dark vignette at the top/bottom edges so the
+   section reads as its own enclosed, branded moment. The dot field +
+   shield glyphs drift slowly behind the cards, entirely decorative. */
+.cm-shield-field {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(13, 8, 38, 0) 0%, rgba(13, 8, 38, 0.38) 100%),
+    radial-gradient(120% 90% at 50% 100%, rgba(13, 8, 38, 0) 0%, rgba(13, 8, 38, 0.38) 100%),
+    linear-gradient(160deg, #5a46d6 0%, #4530b8 48%, #351f9e 100%);
+  overflow: hidden;
+}
+
+.cm-shield-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(10, 6, 28, 0.55);
+  animation: cm-dot-drift 14s ease-in-out infinite;
+}
+
+.cm-shield-dot:nth-child(1) { top: 12%; left: 8%; animation-delay: 0s; }
+.cm-shield-dot:nth-child(2) { top: 22%; left: 86%; animation-delay: 1.4s; }
+.cm-shield-dot:nth-child(3) { top: 48%; left: 18%; animation-delay: 2.8s; }
+.cm-shield-dot:nth-child(4) { top: 68%; left: 92%; animation-delay: 0.6s; }
+.cm-shield-dot:nth-child(5) { top: 82%; left: 36%; animation-delay: 3.6s; }
+.cm-shield-dot:nth-child(6) { top: 36%; left: 62%; animation-delay: 2s; }
+.cm-shield-dot:nth-child(7) { top: 8%; left: 54%; animation-delay: 4.4s; }
+.cm-shield-dot:nth-child(8) { top: 92%; left: 70%; animation-delay: 1s; }
+
+@keyframes cm-dot-drift {
+  0%, 100% { transform: translate(0, 0); opacity: 0.35; }
+  50% { transform: translate(10px, -14px); opacity: 0.85; }
+}
+
+.cm-shield-glyph {
+  position: absolute;
+  color: rgba(10, 6, 28, 0.22);
+  opacity: 0;
+  animation: cm-shield-float 16s ease-in-out infinite;
+}
+
+.cm-shield-glyph svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cm-shield-glyph-a {
+  top: 6%;
+  left: 4%;
+  width: 72px;
+  height: 72px;
+  animation-delay: 0s;
+}
+
+.cm-shield-glyph-b {
+  bottom: 10%;
+  right: 6%;
+  width: 96px;
+  height: 96px;
+  animation-delay: 4s;
+}
+
+.cm-shield-glyph-c {
+  top: 42%;
+  right: 22%;
+  width: 54px;
+  height: 54px;
+  animation-delay: 8s;
+}
+
+@keyframes cm-shield-float {
+  0% { opacity: 0; transform: translateY(18px) scale(0.92); }
+  12%, 82% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-18px) scale(0.92); }
 }
 
 .cm-heading {
+  position: relative;
   max-width: 600px;
   margin: 0 auto 32px;
   text-align: center;
@@ -26,22 +112,19 @@
   font-size: clamp(24px, 6vw, 32px);
   line-height: 1.22;
   letter-spacing: -0.01em;
-  color: var(--ink);
+  color: #fff;
 }
 
 .cm-heading-sub {
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  /* Was a faint grey, nearly invisible against the purple page
-     background. A deep ink tone with reduced opacity reads clearly
-     against --app-bg while still sitting a step quieter than the
-     heading above it. */
-  color: rgba(34, 32, 28, 0.72);
+  color: rgba(255, 255, 255, 0.78);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .cm-grid {
+  position: relative;
   max-width: min(94vw, 460px);
   margin: 0 auto;
   display: flex;
@@ -53,6 +136,7 @@
 .cm-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 14px;
   opacity: 0;
   transform: translateY(16px);
@@ -66,18 +150,18 @@
 }
 
 /* ---- The panel itself: a tiny browser-chrome mockup ----
-   One consistent card surface across all three panels instead of
-   three competing solid colors (black/lime/red) fighting the purple
-   page background. A clean off-white surface with a thin accent bar
-   on top carries just enough color per moment to tell them apart,
-   without turning the whole card into a loud block of color. */
+   One consistent card surface across all three panels — a clean
+   off-white surface with a thin accent bar on top carries just
+   enough color per moment to tell them apart, standing out cleanly
+   against the purple animated backdrop behind the section. */
 .cm-panel {
   position: relative;
-  border-radius: 16px;
+  width: 100%;
+  border-radius: 18px;
   overflow: hidden;
   background: var(--bg);
-  border: 1px solid rgba(34, 32, 28, 0.08);
-  box-shadow: 0 18px 38px -24px rgba(34, 32, 28, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 24px 46px -22px rgba(13, 8, 38, 0.55);
 }
 
 .cm-panel::before {
@@ -112,6 +196,7 @@
 }
 
 .cm-panel-body {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -151,6 +236,27 @@
   color: rgba(34, 32, 28, 0.6);
 }
 
+/* Small live "still monitoring" pulse dot, security panel only —
+   paired with the sub line to read as an active, ongoing state
+   rather than a one-off static screenshot. */
+.cm-panel-pulse {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cm-accent, var(--dash-green));
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--cm-accent, var(--dash-green)) 55%, transparent);
+  animation: cm-pulse-ring 1.8s ease-out infinite;
+}
+
+@keyframes cm-pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cm-accent, var(--dash-green)) 55%, transparent); }
+  70% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--cm-accent, var(--dash-green)) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cm-accent, var(--dash-green)) 0%, transparent); }
+}
+
 /* ---- Per-moment accent (used only for the top bar + glyph) ---- */
 .cm-panel-ink {
   --cm-accent: #4C3BCB;
@@ -158,33 +264,43 @@
 .cm-panel-lime {
   --cm-accent: #5FA419;
 }
-.cm-panel-walnut {
-  --cm-accent: #C23B2E;
+.cm-panel-security {
+  --cm-accent: #1F9D6B;
 }
 
-/* ---- Caption under each panel ---- */
+/* ---- Caption under each panel — centered, beautiful, same width
+   discipline on every card so the row reads evenly. ---- */
 .cm-title {
   margin: 0;
-  font-size: 16.5px;
-  font-weight: 700;
-  color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.005em;
+  text-align: center;
+  color: #fff;
+  font-family: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .cm-desc {
-  margin: -8px 0 0;
+  margin: -6px 0 0;
   font-size: 13.5px;
   line-height: 1.55;
-  /* Was the same faint grey as the heading sub — bumped to a deeper
-     ink tone so it holds up against the purple page background. */
-  color: rgba(34, 32, 28, 0.68);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  max-width: 42ch;
+  max-width: 34ch;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cm-card {
     transition: none;
+  }
+  .cm-shield-dot,
+  .cm-shield-glyph,
+  .cm-panel-pulse {
+    animation: none;
+  }
+  .cm-shield-glyph {
+    opacity: 0.6;
   }
 }
 
@@ -195,7 +311,7 @@
  * ============================================================ */
 @media (min-width: 1024px) {
   .cm-section {
-    padding: 8px 0 48px;
+    padding: 64px 0 72px;
   }
 
   .cm-heading {
@@ -228,7 +344,7 @@
   }
 
   .cm-title {
-    font-size: 17.5px;
+    font-size: 18.5px;
   }
 
   .cm-desc {

@@ -26,6 +26,8 @@ import { MarketingPage } from '@/components/marketing/MarketingPage';
 import { AuthOverlay } from '@/components/auth/AuthOverlay';
 import { InstallPromptOverlay } from '@/components/InstallPromptOverlay';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
+import { BootSplash } from '@/components/BootSplash';
+import { BootNetworkToast } from '@/components/BootNetworkToast';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppView } from '@/hooks/useAppView';
 import { useSidebar } from '@/hooks/useSidebar';
@@ -35,8 +37,17 @@ import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
 import type { AuthPane } from '@/hooks/useAuthForms';
 
 export default function AppRoot() {
-  const { user, authError } = useAuth();
+  const { user, authReady, authError } = useAuth();
   const sidebar = useSidebar();
+
+  // Boot splash: shown for up to 5s while Firebase auth settles. If
+  // authReady flips true within that window, the splash closes
+  // normally. If not, it still closes (never hangs) and shows the
+  // "No network — Try again" toast below instead. See
+  // components/BootSplash.tsx for the phase/timeout logic.
+  const [bootDone, setBootDone] = useState(false);
+  const [bootTimedOut, setBootTimedOut] = useState(false);
+  const [networkToastOpen, setNetworkToastOpen] = useState(false);
   // Settings > Appearance (Font Size / Compact Mode) applied app-wide —
   // see hooks/useAppliedAppearance.ts.
   useAppliedAppearance(user);
@@ -68,12 +79,9 @@ export default function AppRoot() {
   const [installDismissed, setInstallDismissed] = useState(false);
   const installOpen = view === 'dashboard' && !!user && canInstall && !installed && !installDismissed;
 
-  // The global boot screen has been removed (no more GlobalBootSplash/
-  // BootLoader) — the app no longer shows a full-screen splash on load.
-  //
-  // authError is checked for all other cases: if the real page is
-  // genuinely broken (not just still booting), it replaces the page
-  // tree rather than sitting under a splash that will never resolve.
+  // authError is checked first: if the real page is genuinely broken
+  // (not just still booting), it replaces the page tree rather than
+  // sitting under a splash that will never resolve.
   if (authError) {
     return (
       <div
@@ -96,6 +104,25 @@ export default function AppRoot() {
 
   return (
     <>
+      {!bootDone && (
+        <BootSplash
+          ready={authReady}
+          onDone={() => {
+            setBootDone(true);
+            if (bootTimedOut) setNetworkToastOpen(true);
+          }}
+          onTimeout={() => setBootTimedOut(true)}
+        />
+      )}
+
+      <BootNetworkToast
+        open={networkToastOpen}
+        onRetry={() => {
+          if (typeof window !== 'undefined') window.location.reload();
+        }}
+        onDismiss={() => setNetworkToastOpen(false)}
+      />
+
       <Header
         user={user}
         onLogoClick={showMarketing}
