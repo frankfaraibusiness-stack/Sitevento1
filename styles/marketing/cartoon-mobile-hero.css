@@ -218,6 +218,18 @@
     padding: calc(56px + env(safe-area-inset-top, 0px) + 6px) 22px 52px;
     color: var(--ink);
 
+    /* The hero's box was only ever as tall as its content (title +
+       copy + CTAs), so on narrow/short screens where that content is
+       shorter than the background photo, the box ended partway down
+       the image — cover then just hard-cropped it there, and the
+       laptop-showcase section below started on top of the
+       cut-off photo instead of after it. hero-bg-mobile.jpg is
+       720x1280 (aspect ratio ~1.778); min-height keeps the box at
+       least that tall relative to the viewport width so the full
+       photo always has room to show before the section ends,
+       whatever the content height is. */
+    min-height: calc(100vw * 1280 / 720);
+
     /* Mascot/building photo fills the hero only — scoped here rather
        than full-page so it hands off cleanly into the --app-bg purple
        of the section below instead of scrolling behind everything. */
@@ -511,7 +523,16 @@
   }
 
   @media (min-width: 720px) {
-    .cartoon-hero .hero { padding: 72px 40px 80px; }
+    .cartoon-hero .hero {
+      padding: 72px 40px 80px;
+      /* The 100vw-based min-height above is sized for the narrow,
+         single-column portrait layout below 720px. From here up the
+         hero switches to a two-column grid (text + placeholder
+         visual) that doesn't need to match the mobile photo's
+         portrait aspect ratio, so let height go back to tracking
+         content instead of growing with viewport width. */
+      min-height: 0;
+    }
     .cartoon-hero .hero__layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
