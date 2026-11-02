@@ -555,37 +555,18 @@
  * .hero-demo-statusbar below and Hero.tsx's markup order).
  * ============================================================ */
 
-/* No longer the flat --app-bg page color. Same hero photo as the
-   mobile hero above it, duplicated here as this section's own
-   background — tinted with a dark overlay and blurred so it reads
-   as a soft backdrop behind the demo card rather than a second,
-   competing sharp image. */
 .hero-showcase {
   position: relative;
   isolation: isolate;
-  padding: 8px 18px 48px;
+  /* Was 8px top padding with a blurred reuse of the hero's own photo
+     right behind it — with almost no gap and the same image showing
+     through, this section read as a continuation of the hero photo
+     rather than its own section, so the demo card appeared to float
+     "on top of" the hero scene. Solid top padding + a plain page
+     surface (no photo) gives it a clean seam instead. */
+  padding: 56px 18px 48px;
   overflow: hidden;
-}
-
-.hero-showcase::before {
-  content: "";
-  position: absolute;
-  inset: -20px;
-  z-index: -1;
-  background-image: url('/mascot/hero-bg-mobile.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(18px);
-  transform: scale(1.1);
-}
-
-.hero-showcase::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: rgba(18, 16, 10, 0.55);
+  background: var(--app-bg);
 }
 
 .hero-showcase-inner {
@@ -636,7 +617,11 @@
 /* Was border: 1px solid var(--line) — a near-white #e8e4de edge that
    all but vanished against the lime page background behind the hero.
    Dark border instead so the whole demo card reads as a clearly
-   defined panel sitting on top of the lime, not blending into it. */
+   defined panel sitting on top of the lime, not blending into it.
+   The fill itself was also a near-purple color-mix tint, which on the
+   purple page/showcase backdrop made the whole card nearly invisible
+   except for its outline — solid white (near-white) instead so the
+   card itself stands out as its own surface, not just a border. */
 .hero-demo-chrome {
   position: relative;
   width: 100%;
@@ -644,7 +629,7 @@
   margin: 0 auto;
   border-radius: 18px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--app-bg) 60%, var(--bg) 40%);
+  background: var(--bg, #fff);
   border: 1.5px solid #000;
   box-shadow: 0 20px 44px -26px rgba(34, 32, 28, 0.28);
 }
@@ -654,7 +639,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 12px;
-  background: color-mix(in srgb, var(--ink) 4%, var(--app-bg) 96%);
+  background: color-mix(in srgb, var(--ink) 4%, var(--bg, #fff) 96%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.5);
 }
 
@@ -684,7 +669,7 @@
   gap: 8px;
   padding: 12px 14px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.5);
-  background: color-mix(in srgb, var(--ink) 3%, var(--app-bg) 97%);
+  background: color-mix(in srgb, var(--ink) 3%, var(--bg, #fff) 97%);
   min-height: 44px;
 }
 
@@ -865,7 +850,7 @@
 /* ---- Desktop: two-column row, proof copy left, demo card right ---- */
 @media (min-width: 1024px) {
   .hero-showcase {
-    padding: 0 0 clamp(64px, 7vw, 96px);
+    padding: clamp(56px, 6vw, 80px) 0 clamp(64px, 7vw, 96px);
   }
 
   .hero-showcase-inner {
@@ -882,16 +867,10 @@
     max-width: 380px;
   }
 
-  /* The showcase background is a dark, blurred photo with a dark
-     overlay (see .hero-showcase::before/::after above) — the copy's
-     default ink/walnut text colors are near-black and unreadable on
-     it. White instead, only here on desktop where this copy column
-     is actually shown (it's display:none below 1024px). */
-  .hero-showcase-eyebrow,
-  .hero-showcase-title,
-  .hero-showcase-list {
-    color: #fff;
-  }
+  /* The showcase background is now the plain --app-bg page surface
+     (no more dark photo backdrop), so the copy goes back to the
+     normal ink/walnut text colors instead of the white override that
+     used to be needed to read against the photo. */
 
   .hero-showcase-frame {
     flex: 1 1 56%;

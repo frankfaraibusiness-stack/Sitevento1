@@ -109,7 +109,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 15.5px;
     line-height: 1.6;
-    color: color-mix(in srgb, var(--ink) 68%, transparent);
+    color: color-mix(in srgb, var(--ink) 82%, transparent);
     margin: 0 0 28px;
     max-width: 38ch;
   }
@@ -167,7 +167,7 @@
   .auth-overlay .form-header p {
     font-size: 15px;
     line-height: 1.5;
-    color: color-mix(in srgb, var(--ink) 65%, transparent);
+    color: color-mix(in srgb, var(--ink) 82%, transparent);
     margin: 0;
   }
 
@@ -232,7 +232,9 @@
     .auth-overlay .panes.is-switching .pane.is-leaving { display: none; }
   }
 
-  /* ---- OAuth button — plain outlined field on the page ---- */
+  /* ---- OAuth button — solid white field with a firm black edge, so
+     it stands out as its own control against the purple page instead
+     of reading as a transparent, barely-there outline. ---- */
   .auth-overlay .oauth-btn {
     width: 100%;
     display: flex;
@@ -241,18 +243,18 @@
     gap: 10px;
     padding: 14px 16px;
     border-radius: 10px;
-    border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
-    background: transparent;
-    color: var(--ink);
+    border: 1.5px solid #000;
+    background: #fff;
+    color: #000;
     font-size: 14.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.08s ease;
   }
 
   .auth-overlay .oauth-btn:hover {
-    background: rgba(255,255,255,0.3);
-    border-color: var(--ink);
+    background: #f5f5f5;
+    border-color: #000;
   }
 
   .auth-overlay .oauth-btn:active { transform: scale(0.99); }
@@ -264,7 +266,7 @@
     align-items: center;
     gap: 14px;
     margin: 24px 0;
-    color: color-mix(in srgb, var(--ink) 55%, transparent);
+    color: color-mix(in srgb, var(--ink) 78%, transparent);
     font-size: 12.5px;
   }
 
@@ -273,7 +275,7 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: color-mix(in srgb, var(--ink) 20%, transparent);
+    background: color-mix(in srgb, var(--ink) 38%, transparent);
   }
 
   /* ---- Raw input fields — no surrounding card, just the field itself
@@ -294,25 +296,30 @@
     position: relative;
   }
 
+  /* Was a 28%-ink border on a 40%-white fill — both nearly dissolved
+     into the light purple page, which is close in lightness to white.
+     Near-solid black border + a brighter, higher-opacity white fill
+     so each field reads as a clearly defined input, not a faint
+     smudge on the purple. */
   .auth-overlay .field input {
     width: 100%;
     padding: 14px 16px;
     font-size: 15px;
     font-family: inherit;
     border-radius: 10px;
-    border: 1.5px solid color-mix(in srgb, var(--ink) 28%, transparent);
-    background: rgba(255,255,255,0.4);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 85%, transparent);
+    background: rgba(255,255,255,0.78);
     color: var(--ink);
     transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .auth-overlay .field input::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); }
+  .auth-overlay .field input::placeholder { color: color-mix(in srgb, var(--ink) 55%, transparent); }
 
   .auth-overlay .field input:focus {
     outline: none;
     border-color: var(--ink);
-    background: rgba(255,255,255,0.6);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 10%, transparent);
+    background: rgba(255,255,255,0.92);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 12%, transparent);
   }
 
   .auth-overlay .field.has-error input {
@@ -355,7 +362,7 @@
     align-items: center;
     gap: 9px;
     font-size: 13.5px;
-    color: color-mix(in srgb, var(--ink) 65%, transparent);
+    color: color-mix(in srgb, var(--ink) 82%, transparent);
     cursor: pointer;
     user-select: none;
   }
@@ -365,8 +372,8 @@
     width: 17px;
     height: 17px;
     border-radius: 5px;
-    border: 1.5px solid color-mix(in srgb, var(--ink) 32%, transparent);
-    background: rgba(255,255,255,0.4);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 85%, transparent);
+    background: rgba(255,255,255,0.78);
     cursor: pointer;
     position: relative;
     flex-shrink: 0;
@@ -405,18 +412,24 @@
 
   .auth-overlay .forgot-link:hover { text-decoration-color: var(--ink); }
 
-  /* ---- Submit — the one solid, dark, confident element on the page ---- */
+  /* ---- Submit — cartoonic lime pill, matching the hero's "Connect
+     your site" CTA style (black border, solid bottom shadow, bold
+     rounded pill) but dialed to a dimmer, ~50%-muted lime (#a6cc4d)
+     instead of the hero's full-brightness #b3ff00, so it doesn't
+     compete with the hero CTA while still clearly reading as the
+     same cartoon-lime family. ---- */
   .auth-overlay .submit-btn {
     width: 100%;
-    background: var(--ink);
-    color: var(--app-bg);
-    border: none;
-    border-radius: 10px;
+    background: #a6cc4d;
+    color: #000;
+    border: 1.5px solid #000;
+    border-radius: 999px;
     padding: 15px 20px;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 800;
     cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.08s ease;
+    box-shadow: 0 3px 0 #000;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -424,9 +437,12 @@
     position: relative;
   }
 
-  .auth-overlay .submit-btn:hover { opacity: 0.92; }
-  .auth-overlay .submit-btn:active { transform: scale(0.99); }
-  .auth-overlay .submit-btn:disabled { cursor: default; }
+  .auth-overlay .submit-btn:hover { background: #b0d65c; }
+  .auth-overlay .submit-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 #000;
+  }
+  .auth-overlay .submit-btn:disabled { cursor: default; opacity: 0.7; }
 
   .auth-overlay .submit-btn.loading .btn-text { opacity: 0; }
 
@@ -435,8 +451,8 @@
     position: absolute;
     width: 18px;
     height: 18px;
-    border: 2.5px solid rgba(34,32,28,0.15);
-    border-top-color: var(--app-bg);
+    border: 2.5px solid rgba(0,0,0,0.15);
+    border-top-color: #000;
     border-radius: 50%;
     animation: auth-spin 0.7s linear infinite;
   }
@@ -469,7 +485,7 @@
   }
 
   .auth-overlay .reset-sent h2 { color: var(--ink); margin: 0 0 10px; font-size: 24px; font-weight: 400; }
-  .auth-overlay .reset-sent p { color: color-mix(in srgb, var(--ink) 65%, transparent); font-size: 14.5px; margin: 0; line-height: 1.5; }
+  .auth-overlay .reset-sent p { color: color-mix(in srgb, var(--ink) 82%, transparent); font-size: 14.5px; margin: 0; line-height: 1.5; }
 
   .auth-overlay .back-link {
     display: inline-flex;
@@ -490,7 +506,7 @@
 
   .auth-overlay .terms-note {
     font-size: 12.5px;
-    color: color-mix(in srgb, var(--ink) 55%, transparent);
+    color: color-mix(in srgb, var(--ink) 78%, transparent);
     text-align: left;
     margin-top: 28px;
     line-height: 1.6;

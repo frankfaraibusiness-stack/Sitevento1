@@ -17,8 +17,8 @@
 //
 // The CTAs are wired to the same callbacks the old hero used
 // (onConnectClick / onHowItWorksClick), threaded through from
-// MarketingPage — "Connect Site" opens the connect flow, "Watch Demo"
-// opens the existing HowItWorksModal, matching their closest
+// MarketingPage — "Connect your site" opens the connect flow, "Watch
+// Demo" opens the existing HowItWorksModal, matching their closest
 // equivalents from the previous hero.
 
 interface CartoonMobileHeroProps {
@@ -104,7 +104,7 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
 
           <div className="hero__ctas">
             <button type="button" className="btn btn-primary" onClick={onConnectClick}>
-              Connect Site <span aria-hidden="true">➔</span>
+              Connect your site <span aria-hidden="true">➔</span>
             </button>
 
             <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
