@@ -100,18 +100,33 @@
     stroke: currentColor;
   }
 
+  /* Same lime as the hero's primary CTA (.btn-primary, #b3ff00 in
+     cartoon-mobile-hero.css), not the lavender --app-bg glass pill it
+     used before — but dimmed to ~70% strength (mixed down toward the
+     header's own background) so it reads as "lime, on-brand" without
+     competing with the hero's CTA for attention. Nav-sized padding,
+     not the hero button's chunky offset shadow — this is a secondary,
+     always-visible action, not the page's main call to action. */
   .signup {
-    background: color-mix(in srgb, var(--app-bg, #c1b5f7) 35%, transparent);
-    backdrop-filter: blur(10px) saturate(160%);
-    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    background: color-mix(in srgb, #b3ff00 70%, var(--app-header-bg, #fff));
     color: var(--ink);
-    border: 1.5px solid color-mix(in srgb, var(--app-bg, #c1b5f7) 70%, #22201c);
+    border: 1.5px solid color-mix(in srgb, #b3ff00 40%, #000 60%);
     border-radius: 999px;
     padding: 9px 20px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     font-family: inherit;
     cursor: pointer;
+    transition: transform 0.1s ease, background 0.14s ease;
+  }
+
+  .signup:hover {
+    background: color-mix(in srgb, #b3ff00 82%, var(--app-header-bg, #fff));
+    transform: translateY(-1px);
+  }
+
+  .signup:active {
+    transform: translateY(0);
   }
 
   .pill-nav .brand {

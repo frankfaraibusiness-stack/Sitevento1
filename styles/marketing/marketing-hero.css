@@ -11,8 +11,25 @@
  * #marketingView spacing fix and the desktop cartoon-hero block.
  * ============================================================ */
 
-#marketingView {
-  background: var(--app-bg);
+/* #marketingView previously carried its own var(--app-bg) (lavender)
+   background, meant to show through the gaps between the sections
+   that used to follow the hero. Now that the hero is the only thing
+   left on the page, that background had nothing left to back except
+   a bare strip of lavender between the hero photo and the footer
+   (main's own min-height: 60vh below was stretching #marketingView
+   taller than the hero itself, so that strip was visible even
+   without scrolling). No background here now — the hero photo fills
+   its own box, and the footer sits flush right after it. */
+.marketing-main {
+  /* Overrides the global `main { min-height: 60vh }` (marketing-nav.css)
+     for this page specifically. That min-height made sense when main
+     held the full stack of marketing sections; with just the hero left,
+     it was stretching main (and the lavender #marketingView background
+     inside it) well past the hero's real height, showing as a solid
+     lavender band between the hero photo and the footer. The hero sets
+     its own height from its content/photo, so main doesn't need to
+     force any extra here. */
+  min-height: 0;
 }
 
 /* Kill the gap between the fixed header and the mobile cartoon hero.

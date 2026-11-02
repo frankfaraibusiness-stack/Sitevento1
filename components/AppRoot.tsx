@@ -141,7 +141,7 @@ export default function AppRoot() {
         onOpenProfile={goToProfile}
       />
 
-      <main>
+      <main className="marketing-main">
         <MarketingPage onConnectClick={handleConnectCTA} />
       </main>
 

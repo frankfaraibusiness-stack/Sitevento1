@@ -314,41 +314,80 @@
 .hiw-section-visual { min-width: 0; }
 
 /* ── End panel ────────────────────────────────────────────────────── */
+/* Previously a plain block with a flat black (var(--ink)) CTA — the
+   one hardcoded-dark element in an otherwise lime/purple/cream modal.
+   Now a glassy card: a soft purple-tinted translucent surface (not a
+   flat color) with a blurred backdrop, a dark ink edge to keep it
+   readable and grounded against the content column, and the CTA built
+   from the same purple used throughout the app's "dash" accents
+   (--dash-purple / --dash-purple-ink) instead of plain black. */
 .hiw-end {
   max-width: 1180px;
-  margin: 0 auto;
-  padding: 64px 56px 96px;
+  margin: 40px auto 48px;
+  padding: 48px 56px;
   text-align: center;
+  border-radius: 24px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1.5px solid var(--ink);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--dash-purple) 14%, var(--cream) 86%),
+    color-mix(in srgb, var(--dash-purple) 22%, var(--cream) 78%)
+  );
+  box-shadow: 0 10px 0 -4px rgba(34, 32, 28, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+.hiw-end::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    120% 160% at 50% -20%,
+    color-mix(in srgb, var(--dash-purple) 38%, transparent),
+    transparent 60%
+  );
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 .hiw-end h4 {
   margin: 0 0 8px;
   font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
   font-size: 24px;
-  color: var(--ink);
+  color: var(--dash-purple-ink);
 }
 .hiw-end p {
-  margin: 0 0 20px;
+  margin: 0 0 24px;
   font-family: -apple-system, sans-serif;
   font-size: 14.5px;
-  color: #6b655c;
+  color: #51493e;
 }
 .hiw-end-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 13px 26px;
+  padding: 13px 28px;
   border-radius: 999px;
   border: 1.5px solid var(--ink);
-  background: var(--ink);
+  background: var(--dash-purple);
   color: #fff;
   font-family: -apple-system, sans-serif;
   font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.14s ease;
+  box-shadow: 0 3px 0 var(--dash-purple-ink);
+  transition: transform 0.1s ease, background 0.14s ease, box-shadow 0.1s ease;
 }
-.hiw-end-cta:hover { background: var(--walnut-dark); transform: translateY(-1px); }
-.hiw-end-cta:active { transform: translateY(0); }
+.hiw-end-cta:hover {
+  background: color-mix(in srgb, var(--dash-purple) 88%, #000 12%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--dash-purple-ink);
+}
+.hiw-end-cta:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--dash-purple-ink);
+}
 
 /* ============================================================
  * Per-section visuals — small, real (not stock-art) diagrams built
@@ -622,7 +661,7 @@
   .hiw-section-lede { max-width: none; }
   .hiw-section-visual { order: -1; }
 
-  .hiw-end { padding: 40px 24px 64px; }
+  .hiw-end { margin: 24px 16px 0; padding: 36px 24px; }
 }
 
 @media (max-width: 520px) {
