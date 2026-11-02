@@ -437,6 +437,85 @@
 
   .cartoon-hero .hero__visual { display: none; }
 
+  /* ---------- sites-connected stat ---------- */
+  /* Sits in the empty patch of photo to the right of the (left-
+     aligned) copy column — level with the mascot, clear of the
+     title/description/CTAs/steps which all stay inside their own
+     30ch-ish left column. Positioned relative to .hero__layout
+     (same stacking context as the rest of the content, z-index 2)
+     rather than floated inline, so it doesn't push the steps list
+     around or get squeezed by it.
+     Kept compact and right-clamped so it still clears the screen
+     edge with room to spare on a 320px-wide phone: at 320px the
+     hero has 22px of padding each side (.hero above), leaving a
+     276px content box, and this block tops out at 132px wide. */
+  .cartoon-hero .hero__statBlock {
+    position: absolute;
+    /* Anchored from the bottom of .hero__layout rather than the top:
+       the title's height varies with the rotator word currently
+       shown (ROTATOR_WORDS ranges from "YOURS" to "ANALYTICS-READY"),
+       so a top offset would drift this block up/down as that word
+       changes. The CTAs/steps column at the bottom is fixed-height,
+       so anchoring up from there instead keeps this block level with
+       the mascot's upper body/face consistently. */
+    bottom: 190px;
+    right: 6px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    max-width: 132px;
+    text-align: right;
+    pointer-events: none;
+  }
+
+  /* White, same as .hero__sub — the brief was to keep the number in
+     the same white as the description so the block doesn't add a
+     third/fourth colour on top of the photo. Same black-outline
+     treatment as the headline so it stays legible over the busy
+     mascot/building art behind it, not just a text-shadow blur. */
+  .cartoon-hero .hero__statNumber {
+    font-family: 'Baloo 2', 'Fredoka', sans-serif;
+    font-size: clamp(30px, 10vw, 44px);
+    font-weight: 800;
+    line-height: 1;
+    color: #FFFDF5;
+    -webkit-text-stroke: 1.5px var(--ink, #12100A);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Lime — the one accent colour already doing work elsewhere in
+     this hero (the primary CTA, the loader), so the label picks it
+     up too instead of introducing a new colour just for this. */
+  .cartoon-hero .hero__statLabel {
+    font-family: 'Nunito', 'Fredoka', sans-serif;
+    font-size: clamp(10px, 3vw, 12px);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #b3ff00;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
+  }
+
+  /* Smallest phones (iPhone SE / 320px-class devices): trim the
+     number down another notch and tuck the block in a touch closer
+     to the edge so there's no risk of clipping on devices that round
+     their viewport width down below 320px. */
+  @media (max-width: 340px) {
+    .cartoon-hero .hero__statBlock {
+      max-width: 112px;
+      right: 4px;
+    }
+    .cartoon-hero .hero__statNumber {
+      font-size: 28px;
+    }
+    .cartoon-hero .hero__statLabel {
+      font-size: 9.5px;
+    }
+  }
+
   /* ---------- how-it-works steps ---------- */
   /* Fills the empty stretch of photo under the CTAs (open sky/grass
      on the left, same column the headline/description/CTAs already
@@ -664,6 +743,16 @@
       letter-spacing: 0.02em;
     }
     .cartoon-hero .navbar { bottom: 24px; }
+
+    /* From here up, .hero__layout becomes a two-column grid with its
+       own visible placeholder box (.hero__visual, directly above) —
+       the absolute bottom/right offsets tuned for the single-column
+       portrait photo below 720px would land on top of that
+       placeholder instead of beside the mascot, so the stat block is
+       mobile-only and stops here. */
+    .cartoon-hero .hero__statBlock {
+      display: none;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

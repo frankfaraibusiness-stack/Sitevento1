@@ -122,4 +122,12 @@
   .cartoon-hero--desktop .hero__visual {
     display: none;
   }
+
+  /* Mobile-only sites-connected stat (CartoonMobileHero.tsx) — no
+     desktop position has been designed for it yet, so it's hidden
+     here the same way .hero__inner is, rather than left to collide
+     with the bare desktop placeholder. */
+  .cartoon-hero--desktop .hero__statBlock {
+    display: none;
+  }
 }

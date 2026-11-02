@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 // components/marketing/CartoonMobileHero.tsx
 //
 // New mobile hero, replacing the old one entirely. Markup and CSS are
@@ -88,6 +90,76 @@ interface CartoonHeroContentProps {
   onHowItWorksClick: () => void;
 }
 
+// Sites-connected stat, sitting in the open patch of photo to the
+// right of the (left-aligned) copy column, roughly level with the
+// mascot — the one part of the hero photo with nothing else over it.
+// Counts up from 0 to SITES_CONNECTED_TARGET once it scrolls into
+// view, then holds; re-triggers if it scrolls out and back in.
+const SITES_CONNECTED_TARGET = 1000;
+const COUNT_UP_MS = 1600;
+
+function SitesConnectedStat() {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    // Respect reduced-motion users — jump straight to the final
+    // number instead of animating it.
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    const runCountUp = () => {
+      if (hasAnimated.current) return;
+      hasAnimated.current = true;
+
+      if (prefersReducedMotion) {
+        setCount(SITES_CONNECTED_TARGET);
+        return;
+      }
+
+      const start = performance.now();
+      const step = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / COUNT_UP_MS, 1);
+        // Ease-out so it starts fast and settles gently on the
+        // final number instead of ticking up at a flat linear rate.
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.round(eased * SITES_CONNECTED_TARGET));
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+      requestAnimationFrame(step);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            runCountUp();
+          }
+        });
+      },
+      { threshold: 0.4 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="hero__statBlock" ref={ref} aria-hidden="true">
+      <span className="hero__statNumber">{count.toLocaleString()}+</span>
+      <span className="hero__statLabel">SITES CONNECTED</span>
+    </div>
+  );
+}
+
 // Exported so the desktop hero (components/marketing/Hero.tsx) can
 // render this exact same markup — same title/rotator, same
 // description, same custom pill CTAs, same platforms badge — instead
@@ -138,6 +210,13 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
 
         {/* desktop placeholder for the image */}
         <div className="hero__visual" aria-hidden="true" />
+
+        {/* Mobile-only: sits in the open part of the photo beside the
+            mascot, to the right of the left-aligned copy column.
+            Hidden on desktop alongside .hero__inner (see
+            .cartoon-hero--desktop .hero__statBlock in
+            marketing-hero.css). */}
+        <SitesConnectedStat />
       </div>
     </section>
   );
