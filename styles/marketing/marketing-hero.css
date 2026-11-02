@@ -32,6 +32,23 @@
   min-height: 0;
 }
 
+/* Kill the lavender --app-bg gap between the hero photo and whatever
+   follows it (next section / footer). The real source isn't main or
+   #marketingView (both already zeroed above) — it's `body`'s own
+   global padding-bottom (styles/base/base.css), reserved site-wide so
+   content never sits underneath GlobalNav's fixed bottom bar. On every
+   other page that reserved space sits *under* real content, invisible.
+   On the marketing page the hero is the last real content before that
+   reserved strip, so the strip itself becomes visible as a flat
+   lavender band showing the bare --app-bg body color.
+   body:has(#marketingView) scopes this to the marketing page only —
+   every other route keeps its normal bottom-nav clearance untouched. */
+@media (max-width: 859px) {
+  body:has(#marketingView) {
+    padding-bottom: 0;
+  }
+}
+
 /* Kill the gap between the fixed header and the mobile cartoon hero.
    `main` normally adds 56px (header height) + 16px breathing room above
    its content (styles/base/base.css); that extra 16px, stacked on top
@@ -41,7 +58,7 @@
    that breathing gap under the header. */
 @media (max-width: 1023px) {
   #marketingView {
-    margin-top: 0;
+    margin-top: -16px;
   }
 }
 
@@ -60,7 +77,7 @@
    to the true top of the viewport. */
 @media (min-width: 1024px) {
   #marketingView {
-    margin-top: 0;
+    margin-top: -16px;
   }
 }
 
@@ -89,8 +106,8 @@
        the photo starts at the true top of the viewport, behind the
        header's glass bar, instead of beginning underneath it — then
        pad that height back so the content clears the header. */
-    margin-top: 0;
-    padding: 56px clamp(24px, 4vw, 64px) 96px;
+    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 56px) clamp(24px, 4vw, 64px) 96px;
     min-height: 640px;
     display: flex;
     align-items: center;
