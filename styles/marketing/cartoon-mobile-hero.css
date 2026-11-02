@@ -214,8 +214,8 @@
        padding-top adds just that height back (plus a few px, not the
        old 22px) so the title sits almost flush under the header
        instead of leaving a visible gap. */
-    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
-    padding: calc(56px + env(safe-area-inset-top, 0px) + 6px) 22px 52px;
+    margin-top: 0;
+    padding: 6px 22px 52px;
     color: var(--ink);
 
     /* Mascot/building photo fills the hero only — scoped here rather

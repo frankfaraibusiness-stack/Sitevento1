@@ -41,7 +41,7 @@
    that breathing gap under the header. */
 @media (max-width: 1023px) {
   #marketingView {
-    margin-top: -16px;
+    margin-top: 0;
   }
 }
 
@@ -60,7 +60,7 @@
    to the true top of the viewport. */
 @media (min-width: 1024px) {
   #marketingView {
-    margin-top: -16px;
+    margin-top: 0;
   }
 }
 
@@ -89,8 +89,8 @@
        the photo starts at the true top of the viewport, behind the
        header's glass bar, instead of beginning underneath it — then
        pad that height back so the content clears the header. */
-    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
-    padding: calc(56px + env(safe-area-inset-top, 0px) + 56px) clamp(24px, 4vw, 64px) 96px;
+    margin-top: 0;
+    padding: 56px clamp(24px, 4vw, 64px) 96px;
     min-height: 640px;
     display: flex;
     align-items: center;
