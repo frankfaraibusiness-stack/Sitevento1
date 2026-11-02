@@ -6,13 +6,22 @@
   --text-0:#f5f3ff; --text-1:#cbbdf0; --text-2:#9382b8;
   color-scheme:dark; color:var(--text-0); font-family:Inter,sans-serif;
   position:relative; isolation:isolate; overflow:hidden;
-  padding: clamp(32px,5vw,64px) clamp(20px,6vw,72px);
+  /* No top padding and no .stage margin-top (below) — the hero
+     directly above (.hero in cartoon-mobile-hero.css) already ends
+     with its own 52px bottom padding, so this section should start
+     flush right at that edge with zero extra space of its own. Any
+     top spacing here just adds a second, unfilled gap of bare
+     --app-bg purple stacked on top of the hero's. */
+  padding: 0 clamp(20px,6vw,72px) clamp(32px,5vw,64px);
   background: transparent;
 }
 .sv-laptop-demo *, .sv-laptop-demo *::before, .sv-laptop-demo *::after { box-sizing:border-box; }
   /* ---------- Laptop mockup ---------- */
   .sv-laptop-demo .stage{
-    margin-top: clamp(40px, 7vw, 72px);
+    /* Was clamp(40px, 7vw, 72px), then 24px — zeroed out so nothing
+       here adds to the hero's own bottom padding; the two sections
+       sit flush against each other with no gap between them. */
+    margin-top: 0;
     width: 100%;
     max-width: 920px;
     perspective: 1800px;
@@ -491,17 +500,3 @@
   }
 
 
-
-/* Pull the laptop showcase up to meet the cartoon hero on mobile. */
-@media (max-width: 1023px) {
-  .sv-laptop-demo {
-    margin-top: -140px;
-    padding-top: 0;
-    position: relative;
-    z-index: 2;
-  }
-
-  .sv-laptop-demo .stage {
-    margin-top: 0;
-  }
-}
