@@ -227,8 +227,12 @@
        720x1280 (aspect ratio ~1.778); min-height keeps the box at
        least that tall relative to the viewport width so the full
        photo always has room to show before the section ends,
-       whatever the content height is. */
-    min-height: calc(100vw * 1280 / 720);
+       whatever the content height is. Trimmed by 65px off the full
+       aspect-ratio height — the full photo made the hero too tall on
+       phones; this crops a bit off the bottom of the image (still
+       `cover`+`top center`, so nothing from the top/subject is lost)
+       instead of showing the whole thing. */
+    min-height: calc(100vw * 1280 / 720 - 65px);
 
     /* Mascot/building photo fills the hero only — scoped here rather
        than full-page so it hands off cleanly into the --app-bg purple
@@ -237,6 +241,34 @@
     background-size: cover;
     background-position: top center;
     background-repeat: no-repeat;
+  }
+
+  /* Dark tint over the lower part of the photo, behind the content
+     (z-index 1, between the photo on .hero itself and
+     .hero__layout's z-index 2). Clear near the top, under the
+     header, where only the white-stroked headline sits — it's
+     already legible straight over the bright sky. Builds up going
+     down so the description/CTAs over the busier part of the photo
+     stand out, then eases into the page's own --app-bg purple
+     (same color as the section below) right at the bottom edge —
+     fading to transparent here instead would just uncover the raw
+     photo again and leave a hard photo/purple seam exactly where
+     the hero ends. Ending on the actual page color instead makes the
+     photo visually dissolve into the rest of the page. */
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(8, 10, 20, 0) 0%,
+      rgba(8, 10, 20, 0) 30%,
+      rgba(8, 10, 20, 0.55) 62%,
+      rgba(8, 10, 20, 0.78) 88%,
+      var(--app-bg, #c1b5f7) 100%
+    );
   }
 
   .hero__layout {
@@ -324,7 +356,11 @@
   /* No card/box, no blur behind it either — the blur was reading as
      a visible soft rectangle over the photo. Text sits directly on
      the image now, kept legible with the text-shadow below instead.
-     Small and left-aligned, not centered with the headline. */
+     Small and left-aligned, not centered with the headline. Sits
+     over the dark tint (.hero::after) added over the lower part of
+     the photo, so it's white with a soft dark shadow now, same
+     direction as the headline above it, rather than the old dark
+     text tuned for sitting straight on bright sky. */
   .cartoon-hero .hero__sub {
     margin: 18px 0 0;
     margin-left: 0;
@@ -334,16 +370,16 @@
     font-size: 13px;
     line-height: 1.55;
     font-weight: 700;
-    color: #12100A;
+    color: #FFFFFF;
     letter-spacing: 0.005em;
     text-align: left;
     text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.55),
-      0 1px 6px rgba(255, 255, 255, 0.55);
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      0 1px 10px rgba(0, 0, 0, 0.4);
   }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
-    color: #12100A;
+    color: #FFFFFF;
   }
 
   /* ---------- CTAs ---------- */
