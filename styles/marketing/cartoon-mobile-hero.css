@@ -208,15 +208,12 @@
   /* No card/box, no blur behind it either — the blur was reading as
      a visible soft rectangle over the photo. Text sits directly on
      the image now, kept legible with the text-shadow below instead.
-     Small and left-aligned, not centered with the headline. Sits
-     over the dark tint (.hero::after) added over the lower part of
-     the photo, so it's white with a soft dark shadow now, same
-     direction as the headline above it, rather than the old dark
-     text tuned for sitting straight on bright sky. */
+     Small and centered. Sits over the dark tint (.hero::after) added
+     over the lower part of the photo, so it's white with a soft dark
+     shadow now, same direction as the headline above it, rather than
+     the old dark text tuned for sitting straight on bright sky. */
   .cartoon-hero .hero__sub {
-    margin: 18px 0 0;
-    margin-left: 0;
-    margin-right: auto;
+    margin: 18px auto 0;
     max-width: 30ch;
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
@@ -224,7 +221,7 @@
     font-weight: 700;
     color: #FFFFFF;
     letter-spacing: 0.005em;
-    text-align: left;
+    text-align: center;
     text-shadow:
       0 1px 3px rgba(0, 0, 0, 0.5),
       0 1px 10px rgba(0, 0, 0, 0.4);
