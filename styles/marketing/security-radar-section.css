@@ -1,0 +1,262 @@
+/* ============================================================
+ * security-radar-section.css — "Watching your traffic, around
+ * the clock"
+ *
+ * A bigger, danger-tinted sibling of live-stats-section.css's radar
+ * (.lss-radar) — same sweep/blip/pulse technique, scaled up as the
+ * section's centerpiece instead of a small dial next to stat cards,
+ * and re-themed red/orange instead of lime/purple to read as
+ * "security" rather than "general live stats". Sits on the same
+ * dark glass panel family as the two sections above it.
+ * ============================================================ */
+
+.sdr {
+  position: relative;
+  padding: clamp(56px, 9vw, 108px) 20px;
+}
+
+.sdr-inner {
+  max-width: 1020px;
+  margin: 0 auto;
+}
+
+.sdr-intro {
+  text-align: center;
+  max-width: 580px;
+  margin: 0 auto clamp(32px, 5vw, 48px);
+}
+
+.sdr-eyebrow {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--danger);
+  background: var(--danger-surface);
+  border: 1px solid var(--danger-border);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.sdr-title {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.sdr-copy {
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--surface-ink-soft);
+  margin: 0;
+}
+
+/* ---- Panel: dark glass shell holding radar + counters ---- */
+.sdr-panel {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 5vw, 56px);
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: clamp(28px, 4vw, 48px);
+  border-radius: 24px;
+  background: linear-gradient(170deg, #1f0d14 0%, #0d0607 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 30px 70px -22px rgba(179, 67, 43, 0.35),
+    0 1px 0 rgba(255,255,255,0.08) inset;
+}
+
+/* ---- Radar dial ---- */
+.sdr-radar-wrap {
+  position: relative;
+  width: clamp(180px, 22vw, 232px);
+  height: clamp(180px, 22vw, 232px);
+  flex-shrink: 0;
+}
+
+.sdr-radar-glow {
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--danger) 42%, transparent), transparent 70%);
+  filter: blur(14px);
+  animation: sdr-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes sdr-breathe {
+  0%, 100% { opacity: 0.4; transform: scale(0.95); }
+  50%      { opacity: 0.85; transform: scale(1.04); }
+}
+
+.sdr-radar-svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.sdr-ring {
+  fill: none;
+  stroke: rgba(255,255,255,0.14);
+  stroke-width: 1.2;
+}
+
+.sdr-crosshair {
+  stroke: rgba(255,255,255,0.07);
+  stroke-width: 1;
+}
+
+.sdr-sweep-group {
+  transform-origin: 130px 130px;
+  animation: sdr-spin 2.4s linear infinite;
+}
+
+@keyframes sdr-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.sdr-sweep {
+  fill: color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+.sdr-blip {
+  fill: #ff8a65;
+  filter: drop-shadow(0 0 4px rgba(255, 138, 101, 0.8));
+  animation: sdr-blip-fade 1.5s ease-out forwards;
+}
+
+@keyframes sdr-blip-fade {
+  0%   { opacity: 1; r: 5.5px; }
+  100% { opacity: 0; r: 1.5px; }
+}
+
+.sdr-core {
+  fill: #fff;
+  stroke: var(--danger);
+  stroke-width: 2;
+}
+
+/* ---- Counters half ---- */
+.sdr-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 240px;
+  flex: 1;
+}
+
+.sdr-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 6px 13px 6px 10px;
+}
+
+.sdr-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff8a65;
+  animation: sdr-pulse-dot 1.6s ease-out infinite;
+}
+
+@keyframes sdr-pulse-dot {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 138, 101, 0.7); }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.sdr-counter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .sdr-counter-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sdr-counter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  overflow: hidden;
+}
+
+.sdr-counter-icon {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+.sdr-counter-icon svg { width: 14px; height: 14px; }
+
+.sdr-counter-restrict .sdr-counter-icon {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 20%, transparent);
+}
+.sdr-counter-block .sdr-counter-icon {
+  color: #ff8a65;
+  background: color-mix(in srgb, #ff8a65 20%, transparent);
+}
+
+.sdr-counter-value {
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.sdr-counter-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+}
+
+.sdr-footnote {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.4);
+  margin: 2px 0 0;
+}
+
+/* ---- Pause all motion off-screen / reduced motion, same pattern
+   as LiveStatsSection's .lss.is-paused ---- */
+.sdr:not(.is-in-view) .sdr-sweep-group,
+.sdr:not(.is-in-view) .sdr-radar-glow,
+.sdr:not(.is-in-view) .sdr-live-dot {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sdr-sweep-group,
+  .sdr-radar-glow,
+  .sdr-live-dot,
+  .sdr-blip {
+    animation: none !important;
+  }
+}

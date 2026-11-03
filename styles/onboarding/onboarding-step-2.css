@@ -1,0 +1,134 @@
+/* styles/onboarding/onboarding-step-2.css
+ *
+ * Step 2 — tone="purple", mascot flipped. Connect-flow rail + code
+ * snippet card. Classes referenced by
+ * components/onboarding/OnboardingSteps.tsx's StepTwo().
+ */
+
+/* ============ Flow rail (1 → 2 → 3 steps) ============ */
+
+.onb-flow-rail {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0 0 1.4rem;
+  text-align: left;
+}
+
+.onb-flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.6rem 0;
+  animation: onb-flow-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.onb-flow-rail .onb-flow-step:nth-child(1) { animation-delay: 0.05s; }
+.onb-flow-rail .onb-flow-step:nth-child(3) { animation-delay: 0.18s; }
+.onb-flow-rail .onb-flow-step:nth-child(5) { animation-delay: 0.31s; }
+
+@keyframes onb-flow-rise {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb-flow-step { animation: none; }
+}
+
+.onb-flow-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--onb-sans);
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: var(--dash-purple-surface);
+  color: var(--dash-purple-ink);
+  border: 1.5px solid var(--dash-purple-ink);
+}
+
+.onb-flow-num svg {
+  width: 15px;
+  height: 15px;
+}
+
+.onb-flow-step div strong {
+  display: block;
+  font-family: var(--onb-sans);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 0.1rem;
+}
+
+.onb-flow-step div p {
+  margin: 0;
+  font-family: var(--onb-sans);
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+  line-height: 1.4;
+}
+
+.onb-flow-step-done .onb-flow-num {
+  background: var(--dash-purple);
+  color: #fff;
+  border-color: var(--dash-purple-ink);
+}
+
+.onb-flow-connector {
+  width: 1.5px;
+  height: 18px;
+  margin-left: 15px;
+  background: var(--dash-purple-border);
+}
+
+/* ============ Code snippet card ============ */
+
+.onb-code-card {
+  width: 100%;
+  border-radius: 1.1rem;
+  overflow: hidden;
+  background: var(--ink);
+  border: 1.5px solid var(--dash-purple-ink);
+  box-shadow: 0 5px 0 var(--dash-purple-ink), 0 18px 34px -16px rgba(26, 31, 10, 0.35);
+  text-align: left;
+}
+
+.onb-code-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.75rem;
+  background: color-mix(in srgb, var(--ink) 92%, var(--dash-purple) 8%);
+  border-bottom: 1px solid color-mix(in srgb, #fff 10%, transparent);
+}
+
+.onb-code-card-head span:last-child {
+  margin-left: 0.4rem;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.68rem;
+  color: color-mix(in srgb, #fff 55%, transparent);
+}
+
+.onb-code-card-body {
+  margin: 0;
+  padding: 1rem 1.1rem 1.2rem;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.74rem;
+  line-height: 1.7;
+  color: #e3dffc;
+  white-space: pre;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 720px) {
+  .onb-flow-step div strong { font-size: 0.96rem; }
+  .onb-code-card-body { font-size: 0.82rem; padding: 1.2rem 1.4rem 1.4rem; }
+}

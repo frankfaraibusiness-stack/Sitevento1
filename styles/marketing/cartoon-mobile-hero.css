@@ -1,0 +1,634 @@
+/* styles/marketing/cartoon-mobile-hero.css
+ *
+ * New mobile hero (components/marketing/CartoonMobileHero.tsx),
+ * replacing the old mobile hero entirely. Source markup/CSS pasted in
+ * as-is from the provided HTML file, scoped under a `.cartoon-hero`
+ * wrapper class so its generic class names (.hero, .btn, .page,
+ * .navbar, etc.) can't collide with the rest of the app's CSS. The
+ * only lines dropped from the source were the 3 truly global reset
+ * rules (`*`, `html, body`, `body`) — box-sizing: border-box and
+ * margin/padding resets are already handled app-wide by
+ * styles/base/base.css, so they're redundant here.
+ *
+ * Fonts: Baloo 2 / Fredoka, loaded via <link> tags in app/layout.tsx
+ * (same as the source file's <head>).
+ *
+ * Shown only below the 1024px desktop breakpoint (see the gating rule
+ * at the end of this file) — the existing mascot-stage Hero
+ * (components/marketing/Hero.tsx) keeps rendering unchanged at
+ * 1024px+.
+ *
+ * This file used to also define its own full-screen boot-style
+ * loader (`.cartoon-hero .loader`) — that's gone now, consolidated
+ * into components/GlobalLoader.tsx / styles/base/global-loader.css,
+ * the one boot screen for the whole app. See CartoonMobileHero.tsx's
+ * header comment.
+ */
+
+  .cartoon-hero .page {
+    /* No longer reserving room for a sticky footer here — the old
+       in-hero nav this padding was sized for has been removed (the
+       real nav now lives in components/layout/GlobalNav.tsx, mounted
+       once site-wide, which already reserves its own clearance via
+       body's padding-bottom in styles/base/base.css). Leaving this at
+       110px stacked that clearance twice and showed up as a large
+       dead gap right under the hero.
+       The 5s delayed fade-in that used to live here was timed to the
+       old inline cartoon-hero loader's own 5s hardcoded duration (see
+       CartoonMobileHero.tsx's header comment) — this content sat at
+       opacity:0 until that loader's timer ran out, regardless of
+       whether the page was actually visible yet. Now that
+       components/GlobalLoader.tsx (variant="boot") is the only boot
+       cover and it's a full-screen overlay in its own stacking
+       context (AppRoot, not this component), this content can just
+       render visible immediately — it's already hidden behind the
+       boot loader for as long as that's on screen. */
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero {
+    --lime: #7C5CFC;
+    --lime-bg: #E7E1FC;
+    --ink: #12100A;
+    --ink-soft: #4A4732;
+    --cream: #FFFDF5;
+
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    /* Pulled up by the fixed header's own height so the background
+       image starts at the true top of the viewport, behind the
+       header's glass bar, instead of beginning underneath it — then
+       padding-top adds just that height back (plus a few px, not the
+       old 22px) so the title sits almost flush under the header
+       instead of leaving a visible gap. */
+    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 6px) 22px 52px;
+    color: var(--ink);
+
+    /* The hero's box was only ever as tall as its content (title +
+       copy + CTAs), so on narrow/short screens where that content is
+       shorter than the background photo, the box ended partway down
+       the image — cover then just hard-cropped it there, and the
+       laptop-showcase section below started on top of the
+       cut-off photo instead of after it. hero-bg-mobile.jpg is
+       720x1280 (aspect ratio ~1.778); min-height keeps the box at
+       least that tall relative to the viewport width so the full
+       photo always has room to show before the section ends,
+       whatever the content height is. Trimmed by 65px off the full
+       aspect-ratio height — the full photo made the hero too tall on
+       phones; this crops a bit off the bottom of the image (still
+       `cover`+`top center`, so nothing from the top/subject is lost)
+       instead of showing the whole thing. */
+    min-height: calc(100vw * 1280 / 720 - 65px);
+
+    /* Mascot/building photo fills the hero only — scoped here rather
+       than full-page so it hands off cleanly into the --app-bg purple
+       of the section below instead of scrolling behind everything. */
+    background-image: url('/mascot/hero-bg-mobile.jpg');
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+  }
+
+  /* Dark tint over the whole photo, behind the content (z-index 1,
+     between the photo on .hero itself and .hero__layout's z-index
+     2). A light tint even at the very top (under the header, where
+     the headline sits) — the raw photo was still full brightness/
+     contrast there, which read as a jarring bright patch against the
+     tinted content below it; the headline's white fill + black
+     outline stays legible over a light tint just fine. Builds up
+     going down so the description/CTAs over the busier part of the
+     photo stand out, then eases into the page's own --app-bg purple
+     (same color as the section below) right at the bottom edge —
+     fading to transparent there instead would uncover the raw photo
+     again and leave a hard photo/purple seam exactly where the hero
+     ends. Ending on the actual page color instead makes the photo
+     visually dissolve into the rest of the page. */
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(8, 10, 20, 0.22) 0%,
+      rgba(8, 10, 20, 0.3) 30%,
+      rgba(8, 10, 20, 0.55) 62%,
+      rgba(8, 10, 20, 0.78) 88%,
+      var(--app-bg, #c1b5f7) 100%
+    );
+  }
+
+  .hero__layout {
+    position: relative;
+    z-index: 2;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .hero__inner {
+    max-width: 470px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* ---------- headline ---------- */
+  /* White fill with a solid black outline so it pops off the photo
+     instead of blending into it, now that the hero sits on the
+     image rather than the flat lime/purple gradient it was
+     designed for. */
+  .hero__title {
+    margin: 0;
+    font-family: 'Baloo 2', 'Fredoka', sans-serif;
+    font-size: clamp(22px, 8vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-align: center;
+    text-shadow:
+      0 1.5px 0 #000,
+      0 3px 0 rgba(0, 0, 0, 0.35);
+    -webkit-text-stroke: 1.4px #000;
+    paint-order: stroke fill;
+  }
+
+  .hero__titleLine {
+    display: block;
+    white-space: nowrap;
+    font-size: clamp(18px, 7.6vw, 52px);
+  }
+
+  .rotator {
+    display: grid;
+    place-items: center;
+    margin-top: 8px;
+    height: 1.2em;
+    overflow: hidden;
+    text-align: center;
+    font-size: clamp(24px, 9vw, 60px);
+  }
+  .rotator__word {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateY(110%);
+    animation: rotatorCycle 21s cubic-bezier(.6,.05,.3,1) infinite;
+    text-align: center;
+    justify-self: center;
+    /* Black stroke on every color so each word stays legible on the
+       photo instead of just its flat fill color. */
+    text-shadow: 0 1.5px 0 #000, 0 3px 0 rgba(0, 0, 0, 0.35);
+    -webkit-text-stroke: 1.2px #000;
+    paint-order: stroke fill;
+  }
+
+  .rotator__word:nth-child(1) { color: #7C5CFF; animation-delay: 0s; }
+  .rotator__word:nth-child(2) { color: #FF5CA8; animation-delay: 3s; }
+  .rotator__word:nth-child(3) { color: #0EA5E9; animation-delay: 6s; }
+  .rotator__word:nth-child(4) { color: #F97316; animation-delay: 9s; }
+  .rotator__word:nth-child(5) { color: #10B981; animation-delay: 12s; }
+  .rotator__word:nth-child(6) { color: #E11D48; animation-delay: 15s; }
+  .rotator__word:nth-child(7) { color: #6366F1; animation-delay: 18s; }
+
+  @keyframes rotatorCycle {
+    0%      { opacity: 0; transform: translateY(110%); }
+    3%      { opacity: 1; transform: translateY(0); }
+    14%     { opacity: 1; transform: translateY(0); }
+    17%     { opacity: 0; transform: translateY(-110%); }
+    100%    { opacity: 0; transform: translateY(-110%); }
+  }
+
+  /* ---------- description ---------- */
+  /* No card/box, no blur behind it either — the blur was reading as
+     a visible soft rectangle over the photo. Text sits directly on
+     the image now, kept legible with the text-shadow below instead.
+     Centered, and sized as a percentage of the hero's own width
+     (not a `ch` max-width) so the paragraph actually spans ~80-90%
+     of the hero rather than collapsing into a narrow centered
+     column of short, similar-width lines. Natural wrapping — plain
+     text-align: center, no per-line markup — so line breaks fall
+     wherever the real text/viewport width puts them. Sits over the
+     dark tint (.hero::after) added over the lower part of the
+     photo, so it's white with a soft dark shadow now, same
+     direction as the headline above it, rather than the old dark
+     text tuned for sitting straight on bright sky. */
+  .cartoon-hero .hero__sub {
+    margin: 18px auto 0;
+    width: 88%;
+    max-width: 88%;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.005em;
+    text-align: center;
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      0 1px 10px rgba(0, 0, 0, 0.4);
+  }
+  .cartoon-hero .hero__sub strong {
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+
+  /* ---------- CTAs ---------- */
+  /* Flat pill buttons, sized down from the original spec and left-
+     aligned under the (centered) headline/description instead of
+     centered, so they read as a compact, tucked-in action pair. */
+  .cartoon-hero .hero__ctas {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 22px;
+  }
+
+  .cartoon-hero .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Nunito', 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 900;
+    padding: 7px 18px;
+    border: 1.5px solid #000;
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 3px 0 #000;
+    transition: all 0.1s ease;
+    width: max-content;
+    min-width: 150px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cartoon-hero .btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 #000;
+  }
+
+  .cartoon-hero .btn-primary {
+    background-color: #b3ff00;
+    color: #000;
+  }
+
+  .cartoon-hero .btn-secondary {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .cartoon-hero .play-icon {
+    font-size: 0.9rem;
+  }
+
+  .cartoon-hero .hero__visual { display: none; }
+
+  /* ---------- sites-connected stat ---------- */
+  /* Sits opposite the description paragraph (.hero__sub) — same row
+     as that text, on the empty right-hand side of the photo above
+     the mascot's head — not down by the CTAs. Positioned relative to
+     .hero__layout (same stacking context as the rest of the content,
+     z-index 2) rather than floated inline, so it doesn't push the
+     steps list around or get squeezed by it.
+     Anchored from the top, offset past the title block, rather than
+     from the bottom: the CTAs/steps column length isn't what this
+     needs to line up with, the description is. The title itself
+     varies in height by 1-2 lines depending on which rotator word is
+     showing (ROTATOR_WORDS ranges from "YOURS" to
+     "ANALYTICS-READY"), so this offset is tuned to the common case
+     (two title lines + the rotator line) and sits close enough
+     across that range to still read as "next to the description",
+     not pixel-locked to it.
+     Kept compact and right-clamped so it still clears the screen
+     edge with room to spare on a 320px-wide phone: at 320px the
+     hero has 22px of padding each side (.hero above), leaving a
+     276px content box, and this block tops out at 132px wide. */
+  .cartoon-hero .hero__statBlock {
+    position: absolute;
+    top: 196px;
+    right: 6px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    max-width: 132px;
+    text-align: right;
+    pointer-events: none;
+  }
+
+  /* White, same as .hero__sub — the brief was to keep the number in
+     the same white as the description so the block doesn't add a
+     third/fourth colour on top of the photo. Same black-outline
+     treatment as the headline so it stays legible over the busy
+     mascot/building art behind it, not just a text-shadow blur. */
+  .cartoon-hero .hero__statNumber {
+    font-family: 'Baloo 2', 'Fredoka', sans-serif;
+    font-size: clamp(30px, 10vw, 44px);
+    font-weight: 800;
+    line-height: 1;
+    color: #FFFDF5;
+    -webkit-text-stroke: 1.5px var(--ink, #12100A);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Lime — the one accent colour already doing work elsewhere in
+     this hero (the primary CTA, the loader), so the label picks it
+     up too instead of introducing a new colour just for this. */
+  .cartoon-hero .hero__statLabel {
+    font-family: 'Nunito', 'Fredoka', sans-serif;
+    font-size: clamp(10px, 3vw, 12px);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #b3ff00;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
+  }
+
+  /* Smallest phones (iPhone SE / 320px-class devices): trim the
+     number down another notch and tuck the block in a touch closer
+     to the edge so there's no risk of clipping on devices that round
+     their viewport width down below 320px. */
+  @media (max-width: 340px) {
+    .cartoon-hero .hero__statBlock {
+      max-width: 112px;
+      right: 4px;
+      /* Narrower columns wrap the title onto one extra line more
+         often, pushing the description (and so this block's target
+         row) down a bit further. */
+      top: 208px;
+    }
+    .cartoon-hero .hero__statNumber {
+      font-size: 28px;
+    }
+    .cartoon-hero .hero__statLabel {
+      font-size: 9.5px;
+    }
+  }
+
+  /* ---------- how-it-works steps ---------- */
+  /* Fills the empty stretch of photo under the CTAs (open sky/grass
+     on the left, same column the headline/description/CTAs already
+     sit in) with a quick 4-step list. Same 30ch max-width as
+     .hero__sub and same left alignment, so it stays inside that left
+     column and never reaches into the bunny/building on the right —
+     deliberately NOT full-width. Dimmed and small on purpose: a
+     secondary hook, not something that competes with the headline or
+     the CTAs for attention. */
+  .cartoon-hero .hero__steps {
+    list-style: none;
+    margin: 28px 0 0;
+    margin-right: auto;
+    padding: 0;
+    max-width: 30ch;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cartoon-hero .hero__step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  /* Thin connecting line running down through each step's number,
+     like a vertical timeline/checklist — stops short of the last
+     step's number since there's nothing after it to connect to. */
+  .cartoon-hero .hero__step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 26px;
+    bottom: -8px;
+    width: 1.5px;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .cartoon-hero .hero__stepNum {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    background: rgba(8, 10, 20, 0.35);
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  .cartoon-hero .hero__stepText {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.72);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  /* ---------- platforms badge ---------- */
+  /* Drops into the existing gap below the CTAs (the hero's own
+     bottom padding) instead of adding new space. Square (1:1),
+     small, and left-aligned under the left-aligned CTAs/description
+     rather than centered with the headline. */
+  .cartoon-hero .hero__platformsBadge {
+    display: block;
+    margin-top: 24px;
+    margin-left: 0;
+    margin-right: auto;
+    width: 170px;
+    height: 170px;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+  }
+
+  /* ============================================================
+     STICKY GLASSY BOTTOM NAV
+     ============================================================ */
+  .cartoon-hero .navbar {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 500;
+    width: min(440px, calc(100vw - 24px));
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+
+    background: rgba(255, 253, 245, 0.55);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 2.5px solid #12100A;
+    border-radius: 22px;
+    box-shadow:
+      0 10px 0 -3px rgba(18, 16, 10, 0.9),
+      0 20px 40px -12px rgba(18, 16, 10, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .cartoon-hero .navbar__item {
+    position: relative;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 50px;
+    padding: 6px 4px;
+    background: transparent;
+    border: 0;
+    border-radius: 14px;
+    color: #12100A;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s ease, transform 0.12s ease;
+  }
+  .cartoon-hero .navbar__item:active { transform: scale(0.94); }
+
+  .cartoon-hero .navbar__item svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+  }
+
+  /* active pill state */
+  .cartoon-hero .navbar__item.is-active {
+    background: #7C5CFC;
+    border: 2px solid #12100A;
+    box-shadow: 2px 2px 0 0 #12100A;
+  }
+  .cartoon-hero .navbar__item.is-active svg {
+    color: #12100A;
+  }
+
+  /* upload circle — centre accent */
+  .cartoon-hero .navbar__upload {
+    position: relative;
+    flex: 0 0 auto;
+    width: 58px;
+    height: 58px;
+    margin: -22px 4px 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #7C5CFC;
+    border: 2.5px solid #12100A;
+    box-shadow: 0 4px 0 0 #12100A, 0 8px 16px -6px rgba(18, 16, 10, 0.4);
+    color: #12100A;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .cartoon-hero .navbar__upload:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 0 #12100A, 0 4px 10px -6px rgba(18, 16, 10, 0.4);
+  }
+  .cartoon-hero .navbar__upload::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px dashed rgba(18, 16, 10, 0.35);
+    animation: uploadRing 8s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes uploadRing {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .cartoon-hero .navbar__upload svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media (min-width: 720px) {
+    .cartoon-hero .hero {
+      padding: 72px 40px 80px;
+      /* The 100vw-based min-height above is sized for the narrow,
+         single-column portrait layout below 720px. From here up the
+         hero switches to a two-column grid (text + placeholder
+         visual) that doesn't need to match the mobile photo's
+         portrait aspect ratio, so let height go back to tracking
+         content instead of growing with viewport width. */
+      min-height: 0;
+    }
+    .cartoon-hero .hero__layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: center;
+    }
+    .cartoon-hero .hero__visual {
+      display: block;
+      position: relative;
+      z-index: 2;
+      min-height: 340px;
+      border: 2.5px dashed rgba(18, 16, 10, 0.25);
+      border-radius: 26px;
+      background: rgba(255, 253, 245, 0.35);
+    }
+    .cartoon-hero .hero__visual::after {
+      content: "Your image goes here";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(18, 16, 10, 0.35);
+      letter-spacing: 0.02em;
+    }
+    .cartoon-hero .navbar { bottom: 24px; }
+
+    /* From here up, .hero__layout becomes a two-column grid with its
+       own visible placeholder box (.hero__visual, directly above) —
+       the absolute bottom/right offsets tuned for the single-column
+       portrait photo below 720px would land on top of that
+       placeholder instead of beside the mascot, so the stat block is
+       mobile-only and stops here. */
+    .cartoon-hero .hero__statBlock {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cartoon-hero .hero { animation: none; background-position: 30% 50%; }
+    .cartoon-hero .rotator__word { animation: none; opacity: 0; transform: none; }
+    .cartoon-hero .rotator__word:nth-child(1) { opacity: 1; }
+    .cartoon-hero .btn { transition: none; }
+    .cartoon-hero .loader__card, .cartoon-hero .loader__mark, .cartoon-hero .loader__bar::after, .cartoon-hero .loader__dots span { animation: none; }
+    .cartoon-hero .loader__bar::after { display: none; }
+    .cartoon-hero .navbar__upload::after { animation: none; }
+  }
+
+/* ============================================================
+   BREAKPOINT GATING — mobile-only
+   ============================================================ */
+@media (min-width: 1024px) {
+  .cartoon-hero {
+    display: none;
+  }
+}
