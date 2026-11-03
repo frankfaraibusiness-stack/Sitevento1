@@ -189,13 +189,9 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
           </h1>
 
           <p className="hero__sub">
-            <span className="hero__subLine">Connect your site once and</span>
-            <span className="hero__subLine">
-              <strong>see exactly who&apos;s visiting</strong>,
-            </span>
-            <span className="hero__subLine">then deploy alerts and widgets</span>
-            <span className="hero__subLine">in seconds — without touching</span>
-            <span className="hero__subLine">your live code.</span>
+            Connect your site once and <strong>see exactly who&apos;s visiting</strong>,
+            then deploy alerts and widgets in seconds — without touching your
+            live code.
           </p>
 
           <div className="hero__ctas">

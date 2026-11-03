@@ -38,10 +38,28 @@
   }
 
   /* ---- Header: the real site <header> (components/layout/Header.tsx)
-   * is rendered here directly in its "auth" mode — same fixed glass
-   * bar, same flush-left logo, just the hamburger/signup swapped for
-   * a bare close button (styles/marketing/marketing-nav.css
-   * .nav-close). No second header markup/CSS to maintain here. ---- */
+   * is rendered here directly in its "auth" mode — same glass bar,
+   * same flush-left logo, just the hamburger/signup swapped for a
+   * bare close button (styles/marketing/marketing-nav.css
+   * .nav-close). No second header markup/CSS to maintain here. ----
+   *
+   * It is NOT actually fixed-to-viewport in here, despite base.css's
+   * global `header { position: fixed }` rule: .auth-overlay itself
+   * has `transform` (for its open/close slide), and a `transform` on
+   * an ancestor makes it the containing block for any descendant
+   * `position: fixed` element — so the header ends up positioned
+   * relative to .auth-overlay's own box instead of the viewport, and
+   * since .auth-overlay is also the scrolling box (overflow-y: auto)
+   * the header scrolls away with the form instead of staying put.
+   * `position: sticky` solves this correctly: sticky is resolved
+   * against the nearest scrolling ancestor regardless of transforms
+   * on the way there, so this keeps the header pinned to the top of
+   * .auth-overlay's own scroll area as the form content scrolls
+   * underneath it, the way a "sticky header" should behave here. */
+  .auth-overlay header {
+    position: sticky;
+    top: 0;
+  }
 
   /* ---- Page body: one clean canvas on --app-bg, no scene/blobs ----
    * Offset clears the real fixed <header> (56px + safe-area, see
