@@ -176,10 +176,16 @@
 .hiw-rail-item:hover { background: var(--cream-deep); }
 .hiw-rail-item:active { transform: scale(0.99); }
 .hiw-rail-item.is-active {
-  background: var(--bg);
+  /* Was a flat white (--bg) tile — on the mobile glassy strip that
+     read as a stark white card punched into the dark glass. Dim
+     purple fill instead, same --dash-purple family as the rest of
+     the app's purple accents, kept dark/black-edged with --ink so it
+     still reads as clearly selected against the glass. */
+  background: color-mix(in srgb, var(--dash-purple) 28%, var(--ink) 72%);
   border-color: var(--ink);
   box-shadow: 2px 2px 0 var(--ink);
 }
+.hiw-rail-item.is-active .hiw-rail-num { color: #ffffff; }
 
 .hiw-rail-num {
   flex-shrink: 0;
@@ -635,10 +641,19 @@
     overflow-y: visible;
     border-right: none;
     border-bottom: none;
-    border-top: 1px solid var(--line);
+    /* Glassy strip instead of a flat hardcoded --cream block: a
+       translucent dark-ink tint, blurred, so the purple --app-bg
+       behind the modal (and whatever's scrolled underneath) shows
+       through instead of the strip reading as an opaque cream bar
+       sitting on top of it. Options themselves stay readable via
+       .hiw-rail-item's own text color + the is-active tile below,
+       not by making this wrapper opaque. */
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(24, 20, 36, 0.38);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
-    background: var(--cream);
   }
   .hiw-rail-item {
     flex: 0 0 auto;
@@ -649,7 +664,19 @@
     scroll-snap-align: start;
   }
   .hiw-rail-num { display: none; }
-  .hiw-rail-label { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .hiw-rail-label {
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    /* Was relying on var(--ink) (near-black), set for the old cream
+       strip; against the glassy dark strip that read too dim/muddy.
+       Readable light label instead, dimming slightly when the item
+       isn't the active one. */
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .hiw-rail-item.is-active .hiw-rail-label { color: #ffffff; }
   .hiw-rail-footer { display: none; }
 
   .hiw-section {

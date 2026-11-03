@@ -208,13 +208,22 @@
   /* No card/box, no blur behind it either — the blur was reading as
      a visible soft rectangle over the photo. Text sits directly on
      the image now, kept legible with the text-shadow below instead.
-     Small and centered. Sits over the dark tint (.hero::after) added
-     over the lower part of the photo, so it's white with a soft dark
-     shadow now, same direction as the headline above it, rather than
-     the old dark text tuned for sitting straight on bright sky. */
+     Centered, as a deliberate stack of short lines (.hero__subLine)
+     rather than one paragraph left to auto-wrap — auto-wrap gives
+     same-width-looking lines since they all break near the
+     container's max-width; this instead sizes each line explicitly,
+     full width on the first line and progressively narrower going
+     down, each one still centered on its own. Sits over the dark
+     tint (.hero::after) added over the lower part of the photo, so
+     it's white with a soft dark shadow now, same direction as the
+     headline above it, rather than the old dark text tuned for
+     sitting straight on bright sky. */
   .cartoon-hero .hero__sub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin: 18px auto 0;
-    max-width: 30ch;
+    max-width: 34ch;
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
     line-height: 1.55;
@@ -226,6 +235,18 @@
       0 1px 3px rgba(0, 0, 0, 0.5),
       0 1px 10px rgba(0, 0, 0, 0.4);
   }
+  .cartoon-hero .hero__subLine {
+    display: block;
+    width: 100%;
+  }
+  /* Progressive shrink: line 1 is the widest (full measure), each
+     line after it narrows a bit more, so the block tapers going
+     down instead of stacking as equal-width lines. */
+  .cartoon-hero .hero__subLine:nth-child(1) { width: 100%; }
+  .cartoon-hero .hero__subLine:nth-child(2) { width: 86%; }
+  .cartoon-hero .hero__subLine:nth-child(3) { width: 74%; }
+  .cartoon-hero .hero__subLine:nth-child(4) { width: 64%; }
+  .cartoon-hero .hero__subLine:nth-child(5) { width: 52%; }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
     color: #FFFFFF;
