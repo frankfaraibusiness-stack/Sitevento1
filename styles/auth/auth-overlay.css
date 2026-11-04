@@ -88,13 +88,20 @@
     min-height: calc(100% - 56px - env(safe-area-inset-top, 0px));
     margin-top: calc(56px + env(safe-area-inset-top, 0px));
     display: flex;
-    align-items: center;
+    /* Content starts right under the header instead of being
+       vertically centered in the full remaining viewport height —
+       centering is what produced the huge gap above the form on
+       both short (mobile) and tall (desktop) screens whenever the
+       form itself was shorter than the available space. A small,
+       fixed top padding now controls the gap directly, on both
+       breakpoints, instead of leaving it to flexbox centering. */
+    align-items: flex-start;
     justify-content: center;
-    padding: 56px 24px 72px;
+    padding: 28px 24px 72px;
   }
 
   @media (max-width: 640px) {
-    .auth-overlay .stage { padding: 16px 20px 40px; }
+    .auth-overlay .stage { padding: 14px 20px 40px; }
   }
 
   @media (min-width: 960px) {
