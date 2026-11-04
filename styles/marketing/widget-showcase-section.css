@@ -77,26 +77,21 @@
 }
 
 @media (max-width: 860px) {
+  /* Was a horizontally-scrolling row (flex + overflow-x + fixed
+     272px cards) — on mobile that always left a sliver of the next
+     card peeking in at the right edge (and the row itself inset from
+     the section's own side padding), which read as the section being
+     cut off/shrunk rather than filling the width. Stacked, full-width
+     cards instead: no horizontal scroll, no edges, nothing peeking
+     past the viewport. */
   .wsx-row {
     display: flex;
-    overflow-x: auto;
+    flex-direction: column;
     gap: 14px;
-    padding: 2px 2px 10px;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    /* Stops the native overscroll glow/ring some mobile browsers draw
-       at the start/end of a horizontally-scrollable row — it was
-       showing up as an ugly highlight right at the row's edges. The
-       cards should just scroll out of view cleanly with nothing
-       framing the edge. */
-    overscroll-behavior-x: contain;
-    outline: none;
   }
-  .wsx-row::-webkit-scrollbar { display: none; }
 
   .wsx-card {
-    flex: 0 0 272px;
-    scroll-snap-align: start;
+    width: 100%;
   }
 }
 

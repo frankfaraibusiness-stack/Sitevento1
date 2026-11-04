@@ -17,7 +17,23 @@
 //   4. WidgetShowcaseSection — "Deploy in one click": mini dark-panel
 //      previews of three real widgets (Support Chat, Site Alert,
 //      Email Capture) with a one-click deploy pitch for each.
-//   5. Footer (components/layout/Footer.tsx) — global footer with
+//   5. PlatformsMarquee — "Built for the site you already have": a
+//      continuous, never-stopping auto-scrolling row of platform
+//      chips (Shopify, Wix, Webflow, WordPress, Squarespace, Framer,
+//      Carrd, Ghost, Next.js, custom HTML, any website).
+//   6. TestimonialsSection — a grid of mockup customer quotes
+//      (3-up desktop, 2-up tablet, 1-up mobile), illustrating the
+//      kind of feedback the product aims to earn.
+//   7. FeatureHighlightsSection — a 6-tile "everything included"
+//      recap of the real product surface (visit tracking, bot
+//      shield, AI agent, email capture, site alerts, monetization).
+//   8. ComparisonSection — "one tag beats five tools": sitevento vs.
+//      piecing together several separate tools yourself, as a real
+//      table on desktop and stacked cards on mobile.
+//   9. FinalCTASection — closing lime conversion band ("Paste one
+//      script. See everything.") reusing the same onConnectClick
+//      handler as every other CTA on this page.
+//   10. Footer (components/layout/Footer.tsx) — global footer with
 //      newsletter signup + link columns for every real page. Also
 //      mounted in ContentPageShell.tsx and LegalPage.tsx so it
 //      appears on every content/legal/product route, not just here.
@@ -31,6 +47,11 @@ import { Hero } from './Hero';
 import { LaptopShowcase } from './LaptopShowcase';
 import { LiveStatsSection } from './LiveStatsSection';
 import { WidgetShowcaseSection } from './WidgetShowcaseSection';
+import { PlatformsMarquee } from './PlatformsMarquee';
+import { TestimonialsSection } from './TestimonialsSection';
+import { FeatureHighlightsSection } from './FeatureHighlightsSection';
+import { ComparisonSection } from './ComparisonSection';
+import { FinalCTASection } from './FinalCTASection';
 import { Footer } from '@/components/layout/Footer';
 import { HowItWorksModal } from './HowItWorksModal';
 
@@ -47,6 +68,11 @@ export function MarketingPage({ onConnectClick }: MarketingPageProps) {
       <LaptopShowcase />
       <LiveStatsSection />
       <WidgetShowcaseSection />
+      <PlatformsMarquee />
+      <TestimonialsSection />
+      <FeatureHighlightsSection />
+      <ComparisonSection />
+      <FinalCTASection onConnectClick={onConnectClick} />
       <Footer />
 
       <HowItWorksModal

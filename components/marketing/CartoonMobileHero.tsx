@@ -92,9 +92,6 @@ function SitesConnectedStat() {
   const bootDoneRef = useRef(false);
 
   useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
     // Respect reduced-motion users — jump straight to the final
     // number instead of animating it.
     const prefersReducedMotion =
@@ -125,35 +122,18 @@ function SitesConnectedStat() {
       requestAnimationFrame(step);
     };
 
-    // Only actually start counting once both conditions are met;
-    // either one can arrive first (the hero can scroll into view
-    // before boot finishes, or already be in view the moment boot
-    // finishes), so each handler below just checks the other.
-    let inView = false;
-    const tryStart = () => {
-      if (inView && bootDoneRef.current) runCountUp();
-    };
-
+    // Previously gated on scroll-into-view as well as boot finishing,
+    // so the stat sat at "0+" (looking unloaded/broken) until the
+    // visitor actually scrolled to it. This block is inside the hero,
+    // visible on load, not something scrolled to later — so it now
+    // only waits on the boot loader and counts up as soon as that's
+    // done, instead of also waiting on an IntersectionObserver.
     const unsubscribeBootDone = onBootLoaderDone(() => {
       bootDoneRef.current = true;
-      tryStart();
+      runCountUp();
     });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            inView = true;
-            tryStart();
-          }
-        });
-      },
-      { threshold: 0.4 },
-    );
-
-    observer.observe(node);
     return () => {
-      observer.disconnect();
       unsubscribeBootDone();
     };
   }, []);

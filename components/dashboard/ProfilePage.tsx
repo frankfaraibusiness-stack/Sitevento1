@@ -272,6 +272,13 @@ export function ProfilePage({ user }: ProfilePageProps) {
   return (
     <div className="profile-page-root">
       <div className="profile-page-stack">
+        {/* ---- Left column (desktop): identity + plan + connect.
+            Sticky on desktop so it stays in view while the stat/
+            performance cards on the right scroll past it — see
+            .profile-col-left in profile-page.css. On mobile this is
+            just the first card in a single stacked column, same as
+            before. ---- */}
+        <div className="profile-col-left">
         <div className="profile-user-card">
           <div className="profile-top-row">
             <div className="profile-avatar">
@@ -392,7 +399,18 @@ export function ProfilePage({ user }: ProfilePageProps) {
             )}
           </div>
         </div>
+        </div>
 
+        {/* ---- Right column (desktop): sites / wallet / site
+            performance cards. "Your sites" and "Wallet" sit side by
+            side as a 2-up sub-grid on wide screens (they're short,
+            same-height summary cards — pairing them avoids two
+            half-empty full-width rows), with "Site performance"
+            spanning the full column width below since it's taller
+            and chart-bearing. On mobile this is just the remaining
+            cards in the same single stacked column as before. ---- */}
+        <div className="profile-col-right">
+        <div className="profile-col-right-top">
         <div className="profile-analytics-card">
           <div className="profile-analytics-header">
             <span className="profile-analytics-title">Your sites</span>
@@ -490,6 +508,7 @@ export function ProfilePage({ user }: ProfilePageProps) {
             </svg>
           </a>
         </div>
+        </div>
 
         <div className="profile-analytics-card">
           <div className="profile-analytics-header">
@@ -520,7 +539,7 @@ export function ProfilePage({ user }: ProfilePageProps) {
                 </svg>
               </div>
 
-              <div className="profile-stat-grid">
+              <div className="profile-stat-grid profile-stat-grid--quad">
                 <div className="profile-stat-tile">
                   <span className="profile-stat-tile-label">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -606,6 +625,7 @@ export function ProfilePage({ user }: ProfilePageProps) {
           ) : (
             <div className="profile-analytics-empty">Connect a site to see live performance data here.</div>
           )}
+        </div>
         </div>
       </div>
 

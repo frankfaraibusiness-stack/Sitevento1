@@ -21,9 +21,11 @@
   background: var(--app-bg);
   padding: clamp(48px, 7vw, 80px) 20px 28px;
   /* Hairline divider marking where the main page content ends and
-     the footer begins — same --line token used for this purpose in
-     how-it-works-modal.css / pricing-page.css. */
-  border-top: 1px solid var(--line);
+     the footer begins. Was var(--line) (#e8e4de, a near-white hairline
+     meant for light backgrounds) which read as a washed-out white
+     line against this section's dark/purple background — solid black
+     instead, so it actually reads as a divider here. */
+  border-top: 1px solid #000;
 }
 
 /* Reserve space for the floating mobile nav — matches

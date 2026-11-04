@@ -13,11 +13,30 @@
    list) — same scoped-per-route trick as visits-page.css and
    site-manage-page.css.
 
-   Responsive: the mock was a single fixed 360px mobile column. Here
-   .profile-page-stack stays a single column up to a tablet
-   breakpoint, then becomes a two-column grid (user card + analytics
-   card side by side) on desktop, with a shared max-width so it still
-   lines up with the rest of the dashboard's content width.
+   Responsive: the mock was a single fixed 360px mobile column, and
+   that's all this page originally shipped with — every card
+   (identity, "Your sites", "Wallet", "Site performance") stacked as
+   flat siblings of .profile-page-stack, so even past the one 860px
+   breakpoint it just became a single squeezed row of 4 equal-width
+   columns inside a 760px box, floating in the middle of an otherwise
+   empty desktop page. Below ~860px nothing here changed: still a
+   single 360px-capped column, in source order.
+   
+   Desktop (>=960px) now gets a real two-column layout instead, at
+   the same 1080px content width the rest of the dashboard uses
+   (.dash-wrap in dashboard.css):
+     - .profile-col-left (identity/plan/tokens/connect) — a fixed-
+       width sidebar column, `position: sticky` so it stays in view
+       while the right column's content scrolls past it.
+     - .profile-col-right (sites/wallet/performance) — fills the
+       remaining width. ".profile-col-right-top" pairs "Your sites"
+       and "Wallet" as a 2-up sub-grid (both short, same-height
+       summary cards — full-width would leave each one half-empty),
+       with "Site performance" spanning the full column below since
+       it's taller and carries the chart.
+   See components/dashboard/ProfilePage.tsx for the matching JSX
+   wrapper divs (.profile-col-left / .profile-col-right / 
+   .profile-col-right-top) this layout targets.
    ============================================================ */
 
 .profile-page-root {
@@ -35,10 +54,18 @@
   padding: 1.25rem 1rem 2rem;
 }
 
+@media (min-width: 960px) {
+  .profile-page-root {
+    padding: 28px 20px 80px;
+  }
+}
+
 .profile-page-root * {
   box-sizing: border-box;
 }
 
+/* Mobile/tablet (<960px): single stacked column, same as the
+   original mock — every card full-width, in source order. */
 .profile-page-stack {
   width: 100%;
   max-width: 360px;
@@ -47,16 +74,67 @@
   gap: 16px;
 }
 
-@media (min-width: 860px) {
+/* Desktop (>=960px): real two-column layout at the dashboard's
+   standard 1080px content width (see .dash-wrap in dashboard.css),
+   instead of the old 760px row of 4 squeezed equal columns. */
+@media (min-width: 960px) {
   .profile-page-stack {
-    max-width: 760px;
+    max-width: 1080px;
     flex-direction: row;
     align-items: flex-start;
+    gap: 24px;
+  }
+}
+
+.profile-col-left {
+  display: contents;
+}
+
+.profile-col-right {
+  display: contents;
+}
+
+.profile-col-right-top {
+  display: contents;
+}
+
+@media (min-width: 960px) {
+  /* Fixed-width sidebar column, pinned in place while the right
+     column's taller content scrolls past it underneath the fixed
+     app header (56px + its own safe-area inset, same offset base.css
+     uses for `main`'s own top padding). */
+  .profile-col-left {
+    display: block;
+    flex: 0 0 340px;
+    width: 340px;
+    position: sticky;
+    top: calc(56px + 20px + env(safe-area-inset-top, 0px));
   }
 
-  .profile-page-stack > * {
+  .profile-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
     flex: 1 1 0;
     min-width: 0;
+  }
+
+  /* "Your sites" + "Wallet" as a 2-up sub-grid — both are short,
+     same-height summary cards, so pairing them side by side avoids
+     two mostly-empty full-width rows. */
+  .profile-col-right-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+/* Between 960px and ~1140px the two sub-cards can get tight next to
+   a 340px sidebar — drop back to stacked full-width here, still
+   within the desktop two-column shell. */
+@media (min-width: 960px) and (max-width: 1140px) {
+  .profile-col-right-top {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -504,6 +582,22 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+/* The "Site performance" card's 4-tile grid (visitors/country/
+   leads/visits) gets a real 4-across row once there's enough width
+   for it — the right column alone is wider than the whole old
+   760px page was, so 2-up there just wastes the extra space. */
+@media (min-width: 960px) {
+  .profile-stat-grid--quad {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1140px) {
+  .profile-stat-grid--quad {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .profile-stat-tile {

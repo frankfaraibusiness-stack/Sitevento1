@@ -49,10 +49,27 @@
 }
 
 /* ---------------- Intro half ---------------- */
+/* Rebuilt for mobile (below 960px): .lss-title and .lss-copy used to
+   carry a fixed ch-based max-width (12ch / 42ch) meant for the
+   desktop two-column layout. ch caps don't shrink with the viewport
+   — on a narrow phone the measured text at that font-size is wider
+   than the screen, so the box itself ran past the right edge instead
+   of wrapping inside it. Every size below is now either a percentage
+   of .lss-intro or clamped to the viewport, so there is no fixed
+   width anywhere in this block that content can outgrow. */
 .lss-intro {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 959px) {
+  .lss-intro {
+    align-items: center;
+    text-align: center;
+  }
 }
 
 @media (min-width: 960px) {
@@ -78,14 +95,24 @@
   margin-bottom: 18px;
 }
 
+@media (max-width: 959px) {
+  /* Now centered along with the heading/description below it so the
+     whole intro reads as one evenly-centered block on mobile instead
+     of the eyebrow sitting alone at the left edge. */
+  .lss-eyebrow {
+    align-self: center;
+  }
+}
+
 .lss-title {
-  font-size: clamp(30px, 4vw, 44px);
+  font-size: clamp(26px, 7vw, 44px);
   font-weight: 400;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.015em;
   color: var(--ink);
   margin: 0 0 16px;
-  max-width: 12ch;
+  width: 100%;
+  max-width: 100%;
 }
 
 .lss-copy {
@@ -94,7 +121,18 @@
   line-height: 1.65;
   color: var(--muted-dark);
   margin: 0 0 24px;
-  max-width: 42ch;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 960px) {
+  .lss-title {
+    max-width: 12ch;
+  }
+
+  .lss-copy {
+    max-width: 42ch;
+  }
 }
 
 .lss-tagline {
@@ -102,16 +140,32 @@
      width instead of respecting max-width: 100% — the nowrap code
      line inside pushed this (and the whole section/page) wider than
      the viewport on mobile instead of scrolling inside its own box.
-     display: block (or flex) actually honors the 100% cap. */
+     display: block (or flex) actually honors the 100% cap. Centered
+     within .lss-intro (which is itself a left-aligned flex column)
+     so the code pill sits in the middle of the intro block instead of
+     flush left. */
   display: block;
-  width: 100%;
-  max-width: 100%;
+  width: 80%;
+  max-width: 80%;
+  margin: 0 auto;
+  /* .lss-intro is a flex column with align-items: flex-start (so the
+     eyebrow/title/copy above stay left-aligned at their own content
+     width) — without this, that same flex-start would pin this
+     item's 80%-width box to the left edge too instead of letting
+     margin: 0 auto center it. */
+  align-self: center;
 }
 
 .lss-tag-code {
+  /* 80% of .lss-tagline's own box, centered — the nowrap code line is
+     wider than that on most screens, so it scrolls horizontally
+     inside its own pill instead of forcing the pill (or the page)
+     wider. */
   display: block;
   width: 100%;
   max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
@@ -229,6 +283,25 @@
   background: var(--ink);
   border-radius: 999px;
   padding: 6px 13px 6px 10px;
+}
+
+/* Mobile only: the radar circle wraps onto its own line above the
+   caption at narrow widths (.lss-radar-row's flex-wrap), so the
+   caption reads as its own centered block underneath it — same
+   treatment as the intro heading/description above. */
+@media (max-width: 959px) {
+  .lss-radar-row {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .lss-radar-caption {
+    align-items: center;
+  }
+
+  .lss-live-pill {
+    align-self: center;
+  }
 }
 
 .lss-live-dot {
