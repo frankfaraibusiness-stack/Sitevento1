@@ -1,0 +1,133 @@
+/* ============================================================
+ * marketing-hero.css (see components/marketing/Hero.tsx)
+ *
+ * Hero is now just the cartoon hero (CartoonMobileHero on mobile,
+ * CartoonHeroContent reused here for desktop via .hero-section-desktop
+ * / .cartoon-hero--desktop) — the old mascot "stage" (glow/rings/
+ * orbiting shapes around /mascot/hero-bunny.png), the old headline/
+ * subcopy/CTA column that went with it, and the connected-site demo
+ * section that used to sit right under the hero have all been removed,
+ * along with the CSS that styled them. All that's left here is the
+ * #marketingView spacing fix and the desktop cartoon-hero block.
+ * ============================================================ */
+
+/* #marketingView previously carried its own var(--app-bg) (lavender)
+   background, meant to show through the gaps between the sections
+   that used to follow the hero. Now that the hero is the only thing
+   left on the page, that background had nothing left to back except
+   a bare strip of lavender between the hero photo and the footer
+   (main's own min-height: 60vh below was stretching #marketingView
+   taller than the hero itself, so that strip was visible even
+   without scrolling). No background here now — the hero photo fills
+   its own box, and the footer sits flush right after it. */
+.marketing-main {
+  /* Overrides the global `main { min-height: 60vh }` (marketing-nav.css)
+     for this page specifically. That min-height made sense when main
+     held the full stack of marketing sections; with just the hero left,
+     it was stretching main (and the lavender #marketingView background
+     inside it) well past the hero's real height, showing as a solid
+     lavender band between the hero photo and the footer. The hero sets
+     its own height from its content/photo, so main doesn't need to
+     force any extra here. */
+  min-height: 0;
+}
+
+
+/* Kill the gap between the fixed header and the mobile cartoon hero.
+   `main` normally adds 56px (header height) + 16px breathing room above
+   its content (styles/base/base.css); that extra 16px, stacked on top
+   of .hero's own 40px top padding (cartoon-mobile-hero.css), read as a
+   dead strip of empty lime between the header's bottom border and the
+   headline. Scoped to the marketing view only — other pages still want
+   that breathing gap under the header. */
+@media (max-width: 1023px) {
+  #marketingView {
+    margin-top: -16px;
+  }
+}
+
+/* Desktop-only hero (components/marketing/Hero.tsx) — below 1024px
+   CartoonMobileHero (styles/marketing/cartoon-mobile-hero.css) is
+   shown instead, so this one is hidden until the desktop breakpoint
+   below flips it back to display: block. */
+.hero-section-desktop {
+  display: none;
+}
+
+/* Same dead-gap fix as above, now also for the desktop hero: main's
+   extra 16px breathing room (on top of the 56px header clearance)
+   would otherwise leave a visible strip above the photo before
+   .cartoon-hero--desktop .hero's own -56px margin-top pulls it up
+   to the true top of the viewport. */
+@media (min-width: 1024px) {
+  #marketingView {
+    margin-top: -16px;
+  }
+}
+
+
+/* ---- Desktop: the exact mobile hero content (CartoonHeroContent —
+   same title/rotator, same description, same custom pill CTAs, same
+   platforms badge) over the landscape photo, full-bleed from the
+   true top of the viewport ---- */
+/* .hero-section-desktop here wraps CartoonHeroContent's own markup
+   (.hero/.hero__layout/.hero__inner/etc, all scoped under
+   .cartoon-hero--desktop so they don't collide with the mobile
+   .cartoon-hero rules in cartoon-mobile-hero.css, which are gated off
+   at this breakpoint). The photo already has the mascot/building on
+   its right two-thirds and open sky + grass on the left third, so
+   the left-aligned copy sits directly in that empty space — same
+   idea as mobile, just with desktop-sized type/spacing and no mobile-
+   only pieces (no loader, no sticky bottom nav; the real nav is
+   GlobalNav, mounted site-wide). */
+@media (min-width: 1024px) {
+  .hero-section-desktop {
+    display: block;
+  }
+
+  .cartoon-hero--desktop .hero {
+    /* Same trick as mobile: pull up by the fixed header's height so
+       the photo starts at the true top of the viewport, behind the
+       header's glass bar, instead of beginning underneath it — then
+       pad that height back so the content clears the header. */
+    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 56px) clamp(24px, 4vw, 64px) 96px;
+    min-height: 640px;
+    display: flex;
+    align-items: center;
+
+    /* Placeholder desktop hero: just the photo, no dark gradient and
+       no copy/CTAs over it (both removed below) — a real desktop
+       hero design is coming later, this is intentionally bare in the
+       meantime. */
+    background-image: url('/mascot/hero-bg-desktop.jpg');
+    background-size: cover;
+    background-position: top center;
+  }
+
+  .cartoon-hero--desktop .hero__layout {
+    max-width: min(92vw, 1320px);
+    width: 100%;
+  }
+
+  /* No left-side copy/CTA column on desktop for now — CartoonHeroContent
+     (components/marketing/CartoonMobileHero.tsx) is shared with mobile
+     and always renders the title/sub/CTAs markup, so it's hidden here
+     rather than removed from the component. A new desktop hero design
+     will replace this block later. */
+  .cartoon-hero--desktop .hero__inner {
+    display: none;
+  }
+
+  .cartoon-hero--desktop .hero__visual {
+    display: none;
+  }
+
+  /* Mobile-only sites-connected stat (CartoonMobileHero.tsx) — no
+     desktop position has been designed for it yet, so it's hidden
+     here the same way .hero__inner is, rather than left to collide
+     with the bare desktop placeholder. */
+  .cartoon-hero--desktop .hero__statBlock {
+    display: none;
+  }
+}
