@@ -102,16 +102,32 @@
      width instead of respecting max-width: 100% — the nowrap code
      line inside pushed this (and the whole section/page) wider than
      the viewport on mobile instead of scrolling inside its own box.
-     display: block (or flex) actually honors the 100% cap. */
+     display: block (or flex) actually honors the 100% cap. Centered
+     within .lss-intro (which is itself a left-aligned flex column)
+     so the code pill sits in the middle of the intro block instead of
+     flush left. */
   display: block;
-  width: 100%;
-  max-width: 100%;
+  width: 80%;
+  max-width: 80%;
+  margin: 0 auto;
+  /* .lss-intro is a flex column with align-items: flex-start (so the
+     eyebrow/title/copy above stay left-aligned at their own content
+     width) — without this, that same flex-start would pin this
+     item's 80%-width box to the left edge too instead of letting
+     margin: 0 auto center it. */
+  align-self: center;
 }
 
 .lss-tag-code {
+  /* 80% of .lss-tagline's own box, centered — the nowrap code line is
+     wider than that on most screens, so it scrolls horizontally
+     inside its own pill instead of forcing the pill (or the page)
+     wider. */
   display: block;
   width: 100%;
   max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;

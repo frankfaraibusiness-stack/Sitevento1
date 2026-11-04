@@ -103,6 +103,22 @@
     background-image: url('/mascot/hero-bg-desktop.jpg');
     background-size: cover;
     background-position: top center;
+
+    /* Same curved bottom edge as the mobile hero (see
+       styles/marketing/cartoon-mobile-hero.css) instead of a flat,
+       full-width hard cut where the photo meets the section below. */
+    -webkit-mask-image: radial-gradient(
+      ellipse 60% 48px at 50% 100%,
+      transparent 98%,
+      #000 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 60% 48px at 50% 100%,
+      transparent 98%,
+      #000 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
 
   .cartoon-hero--desktop .hero__layout {

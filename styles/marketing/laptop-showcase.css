@@ -44,13 +44,14 @@
   --green: #4ade80; --green-ink: #0d1f12;
   color-scheme:dark; color:var(--text-0); font-family:Inter,sans-serif;
   position:relative; isolation:isolate; overflow:hidden;
-  /* Bottom padding trimmed down (was clamp(32px,5vw,64px)) — combined
-     with .shadow-pool's own 26px top margin just below the laptop,
-     the old value stacked into a gap that read as too much empty
-     space before the next section (LiveStatsSection, which itself
-     carries no top padding by design — see its own comment) started.
-     This keeps a clear break between sections without the dead air. */
-  padding: 0 clamp(20px,6vw,72px) clamp(16px,3vw,36px);
+  /* Bottom padding trimmed down twice now (was clamp(32px,5vw,64px),
+     then clamp(16px,3vw,36px)) — combined with .shadow-pool's own top
+     margin just below the laptop, the old values kept stacking into a
+     gap that read as too much empty space before the next section
+     (LiveStatsSection, which itself carries no top padding by design
+     — see its own comment) started. This keeps a clear break between
+     sections without the dead air. */
+  padding: 0 clamp(20px,6vw,72px) clamp(8px,1.5vw,20px);
   background: transparent;
 }
 .sv-laptop-demo *, .sv-laptop-demo *::before, .sv-laptop-demo *::after { box-sizing:border-box; }
@@ -199,10 +200,10 @@
   width: 70%;
   max-width: 640px;
   height: 50px;
-  /* Trimmed from 26px — this margin stacks with the section's own
-     bottom padding above, and together they were leaving the next
-     section starting too far below the laptop. */
-  margin: 14px auto 0;
+  /* Trimmed again (was 26px, then 14px) — this margin stacks with the
+     section's own bottom padding above, and together they were still
+     leaving the next section starting too far below the laptop. */
+  margin: 4px auto 0;
   background: radial-gradient(ellipse, rgba(124,58,237,0.35), transparent 70%);
   filter: blur(14px);
 }

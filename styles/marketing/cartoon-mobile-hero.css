@@ -93,6 +93,29 @@
     background-repeat: no-repeat;
   }
 
+  /* Curved bottom edge instead of a flat, full-width hard cut where
+     the photo meets the section below. A radial-gradient mask carves
+     a shallow scalloped curve (dips down in the middle, rises back up
+     at the corners) out of the hero's own bottom edge, so the photo
+     reads as an intentionally-shaped panel rather than a rectangle
+     that's just been clipped. Masks the whole .hero (photo + tint +
+     content together) so the curve is a true edge, not an overlay
+     shape painted on top. */
+  .hero {
+    -webkit-mask-image: radial-gradient(
+      ellipse 60% 42px at 50% 100%,
+      transparent 98%,
+      #000 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 60% 42px at 50% 100%,
+      transparent 98%,
+      #000 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
   /* Dark tint over the whole photo, behind the content (z-index 1,
      between the photo on .hero itself and .hero__layout's z-index
      2). A light tint even at the very top (under the header, where
