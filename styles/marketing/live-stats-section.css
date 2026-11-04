@@ -49,10 +49,27 @@
 }
 
 /* ---------------- Intro half ---------------- */
+/* Rebuilt for mobile (below 960px): .lss-title and .lss-copy used to
+   carry a fixed ch-based max-width (12ch / 42ch) meant for the
+   desktop two-column layout. ch caps don't shrink with the viewport
+   — on a narrow phone the measured text at that font-size is wider
+   than the screen, so the box itself ran past the right edge instead
+   of wrapping inside it. Every size below is now either a percentage
+   of .lss-intro or clamped to the viewport, so there is no fixed
+   width anywhere in this block that content can outgrow. */
 .lss-intro {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 959px) {
+  .lss-intro {
+    align-items: center;
+    text-align: center;
+  }
 }
 
 @media (min-width: 960px) {
@@ -78,14 +95,24 @@
   margin-bottom: 18px;
 }
 
+@media (max-width: 959px) {
+  /* Pulled back out of the centered intro — stays left-aligned at
+     its own content width like before, the user asked for only the
+     heading and description to center. */
+  .lss-eyebrow {
+    align-self: flex-start;
+  }
+}
+
 .lss-title {
-  font-size: clamp(30px, 4vw, 44px);
+  font-size: clamp(26px, 7vw, 44px);
   font-weight: 400;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.015em;
   color: var(--ink);
   margin: 0 0 16px;
-  max-width: 12ch;
+  width: 100%;
+  max-width: 100%;
 }
 
 .lss-copy {
@@ -94,25 +121,17 @@
   line-height: 1.65;
   color: var(--muted-dark);
   margin: 0 0 24px;
-  max-width: 42ch;
+  width: 100%;
+  max-width: 100%;
 }
 
-/* Mobile only (below the 960px breakpoint where .lss-intro switches
-   to a two-column layout alongside the stats demo): the title's 12ch
-   cap and the copy's 42ch cap are fixed character widths that don't
-   shrink with the viewport, so on narrow phones the heading/copy
-   overflowed past the edge of the screen instead of wrapping inside
-   it. Below 960px both drop their character caps (full width of
-   .lss-intro, which already has its own side padding/max-width from
-   .lss) and center themselves individually — only the heading and
-   copy, not .lss-intro's own align-items, so the eyebrow pill and the
-   code tagline stay exactly where they were (left-aligned). */
-@media (max-width: 959px) {
-  .lss-title,
+@media (min-width: 960px) {
+  .lss-title {
+    max-width: 12ch;
+  }
+
   .lss-copy {
-    max-width: 100%;
-    width: 100%;
-    text-align: center;
+    max-width: 42ch;
   }
 }
 
