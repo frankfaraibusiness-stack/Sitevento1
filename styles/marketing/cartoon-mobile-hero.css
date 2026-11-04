@@ -101,12 +101,12 @@
      tinted content below it; the headline's white fill + black
      outline stays legible over a light tint just fine. Builds up
      going down so the description/CTAs over the busier part of the
-     photo stand out, then eases into the page's own --app-bg purple
-     (same color as the section below) right at the bottom edge —
-     fading to transparent there instead would uncover the raw photo
-     again and leave a hard photo/purple seam exactly where the hero
-     ends. Ending on the actual page color instead makes the photo
-     visually dissolve into the rest of the page. */
+     photo stand out. Stops at solid dark (not a fade into
+     --app-bg) — the old fade-to-purple tail read as a soft glow/haze
+     sitting between the hero and the laptop section below. .hero's
+     own `overflow: hidden` already gives a clean, flat bottom edge
+     (the photo+tint just end at the box's edge), so no separate crop
+     is needed here. */
   .hero::after {
     content: "";
     position: absolute;
@@ -118,8 +118,7 @@
       rgba(8, 10, 20, 0.22) 0%,
       rgba(8, 10, 20, 0.3) 30%,
       rgba(8, 10, 20, 0.55) 62%,
-      rgba(8, 10, 20, 0.78) 88%,
-      var(--app-bg, #c1b5f7) 100%
+      rgba(8, 10, 20, 0.86) 100%
     );
   }
 

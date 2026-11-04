@@ -44,7 +44,13 @@
   --green: #4ade80; --green-ink: #0d1f12;
   color-scheme:dark; color:var(--text-0); font-family:Inter,sans-serif;
   position:relative; isolation:isolate; overflow:hidden;
-  padding: 0 clamp(20px,6vw,72px) clamp(32px,5vw,64px);
+  /* Bottom padding trimmed down (was clamp(32px,5vw,64px)) — combined
+     with .shadow-pool's own 26px top margin just below the laptop,
+     the old value stacked into a gap that read as too much empty
+     space before the next section (LiveStatsSection, which itself
+     carries no top padding by design — see its own comment) started.
+     This keeps a clear break between sections without the dead air. */
+  padding: 0 clamp(20px,6vw,72px) clamp(16px,3vw,36px);
   background: transparent;
 }
 .sv-laptop-demo *, .sv-laptop-demo *::before, .sv-laptop-demo *::after { box-sizing:border-box; }
@@ -193,7 +199,10 @@
   width: 70%;
   max-width: 640px;
   height: 50px;
-  margin: 26px auto 0;
+  /* Trimmed from 26px — this margin stacks with the section's own
+     bottom padding above, and together they were leaving the next
+     section starting too far below the laptop. */
+  margin: 14px auto 0;
   background: radial-gradient(ellipse, rgba(124,58,237,0.35), transparent 70%);
   filter: blur(14px);
 }
@@ -247,6 +256,13 @@
 /* ---- Step 1: paste the script tag ---- */
 .sv-laptop-demo .cstep-codecard {
   flex: 1;
+  /* min-width: 0 lets this card shrink to its flex/column container's
+     actual width instead of growing to fit the (now non-wrapping)
+     script tag line inside it — that line scrolls within the card
+     instead (see .cstep-codeline.is-tag) so the card, the screen, and
+     the section around it all stay a fixed width on narrow phones. */
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -255,6 +271,7 @@
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: clamp(16px, 3vw, 26px);
+  overflow: hidden;
 }
 .sv-laptop-demo .cstep-codeline {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -266,9 +283,25 @@
   opacity: 1;
   color: var(--lilac);
   display: flex;
-  flex-wrap: wrap;
+  /* No longer wraps — wrapping let this line grow the codecard (and
+     the laptop screen/section around it) wider on narrow phones
+     instead of just getting cut off. It now stays on one line and
+     scrolls horizontally within its own fixed-width card instead, so
+     the section's width never expands past the viewport. */
+  flex-wrap: nowrap;
   align-items: center;
   gap: 2px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sv-laptop-demo .cstep-codeline.is-tag::-webkit-scrollbar {
+  display: none;
+}
+.sv-laptop-demo .cstep-codeline.is-tag > span {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .sv-laptop-demo .cstep-codeline .tag-punc { color: var(--text-2); }
 .sv-laptop-demo .cstep-codeline .tag-attr { color: var(--violet-2); }

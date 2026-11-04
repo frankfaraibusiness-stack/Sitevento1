@@ -41,9 +41,14 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--dash-purple);
-  background: var(--dash-purple-surface);
-  border: 1px solid var(--dash-purple-border);
+  /* Was the --dash-purple set (purple text on a tinted-purple
+     surface with a purple border) — against this section's purple
+     page background that whole pill read as a washed-out blue with
+     no real contrast. Solid black background + white text instead,
+     matching the site's own thick-ink-pill language. */
+  color: #FFFFFF;
+  background: #12100A;
+  border: none;
   padding: 5px 12px;
   border-radius: 999px;
   margin-bottom: 14px;
@@ -79,6 +84,13 @@
     padding: 2px 2px 10px;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
+    /* Stops the native overscroll glow/ring some mobile browsers draw
+       at the start/end of a horizontally-scrollable row — it was
+       showing up as an ugly highlight right at the row's edges. The
+       cards should just scroll out of view cleanly with nothing
+       framing the edge. */
+    overscroll-behavior-x: contain;
+    outline: none;
   }
   .wsx-row::-webkit-scrollbar { display: none; }
 
@@ -93,7 +105,11 @@
   border-radius: 20px;
   padding: 10px;
   background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02));
-  border: 1px solid var(--glass-border, rgba(255,255,255,0.14));
+  /* Solid black stroke (was a faint translucent glass border) so each
+     card reads as a clearly defined shape against the purple page
+     background, matching the site's own thick-ink-outline language
+     used elsewhere (e.g. the hero's step dots, the navbar). */
+  border: 1.5px solid #12100A;
   box-shadow:
     0 24px 60px -18px rgba(76,29,149,0.55),
     0 0 0 1px rgba(255,255,255,0.03) inset,
