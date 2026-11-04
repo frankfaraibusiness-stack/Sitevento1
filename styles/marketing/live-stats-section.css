@@ -96,11 +96,11 @@
 }
 
 @media (max-width: 959px) {
-  /* Pulled back out of the centered intro — stays left-aligned at
-     its own content width like before, the user asked for only the
-     heading and description to center. */
+  /* Now centered along with the heading/description below it so the
+     whole intro reads as one evenly-centered block on mobile instead
+     of the eyebrow sitting alone at the left edge. */
   .lss-eyebrow {
-    align-self: flex-start;
+    align-self: center;
   }
 }
 
@@ -283,6 +283,25 @@
   background: var(--ink);
   border-radius: 999px;
   padding: 6px 13px 6px 10px;
+}
+
+/* Mobile only: the radar circle wraps onto its own line above the
+   caption at narrow widths (.lss-radar-row's flex-wrap), so the
+   caption reads as its own centered block underneath it — same
+   treatment as the intro heading/description above. */
+@media (max-width: 959px) {
+  .lss-radar-row {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .lss-radar-caption {
+    align-items: center;
+  }
+
+  .lss-live-pill {
+    align-self: center;
+  }
 }
 
 .lss-live-dot {
