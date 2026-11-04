@@ -97,6 +97,25 @@
   max-width: 42ch;
 }
 
+/* Mobile only (below the 960px breakpoint where .lss-intro switches
+   to a two-column layout alongside the stats demo): the title's 12ch
+   cap and the copy's 42ch cap are fixed character widths that don't
+   shrink with the viewport, so on narrow phones the heading/copy
+   overflowed past the edge of the screen instead of wrapping inside
+   it. Below 960px both drop their character caps (full width of
+   .lss-intro, which already has its own side padding/max-width from
+   .lss) and center themselves individually — only the heading and
+   copy, not .lss-intro's own align-items, so the eyebrow pill and the
+   code tagline stay exactly where they were (left-aligned). */
+@media (max-width: 959px) {
+  .lss-title,
+  .lss-copy {
+    max-width: 100%;
+    width: 100%;
+    text-align: center;
+  }
+}
+
 .lss-tagline {
   /* Was display: inline-flex, which sizes to its content's intrinsic
      width instead of respecting max-width: 100% — the nowrap code
