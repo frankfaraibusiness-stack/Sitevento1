@@ -1,0 +1,353 @@
+/* ============================================================
+ * marketing-hero.css (see components/marketing/Hero.tsx)
+ *
+ * Hero is now just the cartoon hero (CartoonMobileHero on mobile,
+ * CartoonHeroContent reused here for desktop via .hero-section-desktop
+ * / .cartoon-hero--desktop) — the old mascot "stage" (glow/rings/
+ * orbiting shapes around /mascot/hero-bunny.png), the old headline/
+ * subcopy/CTA column that went with it, and the connected-site demo
+ * section that used to sit right under the hero have all been removed,
+ * along with the CSS that styled them. All that's left here is the
+ * #marketingView spacing fix and the desktop cartoon-hero block.
+ * ============================================================ */
+
+/* #marketingView previously carried its own var(--app-bg) (lavender)
+   background, meant to show through the gaps between the sections
+   that used to follow the hero. Now that the hero is the only thing
+   left on the page, that background had nothing left to back except
+   a bare strip of lavender between the hero photo and the footer
+   (main's own min-height: 60vh below was stretching #marketingView
+   taller than the hero itself, so that strip was visible even
+   without scrolling). No background here now — the hero photo fills
+   its own box, and the footer sits flush right after it. */
+.marketing-main {
+  /* Overrides the global `main { min-height: 60vh }` (marketing-nav.css)
+     for this page specifically. That min-height made sense when main
+     held the full stack of marketing sections; with just the hero left,
+     it was stretching main (and the lavender #marketingView background
+     inside it) well past the hero's real height, showing as a solid
+     lavender band between the hero photo and the footer. The hero sets
+     its own height from its content/photo, so main doesn't need to
+     force any extra here. */
+  min-height: 0;
+}
+
+
+/* Kill the gap between the fixed header and the mobile cartoon hero.
+   `main` normally adds 56px (header height) + 16px breathing room above
+   its content (styles/base/base.css); that extra 16px, stacked on top
+   of .hero's own 40px top padding (cartoon-mobile-hero.css), read as a
+   dead strip of empty lime between the header's bottom border and the
+   headline. Scoped to the marketing view only — other pages still want
+   that breathing gap under the header. */
+@media (max-width: 1023px) {
+  #marketingView {
+    margin-top: -16px;
+  }
+}
+
+/* Desktop-only hero (components/marketing/Hero.tsx) — below 1024px
+   CartoonMobileHero (styles/marketing/cartoon-mobile-hero.css) is
+   shown instead, so this one is hidden until the desktop breakpoint
+   below flips it back to display: block. */
+.hero-section-desktop {
+  display: none;
+}
+
+/* Same dead-gap fix as above, now also for the desktop hero: main's
+   extra 16px breathing room (on top of the 56px header clearance)
+   would otherwise leave a visible strip above the photo before
+   .cartoon-hero--desktop .hero's own -56px margin-top pulls it up
+   to the true top of the viewport. */
+@media (min-width: 1024px) {
+  #marketingView {
+    margin-top: -16px;
+  }
+}
+
+
+/* ---- Desktop: the exact mobile hero content (CartoonHeroContent —
+   same title/rotator, same description, same custom pill CTAs, same
+   platforms badge) over the landscape photo, full-bleed from the
+   true top of the viewport ---- */
+/* .hero-section-desktop here wraps CartoonHeroContent's own markup
+   (.hero/.hero__layout/.hero__inner/etc, all scoped under
+   .cartoon-hero--desktop so they don't collide with the mobile
+   .cartoon-hero rules in cartoon-mobile-hero.css, which are gated off
+   at this breakpoint). The photo already has the mascot/building on
+   its right two-thirds and open sky + grass on the left third, so
+   the left-aligned copy sits directly in that empty space — same
+   idea as mobile, just with desktop-sized type/spacing and no mobile-
+   only pieces (no loader, no sticky bottom nav; the real nav is
+   GlobalNav, mounted site-wide). */
+@media (min-width: 1024px) {
+  .hero-section-desktop {
+    display: block;
+  }
+
+  .cartoon-hero--desktop .hero {
+    /* Same trick as mobile: pull up by the fixed header's height so
+       the photo starts at the true top of the viewport, behind the
+       header's glass bar, instead of beginning underneath it — then
+       pad that height back so the content clears the header. */
+    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
+    padding: calc(56px + env(safe-area-inset-top, 0px) + 56px) clamp(24px, 4vw, 64px) 72px;
+    min-height: 640px;
+    display: flex;
+    align-items: center;
+
+    /* Real content now sits over the photo (below), and the photo's
+       own left two-thirds is already bright open sky/mountains — no
+       dark gradient needed there for the white-with-black-outline
+       text to stay legible, same as mobile not needing one over its
+       open sky either. */
+    background-image: url('/mascot/hero-bg-desktop.jpg');
+    background-size: cover;
+    background-position: top center;
+
+    /* Same curved bottom edge as the mobile hero (see
+       styles/marketing/cartoon-mobile-hero.css) instead of a flat,
+       full-width hard cut where the photo meets the section below. */
+    -webkit-mask-image: radial-gradient(
+      ellipse 60% 48px at 50% 100%,
+      transparent 98%,
+      #000 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 60% 48px at 50% 100%,
+      transparent 98%,
+      #000 100%
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  .cartoon-hero--desktop .hero__layout {
+    position: relative;
+    z-index: 2;
+    max-width: min(92vw, 1320px);
+    width: 100%;
+  }
+
+  /* .hero::after (the dark bottom-heavy gradient tint, defined
+     unscoped in cartoon-mobile-hero.css) applies to both the mobile
+     and desktop hero, since they share the .hero class — removed
+     here so the desktop photo stays untinted, as asked. */
+  .cartoon-hero--desktop .hero::after {
+    display: none;
+  }
+
+  /* ---------- Left content column ----------
+     The photo's left half is open sky/mountains/waterfall (no
+     mascot, no building), so the copy sits directly in that space —
+     same idea as mobile's left-aligned column, just desktop-sized
+     and packed tightly (title → sub → CTAs → steps, small gaps
+     between each) instead of spread out, so there's no dead stretch
+     of empty photo beneath the content.
+
+     .hero__title/.hero__titleLine/.rotator/.rotator__word are global
+     (unscoped) selectors in cartoon-mobile-hero.css, so their base
+     styling (white fill, black outline, font) already reaches
+     desktop — only size/alignment need overriding below. .hero__sub,
+     .hero__ctas, .btn*, .hero__steps* are instead scoped to
+     `.cartoon-hero` (the mobile wrapper) there, so none of their base
+     styling reaches desktop at all — those get full rules here, not
+     just overrides. */
+  .cartoon-hero--desktop .hero__inner {
+    display: block;
+    max-width: 460px;
+    text-align: left;
+  }
+
+  .cartoon-hero--desktop .hero__title {
+    font-size: clamp(34px, 3.6vw, 50px);
+    text-align: left;
+  }
+
+  .cartoon-hero--desktop .hero__titleLine {
+    font-size: clamp(28px, 3.1vw, 42px);
+  }
+
+  .cartoon-hero--desktop .rotator {
+    place-items: start;
+    text-align: left;
+    margin-top: 4px;
+    font-size: clamp(36px, 4vw, 54px);
+  }
+
+  .cartoon-hero--desktop .rotator__word {
+    text-align: left;
+    justify-self: start;
+  }
+
+  .cartoon-hero--desktop .hero__sub {
+    margin: 16px 0 0;
+    width: 100%;
+    max-width: 42ch;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.005em;
+    text-align: left;
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      0 1px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .cartoon-hero--desktop .hero__sub strong {
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+
+  .cartoon-hero--desktop .hero__ctas {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .cartoon-hero--desktop .btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Nunito', 'Fredoka', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 11px 24px;
+    border: 1.5px solid #000;
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 3px 0 #000;
+    transition: all 0.1s ease;
+    width: max-content;
+    min-width: 0;
+  }
+
+  .cartoon-hero--desktop .btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 #000;
+  }
+
+  .cartoon-hero--desktop .btn-primary {
+    background-color: #b3ff00;
+    color: #000;
+  }
+
+  .cartoon-hero--desktop .btn-secondary {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .cartoon-hero--desktop .play-icon {
+    font-size: 0.9rem;
+  }
+
+  .cartoon-hero--desktop .hero__steps {
+    list-style: none;
+    margin: 28px 0 0;
+    padding: 0;
+    max-width: 34ch;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cartoon-hero--desktop .hero__step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+
+  .cartoon-hero--desktop .hero__step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 26px;
+    bottom: -8px;
+    width: 1.5px;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .cartoon-hero--desktop .hero__stepNum {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    background: rgba(8, 10, 20, 0.35);
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  .cartoon-hero--desktop .hero__stepText {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.72);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .cartoon-hero--desktop .hero__visual {
+    display: none;
+  }
+
+  /* ---------- Sites-connected stat ----------
+     On mobile this sits absolutely positioned opposite the
+     description, tuned to that single-column photo. Desktop instead
+     docks it to the bottom-right of the hero, at the open grass
+     beneath the mascot — out of the way of both the left column and
+     the building, and it anchors the bottom-right corner so the
+     section doesn't end in bare photo under the content. None of the
+     .cartoon-hero (mobile-scoped) base rules for this block apply
+     here, so every property it needs is set directly below rather
+     than assumed inherited. */
+  .cartoon-hero--desktop .hero__statBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    position: absolute;
+    right: clamp(24px, 4vw, 64px);
+    bottom: clamp(28px, 4vw, 48px);
+    left: auto;
+    top: auto;
+    max-width: none;
+    text-align: right;
+    pointer-events: none;
+  }
+
+  .cartoon-hero--desktop .hero__statNumber {
+    font-family: 'Baloo 2', 'Fredoka', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    color: #FFFDF5;
+    -webkit-text-stroke: 1.5px #12100A;
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  .cartoon-hero--desktop .hero__statLabel {
+    font-family: 'Nunito', 'Fredoka', sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #b3ff00;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
+  }
+}
