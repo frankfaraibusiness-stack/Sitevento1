@@ -286,11 +286,17 @@
   .cwz-perm-row-num { display: none; }
   .cwz-perm-row-stack { flex-basis: 100%; }
   .cwz-perm-row-note { max-width: none; }
-  /* The switch drops to its own full-width row below the label/note
-     instead of squeezing into the same line — nothing gets clipped
-     or wraps awkwardly on a narrow screen. */
+  /* The switch drops to its own row below the label/note instead of
+     squeezing into the same line — nothing gets clipped or wraps
+     awkwardly on a narrow screen. The line-break comes for free from
+     .cwz-perm-row-stack's own flex-basis: 100% (above) inside this
+     wrapping flex row; margin-left: auto then pushes the switch to
+     the right edge of that new row. It keeps its normal 40px width —
+     flex-basis: 100% here previously stretched it edge-to-edge, since
+     .cwz-perm-switch is itself a flex container with a fixed width,
+     which is what caused the full-width toggle on phone. */
   .cwz-perm-switch {
-    flex-basis: 100%; margin-top: 10px; margin-left: 0;
+    margin-top: 10px; margin-left: auto;
     align-self: flex-end;
   }
 }

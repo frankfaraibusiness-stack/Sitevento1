@@ -87,7 +87,7 @@ async function fetchHtmlWithTimeout(url: string) {
 // for a Node serverless function. Each getter is independently
 // best-effort: a malformed or missing tag just yields null for that
 // one field instead of failing the whole extraction.
-function extractMeta(html: string, baseUrl: string): Omit<SiteMetadataResult, 'reachable' | 'httpStatus' | 'finalUrl' | 'errorMessage'> {
+function extractMeta(html: string, baseUrl: string): Omit<SiteMetadataResult, 'reachable' | 'httpStatus' | 'finalUrl' | 'errorMessage' | 'siteTheme'> {
   const head = html.slice(0, 200_000); // metadata always lives in <head>, near the top
 
   function metaContent(attr: 'name' | 'property', value: string): string | null {
