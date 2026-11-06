@@ -38,16 +38,27 @@
 //      naturally stops selecting it, with no separate cutoff job
 //      needed.
 //
-// ── House ads bypass all of the above ───────────────────────────────
-// adId values prefixed `house_` (lib/houseAds.ts) never reach step 2
-// onward: they have no adPool/{adId} doc at all (a house ad is a
-// static in-memory list, not Firestore data), no ownerUid, no
-// AdvertiserBillingDoc to debit, and no real adEarnings to credit —
-// there's no real advertiser and no real money involved. This route
-// recognizes a house-ad id BEFORE the `adPool.doc(adId).get()` lookup
-// (which would otherwise always 404 as 'unknown ad' for one) and
-// records a lightweight impressions/clicks-only counter instead, for
-// fill-rate visibility — never running the billing transaction below.
+// ── House ads: real publisher payout, no advertiser-side debit ──────
+// adId values prefixed `house_` (lib/houseAds.ts) never reach the
+// REAL `adPool.doc(adId)` lookup below: a house ad is a static
+// in-memory list, not Firestore data, so that lookup would always
+// 404 as 'unknown ad' for one. This route recognizes a house-ad id
+// BEFORE that lookup and runs its own lightweight path instead.
+//
+// Unlike before, that path is NOT a $0 counter-only short-circuit —
+// in-house ads are priced at lib/houseAds.ts's IN_HOUSE_CPM_USD (a
+// flat advertiser-style CPM bid) and CPC_USD, run through the exact
+// same lib/adRates.ts payout formula as a real ad, and credit the
+// SAME users/{uid}/sites/{siteId}/adEarnings/{day} + adActivity ledger
+// a real ad writes to — so a house-ad view pays the site owner for
+// real, and shows up on the Monetization dashboard with zero
+// special-casing there. What's still skipped is the ADVERTISER side:
+// there's no AdvertiserBillingDoc to debit and no adPool/{adId} doc to
+// increment spend/stats on, because Sitevento itself is the
+// "advertiser" here and doesn't bill itself for its own house
+// inventory. A lightweight impressions/clicks counter
+// (houseAdStats/{day}) is still kept alongside the real payout, for
+// fill-rate visibility independent of the earnings ledger.
 //
 // ── Why a transaction ────────────────────────────────────────────────
 // Debiting balanceUsd and spentUsd, and potentially flipping an ad to
@@ -63,7 +74,7 @@ import { trackWidgetTokenUsage } from '@/lib/serverAuth';
 import { checkAdEventValidity, type AdEventType } from '@/lib/adEvents';
 import { isValidAdId, isValidAdFormatId, type AdDoc, type AdvertiserBillingDoc, type AdFormatId } from '@/lib/adPool';
 import { getEffectiveCpmForImpression, getPublisherPayoutForImpression, getPublisherPayoutForClick, CPC_USD, PLATFORM_REVENUE_SHARE } from '@/lib/adRates';
-import { isHouseAdId } from '@/lib/houseAds';
+import { isHouseAdId, IN_HOUSE_CPM_USD } from '@/lib/houseAds';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -172,12 +183,36 @@ export async function POST(req: NextRequest) {
       if (!siteOwnerUid) {
         return NextResponse.json({ ok: false, reason: 'unknown site' }, { status: 200, headers: CORS_HEADERS });
       }
+
       const eventType = event as AdEventType;
+      const resolvedFormat: AdFormatId =
+        typeof requestedFormat === 'string' && isValidAdFormatId(requestedFormat) ? (requestedFormat as AdFormatId) : 'popup';
+
+      // Same fraud/dedup gate a real ad gets (self-view doesn't apply —
+      // a house ad has no ownerUid to self-view against — but
+      // rate-limit/dedup and click-without-impression still do), so a
+      // house ad can't be farmed for payouts any more easily than a
+      // real one.
+      const impressionKey = `${visitorId}:${adId}`;
+      const validity = checkAdEventValidity({
+        adId,
+        siteId,
+        // A house ad has no owner — 'house' can never equal a real
+        // Firebase uid, so checkAdEventValidity's self-view check
+        // (adOwnerUid === siteOwnerUid) simply never fires for one.
+        adOwnerUid: 'house',
+        siteOwnerUid,
+        visitorId,
+        eventType,
+        hasRecentValidImpression: eventType === 'click' ? hasRecentImpression(impressionKey) : undefined,
+      });
+
+      const country = req.headers.get('x-vercel-ip-country') || null;
       const day = todayKey();
-      // Separate top-level collection from the real adPool/{adId}/events
-      // log (that log is per-real-ad and advertiser-readable per
-      // firestore.rules; house ads have no owner to scope a read to,
-      // so this is its own simple, publisher-visible counter instead).
+
+      // Lightweight fill-rate counter, independent of the earnings
+      // ledger below — kept even for invalid events, same "always log,
+      // only pay for valid" posture as the real-ad path.
       const houseStatsRef = db.collection('houseAdStats').doc(day);
       houseStatsRef
         .set(
@@ -190,10 +225,68 @@ export async function POST(req: NextRequest) {
         )
         .catch((err) => console.error('[ad-track] house ad stats write failed', err));
 
+      if (!validity.valid) {
+        trackWidgetTokenUsage(db, siteId).catch(() => {});
+        return NextResponse.json({ ok: true, counted: false, house: true, reason: validity.reason }, { status: 200, headers: CORS_HEADERS });
+      }
+
+      if (eventType === 'impression') {
+        markImpression(impressionKey);
+      }
+
+      // ── Pricing: same formulas a real ad uses, just with the house
+      // pool's flat IN_HOUSE_CPM_USD bid standing in for an
+      // advertiser's own budget.bidCpmUsd (not country-tiered — a
+      // deliberate flat rate, same posture as CPC already is).
+      const publisherPayoutUsd =
+        eventType === 'impression'
+          ? getPublisherPayoutForImpression({ countryCode: country, advertiserBidCpmUsd: IN_HOUSE_CPM_USD })
+          : getPublisherPayoutForClick();
+
+      const earningsRef = db.collection('users').doc(siteOwnerUid).collection('sites').doc(siteId).collection('adEarnings').doc(day);
+      const countryKey = country || 'UNKNOWN';
+      const activityRef = db.collection('users').doc(siteOwnerUid).collection('sites').doc(siteId).collection('adActivity').doc();
+
+      try {
+        await db.runTransaction(async (tx) => {
+          tx.set(
+            earningsRef,
+            {
+              [eventType === 'impression' ? 'impressions' : 'clicks']: FieldValue.increment(1),
+              earningsUsd: FieldValue.increment(publisherPayoutUsd),
+              [`byCountry.${countryKey}.${eventType === 'impression' ? 'impressions' : 'clicks'}`]: FieldValue.increment(1),
+              [`byCountry.${countryKey}.earningsUsd`]: FieldValue.increment(publisherPayoutUsd),
+              [`byFormat.${resolvedFormat}.${eventType === 'impression' ? 'impressions' : 'clicks'}`]: FieldValue.increment(1),
+            },
+            { merge: true }
+          );
+
+          tx.set(activityRef, {
+            ts: FieldValue.serverTimestamp(),
+            event: eventType,
+            format: resolvedFormat,
+            country: countryKey,
+            earningsUsd: publisherPayoutUsd,
+            house: true,
+          });
+        });
+      } catch (err) {
+        console.error('[ad-track] house ad earnings transaction failed', err);
+        trackWidgetTokenUsage(db, siteId).catch(() => {});
+        return NextResponse.json({ ok: true, counted: false, house: true, reason: 'BILLING_FAILED' }, { status: 200, headers: CORS_HEADERS });
+      }
+
       trackWidgetTokenUsage(db, siteId).catch(() => {});
 
       return NextResponse.json(
-        { ok: true, counted: true, house: true, advertiserCostUsd: 0, publisherPayoutUsd: 0 },
+        {
+          ok: true,
+          counted: true,
+          house: true,
+          advertiserCostUsd: 0,
+          publisherPayoutUsd: Math.round(publisherPayoutUsd * 1_000_000) / 1_000_000,
+          platformShare: PLATFORM_REVENUE_SHARE.platform,
+        },
         { status: 200, headers: CORS_HEADERS }
       );
     }

@@ -1604,24 +1604,21 @@
     // viewport (top vs. bottom) and are rendered identically beyond
     // that — same simple strip, just anchored differently — so they
     // share the render function below and differ only in container.
-    // 'popup' and 'overlay' are both a dismissible card, just
-    // placed/sized differently by their own container (corner box vs.
-    // full-viewport dimmed stage) — they share the sv-ad-card
-    // renderer. 'interstitial' ALSO uses sv-ad-card, but gets its own
-    // full-viewport container (sv-ad-interstitial, below) rather than
-    // reusing sv-ad-overlay — per lib/monetization.ts's catalog
-    // description ("shown between page transitions or on a timer"),
-    // interstitial is conceptually distinct from overlay even though
-    // both render full-screen, so each keeps its own DOM node/CSS
-    // instead of collapsing into one id. Previously interstitial
-    // shared sv-ad-corner with popup and rendered as the same small
-    // bottom-left corner card — not actually full-screen despite the
-    // catalog calling it that; this is the fix.
+    // 'popup', 'overlay' and 'interstitial' are all a dismissible card
+    // over a full-viewport dimmed stage — they share the sv-ad-card
+    // renderer, each with its own container so none collide if more
+    // than one fires close together (per lib/monetization.ts's
+    // catalog, each format is conceptually distinct even though all
+    // three render edge-to-edge/centered). 'popup' previously shared
+    // sv-ad-corner with a small bottom-left corner card instead — not
+    // a centered popup at all; this is the fix, and it also matches
+    // the square in-house image creatives (lib/houseAds.ts), sized for
+    // a centered square card.
     var AD_CONTAINER_IDS = {
       banner: 'sv-ad-fixed-top',
       'sticky-footer': 'sv-ad-fixed-bottom',
       interstitial: 'sv-ad-interstitial',
-      popup: 'sv-ad-corner',
+      popup: 'sv-ad-popup',
       overlay: 'sv-ad-overlay',
     };
 
@@ -1652,6 +1649,10 @@
         // each is a conceptually distinct format (see comment above
         // AD_CONTAINER_IDS) even though both render edge-to-edge.
         '#sv-ad-interstitial{position:fixed;inset:0;z-index:2147482980;}' +
+        // Centered popup — its own full-viewport dimmed-stage lane,
+        // distinct z-index from overlay/interstitial so all three can
+        // coexist without collision.
+        '#sv-ad-popup{position:fixed;inset:0;z-index:2147482970;}' +
         '.sv-ad-strip,.sv-ad-strip *{box-sizing:border-box;}' +
         '.sv-ad-strip{display:flex;align-items:center;gap:12px;width:100%;padding:10px 16px;' +
         'background:rgba(10,10,14,.94);color:#fff;font-family:-apple-system,BlinkMacSystemFont,' +
@@ -1692,11 +1693,17 @@
         '.sv-ad-card-badge{position:absolute;top:10px;left:10px;font-size:9px;font-weight:700;' +
         'letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.75);' +
         'background:rgba(0,0,0,.4);padding:3px 8px;border-radius:999px;}' +
-        '#sv-ad-overlay .sv-ad-stage,#sv-ad-interstitial .sv-ad-stage{position:relative;width:100%;' +
-        'height:100%;display:flex;align-items:center;justify-content:center;padding:22px;' +
-        'box-sizing:border-box;background:rgba(6,6,9,.88);}' +
+        '#sv-ad-overlay .sv-ad-stage,#sv-ad-interstitial .sv-ad-stage,#sv-ad-popup .sv-ad-stage{' +
+        'position:relative;width:100%;height:100%;display:flex;align-items:center;' +
+        'justify-content:center;padding:22px;box-sizing:border-box;background:rgba(6,6,9,.88);}' +
         '#sv-ad-overlay .sv-ad-card-wrap,#sv-ad-interstitial .sv-ad-card-wrap{width:100%;max-width:420px;}' +
-        '#sv-ad-overlay .sv-ad-card-img,#sv-ad-interstitial .sv-ad-card-img{height:220px;}';
+        '#sv-ad-overlay .sv-ad-card-img,#sv-ad-interstitial .sv-ad-card-img{height:220px;}' +
+        // 'popup' card wrap is sized for a square (1:1) creative —
+        // the in-house ads (lib/houseAds.ts) are square images — so
+        // its image fills a square box instead of the 420px-wide/
+        // 220px-tall rectangle overlay/interstitial use.
+        '#sv-ad-popup .sv-ad-card-wrap{width:100%;max-width:340px;}' +
+        '#sv-ad-popup .sv-ad-card-img{width:100%;aspect-ratio:1/1;height:auto;object-fit:cover;}';
       document.head.appendChild(style);
     }
 
@@ -1876,17 +1883,16 @@
       wrap.appendChild(closeBtn);
       wrap.appendChild(card);
 
-      // 'overlay' and 'interstitial' both need the full-viewport
-      // dimmed stage (the card floats centered over a dark scrim) —
-      // 'popup' just drops straight into its fixed corner container.
-      if (format === 'overlay' || format === 'interstitial') {
-        var stage = document.createElement('div');
-        stage.className = 'sv-ad-stage';
-        stage.appendChild(wrap);
-        container.appendChild(stage);
-      } else {
-        container.appendChild(wrap);
-      }
+      // 'overlay', 'interstitial' and 'popup' (the only three formats
+      // that reach renderAdCard — see renderAd below) all need the
+      // full-viewport dimmed stage (the card floats centered over a
+      // dark scrim). 'popup' used to drop straight into a small fixed
+      // corner container instead of this stage; now it's centered like
+      // the other two, matching the square in-house creatives.
+      var stage = document.createElement('div');
+      stage.className = 'sv-ad-stage';
+      stage.appendChild(wrap);
+      container.appendChild(stage);
 
       trackAd(ad.id, format, 'impression');
     }
