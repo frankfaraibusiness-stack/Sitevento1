@@ -1,0 +1,230 @@
+/* ============================================================
+ * styles/widget-status-popup.css
+ *
+ * Shared popup (components/widgets/WidgetStatusPopup.tsx) that
+ * replaces the old auto-dismiss toast for "widget turned on/off".
+ * Lime-cartoonic, thick black edges, 3D pressed-button feel — shared
+ * across the whole widgets catalog, not styled per-widget.
+ * ============================================================ */
+
+.wsp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: color-mix(in srgb, var(--lime-ink) 55%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.wsp-card {
+  width: 100%;
+  max-width: 380px;
+  max-height: calc(100vh - 40px);
+  background: var(--cream);
+  border: 3px solid var(--lime-ink);
+  border-radius: 20px;
+  box-shadow: 6px 6px 0 var(--lime-ink);
+  overflow: hidden;
+  animation: wsp-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+
+@keyframes wsp-pop {
+  from { opacity: 0; transform: scale(0.9) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Branded header bar: logo left, cubed close button right ──────── */
+.wsp-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  background: var(--lime);
+  border-bottom: 3px solid var(--lime-ink);
+}
+
+.wsp-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--lime-ink);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+.wsp-logo svg { width: 22px; height: 22px; }
+
+/* Cubed/rectangular, not round — 3D via offset shadow that collapses
+   on press for tactile feedback. */
+.wsp-close {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--lime);
+  border: 2px solid var(--lime-ink);
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 var(--lime-ink);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.wsp-close svg { width: 16px; height: 16px; }
+.wsp-close:hover { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--lime-ink); }
+.wsp-close:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--lime-ink); }
+
+/* ── Body ───────────────────────────────────────────────────────── */
+.wsp-body {
+  padding: 28px 24px 24px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.wsp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 3px solid var(--lime-ink);
+  box-shadow: 3px 3px 0 var(--lime-ink);
+}
+.wsp-icon svg { width: 28px; height: 28px; }
+
+.wsp-is-off .wsp-icon { background: var(--cream-deep); color: var(--ink); }
+.wsp-is-error .wsp-icon { background: #ffb4a3; color: #7a2c18; border-color: #7a2c18; box-shadow: 3px 3px 0 #7a2c18; }
+.wsp-is-error .wsp-bar { background: #ffb4a3; border-bottom-color: #7a2c18; }
+.wsp-is-error .wsp-close { box-shadow: 2px 2px 0 #7a2c18; border-color: #7a2c18; }
+
+.wsp-title {
+  margin: 0 0 8px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.wsp-message {
+  margin: 0 0 20px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #5c6a72;
+}
+
+.wsp-ok {
+  width: 100%;
+  height: 48px;
+  background: var(--ink);
+  color: var(--lime);
+  font-weight: 800;
+  font-size: 15px;
+  border: 2px solid var(--lime-ink);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--lime-ink);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.wsp-ok:hover { transform: translate(1.5px, 1.5px); box-shadow: 1.5px 1.5px 0 var(--lime-ink); }
+.wsp-ok:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--lime-ink); }
+
+@media (max-width: 480px) {
+  .wsp-card { max-width: 100%; }
+}
+
+/* ── ConfirmPopup additions ─────────────────────────────────────────
+ * Same card/bar/icon language as the status popup above; just a
+ * Confirm/Cancel footer instead of one "Got it" button, plus an
+ * optional typed-confirmation field for the most destructive actions.
+ * ==================================================================== */
+
+.wsp-confirm-field {
+  text-align: left;
+  margin: 2px 0 20px;
+}
+
+.wsp-confirm-field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.wsp-confirm-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--cream);
+  border: 2px solid var(--lime-ink);
+  border-radius: 8px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.wsp-confirm-field input:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lime) 55%, transparent);
+}
+
+.wsp-confirm-field input:disabled {
+  opacity: 0.6;
+}
+
+.wsp-confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.wsp-confirm-actions .wsp-ok,
+.wsp-confirm-actions .wsp-cancel {
+  flex: 1;
+  width: auto;
+}
+
+.wsp-cancel {
+  height: 48px;
+  background: var(--cream);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  border: 2px solid var(--lime-ink);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--lime-ink);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.wsp-cancel:hover:not(:disabled) { transform: translate(1.5px, 1.5px); box-shadow: 1.5px 1.5px 0 var(--lime-ink); }
+.wsp-cancel:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--lime-ink); }
+.wsp-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.wsp-ok:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 3px 3px 0 var(--lime-ink) !important;
+}
+
+/* Destructive confirm button: solid danger red instead of ink/lime,
+   paired with the existing wsp-is-error card/icon/bar styling. */
+.wsp-ok-danger {
+  background: #c23b2b;
+  color: #fff6ee;
+  border-color: #7a2c18;
+  box-shadow: 3px 3px 0 #7a2c18;
+}
+.wsp-ok-danger:hover:not(:disabled) { box-shadow: 1.5px 1.5px 0 #7a2c18; }
+.wsp-ok-danger:active:not(:disabled) { box-shadow: 0 0 0 #7a2c18; }
+.wsp-ok-danger:disabled {
+  box-shadow: 3px 3px 0 #7a2c18 !important;
+}

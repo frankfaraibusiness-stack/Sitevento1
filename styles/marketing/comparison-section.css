@@ -1,0 +1,208 @@
+/* ============================================================
+ * comparison-section.css — components/marketing/ComparisonSection.tsx
+ *
+ * "sitevento vs. piecing it together yourself" table. Desktop
+ * (>=760px) renders .cmp-table as a real grid-based table; below
+ * that, .cmp-table is hidden and .cmp-cards (stacked per-row cards)
+ * takes over — a table squeezed into a narrow phone screen becomes
+ * illegible, so this is a genuine layout swap, not just a font-size
+ * shrink. Light glass surfaces, dark ink text throughout (the page
+ * background --app-bg is light lavender, never a dark canvas).
+ * ============================================================ */
+
+.cmp {
+  position: relative;
+  padding: 0 clamp(20px, 6vw, 72px) clamp(56px, 9vw, 108px);
+  background: transparent;
+}
+
+.cmp-inner {
+  max-width: 1020px;
+  margin: 0 auto;
+}
+
+.cmp-intro {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto clamp(32px, 5vw, 48px);
+}
+
+.cmp-eyebrow {
+  display: inline-block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #12100A;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.cmp-title {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.cmp-copy {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--surface-ink-soft);
+  margin: 0;
+}
+
+/* ---- Desktop table ---- */
+.cmp-table {
+  display: none;
+}
+
+@media (min-width: 760px) {
+  .cmp-table {
+    display: block;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1.5px solid var(--surface-edge);
+    background: var(--surface-glass-solid, #fff);
+    box-shadow: var(--surface-shadow-lg);
+  }
+}
+
+.cmp-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  align-items: center;
+}
+
+.cmp-row:not(.cmp-row-head):not(:last-child) {
+  border-bottom: 1px solid var(--surface-edge-soft);
+}
+
+.cmp-row-head {
+  background: var(--lime);
+  border-bottom: 1.5px solid #000;
+}
+
+.cmp-cell {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.cmp-cell-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cmp-cell-head {
+  font-weight: 900;
+  font-size: 15px;
+  justify-content: center;
+  text-align: center;
+  color: var(--lime-ink);
+}
+
+.cmp-cell-head.cmp-cell-diy {
+  color: var(--lime-ink);
+  opacity: 0.75;
+}
+
+.cmp-cell-sv,
+.cmp-cell-diy {
+  justify-content: flex-start;
+}
+
+.cmp-cell-sv {
+  font-weight: 700;
+}
+
+.cmp-cell-diy {
+  color: var(--surface-ink-soft);
+}
+
+.cmp-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #000;
+}
+
+.cmp-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.cmp-badge-yes {
+  background: var(--dash-green-surface);
+  color: var(--dash-green-ink);
+}
+
+.cmp-badge-no {
+  background: var(--surface-edge-soft);
+  color: var(--surface-ink-faint);
+  border-color: var(--surface-edge-strong);
+}
+
+/* ---- Mobile stacked cards ---- */
+.cmp-cards {
+  display: none;
+}
+
+@media (max-width: 759px) {
+  .cmp-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.cmp-mcard {
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  background: var(--surface-glass-solid, #fff);
+  border: 1.5px solid var(--surface-edge);
+  box-shadow: var(--surface-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cmp-mcard-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cmp-mcard-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+.cmp-mcard-sv {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.cmp-mcard-diy {
+  color: var(--surface-ink-soft);
+}
