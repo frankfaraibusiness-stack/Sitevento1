@@ -48,11 +48,11 @@ import {
   isValidPageUrl,
   hostAuthorized,
   getWidgetCatalogEntry,
-  getCachedWidgetDoc,
   type SiteWidgetDoc,
   type WidgetPosition,
   type WidgetType,
 } from '@/lib/widgets';
+import { getCachedWidgetDoc } from '@/lib/widgets-admin';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';

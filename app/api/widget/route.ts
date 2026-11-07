@@ -52,11 +52,11 @@ import {
   hostAuthorized,
   widgetErrorBody,
   widgetErrorStatus,
-  getCachedWidgetDoc,
   sanitizeEmailCaptureConfig,
   type SiteWidgetDoc,
   type WidgetResponsePayload,
 } from '@/lib/widgets';
+import { getCachedWidgetDoc } from '@/lib/widgets-admin';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
