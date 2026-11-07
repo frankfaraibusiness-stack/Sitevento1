@@ -46,6 +46,7 @@ import { normalizeVisit, type NormVisit } from '@/lib/dashboardStats';
 export const VISIT_CAP = 5000;
 const LEAD_CAP = 1500;
 const BOT_CAP = 1000;
+const BROKEN_LINK_CAP = 500;
 // Broken-link docs are one per DISTINCT href (see app/api/broken-link's
 // header), never one per click — a real site rarely has more than a
 // handful of genuinely broken links at once, so this cap is generous
@@ -124,6 +125,12 @@ interface Cache {
   leadSig: string;
   botSig: string;
 }
+
+// brokenLinks is a standing site issue list, not a per-range metric
+// (see DashboardData.brokenLinks), so it has no range-based signature
+// to key off — it's simply re-fetched on every "heavy" (full/manual)
+// load and otherwise carried over from the previous result, same
+// cadence as the heavy profile counts above.
 
 async function safe<T>(p: Promise<T>, fallback: T, label: string): Promise<T> {
   try {
@@ -380,6 +387,25 @@ export function useDashboardData(uid: string | null, siteId: string | null, rang
           }
         }
 
+        // Leads with conversion attribution (lib/leadAttribution.ts) —
+        // same leadSig change-detector as leadsTotal/leadsInRange above,
+        // but NOT range-bound: DeviceExperiencePanel's per-device
+        // conversion rate and the journey aggregator both need the
+        // full lead history to join against visits, not just the
+        // leads inside the currently-selected date range.
+        let leadsAttributed = prev?.data.leadsAttributed ?? [];
+        if (!prev || prev.leadSig !== leadSig) {
+          const attribSnap = await safeOrNull(
+            getDocs(query(col('leads'), orderBy('ts', 'desc'), fsLimit(LEAD_CAP))),
+            'leads attributed'
+          );
+          if (attribSnap) {
+            leadsAttributed = attribSnap.docs
+              .filter((d) => !d.data().deletedAt)
+              .map((d) => ({ id: d.id, ...d.data() }) as Lead);
+          }
+        }
+
         // Security Bot — same change-detector pattern.
         const botSig = String(bAll);
         let botsStopped = prev?.data.botsStopped ?? 0;
@@ -407,6 +433,22 @@ export function useDashboardData(uid: string | null, siteId: string | null, rang
         const earnings: Record<string, PublisherDayEarnings> = { ...(prev?.data.earnings ?? {}) };
         if (earnSnap) earnSnap.forEach((d) => (earnings[d.id] = d.data() as PublisherDayEarnings));
 
+        // One doc per distinct broken link currently on record for this
+        // site (see lib/types.ts's BrokenLink) — not scoped to the
+        // selected date range, so only re-fetched on a full/manual
+        // load, never on the 60s poll, same cadence as the heavy
+        // profile counts above.
+        let brokenLinks = prev?.data.brokenLinks ?? [];
+        if (heavy) {
+          const brokenSnap = await safeOrNull(
+            getDocs(query(col('brokenLinks'), orderBy('lastSeenAt', 'desc'), fsLimit(BROKEN_LINK_CAP))),
+            'broken links'
+          );
+          if (brokenSnap) {
+            brokenLinks = brokenSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as BrokenLink);
+          }
+        }
+
         const next: DashboardData = {
           visits,
           truncated,
@@ -428,6 +470,8 @@ export function useDashboardData(uid: string | null, siteId: string | null, rang
           botsCapped,
           clicksByDay,
           earnings,
+          leadsAttributed,
+          brokenLinks,
         };
         if (token !== tokenRef.current) return; // a newer full load superseded this one
         cacheRef.current = { sig, data: next, leadSig, botSig };
