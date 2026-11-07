@@ -83,6 +83,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={lexend.variable}>
       <head>
+        <meta name="sitevento" content="l0dLdie2mQCIkkJB77or" />
+        <script
+          src="https://sitevento12.vercel.app/sitevento.js"
+          data-site="l0dLdie2mQCIkkJB77or"
+          defer
+        />
         {/* Baloo 2 / Fredoka / Nunito — used by the cartoon mobile hero
             (components/marketing/CartoonMobileHero.tsx /
             styles/marketing/cartoon-mobile-hero.css) only. Nunito
