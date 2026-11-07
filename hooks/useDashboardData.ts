@@ -46,7 +46,6 @@ import { normalizeVisit, type NormVisit } from '@/lib/dashboardStats';
 export const VISIT_CAP = 5000;
 const LEAD_CAP = 1500;
 const BOT_CAP = 1000;
-const BROKEN_LINK_CAP = 500;
 // Broken-link docs are one per DISTINCT href (see app/api/broken-link's
 // header), never one per click — a real site rarely has more than a
 // handful of genuinely broken links at once, so this cap is generous
