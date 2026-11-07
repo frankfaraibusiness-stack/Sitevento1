@@ -168,6 +168,25 @@ export async function POST(req: NextRequest) {
         const planId: PlanId = isValidPlanId(userData.plan) ? userData.plan : DEFAULT_PLAN_ID;
         const plan = getPlan(planId);
 
+        // Re-entering step 1 with the SAME hostname while a previous
+        // attempt is still sitting unverified (e.g. the owner reloaded
+        // the connect page, or came back later to finish pasting the
+        // tag) must resume that same site doc — not mint a second one.
+        // A fresh site doc would mean a fresh siteId, and since the
+        // install tag embeds the siteId (see VerifyFlow.tsx), any tag
+        // already pasted onto the live page would silently stop
+        // matching, forcing the owner to re-copy and re-paste it. This
+        // read has to happen inside the transaction (before the count
+        // check below) so a duplicate from a double-submit race can't
+        // slip through, and so resuming an existing pending site never
+        // counts against the plan's connectedSites limit.
+        const existingSnap = await tx.get(
+          sitesRef.where('name', '==', hostname).where('status', '==', 'pending').limit(1)
+        );
+        if (!existingSnap.empty) {
+          return existingSnap.docs[0].id;
+        }
+
         // Firestore transactions require all reads before writes, and
         // count() aggregation reads are allowed inside a transaction —
         // this still gets the atomicity we need (no two transactions

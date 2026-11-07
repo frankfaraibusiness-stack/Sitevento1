@@ -27,6 +27,7 @@ import { ConnectFlow, type LimitStatus } from '@/components/connect/ConnectFlow'
 import { VerifyFlow, type VerifiedSite } from '@/components/connect/VerifyFlow';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useSites } from '@/hooks/useSites';
 import type { AuthPane } from '@/hooks/useAuthForms';
 import type { PlanId } from '@/lib/plans';
 
@@ -34,6 +35,7 @@ export default function ConnectFlowClient() {
   const router = useNavRouter();
   const { user, authReady, authError } = useAuth();
   const { planId } = useUserProfile(user);
+  const { sites, dashState: sitesDashState } = useSites(user?.uid ?? null, user);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [authPane, setAuthPane] = useState<AuthPane>('signin');
@@ -67,10 +69,30 @@ export default function ConnectFlowClient() {
   // Settings, Finish) aren't built yet — VerifyFlow's onVerified lands
   // back on the dashboard for now, same as step 1 used to, until those
   // exist.
-  const [activeSite, setActiveSite] = useState<VerifiedSite | null>(null);
+  //
+  // activeSite used to be plain useState, set only by handleSiteCreated
+  // right after step 1's submit — so a reload (or just re-opening
+  // /dashboard/connect in a new tab) always lost it and dropped back to
+  // step 1, forcing the owner to re-enter the URL even though a
+  // 'pending' site (and its install tag, which is keyed off siteId —
+  // see VerifyFlow.tsx) already existed from the previous attempt. Now
+  // it resumes from useSites' real-time subscription: if any of the
+  // signed-in owner's sites is still 'pending' once that subscription
+  // has actually loaded, jump straight to VerifyFlow for it instead of
+  // defaulting to step 1. A freshly-created site (handleSiteCreated)
+  // still wins immediately without waiting on the subscription.
+  const [createdSite, setCreatedSite] = useState<VerifiedSite | null>(null);
+  const resumableSite = sites.find((s) => s.status === 'pending') || null;
+  const activeSite: VerifiedSite | null =
+    createdSite ||
+    (resumableSite ? { id: resumableSite.id, url: resumableSite.url, hostname: resumableSite.name } : null);
+  // Only matters while no site has been created THIS session yet —
+  // once createdSite is set we already know what to render and don't
+  // need to wait on the subscription.
+  const waitingOnSites = !createdSite && user != null && sitesDashState === 'loading';
 
   function handleSiteCreated(created: VerifiedSite) {
-    setActiveSite(created);
+    setCreatedSite(created);
   }
 
   function handleVerified() {
@@ -84,6 +106,12 @@ export default function ConnectFlowClient() {
   }
 
   if (!authReady) return <GlobalLoader variant="inline" fullScreen label="Loading" />;
+
+  // Signed in, but we don't yet know whether this owner already has a
+  // pending (unverified) site to resume — wait for useSites' first
+  // snapshot rather than flashing step 1 and then yanking the owner
+  // into step 2 a moment later.
+  if (waitingOnSites) return <GlobalLoader variant="inline" fullScreen label="Loading" />;
 
   if (authError) {
     return (
