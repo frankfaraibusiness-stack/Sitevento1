@@ -71,9 +71,9 @@
    (public/mascot/hero-bg-desktop.jpg — mascot + "Sitevento.com"
    building, right two-thirds; dark night sky, left third), full-
    bleed from the true top of the viewport. Nothing here is reused
-   from the mobile cartoon hero's markup/classes (.hero/.hero__*/
-   .rotator/.cartoon-hero--desktop are all gone) — only the shared
-   .btn/.btn-primary/.btn-secondary CTA button styles further below
+   from the mobile cartoon hero's markup/classes (.hero, .hero__*,
+   .rotator, .cartoon-hero--desktop are all gone) — only the shared
+   .btn, .btn-primary, .btn-secondary CTA button styles further below
    are intentionally kept in common with mobile. ---- */
 @media (min-width: 1024px) {
   .hero-section-desktop {
