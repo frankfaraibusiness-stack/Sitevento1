@@ -86,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="sitevento" content="l0dLdie2mQCIkkJB77or" />
         <script
           src="https://sitevento12.vercel.app/sitevento.js"
-          data-site="l0dLdie2mQCIkkJB77or"
+          data-site="l0dLdie2mQCIkkJB77orK"
           defer
         />
         {/* Baloo 2 / Fredoka / Nunito — used by the cartoon mobile hero
