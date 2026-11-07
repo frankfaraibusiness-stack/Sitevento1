@@ -1,0 +1,781 @@
+/* ============================================================
+ * styles/agent/agent-page.css
+ *
+ * Stylesheet for /dashboard/agent (components/agent/AgentPageClient.tsx
+ * and friends: AgentFeatureGrid, AgentModelPicker, AgentCountryBlocker,
+ * AgentVerifyPanel, AgentBlob). Own `agt-` prefix, same convention as
+ * `wgp-`/`wdg-`.
+ *
+ * Colour model: same approach as the dashboard, SECURITY BOT, and
+ * profile pages — every surface, line and accent is a colour-mix of
+ * var(--app-bg), the live background <html>/<body> paint (base.css),
+ * including a user's custom Theme Colour from Settings > Appearance.
+ * hooks/useBgTone.ts measures that background and AgentPageClient.tsx
+ * sets data-tone="light|dark" on .agt-main from it, which only flips
+ * which ink reads legibly. The lime blob/switch/plan-pill accent
+ * (var(--lime)) is kept as a fixed brand constant on top of that —
+ * same deliberate choice as the profile page's token bar/Upgrade
+ * button — since it's sitevento's own mascot colour, not a generic
+ * "positive" tint that should drift with a custom theme colour.
+ *
+ * Layout: single column on phone; a real two-column desktop shell
+ * once there's room (.agt-cols) — the builder (model picker,
+ * Permissions grid, country/timezone) in a wide left column, and the
+ * install-status panel + master switch + Save action grouped as one
+ * sticky panel on the right, so Save stays in view while scrolling
+ * through 20 feature rows instead of trailing behind a very tall
+ * single column. See AgentPageClient.tsx's own comment on .agt-cols.
+ * ============================================================ */
+
+.agt {
+  --agt-bg: var(--app-bg);
+
+  /* light tone = dark ink on a light page (default) */
+  --agt-ink: #14121c;
+  --agt-on-ink: #ffffff;
+  --agt-panel: color-mix(in srgb, var(--agt-bg) 10%, #ffffff 90%);
+  --agt-panel-2: color-mix(in srgb, var(--agt-bg) 22%, #ffffff 78%);
+  --agt-pop: color-mix(in srgb, var(--agt-bg) 6%, #ffffff 94%);
+  --agt-line: color-mix(in srgb, #14121c 86%, var(--agt-bg) 14%);
+  --agt-a: #3d22c4;
+  --agt-a-ink: #ffffff;
+  --agt-bad: #b3261e;
+  --agt-warn: #9a5a06;
+  --agt-ok: #0b7a47;
+
+  color-scheme: light;
+}
+
+.agt[data-tone='dark'] {
+  --agt-ink: #f6f4ff;
+  --agt-on-ink: #14121c;
+  --agt-panel: color-mix(in srgb, var(--agt-bg) 88%, #000000 12%);
+  --agt-panel-2: color-mix(in srgb, var(--agt-bg) 76%, #000000 24%);
+  --agt-pop: color-mix(in srgb, var(--agt-bg) 92%, #000000 8%);
+  --agt-line: color-mix(in srgb, #ffffff 78%, var(--agt-bg) 22%);
+  --agt-a: #b8e843;
+  --agt-a-ink: #14121c;
+  --agt-bad: #ff8a80;
+  --agt-warn: #ffc266;
+  --agt-ok: #7be0a1;
+  color-scheme: dark;
+}
+
+.agt {
+  --agt-ink-2: color-mix(in srgb, var(--agt-ink) 72%, transparent);
+  --agt-ink-3: color-mix(in srgb, var(--agt-ink) 54%, transparent);
+  --agt-soft: color-mix(in srgb, var(--agt-ink) 8%, transparent);
+  --agt-shadow: color-mix(in srgb, var(--agt-line) 100%, transparent);
+
+  --agt-bad-soft: color-mix(in srgb, var(--agt-bad) 14%, var(--agt-panel));
+  --agt-bad-line: color-mix(in srgb, var(--agt-bad) 45%, var(--agt-line));
+  --agt-ok-soft: color-mix(in srgb, var(--agt-ok) 14%, var(--agt-panel));
+  --agt-ok-line: color-mix(in srgb, var(--agt-ok) 40%, var(--agt-line));
+  --agt-purple-soft: color-mix(in srgb, #7c5cfc 16%, var(--agt-panel));
+  --agt-purple-line: color-mix(in srgb, #7c5cfc 40%, var(--agt-line));
+  --agt-purple-ink: color-mix(in srgb, #4a2fd1 70%, var(--agt-ink) 30%);
+  --agt-blue-soft: color-mix(in srgb, #2f8fe0 16%, var(--agt-panel));
+  --agt-blue-line: color-mix(in srgb, #2f8fe0 40%, var(--agt-line));
+  --agt-blue-ink: color-mix(in srgb, #175a92 70%, var(--agt-ink) 30%);
+
+  color: var(--agt-ink);
+}
+
+.agt *,
+.agt *::before,
+.agt *::after {
+  box-sizing: border-box;
+}
+
+.agt :is(button, a, input, select):focus-visible {
+  outline: 3px solid var(--agt-a);
+  outline-offset: 2px;
+}
+
+.agt-main {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--app-bg);
+  padding: 104px 16px 120px;
+  display: flex;
+  justify-content: center;
+}
+
+.agt-wrap {
+  width: 100%;
+  max-width: clamp(980px, 68vw, 1240px);
+}
+
+.agt-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 10px;
+  margin-bottom: 18px;
+  border: 1.5px solid var(--agt-line);
+  border-radius: 999px;
+  background: var(--agt-panel);
+  color: var(--agt-ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--agt-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.agt-back svg { width: 16px; height: 16px; flex-shrink: 0; }
+.agt-back:hover { background: var(--agt-pop); transform: translateY(-1px); }
+.agt-back:active { transform: translateY(0) scale(0.98); box-shadow: 1px 1px 0 var(--agt-shadow); }
+
+/* ── Page head — the one "hero" moment: a themed card with a soft
+   lime glow behind it and the blob peeking out of the corner. The
+   card itself is a colour-mix of the live background (not a fixed
+   near-black), so the lime glow reads as an accent on top of this
+   page's own theme instead of a one-off dark panel. ── */
+.agt-head {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 26px;
+  padding: 26px 26px 24px;
+  border-radius: 24px;
+  border: 1.5px solid var(--agt-line);
+  background: var(--agt-panel-2);
+  box-shadow: 4px 4px 0 var(--agt-shadow);
+  isolation: isolate;
+}
+.agt-head::before {
+  content: '';
+  position: absolute;
+  top: -70px;
+  right: -60px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, var(--lime, #b8e843) 0%, transparent 68%);
+  opacity: 0.45;
+  z-index: 0;
+  pointer-events: none;
+}
+.agt-head-blob {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  width: 76px;
+  z-index: 1;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3));
+}
+.agt-head-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding-right: 96px;
+}
+.agt-head-top h1 { margin: 0; }
+.agt-head h1 {
+  margin: 0 0 6px;
+  font-family: var(--font-display, system-ui), system-ui, sans-serif;
+  font-size: 1.7em;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--agt-ink);
+}
+.agt-head p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--agt-ink-2);
+  max-width: 52ch;
+  padding-right: 60px;
+}
+
+p.agt-row-note {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--agt-ink-2);
+}
+
+/* ── Desktop two-column shell ──────────────────────────────────────
+ * Phone (default): one natural column, same order as the JSX
+ * (.agt-col-main then .agt-col-side) — no grid needed.
+ * Desktop: a wide builder column plus a narrower side column that
+ * sticks in view (install status + master switch + Save), so Save is
+ * always reachable without scrolling back up past 20 feature rows. */
+.agt-cols {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 960px) {
+  .agt-cols {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 28px;
+  }
+  .agt-col-main {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .agt-col-side {
+    flex: 0 0 300px;
+    width: 300px;
+    position: sticky;
+    top: calc(56px + 20px + env(safe-area-inset-top, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  /* The verify panel and save bar sit stacked in the side column at
+     desktop widths instead of each spanning full width in document
+     flow — .agt-verify's own margin-bottom would double up with the
+     column's gap, so it's zeroed here only. */
+  .agt-col-side .agt-verify { margin-bottom: 0; }
+  .agt-col-side .agt-save-bar { margin-top: 0; position: static; }
+}
+
+/* ── Permissions section ──────────────────────────────────────────── */
+.agt-section { margin-bottom: 24px; }
+
+.agt-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.agt-section-title {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--agt-ink-3);
+}
+.agt-feature-count {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--agt-ink-2);
+  white-space: nowrap;
+}
+
+.agt-feat-group { margin-bottom: 22px; }
+.agt-feat-group:last-child { margin-bottom: 0; }
+.agt-feat-group-title {
+  margin: 0 0 8px;
+  font-family: var(--font-display, system-ui), system-ui, sans-serif;
+  font-size: 14.5px;
+  font-weight: 750;
+  color: var(--agt-ink);
+}
+
+.agt-group {
+  background: var(--agt-panel);
+  border: 1.5px solid var(--agt-line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 3px 3px 0 var(--agt-shadow);
+}
+
+.agt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1.5px solid var(--agt-line);
+  transition: background 0.12s ease;
+}
+.agt-row:last-child { border-bottom: none; }
+.agt-row-top { align-items: flex-start; }
+.agt-row:not(.is-locked):hover { background: var(--agt-pop); }
+.agt-row.is-locked { background: var(--agt-soft); }
+
+.agt-row-stack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.agt-row-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--agt-ink);
+}
+
+.agt-row-stack .agt-row-note {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--agt-ink-2);
+  max-width: 440px;
+}
+
+.agt-cost-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--agt-purple-soft);
+  color: var(--agt-purple-ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.agt-lock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px 2px 7px;
+  border: none;
+  border-radius: 999px;
+  background: var(--agt-ink);
+  color: var(--agt-on-ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+.agt-lock-pill svg { width: 11px; height: 11px; }
+.agt-lock-pill:hover { opacity: 0.8; }
+
+/* ── Switch — lime fill is the page's main "on" signal ────────────── */
+.agt-switch {
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1.5px solid var(--agt-line);
+  padding: 2px;
+  background: var(--agt-soft);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.agt-switch.is-on { background: var(--lime, #b8e843); border-color: var(--lime-ink, #1a1f0a); }
+.agt-switch:disabled { cursor: not-allowed; opacity: 0.55; }
+.agt-switch-knob {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--agt-pop);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.agt-switch.is-on .agt-switch-knob { transform: translateX(18px); background: var(--lime-ink, #1a1f0a); }
+
+@media (max-width: 420px) {
+  .agt-main { padding: 96px 12px 110px; }
+  .agt-head { padding: 22px 20px 20px; border-radius: 20px; }
+  .agt-head h1 { font-size: 1.4em; }
+  .agt-head-top { padding-right: 70px; }
+  .agt-head p { padding-right: 0; }
+  .agt-head-blob { width: 56px; top: 14px; right: 14px; }
+  .agt-row { padding: 12px 14px; }
+}
+
+/* ============================================================
+ * Builder: plan pill, verify panel, model picker, country blocker,
+ * time zone select, upsell banner, save bar.
+ * ============================================================ */
+
+.agt-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--lime, #b8e843);
+  color: var(--lime-ink, #1a1f0a);
+  border: 1.5px solid var(--lime-ink, #1a1f0a);
+}
+.agt-plan-pro-developer,
+.agt-plan-scale { background: var(--agt-purple-soft); color: var(--agt-purple-ink); border-color: var(--agt-purple-line); }
+.agt-plan-starter { background: var(--agt-blue-soft); color: var(--agt-blue-ink); border-color: var(--agt-blue-line); }
+
+/* ── Verify panel — a themed status card, not a flat fixed green
+   chip: still unmistakably "good news" (ok-green ring + tick, green-
+   tinted border) but the surface and tint are colour-mixed from the
+   live --app-bg, same as every other card on this page, so it
+   belongs to the current theme instead of sitting on top of it. ── */
+.agt-verify {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  background: var(--agt-ok-soft);
+  border: 1.5px solid var(--agt-ok-line);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--agt-ok) 22%, var(--agt-shadow));
+}
+.agt-verify-badge {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--agt-pop);
+  border: 1.5px solid var(--agt-purple-line);
+  color: var(--agt-purple-ink);
+}
+.agt-verify-badge.is-verified { border-color: var(--agt-ok-line); color: var(--agt-ok); }
+.agt-verify-badge svg { width: 17px; height: 17px; }
+.agt-verify-badge svg path { display: none; }
+.agt-verify-badge.is-verified svg path { display: block; }
+.agt-verify-copy h5 {
+  margin: 0 0 4px;
+  font-family: -apple-system, sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--agt-ink);
+}
+.agt-verify-copy p {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--agt-ink-2);
+  max-width: 62ch;
+}
+.agt-verify-copy strong { color: var(--agt-ink); }
+
+/* ── Upsell banner — the one spot the blob does a little sales pitch,
+   with the lime/ink combo at full strength since it's a single call
+   to action and not competing with anything else on the page. ──── */
+.agt-upsell-banner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 18px 14px 86px;
+  margin-bottom: 14px;
+  border: 1.5px solid var(--agt-line);
+  border-radius: 18px;
+  background: linear-gradient(120deg, var(--agt-pop) 0%, var(--agt-panel-2) 55%, var(--agt-pop) 100%);
+  box-shadow: 3px 3px 0 var(--agt-shadow);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.agt-upsell-banner:hover { transform: translateY(-1px); box-shadow: 4px 4px 0 var(--agt-shadow); }
+.agt-upsell-banner:active { transform: translateY(0) scale(0.99); box-shadow: 1px 1px 0 var(--agt-shadow); }
+.agt-upsell-blob {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 64px;
+  flex-shrink: 0;
+}
+.agt-upsell-copy {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--agt-ink-2);
+  max-width: 54ch;
+}
+.agt-upsell-copy strong { color: var(--agt-ink); }
+.agt-upsell-cta {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--lime, #b8e843);
+  color: var(--lime-ink, #1a1f0a);
+  border: 1.5px solid var(--lime-ink, #1a1f0a);
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .agt-upsell-banner { flex-wrap: wrap; padding: 44px 16px 14px 16px; }
+  .agt-upsell-blob { left: 14px; top: 10px; transform: none; width: 44px; }
+  .agt-upsell-cta { margin-left: auto; }
+}
+
+/* ── Model picker ────────────────────────────────────────────────── */
+.agt-model-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 620px) { .agt-model-grid { grid-template-columns: 1fr; } }
+
+.agt-model-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1.5px solid var(--agt-line);
+  background: var(--agt-panel);
+  cursor: pointer;
+  text-align: left;
+  font-family: -apple-system, sans-serif;
+  box-shadow: 2px 2px 0 var(--agt-shadow);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.1s ease;
+}
+.agt-model-card:hover { transform: translateY(-1px); box-shadow: 3px 3px 0 var(--agt-shadow); }
+.agt-model-card:active { transform: translateY(0) scale(0.99); box-shadow: 1px 1px 0 var(--agt-shadow); }
+.agt-model-card.is-selected { border-color: var(--agt-a); box-shadow: 3px 3px 0 color-mix(in srgb, var(--agt-a) 55%, var(--agt-shadow)); background: var(--agt-pop); }
+.agt-model-card.is-locked { opacity: 0.68; }
+
+.agt-model-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.agt-model-name { font-size: 16px; font-weight: 750; color: var(--agt-ink); font-family: var(--font-display, system-ui), system-ui, sans-serif; }
+.agt-model-tagline { font-size: 11.5px; font-weight: 750; color: var(--agt-ink-2); text-transform: uppercase; letter-spacing: 0.03em; }
+.agt-model-desc { font-size: 12.5px; line-height: 1.5; color: var(--agt-ink-2); margin-top: 2px; }
+
+.agt-model-check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--lime, #b8e843);
+  color: var(--lime-ink, #1a1f0a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px var(--agt-pop), 0 0 0 3px var(--lime-ink, #1a1f0a);
+}
+.agt-model-check svg { width: 12px; height: 12px; }
+
+.agt-lock-pill-static { cursor: default; }
+
+/* ── Country blocker ─────────────────────────────────────────────── */
+.agt-country-box {
+  border: 1.5px solid var(--agt-line);
+  border-radius: 18px;
+  background: var(--agt-panel);
+  padding: 14px;
+  margin-bottom: 24px;
+  box-shadow: 2px 2px 0 var(--agt-shadow);
+}
+.agt-country-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.agt-country-search {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1.5px solid var(--agt-line);
+  border-radius: 10px;
+  background: var(--agt-pop);
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  color: var(--agt-ink);
+}
+.agt-country-search::placeholder { color: var(--agt-ink-3); }
+.agt-country-search:focus { outline: none; border-color: var(--agt-a); }
+.agt-country-count {
+  flex-shrink: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--agt-ink-2);
+  white-space: nowrap;
+}
+
+.agt-country-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.agt-country-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--agt-line);
+  background: var(--agt-ink);
+  color: var(--agt-on-ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+.agt-country-chip svg { width: 11px; height: 11px; }
+.agt-country-chip:hover { opacity: 0.82; }
+
+.agt-country-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background: var(--agt-pop);
+  border: 1.5px solid var(--agt-line);
+}
+.agt-country-empty { padding: 14px; }
+.agt-country-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1.5px solid var(--agt-line);
+  cursor: pointer;
+  font-family: -apple-system, sans-serif;
+}
+.agt-country-row:last-child { border-bottom: none; }
+.agt-country-row:hover { background: var(--agt-soft); }
+.agt-country-row.is-on { background: color-mix(in srgb, var(--lime, #b8e843) 20%, transparent); }
+.agt-country-row input { width: 15px; height: 15px; flex-shrink: 0; accent-color: var(--agt-a); }
+.agt-country-name { flex: 1; font-size: 13px; color: var(--agt-ink); }
+.agt-country-code { font-size: 11px; font-weight: 700; color: var(--agt-ink-3); letter-spacing: 0.03em; }
+
+/* ── Time zone ────────────────────────────────────────────────────── */
+.agt-tz-note { margin-bottom: 10px; }
+.agt-tz-select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--agt-line);
+  border-radius: 12px;
+  background: var(--agt-pop);
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  color: var(--agt-ink);
+  margin-bottom: 24px;
+}
+.agt-tz-select:focus { outline: none; border-color: var(--agt-a); }
+
+/* ── Save bar ─────────────────────────────────────────────────────── */
+.agt-save-bar {
+  position: sticky;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--agt-panel);
+  border: 1.5px solid var(--agt-line);
+  box-shadow: 4px 4px 0 var(--agt-shadow);
+}
+.agt-master { display: flex; align-items: center; gap: 10px; }
+.agt-master-label {
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--agt-ink);
+}
+.agt-save-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.agt-clamp-note { color: var(--agt-warn); max-width: 28ch; }
+.agt-saved-note {
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--agt-ok);
+}
+
+@media (min-width: 960px) {
+  /* In the side column, the two controls are the whole card's
+     content — let them wrap to their own lines at the column's
+     narrower 300px width instead of forcing one cramped row. */
+  .agt-col-side .agt-save-bar { flex-direction: column; align-items: stretch; }
+  .agt-col-side .agt-save-right { justify-content: space-between; }
+}
+
+@media (max-width: 420px) {
+  .agt-save-bar { bottom: 8px; flex-direction: column; align-items: stretch; }
+  .agt-save-right { justify-content: space-between; }
+}
+
+/* ============================================================
+ * AgentBlob (components/agent/AgentBlob.tsx) — small lime slime
+ * character, same body-path technique as hero-slime.css but scaled
+ * and placed for this page's own spots (page head, upsell banner).
+ * Lime/ink here stay the fixed brand mascot colours (not re-tinted
+ * from --app-bg) — this is the character's own skin, same as the
+ * page's switch/plan-pill accent.
+ * ============================================================ */
+.agt-blob {
+  display: block;
+  line-height: 0;
+}
+.agt-blob-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.agt-blob-wrap {
+  transform-origin: 60px 100px;
+  animation: agt-blob-idle 3.8s ease-in-out infinite;
+}
+.agt-blob-body {
+  fill: var(--lime, #b8e843);
+  stroke: var(--lime-ink, #1a1f0a);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+.agt-blob-shine {
+  fill: #ffffff;
+  opacity: 0.5;
+  transform: rotate(-16deg);
+  transform-origin: 46px 46px;
+}
+.agt-blob-shadow {
+  fill: #000;
+  opacity: 0.12;
+}
+.agt-blob-eye-white { fill: var(--lime-ink, #1a1f0a); }
+.agt-blob-eye-pupil { fill: var(--lime, #b8e843); }
+.agt-blob-eye { transform-origin: center; transition: transform 120ms ease-out; }
+.agt-blob-eyes.is-blinking .agt-blob-eye { transform: scaleY(0.08); }
+.agt-blob-wink {
+  fill: none;
+  stroke: var(--lime-ink, #1a1f0a);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.agt-blob-mouth {
+  fill: none;
+  stroke: var(--lime-ink, #1a1f0a);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+@keyframes agt-blob-idle {
+  0%   { transform: scale(1, 1); }
+  25%  { transform: scale(1.02, 0.97); }
+  50%  { transform: scale(0.985, 1.02); }
+  75%  { transform: scale(1.012, 0.99); }
+  100% { transform: scale(1, 1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agt-blob-wrap { animation: none !important; }
+}

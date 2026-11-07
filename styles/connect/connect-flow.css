@@ -1,0 +1,960 @@
+/* ============================================================
+ * styles/connect/connect-flow.css
+ *
+ * Styles for components/connect/ConnectFlow.tsx — the "Connect your
+ * site" page, step 1 (domain + live registration lookup). Ported
+ * faithfully from the supplied design (cartoonic, 3D, lime-on-ink
+ * palette, glass header) — same tokens, same shapes, same shadows.
+ *
+ * Scoped: every rule here lives under .cwz-* / .cwz-root so nothing
+ * collides with the rest of the app's CSS. This file is imported only
+ * by app/dashboard/connect/page.tsx, so it ships in that route's own
+ * chunk rather than the global stylesheet every page downloads — same
+ * trick as app/dashboard/wallet/page.tsx's own scoped import.
+ *
+ * The design's header (logo left, step-aware "Next" button right) is
+ * this page's OWN header. components/layout/GlobalNav.tsx (the
+ * app-wide bottom tab bar on mobile / top nav strip on desktop,
+ * rendered from app/layout.tsx on every other route) is deliberately
+ * hidden on this one route — see GlobalNav's own
+ * pathname === '/dashboard/connect' exception — since it would
+ * otherwise double up with this header on desktop (both fixed,
+ * top: 0) and is redundant here either way (this page IS where its
+ * own "Add site" button already sends people).
+ * ============================================================ */
+
+.cwz-root {
+  /* real tokens, ported 1:1 from the design */
+  --cwz-bg: #c1b5f7;
+  --cwz-header-bg: rgba(255, 255, 255, 0.4);
+  --cwz-ink: #1a1a1a;
+  --cwz-lime: #b8e62e;
+  --cwz-lime-dark: #8fbf1a;
+  --cwz-lime-deep: #6f9912;
+  --cwz-lime-glow: #d4ff5c;
+  --cwz-header-height: 64px;
+
+  --cwz-step-inactive: rgba(26, 26, 26, 0.25);
+  --cwz-step-active: #1a1a1a;
+  --cwz-track-bg: rgba(26, 26, 26, 0.12);
+
+  --cwz-stroke-dark: #1a1a1a;
+
+  --cwz-card-bg: #ffffff;
+  --cwz-card-border: #1a1a1a;
+  --cwz-card-shadow: rgba(26, 26, 26, 0.18);
+  --cwz-card-radius: 20px;
+
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--cwz-bg);
+  color: var(--cwz-ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* ── fixed header – glass effect, black bottom border ── */
+.cwz-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--cwz-header-height);
+  background: var(--cwz-header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  /* Below every real overlay in the app (auth 100, upsell 220/230,
+     monetization 260, settings/widget popups 200-350, modals up to
+     2400, GlobalLoader's boot screen 9999, toast 10000 — see those
+     files' own z-index comments) so AuthOverlay, UpsellOverlay (both
+     used on this page — see ConnectFlowClient.tsx) and anything else
+     that opens on top of this route still fully covers it instead of
+     this header floating above a modal that's supposed to be modal.
+     Still above ordinary page content (this page's own .cwz-* content
+     has no z-index of its own, so the default stacking order already
+     puts a later-painted fixed element on top either way — this is
+     just making that explicit and giving a little headroom). */
+  z-index: 40;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ── logo — real sitevento mark ──────────────────────── */
+/* The logo image itself is the full sitevento wordmark/branding, not
+   a square icon — same asset and same treatment as the main site
+   header's .nav-logo (styles/marketing/marketing-nav.css): a fixed
+   height with width left to `auto` so it renders at its natural
+   wide aspect ratio, no border-radius/cropping. No separate text
+   span next to it; that duplicated the branding the image already
+   carries. */
+.cwz-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.cwz-logo img {
+  display: block;
+  height: 36px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* ── right side – Next button ──────────────────────────── */
+.cwz-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.cwz-next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cwz-lime);
+  color: var(--cwz-stroke-dark);
+  border: 2px solid var(--cwz-stroke-dark);
+  border-radius: 40px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+  box-shadow: 0 3px 0 var(--cwz-stroke-dark), 0 4px 10px rgba(26, 26, 26, 0.15);
+  white-space: nowrap;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.cwz-next-btn:hover:not(:disabled) {
+  background: var(--cwz-lime-glow);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--cwz-stroke-dark), 0 6px 14px rgba(26, 26, 26, 0.2);
+}
+
+.cwz-next-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--cwz-stroke-dark), 0 2px 6px rgba(26, 26, 26, 0.15);
+}
+
+.cwz-next-btn .cwz-next-arrow {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.cwz-next-btn .cwz-next-word {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cwz-next-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 3px 0 var(--cwz-stroke-dark);
+  background: var(--cwz-lime);
+}
+
+/* ── page content wrapper ─────────────────────────────── */
+.cwz-content {
+  padding-top: calc(var(--cwz-header-height) + 28px);
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 20px;
+  /* GlobalNav (components/layout/GlobalNav.tsx) is hidden on this
+     route entirely — see its own pathname === '/dashboard/connect'
+     exception — so content only needs its own breathing room at the
+     bottom, not clearance for a bottom tab bar that isn't rendered
+     here. */
+  padding-bottom: 40px;
+  background: transparent;
+}
+
+/* ── live step tracker ─────────────────────────────────── */
+.cwz-tracker {
+  width: 100%;
+  max-width: 680px;
+  margin-bottom: 32px;
+  user-select: none;
+}
+
+.cwz-tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.cwz-tracker-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cwz-stroke-dark);
+  opacity: 0.9;
+}
+
+.cwz-tracker-count {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cwz-stroke-dark);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cwz-tracker-count .cwz-current {
+  font-size: 1rem;
+}
+
+.cwz-tracker-count .cwz-divider {
+  opacity: 0.5;
+  margin: 0 2px;
+}
+
+.cwz-tracker-count .cwz-total {
+  opacity: 0.65;
+}
+
+.cwz-progress-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: var(--cwz-track-bg);
+  border-radius: 999px;
+  overflow: visible;
+  margin-bottom: 18px;
+  border: 1.5px solid rgba(26, 26, 26, 0.3);
+}
+
+.cwz-progress-fill {
+  position: absolute;
+  top: -1.5px;
+  left: -1.5px;
+  height: calc(100% + 3px);
+  background: var(--cwz-stroke-dark);
+  border-radius: 999px;
+  border: 1.5px solid var(--cwz-stroke-dark);
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cwz-progress-dots {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 0;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.cwz-progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(26, 26, 26, 0.15);
+  border: 2.5px solid var(--cwz-bg);
+  box-shadow: 0 0 0 1.5px rgba(26, 26, 26, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+  margin: 0 -1px;
+}
+
+.cwz-progress-dot.cwz-done {
+  background: var(--cwz-stroke-dark);
+  border-color: var(--cwz-stroke-dark);
+  box-shadow: 0 0 0 1.5px rgba(26, 26, 26, 0.2);
+}
+
+.cwz-progress-dot.cwz-current {
+  background: var(--cwz-stroke-dark);
+  border-color: var(--cwz-bg);
+  box-shadow: 0 0 0 2.5px var(--cwz-stroke-dark), 0 0 0 5px rgba(26, 26, 26, 0.1);
+  transform: scale(1.2);
+  z-index: 1;
+}
+
+.cwz-step-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+  margin-top: 2px;
+}
+
+.cwz-step-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--cwz-step-inactive);
+  transition: color 0.3s ease, font-weight 0.3s ease;
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
+  padding: 0 2px;
+  word-break: break-word;
+}
+
+.cwz-step-label.cwz-active {
+  color: var(--cwz-stroke-dark);
+  font-weight: 700;
+}
+
+.cwz-step-label.cwz-done {
+  color: var(--cwz-stroke-dark);
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* ── wizard content area ──────────────────────────────── */
+.cwz-stage {
+  width: 100%;
+  max-width: 680px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 8px;
+}
+
+/* 3D cartoonic URL input group */
+.cwz-input-group {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: cwzInputAppear 0.4s ease-out;
+}
+
+@keyframes cwzInputAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cwz-input-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cwz-stroke-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 4px;
+}
+
+.cwz-input-label svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.cwz-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #ffffff;
+  border: 3px solid var(--cwz-stroke-dark);
+  border-radius: 16px;
+  padding: 2px 2px 2px 4px;
+  box-shadow:
+    0 5px 0 var(--cwz-stroke-dark),
+    0 8px 20px rgba(26, 26, 26, 0.18),
+    inset 0 2px 4px rgba(26, 26, 26, 0.05);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.cwz-input-wrapper:hover {
+  box-shadow:
+    0 6px 0 var(--cwz-stroke-dark),
+    0 10px 24px rgba(26, 26, 26, 0.22),
+    inset 0 2px 4px rgba(26, 26, 26, 0.05);
+  transform: translateY(-1px);
+}
+
+.cwz-input-wrapper:focus-within {
+  box-shadow:
+    0 5px 0 var(--cwz-stroke-dark),
+    0 0 0 4px rgba(184, 230, 46, 0.45),
+    0 10px 26px rgba(26, 26, 26, 0.22),
+    inset 0 2px 4px rgba(26, 26, 26, 0.05);
+  transform: translateY(0);
+}
+
+.cwz-url-prefix-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--cwz-lime);
+  border: 2px solid var(--cwz-stroke-dark);
+  box-shadow: inset 0 -2px 0 rgba(26, 26, 26, 0.15);
+  margin-right: 4px;
+}
+
+.cwz-url-prefix-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.cwz-url-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cwz-stroke-dark);
+  padding: 10px 6px;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+}
+
+.cwz-url-input::placeholder {
+  color: rgba(26, 26, 26, 0.32);
+  font-weight: 500;
+}
+
+.cwz-url-submit-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--cwz-lime-dark);
+  border: 2px solid var(--cwz-stroke-dark);
+  box-shadow: 0 2px 0 var(--cwz-stroke-dark), inset 0 -2px 0 rgba(26, 26, 26, 0.18);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+  margin-left: 2px;
+}
+
+.cwz-url-submit-arrow:hover {
+  background: var(--cwz-lime-glow);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 var(--cwz-stroke-dark), inset 0 -2px 0 rgba(26, 26, 26, 0.18);
+}
+
+.cwz-url-submit-arrow:active {
+  transform: translateY(2px);
+  box-shadow: 0 0px 0 var(--cwz-stroke-dark), inset 0 1px 0 rgba(26, 26, 26, 0.2);
+}
+
+.cwz-url-submit-arrow svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--cwz-stroke-dark);
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── domain info card (3D cartoonic) ───────────────────── */
+.cwz-domain-card {
+  width: 100%;
+  max-width: 560px;
+  margin: 18px auto 0;
+  background: var(--cwz-card-bg);
+  border: 3px solid var(--cwz-card-border);
+  border-radius: var(--cwz-card-radius);
+  box-shadow:
+    0 6px 0 var(--cwz-card-border),
+    0 12px 28px var(--cwz-card-shadow),
+    inset 0 2px 4px rgba(26, 26, 26, 0.04);
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: cwzCardPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes cwzCardPop {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  60% {
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cwz-domain-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--cwz-lime);
+  border-bottom: 2px solid var(--cwz-card-border);
+}
+
+.cwz-domain-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.cwz-domain-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--cwz-lime);
+  border: 2.5px solid var(--cwz-card-border);
+  box-shadow: 0 3px 0 var(--cwz-card-border);
+  flex-shrink: 0;
+}
+
+.cwz-domain-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cwz-domain-card-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.cwz-domain-card-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--cwz-card-border);
+  letter-spacing: -0.01em;
+  word-break: break-all;
+  line-height: 1.3;
+}
+
+.cwz-domain-card-title.cwz-no-data {
+  opacity: 0.35;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.cwz-domain-card-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--cwz-lime);
+  border: 1.5px solid var(--cwz-card-border);
+  color: var(--cwz-card-border);
+  margin-top: 4px;
+  box-shadow: 0 1.5px 0 var(--cwz-card-border);
+}
+
+.cwz-domain-card-badge.cwz-status-available {
+  background: #ffd966;
+}
+
+.cwz-domain-card-badge.cwz-status-registered {
+  background: var(--cwz-lime);
+}
+
+.cwz-domain-card-badge.cwz-status-error {
+  background: #ffb3b3;
+}
+
+.cwz-domain-card-badge.cwz-status-idle {
+  background: #e6e1f7;
+  opacity: 0.7;
+}
+
+.cwz-domain-card-badge.cwz-status-checking {
+  background: #ffe9a8;
+}
+
+.cwz-domain-card-divider {
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--cwz-card-border) 0px,
+    var(--cwz-card-border) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  opacity: 0.12;
+  border-radius: 2px;
+}
+
+.cwz-domain-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cwz-domain-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cwz-domain-info-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #f5f2ff;
+  border: 2px solid var(--cwz-card-border);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cwz-domain-info-row-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--cwz-card-border);
+  stroke-width: 2;
+  fill: none;
+}
+
+.cwz-domain-info-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cwz-domain-info-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cwz-card-border);
+  opacity: 0.5;
+}
+
+.cwz-domain-info-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cwz-card-border);
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.cwz-domain-info-value.cwz-muted {
+  opacity: 0.35;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.cwz-domain-card-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0;
+  color: var(--cwz-card-border);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.cwz-loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(26, 26, 26, 0.12);
+  border-top-color: var(--cwz-lime-dark);
+  border-radius: 50%;
+  animation: cwzSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes cwzSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cwz-domain-card-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff0f0;
+  border: 2px solid var(--cwz-card-border);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cwz-card-border);
+}
+
+.cwz-domain-card-error svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  stroke: #cc3333;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+/* ── limit-reached banner ──────────────────────────────── */
+.cwz-limit-banner {
+  width: 100%;
+  max-width: 560px;
+  margin: 18px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fff0f0;
+  border: 2.5px solid var(--cwz-card-border);
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cwz-card-border);
+  box-shadow: 0 4px 0 var(--cwz-card-border);
+}
+
+.cwz-limit-banner svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  stroke: #cc3333;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.cwz-limit-banner-upgrade {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: var(--cwz-lime);
+  color: var(--cwz-stroke-dark);
+  border: 2px solid var(--cwz-stroke-dark);
+  border-radius: 30px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 var(--cwz-stroke-dark);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.cwz-limit-banner-upgrade:hover {
+  background: var(--cwz-lime-glow);
+  transform: translateY(-1px);
+}
+
+/* ── sign-in gate ───────────────────────────────────────── */
+.cwz-root > .cwz-signin-gate {
+  /* Rendered standalone (no header) while the auth overlay is open on
+     top of it — centered in the full viewport rather than flowed
+     under a header that isn't there. */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+.cwz-signin-gate {
+  width: calc(100% - 40px);
+  max-width: 420px;
+  margin: 40px auto 0;
+  text-align: center;
+  background: var(--cwz-card-bg);
+  border: 3px solid var(--cwz-card-border);
+  border-radius: var(--cwz-card-radius);
+  box-shadow: 0 6px 0 var(--cwz-card-border), 0 12px 28px var(--cwz-card-shadow);
+  padding: 32px 24px;
+}
+
+.cwz-signin-gate h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.cwz-signin-gate p {
+  font-size: 0.9rem;
+  opacity: 0.65;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.cwz-signin-gate button {
+  background: var(--cwz-lime);
+  color: var(--cwz-stroke-dark);
+  border: 2px solid var(--cwz-stroke-dark);
+  border-radius: 40px;
+  padding: 10px 24px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 3px 0 var(--cwz-stroke-dark);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.cwz-signin-gate button:hover {
+  background: var(--cwz-lime-glow);
+  transform: translateY(-1px);
+}
+
+/* ── responsive tweaks ─────────────────────────────────── */
+@media (max-width: 520px) {
+  .cwz-root {
+    --cwz-header-height: 58px;
+  }
+  .cwz-header {
+    padding: 0 14px;
+  }
+  .cwz-logo img {
+    height: 32px;
+  }
+  .cwz-next-btn {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+  }
+  .cwz-next-btn .cwz-next-word {
+    font-size: 0.78rem;
+  }
+  .cwz-step-labels {
+    display: none;
+  }
+  .cwz-tracker-header {
+    margin-bottom: 10px;
+  }
+  .cwz-content {
+    padding-top: calc(var(--cwz-header-height) + 22px);
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .cwz-input-group {
+    max-width: 100%;
+  }
+  .cwz-input-wrapper {
+    border-radius: 14px;
+    padding: 2px;
+  }
+  .cwz-url-prefix-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .cwz-url-prefix-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .cwz-url-input {
+    font-size: 0.95rem;
+    padding: 9px 4px;
+  }
+  .cwz-url-submit-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .cwz-url-submit-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+  .cwz-domain-card {
+    padding: 18px 16px 16px;
+    border-radius: 16px;
+  }
+  .cwz-domain-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  .cwz-domain-card-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .cwz-domain-card-title {
+    font-size: 0.95rem;
+  }
+  .cwz-domain-info-value {
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .cwz-next-btn .cwz-next-word {
+    display: none;
+  }
+  .cwz-next-btn {
+    padding: 7px 10px;
+  }
+  .cwz-url-input {
+    font-size: 0.88rem;
+  }
+  .cwz-input-label {
+    font-size: 0.82rem;
+  }
+  .cwz-domain-info-row-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+  }
+  .cwz-domain-info-row-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ── large-desktop polish ──────────────────────────────── */
+@media (min-width: 1100px) {
+  .cwz-tracker,
+  .cwz-stage {
+    max-width: 720px;
+  }
+}
