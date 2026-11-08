@@ -2516,12 +2516,21 @@
     // eligible 'popup' ad right now — any single format failing/
     // returning ok:false never blocks or delays the others.
     function requestAd(format) {
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timeoutId = controller
+        ? setTimeout(function () {
+            controller.abort();
+          }, 10000)
+        : null;
+
       fetch(AD_SERVE_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ siteId: siteId, pageUrl: location.href, format: format }),
+        signal: controller ? controller.signal : undefined,
       })
         .then(function (res) {
+          if (timeoutId) clearTimeout(timeoutId);
           return res.json().catch(function () {
             return { ok: false };
           });
@@ -2537,7 +2546,8 @@
           // requestWidget() above. Only ever logged in debug mode.
         })
         .catch(function () {
-          // Network failure — this one format's slot just never
+          if (timeoutId) clearTimeout(timeoutId);
+          // Network failure/timeout — this one format's slot just never
           // mounts; every other format's own request is unaffected.
         });
     }
