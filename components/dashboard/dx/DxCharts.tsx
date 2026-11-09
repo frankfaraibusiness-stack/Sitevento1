@@ -72,6 +72,10 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
   const { ref, width } = useWidth<HTMLDivElement>();
   const gid = useId().replace(/:/g, '');
   const [hover, setHover] = useState<number | null>(null);
+  // Separate flag for touch vs mouse: on touch, the tip is "pinned" once set
+  // and only clears on an explicit tap elsewhere (or outside) — a touchend
+  // fires pointerleave immediately, which used to clear it instantly.
+  const pinnedRef = useRef(false);
 
   const compact = width > 0 && width < 520;
   const height = compact ? 220 : 280;
@@ -103,16 +107,42 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
   const empty = n === 0 || series.every((p) => p[metric] === 0);
   const drawKey = `${series[0]?.t ?? 0}-${n}-${metric}`;
 
-  function onMove(e: ReactPointerEvent<SVGRectElement>) {
-    if (!geo || n === 0) return;
+  function indexFromEvent(e: ReactPointerEvent<SVGRectElement>): number {
     const rect = (e.currentTarget as SVGRectElement).getBoundingClientRect();
     const px = e.clientX - rect.left;
     const i = n === 1 ? 0 : Math.round((px / rect.width) * (n - 1));
-    setHover(Math.min(n - 1, Math.max(0, i)));
+    return Math.min(n - 1, Math.max(0, i));
+  }
+
+  function onMove(e: ReactPointerEvent<SVGRectElement>) {
+    if (!geo || n === 0) return;
+    if (e.pointerType === 'touch') pinnedRef.current = true;
+    setHover(indexFromEvent(e));
+  }
+
+  function onLeave(e: ReactPointerEvent<SVGRectElement>) {
+    // Mouse: clear on leave as before. Touch: a touchend/cancel also fires
+    // pointerleave, but the point should stay pinned until the user taps
+    // elsewhere, so skip clearing for touch.
+    if (e.pointerType === 'touch') return;
+    setHover(null);
   }
 
   const active = hover !== null && geo ? series[hover] : null;
   const tipLeft = hover !== null && geo ? geo.x(hover) : 0;
+
+  // Dismiss a pinned (touch) tooltip when the user taps anywhere outside
+  // this chart, since there's no pointerleave to rely on for touch.
+  useEffect(() => {
+    if (hover === null || !pinnedRef.current) return;
+    function onOutside(e: PointerEvent) {
+      if (ref.current && e.target instanceof Node && ref.current.contains(e.target)) return;
+      pinnedRef.current = false;
+      setHover(null);
+    }
+    document.addEventListener('pointerdown', onOutside);
+    return () => document.removeEventListener('pointerdown', onOutside);
+  }, [hover, ref]);
 
   return (
     <div className="dx-trend" ref={ref} style={{ height }}>
@@ -126,9 +156,14 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
         >
           <defs>
             <linearGradient id={`g${gid}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="var(--dx-a)" stopOpacity="0.34" />
+              <stop offset="0%" stopColor="var(--dx-a)" stopOpacity="0.38" />
+              <stop offset="55%" stopColor="var(--dx-a)" stopOpacity="0.12" />
               <stop offset="100%" stopColor="var(--dx-a)" stopOpacity="0" />
             </linearGradient>
+            <radialGradient id={`dot${gid}`}>
+              <stop offset="0%" stopColor="var(--dx-a)" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="var(--dx-a)" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
           {geo.ticks.map((t) => (
@@ -152,8 +187,10 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
             </text>
           ))}
 
-          {!empty && <path d={geo.area} fill={`url(#g${gid})`} />}
-          {geo.sPts && !empty && <path d={linePath(geo.sPts)} className="dx-line-2" fill="none" />}
+          {!empty && <path key={`area-${drawKey}`} d={geo.area} fill={`url(#g${gid})`} className="dx-area" />}
+          {geo.sPts && !empty && (
+            <path key={`line2-${drawKey}`} d={linePath(geo.sPts)} className="dx-line-2" fill="none" pathLength={1} />
+          )}
           <path
             key={drawKey}
             d={geo.line}
@@ -163,8 +200,9 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
           />
 
           {active && hover !== null && (
-            <g>
+            <g className={pinnedRef.current ? 'dx-focus is-pinned' : 'dx-focus'}>
               <line x1={tipLeft} x2={tipLeft} y1={pad.t} y2={geo.base} className="dx-cross" />
+              <circle cx={tipLeft} cy={geo.pPts[hover][1]} r={13} fill={`url(#dot${gid})`} />
               <circle cx={tipLeft} cy={geo.pPts[hover][1]} r={5} className="dx-dot" />
               {geo.sPts && <circle cx={tipLeft} cy={geo.sPts[hover][1]} r={4} className="dx-dot-2" />}
             </g>
@@ -179,7 +217,7 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
             style={{ touchAction: 'pan-y' }}
             onPointerMove={onMove}
             onPointerDown={onMove}
-            onPointerLeave={() => setHover(null)}
+            onPointerLeave={onLeave}
           />
         </svg>
       )}
@@ -192,7 +230,7 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
 
       {active && geo && (
         <div
-          className="dx-tip"
+          className={pinnedRef.current ? 'dx-tip is-pinned' : 'dx-tip'}
           style={{ left: Math.min(Math.max(tipLeft, 86), Math.max(86, width - 86)) }}
           role="status"
         >
@@ -205,6 +243,19 @@ export function TrendChart({ series, metric, clicksAvailable }: TrendProps) {
           </span>
           {clicksAvailable && <span>{fmtNum(active.clicks)} clicks</span>}
           {active.blocked > 0 && <span className="is-bad">{fmtNum(active.blocked)} blocked</span>}
+          {pinnedRef.current && (
+            <button
+              type="button"
+              className="dx-tip-close"
+              aria-label="Close"
+              onClick={() => {
+                pinnedRef.current = false;
+                setHover(null);
+              }}
+            >
+              ×
+            </button>
+          )}
         </div>
       )}
     </div>

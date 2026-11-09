@@ -319,10 +319,15 @@ html[data-dx-tone] body { background: var(--dx-page-bg); }
 .dx-axis { fill: var(--dx-mut); font-family: var(--dx-font); font-size: 12px; }
 .dx-line {
   stroke: var(--dx-a); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--dx-a) 35%, transparent));
   stroke-dasharray: 1; stroke-dashoffset: 0; animation: dx-draw .9s ease-out both;
 }
-.dx-line.is-flat { stroke: var(--dx-mut); stroke-width: 2; animation: none; }
-.dx-line-2 { stroke: var(--dx-b); stroke-width: 2.5; stroke-dasharray: none; stroke-linecap: round; stroke-linejoin: round; }
+.dx-line.is-flat { stroke: var(--dx-mut); stroke-width: 2; animation: none; filter: none; }
+.dx-line-2 {
+  stroke: var(--dx-b); stroke-width: 2.5; stroke-dasharray: 1; stroke-dashoffset: 0;
+  stroke-linecap: round; stroke-linejoin: round; animation: dx-draw 1s ease-out both;
+}
+.dx-area { animation: dx-fade-in .6s ease-out both; }
 .dx-cross { stroke: var(--dx-mut); stroke-dasharray: 3 3; }
 .dx-trend-empty {
   position: absolute; inset: 0 0 28px 0; display: grid; place-items: center; margin: 0; padding: 0 16px;
@@ -330,15 +335,43 @@ html[data-dx-tone] body { background: var(--dx-page-bg); }
 }
 .dx-dot { fill: var(--dx-a); stroke: var(--dx-surface); stroke-width: 2.5; }
 .dx-dot-2 { fill: var(--dx-b); stroke: var(--dx-surface); stroke-width: 2.5; }
+.dx-focus .dx-dot { transform-box: fill-box; transform-origin: center; animation: dx-pop .22s ease-out both; }
+
 .dx-tip {
   position: absolute; top: 6px; z-index: 5; transform: translateX(-50%); display: grid; gap: 3px;
-  padding: 9px 12px; border-radius: 12px; pointer-events: none; white-space: nowrap;
-  background: var(--dx-ink); color: var(--dx-on-ink); font-size: .75em; line-height: 1.35;
-  box-shadow: var(--dx-shadow-pop);
+  padding: 10px 13px; border-radius: 14px; pointer-events: none; white-space: nowrap;
+  background: var(--dx-ink); color: var(--dx-on-ink); font-size: .75em; line-height: 1.4;
+  box-shadow: var(--dx-shadow-pop), 0 0 0 1px color-mix(in srgb, var(--dx-on-ink) 10%, transparent);
+  animation: dx-tip-in .15s ease-out both;
 }
+.dx-tip::after {
+  content: ''; position: absolute; left: 50%; top: -5px; width: 10px; height: 10px;
+  transform: translateX(-50%) rotate(45deg); background: var(--dx-ink); border-radius: 2px;
+}
+.dx-tip.is-pinned { pointer-events: auto; padding-right: 30px; }
 .dx-tip strong { font-size: 1.04em; font-weight: 600; }
 .dx-tip .is-bad { color: #ff9d95; font-weight: 700; }
 .dx-tip .dx-sw { outline: 1.5px solid var(--dx-on-ink); }
+.dx-tip-close {
+  position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; min-height: 0;
+  display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
+  background: color-mix(in srgb, var(--dx-on-ink) 14%, transparent); color: var(--dx-on-ink);
+  font-size: 15px; line-height: 1; cursor: pointer;
+}
+.dx-tip-close:hover { background: color-mix(in srgb, var(--dx-on-ink) 22%, transparent); }
+
+@keyframes dx-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes dx-tip-in {
+  0% { opacity: 0; transform: translate(-50%, 4px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes dx-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
 
 .dx-feed {
   list-style: none; margin: 14px 0 0; padding: 0; border: 0; display: grid; gap: 6px;
