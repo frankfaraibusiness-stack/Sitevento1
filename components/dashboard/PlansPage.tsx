@@ -2,36 +2,22 @@
 
 // components/dashboard/PlansPage.tsx
 //
-// Standalone plan-comparison + switch page. Used to be a bottom-sheet
-// modal (`.feat-panel-sheet.prof-plan-sheet`) opened from
-// ProfilePage; it's now its own route (see
-// app/dashboard/plans/page.tsx) with its own SEO metadata, its own
-// dedicated stylesheet (styles/dashboard/plans-page.css, not the shared
-// .prof-plan-*/.feat-panel-* sheet classes), and gets GlobalNav for
-// free since that renders site-wide from app/layout.tsx.
+// Standalone plan-comparison + switch page (route:
+// app/dashboard/plans/page.tsx). No longer a modal — renders straight
+// on the app surface, GlobalNav comes from app/layout.tsx.
 //
-// Rebuilt as the app's premium "money page" — no boxed white
-// container, the cards sit straight on the real app-wide purple
-// --app-bg/glass surfaces (base.css / theme-tokens.css) like every
-// other dashboard screen, each plan card has a tactile raised/"press"
-// feel on hover+click (3D-card treatment in plans-page.css), and each
-// card carries its own icon + one-line "why upgrade" reason instead of
-// being a bare price+feature list. The full comparison renders as a
-// real table on wide screens and a stacked per-plan accordion on
-// phones (same COMPARE_ROWS data, two layouts).
+// All plan data (names, prices, limits, highlight copy) lives in
+// lib/plans.ts so this can't drift from /pricing or the homepage.
+// Plan changes write to users/{uid}.plan via useUserProfile.setPlan —
+// no billing provider wired up yet.
 //
-// Plan changes still write straight to users/{uid}.plan via
-// useUserProfile.setPlan — no billing provider wired up yet, same as
-// before. Plan data (names, prices, limits, highlight copy) all comes
-// from lib/plans.ts so this can't drift from /pricing or the homepage
-// pricing cards.
+// Styling is intentionally class-name only. Drop plans-page.css in
+// later; nothing in this file assumes a specific visual treatment.
 import { useState } from 'react';
 import type { User } from 'firebase/auth';
 import type { Site } from '@/lib/types';
 import { PLANS, getPlan, type PlanId } from '@/lib/plans';
-import { dailyTokenLimit } from '@/lib/limits';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { overageMicrocentsPerBundle, microcentsToUsd, OVERAGE_TOKEN_BUNDLE_SIZE } from '@/lib/wallet';
 
 interface PlansPageProps {
   user: User;
@@ -44,11 +30,16 @@ function nextPlan(id: PlanId) {
   return PLANS[i + 1];
 }
 
+// Comparison rows. Values are read directly from each plan's limits
+// object — monthly tokens and monthly visits are the source of truth
+// (matches the pricing page limits: 1k/50k/400k/1M visits,
+// 30k/300k/1M/3M tokens, 1/3/5/10 sites, 0/2/5/10 seats).
 const COMPARE_ROWS: Array<{
   label: string;
   value: (plan: ReturnType<typeof getPlan>) => string;
 }> = [
   { label: 'Connected sites', value: (p) => `${p.limits.connectedSites}` },
+  { label: 'Team seats', value: (p) => (p.limits.teamSeats === 0 ? 'None' : `${p.limits.teamSeats}`) },
   { label: 'Widgets configured per site', value: (p) => `${p.limits.widgetsPerSite}` },
   { label: 'Live widgets per site', value: (p) => `${p.limits.liveWidgetsPerSite}` },
   {
@@ -60,29 +51,48 @@ const COMPARE_ROWS: Array<{
           : 'Unlimited'
         : `${p.limits.historyRetentionDays} days`,
   },
+  {
+    label: 'Visits per month',
+    value: (p) =>
+      p.limits.visitsPerMonth === null
+        ? 'Unlimited'
+        : p.limits.visitsPerMonth >= 1_000_000
+          ? `${(p.limits.visitsPerMonth / 1_000_000).toFixed(0)}M`
+          : p.limits.visitsPerMonth >= 1_000
+            ? `${(p.limits.visitsPerMonth / 1_000).toFixed(0)}k`
+            : `${p.limits.visitsPerMonth}`,
+  },
+  {
+    label: 'Tokens per month',
+    value: (p) =>
+      p.limits.tokensPerMonth === null
+        ? 'Unlimited'
+        : p.limits.tokensPerMonth >= 1_000_000
+          ? `${(p.limits.tokensPerMonth / 1_000_000).toFixed(0)}M`
+          : p.limits.tokensPerMonth >= 1_000
+            ? `${(p.limits.tokensPerMonth / 1_000).toFixed(0)}k`
+            : `${p.limits.tokensPerMonth}`,
+  },
+  { label: 'Data export', value: (p) => (p.limits.dataExport ? (p.limits.fullDataExport ? 'Full (CSV + API)' : 'CSV') : 'No') },
   { label: 'Block visitors', value: (p) => (p.limits.canBlockVisitors ? 'Yes' : 'No') },
   { label: 'Live overlays', value: (p) => (p.limits.liveOverlays ? 'Yes' : 'No') },
   { label: 'Automation rules per site', value: (p) => (p.limits.automation ? `${p.limits.automationRulesPerSite}` : 'No') },
   { label: 'Custom logo branding', value: (p) => (p.limits.customLogoBranding ? 'Yes' : 'No') },
-  { label: 'Team seats', value: (p) => `${p.limits.teamSeats}` },
-  {
-    label: 'Daily token limit',
-    value: (p) => {
-      const limit = dailyTokenLimit(p.id);
-      return limit === null ? 'Unlimited' : `${limit.toLocaleString()}/day`;
-    },
-  },
   {
     label: 'Support',
     value: (p) =>
-      p.limits.support === 'community' ? 'Community' : p.limits.support === 'email' ? 'Email' : p.limits.support === 'priority' ? 'Priority' : 'Dedicated',
+      p.limits.support === 'community'
+        ? 'Community'
+        : p.limits.support === 'email'
+          ? 'Email'
+          : p.limits.support === 'priority'
+            ? 'Priority'
+            : 'Dedicated 24/7',
   },
 ];
 
-// Per-plan icon + one-line "why upgrade" reason, shown on every card
-// so the grid sells the plan instead of just listing it. Purely
-// presentational — keyed off PlanId so it can't drift from lib/plans.ts
-// if a plan is ever renamed, only added to if a new plan id appears.
+// Per-plan icon + one-line "why upgrade" reason. Purely presentational
+// — keyed off PlanId so it can't drift from lib/plans.ts.
 const PLAN_STORY: Record<PlanId, { icon: JSX.Element; reason: string }> = {
   free: {
     icon: (
@@ -100,7 +110,7 @@ const PLAN_STORY: Record<PlanId, { icon: JSX.Element; reason: string }> = {
     ),
     reason: 'Unlock visitor blocking + overlays once one site isn’t enough.',
   },
-  scale: {
+  plus: {
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 21h18M6 21V10l6-6 6 6v11M9 21v-6h6v6" />
@@ -108,26 +118,20 @@ const PLAN_STORY: Record<PlanId, { icon: JSX.Element; reason: string }> = {
     ),
     reason: 'Built for a real portfolio — automation + priority support.',
   },
-  'pro-developer': {
+  premium: {
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+        <path d="M12 2l2.6 7.2H22l-6 4.7 2.3 7.1-6.3-4.5-6.3 4.5 2.3-7.1-6-4.7h7.4z" />
       </svg>
     ),
     reason: 'Max headroom for agencies running sites at real scale.',
   },
 };
 
-export function PlansPage({ user, sites }: PlansPageProps) {
-  void user;
+export function PlansPage({ user }: PlansPageProps) {
   const { planId, setPlan } = useUserProfile(user);
   const plan = getPlan(planId);
   const upgrade = nextPlan(planId);
-
-  const usedCount = sites.length;
-  const limit = plan.limits.connectedSites;
-  const atLimit = usedCount >= limit;
-  const usagePct = Math.min(100, (usedCount / Math.max(limit, 1)) * 100);
 
   const [switching, setSwitching] = useState<PlanId | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -159,26 +163,6 @@ export function PlansPage({ user, sites }: PlansPageProps) {
           <p>Switch anytime. Changes apply immediately, no proration surprises — and every plan keeps the same one-script-tag setup.</p>
         </div>
 
-        <div className={`plans-usage-banner${atLimit ? ' is-urgent' : ''}`}>
-          <div className="plans-usage-glow" aria-hidden="true" />
-          <div className="plans-usage-top">
-            <span className="plans-usage-pill">{plan.name} plan</span>
-            {atLimit && <span className="plans-usage-urgent-pill">Limit reached</span>}
-          </div>
-          <h2>{plan.price === 0 ? 'You’re on Free' : `${plan.priceDisplay}/mo — ${plan.name}`}</h2>
-          <p>
-            {usedCount} of {limit} connected site{limit === 1 ? '' : 's'} used.
-          </p>
-          <div className="plans-usage-track" aria-hidden="true">
-            <div className="plans-usage-fill" style={{ width: `${usagePct}%` }} />
-          </div>
-          {atLimit && upgrade && (
-            <button type="button" className="plans-usage-cta" onClick={() => handleChoosePlan(upgrade.id)} disabled={switching !== null}>
-              {switching === upgrade.id ? 'Switching…' : `Upgrade to ${upgrade.name} for more room`}
-            </button>
-          )}
-        </div>
-
         <div className="plans-toolbar">
           <h3>All plans</h3>
           <a className="plans-back-link" href="/dashboard">
@@ -194,7 +178,10 @@ export function PlansPage({ user, sites }: PlansPageProps) {
             const current = p.id === planId;
             const story = PLAN_STORY[p.id];
             return (
-              <div key={p.id} className={`plans-card${current ? ' is-current' : ''}${p.featured && !current ? ' is-featured' : ''}`}>
+              <div
+                key={p.id}
+                className={`plans-card${current ? ' is-current' : ''}${p.featured && !current ? ' is-featured' : ''}`}
+              >
                 {p.featured && !current && <span className="plans-card-badge">Most popular</span>}
                 {current && <span className="plans-card-badge is-current">Current plan</span>}
 
@@ -208,17 +195,7 @@ export function PlansPage({ user, sites }: PlansPageProps) {
                   {p.priceDisplay}
                   <span>/mo</span>
                 </p>
-                <p className="plans-card-writes">
-                  {dailyTokenLimit(p.id) === null
-                    ? 'Unlimited free tokens/day'
-                    : `${dailyTokenLimit(p.id)!.toLocaleString()} free tokens/day`}
-                </p>
-                {dailyTokenLimit(p.id) !== null && (
-                  <p className="plans-card-overage">
-                    Extra {OVERAGE_TOKEN_BUNDLE_SIZE.toLocaleString()} tokens: $
-                    {microcentsToUsd(overageMicrocentsPerBundle(p.id)).toFixed(2)} per bundle
-                  </p>
-                )}
+
                 <ul className="plans-card-features">
                   {p.cardHighlights.map((f) => (
                     <li key={f}>{f}</li>
@@ -243,7 +220,7 @@ export function PlansPage({ user, sites }: PlansPageProps) {
         <div className="plans-compare">
           <h3>Full comparison</h3>
 
-          {/* Desktop/tablet: real table, horizontally scrollable if needed. */}
+          {/* Wide screens: real table, horizontally scrollable if needed. */}
           <div className="plans-compare-scroll">
             <table className="plans-compare-table">
               <thead>
@@ -271,15 +248,18 @@ export function PlansPage({ user, sites }: PlansPageProps) {
             </table>
           </div>
 
-          {/* Mobile: one stacked accordion card per plan — same COMPARE_ROWS
-             data, no sideways table scrolling. Defaults open on the user's
-             current plan. */}
+          {/* Phones: one stacked accordion card per plan — same
+             COMPARE_ROWS data, no sideways scrolling. Defaults open
+             on the user's current plan. */}
           <div className="plans-compare-mobile">
             {PLANS.map((p) => {
               const open = mobileCompareOpen === p.id;
               const current = p.id === planId;
               return (
-                <div key={p.id} className={`plans-compare-m-card${current ? ' is-current' : ''}${open ? ' is-open' : ''}`}>
+                <div
+                  key={p.id}
+                  className={`plans-compare-m-card${current ? ' is-current' : ''}${open ? ' is-open' : ''}`}
+                >
                   <button
                     type="button"
                     className="plans-compare-m-head"
@@ -294,7 +274,15 @@ export function PlansPage({ user, sites }: PlansPageProps) {
                       {p.priceDisplay}
                       <span>/mo</span>
                     </span>
-                    <svg className="plans-compare-m-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="plans-compare-m-chev"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M6 9l6 6 6-6" />
                     </svg>
                   </button>
