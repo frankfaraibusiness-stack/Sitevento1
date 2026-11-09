@@ -1,0 +1,546 @@
+/* ============================================================
+ * global-nav.css — GlobalNav (components/layout/GlobalNav.tsx).
+ *
+ * Two navs, rendered together from app/layout.tsx, present on every
+ * route — CSS media queries show exactly one at a time:
+ *
+ * Mobile (<860px): the cartoon-styled sticky glassy bottom nav
+ * (.gnav-cartoon-root etc., near the end of this file), ported as-is
+ * from the provided HTML file. A raised circular lime Upload button
+ * sits in the middle, straddling the bar's top edge; Home/Explore
+ * (left) and Stats/Profile (right) are quiet icon buttons either
+ * side of it. Replaces the old floating pill nav at this breakpoint
+ * (see the `.gnav-root { display: none }` rule below).
+ *
+ * Desktop (>=860px): rebuilt to share mobile's own "cartoon" glass
+ * material (hard #12100A border, cream glass fill, offset shadow,
+ * Fredoka labels, animated lime/purple gradient CTA) instead of the
+ * old flat neutral glass-pill capsule — see that block's own header
+ * comment, further down, for the full rationale. Same five items
+ * (.gnav-root/.gnav-pill/.gnav-item/.gnav-add), same class names, so
+ * GlobalNav.tsx itself needed no changes — this was a visual-only
+ * rebuild. They still sit centered inside the sticky top header's own
+ * row, each with its title showing next to its icon.
+ * ============================================================ */
+
+  .gnav-root {
+    position: fixed;
+    left: 0;
+    right: 0;
+    /* Above normal page content, but below the slide-out sidebar's
+       scrim/panel (z-index 40/50 in sidebar.css — so an open
+       sidebar fully covers this nav's bottom bar rather than it
+       poking through the drawer's lower edge) and below every modal
+       overlay (auth: 100/110, connect wizard: 200/210). */
+    z-index: 30;
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* re-enabled on .gnav-pill itself */
+  }
+
+  .gnav-pill {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Default (desktop-first fallback): no visual grouping — the two
+     wrapper divs around LEFT_ITEMS/RIGHT_ITEMS (GlobalNav.tsx) don't
+     create their own flex box, so all five children (2 items, the
+     "+" button, 2 items) lay out in .gnav-pill's own single flex row,
+     same as before the wrappers were added. Mobile (below) turns each
+     wrapper into its own real flex group instead. */
+  .gnav-group {
+    display: contents;
+  }
+
+  .gnav-item {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .gnav-item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .gnav-item-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .gnav-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Was var(--cream-deep) (#efe7d3) — a flat, slightly dingy beige/
+     brown that read as "dirty" rather than intentional. A dark
+     ink-to-charcoal gradient disc with a crisp off-white initial on
+     top reads as a deliberate premium avatar placeholder instead of
+     a muddy neutral, and still has strong contrast sitting on the
+     lime pill. */
+  .gnav-avatar-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #2b2f27, #14160f);
+    color: #f6f7f0;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .gnav-add {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--lime);
+    color: var(--lime-ink);
+    border: 1.5px solid var(--lime-ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .gnav-add svg {
+    display: block;
+  }
+
+  /* ============================================================
+   * Mobile (<860px): the old floating pill nav is hidden here — fully
+   * replaced below 860px by the cartoon sticky bottom nav
+   * (.gnav-cartoon-root, see the dedicated section near the end of
+   * this file, ported from the source HTML as-is). Desktop (>=860px,
+   * below) is untouched. ---------------------------------------- */
+  @media (max-width: 859px) {
+    .gnav-root {
+      display: none;
+    }
+  }
+
+  /* ============================================================
+   * Desktop nav, >=860px — FULL REBUILD, replacing the old flat
+   * glass-pill capsule outright (same class names — .gnav-root/
+   * .gnav-pill/.gnav-item/.gnav-add — so GlobalNav.tsx needed no
+   * changes; this is purely the visual layer).
+   *
+   * Instead of a generic translucent capsule borrowed from
+   * theme-tokens.css's neutral surface system, this now uses the
+   * exact same "cartoon" material the mobile bottom nav already
+   * owns (.gnav-cartoon-root below): a crisp #12100A hard border,
+   * a warm frosted-cream glass fill, a hard offset drop-shadow
+   * instead of a soft blurred one, Fredoka for the nav labels, and
+   * the animated lime/purple --brand-mix-gradient on the one
+   * primary action (Add site) with the same dashed spinning ring
+   * the mobile Upload button wears. The goal was literally "copy
+   * the mobile nav's look" scaled up into a full-width desktop bar
+   * with labels shown, rather than inventing a second unrelated
+   * style — so now there is exactly one visual language for
+   * navigation chrome across breakpoints, not two.
+   *
+   * .gnav-root is now a real full-width bar (not just a centering
+   * strip for a small pill) sitting in the header's row; .gnav-pill
+   * is the bar's own glass surface, full-width within a max content
+   * column so it still breathes on ultra-wide screens. A sliding
+   * active indicator is intentionally skipped in favor of each
+   * item's own raised lime pill (.gnav-item.is-active) — matches
+   * mobile's per-item active treatment instead of a desktop-only
+   * mechanic mobile doesn't share. */
+  @media (min-width: 860px) {
+    .gnav-root {
+      top: 0;
+      bottom: auto;
+      left: 0;
+      right: 0;
+      height: calc(64px + env(safe-area-inset-top, 0px));
+      padding: env(safe-area-inset-top, 0px) 20px 0;
+      justify-content: center;
+      align-items: center;
+      /* Sit in the same stacking position as <header> (z-index: 10,
+         base.css) rather than above modals/sidebar — it's part of the
+         header now, not a floating overlay. */
+      z-index: 10;
+    }
+
+    .gnav-pill {
+      pointer-events: auto;
+      position: relative;
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      gap: 3px;
+      background: rgba(255, 253, 245, 0.72);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 2px solid #12100A;
+      border-radius: 20px;
+      padding: 7px 9px;
+      box-shadow:
+        0 4px 0 -1px rgba(18, 16, 10, 0.9),
+        0 10px 22px -10px rgba(18, 16, 10, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .gnav-item {
+      flex-direction: row;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 13px;
+      position: relative;
+      background: none;
+      font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .gnav-item-icon {
+      width: 18px;
+      height: 18px;
+      transition: transform 160ms ease;
+    }
+
+    /* Each option gets its own visible title next to the icon. */
+    .gnav-item-label {
+      display: inline-block;
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .gnav-avatar,
+    .gnav-avatar-initial {
+      width: 19px;
+      height: 19px;
+      font-size: 10.5px;
+    }
+
+    .gnav-item:hover {
+      background: rgba(18, 16, 10, 0.07);
+    }
+
+    .gnav-item:hover .gnav-item-icon {
+      transform: translateY(-1px);
+    }
+
+    /* Active item: raised lime pill with a dark ink border + hard
+       offset shadow — the same 3D cartoonic button language the
+       mobile Upload button and .gnav-add below use, so "selected"
+       reads identically across breakpoints instead of desktop using
+       a flatter, unrelated highlight. */
+    .gnav-item.is-active {
+      background: var(--lime);
+      color: var(--lime-ink);
+      border: 1.5px solid var(--lime-ink);
+      padding: 7.5px 14.5px;
+      box-shadow: 0 2px 0 var(--lime-ink), 0 4px 10px rgba(26, 31, 10, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .gnav-item.is-active:hover {
+      background: var(--lime);
+      transform: translateY(-1px);
+    }
+
+    .gnav-item:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    /* "Add site" — the bar's one primary action, now built from the
+       exact same parts as the mobile Upload button: the animated
+       lime/purple gradient fill, a hard ink border + offset shadow,
+       and the slow dashed spinning ring around it (::after below) —
+       instead of a flat lime circle. */
+    .gnav-add {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      gap: 0;
+      padding: 0;
+      margin: 0 6px;
+      flex-shrink: 0;
+      position: relative;
+      background: var(--brand-mix-gradient);
+      background-size: 200% 200%;
+      animation: gnavDesktopMixShift 6s ease-in-out infinite;
+      color: #12100A;
+      border: 2px solid #12100A;
+      box-shadow: 0 3px 0 0 #12100A, 0 6px 14px -6px rgba(18, 16, 10, 0.35);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .gnav-add::after {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 2px dashed rgba(18, 16, 10, 0.3);
+      animation: gnavDesktopUploadRing 8s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gnavDesktopMixShift {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    @keyframes gnavDesktopUploadRing {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .gnav-add svg {
+      width: 17px;
+      height: 17px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .gnav-add:hover {
+      transform: translateY(-1px) scale(1.05);
+      box-shadow: 0 4px 0 0 #12100A, 0 8px 18px -6px rgba(18, 16, 10, 0.4);
+    }
+
+    .gnav-add:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 1px 0 0 #12100A, 0 3px 8px -6px rgba(18, 16, 10, 0.35);
+    }
+
+    .gnav-add:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .gnav-add-label {
+      display: none;
+    }
+  }
+
+  /* Labels always show at every desktop width (>=860px) — icon-only
+     nav items are unclear about what they link to, so the title stays
+     next to the icon even in the narrower 860–1050px band. The row
+     shrinks its own gaps/padding here instead of dropping text, so it
+     still fits beside the header's logo + signup/hamburger cluster. */
+  @media (min-width: 860px) and (max-width: 1050px) {
+    .gnav-pill {
+      gap: 2px;
+      padding: 6px 7px;
+    }
+
+    .gnav-item {
+      gap: 6px;
+      padding: 8px 11px;
+    }
+
+    .gnav-item.is-active {
+      padding: 6.5px 9.5px;
+    }
+
+    .gnav-item-label {
+      font-size: 12.5px;
+    }
+
+    .gnav-add {
+      margin: 0 4px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gnav-add,
+    .gnav-add::after {
+      animation: none;
+    }
+    .gnav-item,
+    .gnav-add {
+      transition: none;
+    }
+  }
+
+  /* ============================================================
+   * Mobile (<860px): STICKY GLASSY BOTTOM NAV — ported as-is from the
+   * provided HTML file's <nav class="navbar"> (same colors, same
+   * glass/shadow treatment, same dashed spinning ring on the upload
+   * button), renamed .navbar* -> .gnav-cartoon-* so these classes
+   * can't collide with the same names used, separately, in
+   * styles/marketing/cartoon-mobile-hero.css's own .cartoon-hero
+   * scope. Gated to the same <860px breakpoint the old mobile pill
+   * nav used above, so exactly one nav shows per breakpoint — this
+   * one on mobile, .gnav-root's pill on desktop (>=860px, unchanged).
+   * Icons are wired to real routes/active state in GlobalNav.tsx
+   * (CARTOON_LEFT_ITEMS / CARTOON_RIGHT_ITEMS / renderCartoonItem),
+   * unlike the source HTML's static markup.
+   * ============================================================ */
+  .gnav-cartoon-root {
+    display: none;
+  }
+
+  @media (max-width: 859px) {
+    /* Was sized like a primary surface (near full-width, 50px-tall
+       items, thick border + heavy drop shadow) for something that's
+       just navigation chrome, not the app itself — it visually
+       dominated the bottom of the screen. Shrunk across the board so
+       it reads as a small, secondary floating bar instead of a big
+       dock. */
+    .gnav-cartoon-root {
+      position: fixed;
+      left: 50%;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      z-index: 30;
+      width: min(340px, calc(100vw - 48px));
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+
+      background: rgba(255, 253, 245, 0.55);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 2px solid #12100A;
+      border-radius: 18px;
+      box-shadow:
+        0 6px 0 -2px rgba(18, 16, 10, 0.9),
+        0 14px 28px -12px rgba(18, 16, 10, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .gnav-cartoon-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      gap: 0;
+      flex: 1 1 0;
+    }
+
+    .gnav-cartoon-item {
+      all: unset;
+      box-sizing: border-box;
+      position: relative;
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      min-height: 38px;
+      padding: 4px 3px;
+      background: transparent;
+      border-radius: 11px;
+      color: #12100A;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s ease, transform 0.12s ease;
+    }
+    .gnav-cartoon-item:active { transform: scale(0.94); }
+
+    /* Inert placeholder (no destination wired up) — same slot/shape,
+       dimmed and non-interactive rather than a dead link. */
+    .gnav-cartoon-item.is-disabled {
+      opacity: 0.38;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .gnav-cartoon-item svg {
+      width: 17px;
+      height: 17px;
+      display: block;
+    }
+
+    /* active pill state — was a solid, animated lime+purple gradient
+       with a thick black outline and hard drop shadow
+       (--brand-mix-gradient, 2px solid border, offset box-shadow),
+       which read as a loud, high-contrast block sitting on top of
+       the glassy bar and overpowered the rest of the nav. Softened
+       to a translucent, blurred pill instead — same glass language
+       as the bar itself (.gnav-cartoon-root's own backdrop-filter)
+       rather than a flat opaque shape — so the active item still
+       reads clearly without dominating the bar. No more outline/
+       shadow/animation. */
+    .gnav-cartoon-item.is-active {
+      background: rgba(18, 16, 10, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(18, 16, 10, 0.12);
+      box-shadow: none;
+    }
+    .gnav-cartoon-item.is-active svg {
+      color: #12100A;
+    }
+
+    /* upload circle — centre accent (shrunk along with the rest of
+       the bar, below) */
+    .gnav-cartoon-upload {
+      all: unset;
+      box-sizing: border-box;
+      position: relative;
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      margin: -16px 2px 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--brand-mix-gradient);
+      background-size: 200% 200%;
+      animation: gnavCartoonMixShift 6s ease-in-out infinite;
+      border: 2px solid #12100A;
+      box-shadow: 0 3px 0 0 #12100A, 0 6px 12px -6px rgba(18, 16, 10, 0.4);
+      color: #12100A;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    @keyframes gnavCartoonMixShift {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+    .gnav-cartoon-upload:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 0 #12100A, 0 3px 8px -6px rgba(18, 16, 10, 0.4);
+    }
+    .gnav-cartoon-upload::after {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 2px dashed rgba(18, 16, 10, 0.35);
+      animation: gnavCartoonUploadRing 8s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes gnavCartoonUploadRing {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .gnav-cartoon-upload svg {
+      width: 19px;
+      height: 19px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gnav-cartoon-upload::after {
+      animation: none;
+    }
+    .gnav-cartoon-upload {
+      animation: none;
+    }
+  }

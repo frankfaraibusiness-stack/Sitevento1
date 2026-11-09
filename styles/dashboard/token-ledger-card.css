@@ -1,0 +1,175 @@
+/* ============================================================
+ * token-ledger-card.css
+ *
+ * Styles components/dashboard/TokenLedgerCard.tsx — the permanent,
+ * never-expiring token balance shown beside DailyLimitCard on
+ * DashboardShell (compact) and ProfilePage (full). Shares the same
+ * --dnx-glass/--dnx-shadow/--lime tokens as daily-limit-card.css so
+ * the two read as a matched pair, but deliberately simpler: no glow
+ * pulse, no shimmer sweep, no tone-shifting urgency colors. There's
+ * nothing ticking down here, so nothing about this card should look
+ * like it's ticking down either.
+ * ============================================================ */
+
+@keyframes tlc-skel-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tlc-card, .tlc-card * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+.tlc-card {
+  position: relative;
+  border-radius: var(--dnx-radius, 22px);
+  border: 1.5px solid var(--dnx-glass-border, color-mix(in srgb, var(--lime-ink) 20%, transparent));
+  background: var(--dnx-glass, color-mix(in srgb, var(--lime) 22%, var(--cream) 78%));
+  box-shadow: var(--dnx-shadow, 0 10px 28px rgba(0,0,0,0.08));
+  padding: 18px 20px;
+  font-family: var(--dnx-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  margin-bottom: 26px;
+}
+
+.tlc-card.tlc-full { padding: 24px 26px 22px; }
+
+/* ---- top row: kicker + never-expires pill ---- */
+.tlc-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  margin-bottom: 14px;
+}
+.tlc-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dnx-ink-soft, color-mix(in srgb, var(--lime-ink) 62%, transparent));
+}
+.tlc-kicker svg { width: 14px; height: 14px; }
+.tlc-top h2 {
+  margin: 0;
+  flex-basis: 100%;
+  order: 3;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.tlc-never-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  background: var(--dash-green-surface);
+  color: var(--dash-green-ink);
+  border: 1.5px solid var(--dash-green-border);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 5px 11px;
+}
+
+/* ---- counter ---- */
+.tlc-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.tlc-counter-num {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tlc-counter-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dnx-ink-faint, color-mix(in srgb, var(--lime-ink) 44%, transparent));
+}
+
+.tlc-explainer {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--dnx-ink-soft, color-mix(in srgb, var(--lime-ink) 62%, transparent));
+}
+
+/* ---- breakdown rows ---- */
+.tlc-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+  border: 1.5px solid var(--dnx-glass-border, transparent);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+.tlc-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.tlc-breakdown-label {
+  color: var(--dnx-ink-soft, color-mix(in srgb, var(--lime-ink) 62%, transparent));
+  font-weight: 600;
+}
+.tlc-breakdown-value {
+  color: var(--ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- wallet link ---- */
+.tlc-wallet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--lime-ink);
+  cursor: pointer;
+}
+.tlc-wallet-link svg { width: 14px; height: 14px; }
+.tlc-wallet-link:hover { text-decoration: underline; }
+
+/* ---- loading skeleton ---- */
+.tlc-skeleton { display: flex; flex-direction: column; gap: 10px; }
+.tlc-skeleton-line {
+  height: 22px;
+  width: 60%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lime-ink) 10%, transparent) 25%,
+    color-mix(in srgb, var(--lime-ink) 18%, transparent) 50%,
+    color-mix(in srgb, var(--lime-ink) 10%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: tlc-skel-shimmer 1.4s ease-in-out infinite;
+}
+.tlc-skeleton-narrow { width: 40%; height: 14px; }
+
+/* ---- compact variant tweaks (dashboard strip context) ---- */
+.tlc-compact .tlc-counter-num { font-size: 24px; }
+.tlc-compact { padding: 16px 18px; }
