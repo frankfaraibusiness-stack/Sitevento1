@@ -56,52 +56,46 @@
     --cream: #FFFDF5;
 
     position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    /* Pulled up by the fixed header's own height so the background
-       image starts at the true top of the viewport, behind the
-       header's glass bar, instead of beginning underneath it — then
-       padding-top adds just that height back (plus a few px, not the
-       old 22px) so the title sits almost flush under the header
-       instead of leaving a visible gap. */
-    margin-top: calc(-1 * (56px + env(safe-area-inset-top, 0px)));
-    padding: calc(56px + env(safe-area-inset-top, 0px) + 6px) 22px 52px;
     color: var(--ink);
 
-    /* The hero's box was only ever as tall as its content (title +
-       copy + CTAs), so on narrow/short screens where that content is
-       shorter than the background photo, the box ended partway down
-       the image — cover then just hard-cropped it there, and the
-       laptop-showcase section below started on top of the
-       cut-off photo instead of after it. hero-bg-mobile.jpg is
-       720x1280 (aspect ratio ~1.778); min-height keeps the box at
-       least that tall relative to the viewport width so the full
-       photo always has room to show before the section ends,
-       whatever the content height is. Trimmed by 65px off the full
-       aspect-ratio height — the full photo made the hero too tall on
-       phones; this crops a bit off the bottom of the image (still
-       `cover`+`top center`, so nothing from the top/subject is lost)
-       instead of showing the whole thing. */
-    min-height: calc(100vw * 1280 / 720 - 65px);
-
-    /* Mascot/building photo fills the hero only — scoped here rather
-       than full-page so it hands off cleanly into the --app-bg purple
-       of the section below instead of scrolling behind everything. */
-    background-image: url('/mascot/hero-bg-mobile.jpg');
-    background-size: cover;
-    background-position: top center;
-    background-repeat: no-repeat;
+    /* No more full-bleed photo/tint behind the whole section — just the
+       app's own page background. The photo now lives only in
+       .hero__banner, directly below the header. */
+    background: var(--app-bg, #f6f3ff);
+    padding: 0 22px 52px;
   }
 
-  /* Curved bottom edge instead of a flat, full-width hard cut where
-     the photo meets the section below. A radial-gradient mask carves
-     a shallow scalloped curve (dips down in the middle, rises back up
-     at the corners) out of the hero's own bottom edge, so the photo
-     reads as an intentionally-shaped panel rather than a rectangle
-     that's just been clipped. Masks the whole .hero (photo + tint +
-     content together) so the curve is a true edge, not an overlay
-     shape painted on top. */
-  .hero {
+  /* ---------- banner: 16:9 photo band, title + one-line description ----
+     Same idea as the desktop hero (components/marketing/Hero.tsx's
+     .dhero): the mascot/building photo sits on the right, the left
+     side of the photo is kept clear, and the title + a single
+     trimmed sentence sit over that clear space. Unlike the old
+     full-hero photo, this band is a fixed 16:9 box, not a tall
+     portrait crop, and everything below it (CTAs, steps) sits on the
+     plain page background, not on the image. */
+  .hero__banner {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    /* Pulled up by the fixed header's own height so the photo starts
+       at the true top of the viewport, behind the header's glass bar,
+       instead of beginning underneath it. */
+    margin: calc(-1 * (56px + env(safe-area-inset-top, 0px))) -22px 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    aspect-ratio: 16 / 9;
+    width: calc(100% + 44px);
+
+    background-image: url('/mascot/hero-bg-desktop.jpg');
+    background-size: cover;
+    /* Right-weighted, same framing idea as the desktop hero: keeps
+       the mascot/building art visible on the right and leaves the
+       left side (dark sky) clear for the title/description. */
+    background-position: right center;
+    background-repeat: no-repeat;
+
+    /* Same curved bottom edge the old full hero used, so the banner
+       still reads as an intentionally-shaped panel rather than a
+       rectangle that's just been clipped. */
     -webkit-mask-image: radial-gradient(
       ellipse 60% 42px at 50% 100%,
       transparent 98%,
@@ -116,33 +110,82 @@
     mask-repeat: no-repeat;
   }
 
-  /* Dark tint over the whole photo, behind the content (z-index 1,
-     between the photo on .hero itself and .hero__layout's z-index
-     2). A light tint even at the very top (under the header, where
-     the headline sits) — the raw photo was still full brightness/
-     contrast there, which read as a jarring bright patch against the
-     tinted content below it; the headline's white fill + black
-     outline stays legible over a light tint just fine. Builds up
-     going down so the description/CTAs over the busier part of the
-     photo stand out. Stops at solid dark (not a fade into
-     --app-bg) — the old fade-to-purple tail read as a soft glow/haze
-     sitting between the hero and the laptop section below. .hero's
-     own `overflow: hidden` already gives a clean, flat bottom edge
-     (the photo+tint just end at the box's edge), so no separate crop
-     is needed here. */
-  .hero::after {
-    content: "";
+  /* Left-to-right scrim, same approach as the desktop hero's
+     .dhero__scrim — the photo's left side is already a dark sky with
+     plenty of contrast, this just keeps the title/description crisp
+     right up to the edge of the lighter art on the right. */
+  .hero__bannerScrim {
     position: absolute;
     inset: 0;
     z-index: 1;
-    pointer-events: none;
     background: linear-gradient(
-      to bottom,
-      rgba(8, 10, 20, 0.22) 0%,
-      rgba(8, 10, 20, 0.3) 30%,
-      rgba(8, 10, 20, 0.55) 62%,
-      rgba(8, 10, 20, 0.86) 100%
+      100deg,
+      rgba(5, 8, 20, 0.6) 0%,
+      rgba(5, 8, 20, 0.38) 42%,
+      rgba(5, 8, 20, 0.05) 72%
     );
+    pointer-events: none;
+  }
+
+  .hero__bannerContent {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    max-width: 62%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(56px + env(safe-area-inset-top, 0px)) 0 0 22px;
+    text-align: left;
+  }
+
+  .hero__banner .hero__title {
+    text-align: left;
+    font-size: clamp(18px, 7vw, 30px);
+  }
+
+  .hero__banner .hero__titleLine,
+  .hero__banner .rotator {
+    text-align: left;
+  }
+
+  .hero__banner .rotator {
+    place-items: start;
+    margin-top: 4px;
+    font-size: clamp(20px, 7.6vw, 34px);
+  }
+
+  .hero__banner .rotator__word {
+    text-align: left;
+    justify-self: start;
+  }
+
+  /* Trimmed to one sentence — the full two-clause description (still
+     used below the banner, in .hero__sub) doesn't fit the shallower
+     16:9 box the way it did the old full-height photo. */
+  .hero__bannerSub {
+    margin: 10px 0 0;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      0 1px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  @media (max-width: 380px) {
+    .hero__bannerSub {
+      font-size: 11px;
+    }
+  }
+
+  /* Desktop keeps its own title (inline with the CTAs/steps column,
+     below) instead of this banner copy, so the rotator animation only
+     runs once per screen rather than twice in parallel. */
+  .hero__title--inline {
+    display: none;
   }
 
   .hero__layout {
@@ -150,6 +193,9 @@
     z-index: 2;
     max-width: 1080px;
     margin: 0 auto;
+    /* Breathing room under the banner — .hero itself no longer has any
+       top padding (the banner handles its own spacing/offset above). */
+    padding-top: 22px;
   }
 
   .hero__inner {
@@ -227,19 +273,16 @@
   }
 
   /* ---------- description ---------- */
-  /* No card/box, no blur behind it either — the blur was reading as
-     a visible soft rectangle over the photo. Text sits directly on
-     the image now, kept legible with the text-shadow below instead.
-     Centered, and sized as a percentage of the hero's own width
-     (not a `ch` max-width) so the paragraph actually spans ~80-90%
-     of the hero rather than collapsing into a narrow centered
+  /* Full two-clause description, shown again here below the banner
+     (which only carries the trimmed one-sentence version) — this one
+     sits on the plain page background (.hero no longer carries a
+     photo), so it's dark ink instead of the white-on-photo treatment
+     the banner's copy uses. Sized as a percentage of the hero's own
+     width (not a `ch` max-width) so the paragraph actually spans
+     ~80-90% of the hero rather than collapsing into a narrow centered
      column of short, similar-width lines. Natural wrapping — plain
      text-align: center, no per-line markup — so line breaks fall
-     wherever the real text/viewport width puts them. Sits over the
-     dark tint (.hero::after) added over the lower part of the
-     photo, so it's white with a soft dark shadow now, same
-     direction as the headline above it, rather than the old dark
-     text tuned for sitting straight on bright sky. */
+     wherever the real text/viewport width puts them. */
   .cartoon-hero .hero__sub {
     margin: 18px auto 0;
     width: 88%;
@@ -248,16 +291,13 @@
     font-size: 13px;
     line-height: 1.55;
     font-weight: 700;
-    color: #FFFFFF;
+    color: var(--ink, #12100A);
     letter-spacing: 0.005em;
     text-align: center;
-    text-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.5),
-      0 1px 10px rgba(0, 0, 0, 0.4);
   }
   .cartoon-hero .hero__sub strong {
     font-weight: 800;
-    color: #FFFFFF;
+    color: var(--ink, #12100A);
   }
 
   /* ---------- CTAs ---------- */
@@ -435,7 +475,9 @@
     top: 26px;
     bottom: -8px;
     width: 1.5px;
-    background: rgba(255, 255, 255, 0.35);
+    /* Was white-on-photo; .hero is plain background now, so this
+       (and the two rules below) switched to the dark-ink family. */
+    background: rgba(18, 16, 10, 0.18);
   }
 
   .cartoon-hero .hero__stepNum {
@@ -445,9 +487,9 @@
     width: 19px;
     height: 19px;
     border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.55);
-    background: rgba(8, 10, 20, 0.35);
-    color: rgba(255, 255, 255, 0.85);
+    border: 1.5px solid rgba(18, 16, 10, 0.3);
+    background: rgba(18, 16, 10, 0.06);
+    color: rgba(18, 16, 10, 0.75);
     font-family: 'Fredoka', sans-serif;
     font-size: 10px;
     font-weight: 700;
@@ -459,8 +501,7 @@
     font-size: 12px;
     font-weight: 600;
     line-height: 1.3;
-    color: rgba(255, 255, 255, 0.72);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    color: rgba(18, 16, 10, 0.68);
   }
 
   /* ---------- platforms badge ---------- */

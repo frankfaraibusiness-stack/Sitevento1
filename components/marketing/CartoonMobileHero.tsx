@@ -165,9 +165,45 @@ export function SitesConnectedStat() {
 export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroContentProps) {
   return (
     <section className="hero" aria-labelledby="hero-title">
+      {/* Mobile-only 16:9 photo band, same photo/layout idea as the
+          desktop hero (components/marketing/Hero.tsx's .dhero): the
+          mascot/building art sits on the right, the left side is kept
+          clear, and the title + a single trimmed sentence of the
+          description sit over that clear left side. Hidden on desktop
+          (.cartoon-hero--desktop .hero__banner, marketing-hero.css) —
+          desktop already has its own full-height version of this. */}
+      <div className="hero__banner" aria-hidden="true">
+        <div className="hero__bannerScrim" />
+        <div className="hero__bannerContent">
+          <h1 className="hero__title" id="hero-title">
+            <span className="hero__titleLine">YOUR WEBSITE, FULLY</span>
+            <span className="rotator">
+              {ROTATOR_WORDS.map((word) => (
+                <span className="rotator__word" key={word}>
+                  {word}
+                </span>
+              ))}
+            </span>
+          </h1>
+
+          {/* Trimmed to the first sentence only — phones don't have the
+              room for the full two-clause description that the banner
+              photo used to carry when the whole hero sat on top of it. */}
+          <p className="hero__bannerSub">
+            Connect your site once and get a dedicated control centre, live
+            stats and controls.
+          </p>
+        </div>
+      </div>
+
       <div className="hero__layout">
         <div className="hero__inner">
-          <h1 className="hero__title" id="hero-title">
+          {/* Desktop keeps the title/rotator + full description here,
+              inline with the CTAs/steps column (see .cartoon-hero--desktop
+              overrides in marketing-hero.css) — mobile already showed
+              them in .hero__banner above, so they're skipped below
+              860px via the same CSS file. */}
+          <h1 className="hero__title hero__title--inline" aria-hidden="true">
             <span className="hero__titleLine">YOUR WEBSITE, FULLY</span>
             <span className="rotator">
               {ROTATOR_WORDS.map((word) => (
