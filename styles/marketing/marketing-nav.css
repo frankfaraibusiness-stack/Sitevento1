@@ -1,0 +1,214 @@
+/* ============================================================
+ * marketing-nav.css — shared top-nav styles (pill nav, hamburger,
+ * close button, signup pill, profile avatar).
+ *
+ * Previously marketing-content.css, which also held the styles for
+ * every marketing section below the hero (logo marquee, capabilities,
+ * FAQ, testimonials, stats, how-it-works, pricing). Those sections
+ * (and their styles) were removed — only Hero stays on the marketing
+ * page now — so this file was trimmed down to just the nav rules,
+ * which are genuinely shared (used by Header.tsx/layout, not
+ * marketing-only), and renamed accordingly.
+ * ============================================================ */
+
+
+  /* Header now blends flat into the page background (--app-bg) instead
+     of floating as a separate glass pill — the outer <header> element
+     itself (styles/base/base.css) is what's fixed/full-width; .pill-nav is
+     just its inner row, no longer a visually distinct capsule. */
+  /* Full-bleed row: logo flush to the left edge, nav-right flush to
+     the right edge. No max-width/auto-margin centering — those were
+     capping the bar at 640px and centering it in the middle of the
+     full-width <header>, which is what pushed the logo away from the
+     left edge and the avatar/hamburger away from the right edge. */
+  .pill-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 56px;
+    padding: 0 16px;
+    background: transparent;
+    color: var(--ink);
+  }
+
+  @media (min-width: 1024px) {
+    .pill-nav {
+      padding: 0 clamp(24px, 2.4vw, 40px);
+    }
+  }
+
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 44px;
+    height: 44px;
+    background: var(--app-header-bg);
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 3.5px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .hamburger:hover span {
+    background: var(--walnut);
+  }
+
+  /* Close (X) button that swaps in for the hamburger in the header's
+     auth mode (see Header.tsx isAuthMode). Same slot/size as
+     .hamburger so the row doesn't reflow, but bare — no pill
+     background, no border/tint — just the icon, per the "clean close,
+     no line" ask for the auth screen. */
+  .nav-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    color: var(--ink);
+    transition: background 0.15s ease, transform 0.15s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .nav-close:hover {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+
+  .nav-close:active { transform: scale(0.94); }
+
+  .nav-close svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+  }
+
+  /* Same lime as the hero's primary CTA (.btn-primary, #b3ff00 in
+     cartoon-mobile-hero.css), not the lavender --app-bg glass pill it
+     used before — but dimmed to ~70% strength (mixed down toward the
+     header's own background) so it reads as "lime, on-brand" without
+     competing with the hero's CTA for attention. Nav-sized padding,
+     not the hero button's chunky offset shadow — this is a secondary,
+     always-visible action, not the page's main call to action. */
+  .signup {
+    background: color-mix(in srgb, #b3ff00 70%, var(--app-header-bg, #fff));
+    color: var(--ink);
+    border: 1.5px solid color-mix(in srgb, #b3ff00 40%, #000 60%);
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.14s ease;
+  }
+
+  .signup:hover {
+    background: color-mix(in srgb, #b3ff00 82%, var(--app-header-bg, #fff));
+    transform: translateY(-1px);
+  }
+
+  .signup:active {
+    transform: translateY(0);
+  }
+
+  .pill-nav .brand {
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    font-size: 15px;
+  }
+
+  .pill-nav .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .pill-nav .nav-logo {
+    height: 44px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* 3D cartoonic avatar button, matching the cartoon hero's button
+     language (lime fill, thick ink border, hard offset shadow) instead
+     of a flat brown circle. The offset shadow + active "press" state
+     is what reads as 3D/tactile rather than a plain flat chip. */
+  .pill-nav .nav-profile {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    padding: 2.5px;
+    border: none;
+    background: conic-gradient(from 0deg, #C6F24E, #7C5CFF, #FF5CA8, #C6F24E);
+    cursor: pointer;
+    overflow: visible;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease;
+  }
+
+  .pill-nav .nav-profile:hover {
+    transform: translateY(-1px) scale(1.04);
+  }
+
+  .pill-nav .nav-profile:active {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  .pill-nav .nav-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+    border: 2px solid var(--app-bg, #f6f3ff);
+  }
+
+  .pill-nav .nav-profile .nav-profile-initial {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--app-bg, #f6f3ff);
+    background: radial-gradient(circle at 32% 28%, #ab9bf5 0%, #7C5CFF 55%, #5a3fe0 100%);
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 15px;
+    font-family: 'Baloo 2', 'Fredoka', -apple-system, BlinkMacSystemFont, sans-serif;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--walnut-dark);
+    outline-offset: 2px;
+  }
+
+  main {
+    min-height: 60vh;
+  }
+

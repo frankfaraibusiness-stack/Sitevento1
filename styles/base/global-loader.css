@@ -1,0 +1,263 @@
+/* ============================================================
+ * global-loader.css — components/GlobalLoader.tsx
+ *
+ * The one loading design used everywhere in the app:
+ *   .global-loader-boot    full-screen boot sequence (AppRoot only,
+ *                          replaces the old BootSplash + the old
+ *                          inline cartoon-hero loader)
+ *   .global-loader-inline  compact in-page loader (replaces
+ *                          AppSkeleton's spinning ring at all its
+ *                          call sites)
+ *
+ * Visual design (card, wordmark, shimmering bars, chunky progress
+ * bar) is carried over as-is from the old cartoon-hero `.loader`
+ * block (previously in styles/marketing/cartoon-mobile-hero.css) —
+ * only the class names changed (de-scoped from `.cartoon-hero .loader`
+ * to a standalone `.global-loader-boot` since this is no longer
+ * nested inside the marketing hero), plus a second compact variant
+ * added alongside it for inline use.
+ * ============================================================ */
+
+.global-loader {
+  --gl-ink: #12100A;
+  --gl-lime: #7C5CFC;
+  --gl-cream: #FFFDF5;
+}
+
+/* ---------------------------------------------------------------
+   Boot variant — full-screen, used once by AppRoot in place of the
+   old BootSplash. Driven by real phase state from GlobalLoader.tsx
+   (arriving / connecting / confirmed / leaving) instead of the old
+   cartoon-hero loader's hardcoded 5s CSS animation, so it actually
+   waits on auth instead of running a flat timer no matter what.
+   --------------------------------------------------------------- */
+.global-loader-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--app-bg, #f6f3ff);
+
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.global-loader-boot.is-arriving,
+.global-loader-boot.is-connecting,
+.global-loader-boot.is-confirmed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.global-loader-boot.is-leaving {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.48s ease, transform 0.48s ease;
+}
+
+.global-loader-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.global-loader-atmosphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(18, 16, 10, 0.12) 1.2px, transparent 1.3px);
+  background-size: 20px 20px;
+  -webkit-mask-image: radial-gradient(90% 70% at 50% 50%, #000 20%, transparent 70%);
+  mask-image: radial-gradient(90% 70% at 50% 50%, #000 20%, transparent 70%);
+}
+
+/* Purple blurred glow behind the card removed per request — the
+   atmosphere layer now only keeps its dot-grid texture (::before,
+   above), with no colored glow layered on top of it. */
+
+.global-loader-card {
+  position: relative;
+  z-index: 1;
+  width: min(320px, 82vw);
+  padding: 28px 24px 26px;
+  background: var(--app-bg, #f6f3ff);
+  border: 3px solid var(--gl-ink);
+  border-radius: 24px;
+  box-shadow: 6px 6px 0 0 var(--gl-ink);
+  animation: global-loader-card-bob 2.6s ease-in-out infinite;
+}
+@keyframes global-loader-card-bob {
+  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
+  50%      { transform: translateY(-6px) rotate(0.4deg); }
+}
+
+.global-loader-mark {
+  display: block;
+  width: min(70%, 220px);
+  height: auto;
+  margin: 0 auto 18px;
+  animation: global-loader-mark-spin 3.2s ease-in-out infinite;
+}
+@keyframes global-loader-mark-spin {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50%      { transform: rotate(1.5deg); }
+}
+
+.global-loader-bar {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(18, 16, 10, 0.1);
+  border: 2px solid rgba(18, 16, 10, 0.18);
+}
+.global-loader-bar--title { height: 22px; width: 88%; margin-bottom: 10px; }
+.global-loader-bar--title.short { width: 58%; height: 22px; margin-bottom: 20px; }
+.global-loader-bar--line { height: 12px; width: 100%; margin-bottom: 8px; }
+.global-loader-bar--line.short { width: 72%; margin-bottom: 0; }
+
+.global-loader-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  /* Plain white shimmer sweep now — the purple (rgba(124,92,252,...))
+     band that used to sit in the middle of this gradient has been
+     removed per request, along with the glow above. */
+  background: linear-gradient(100deg,
+    transparent 0%, rgba(255,253,245,0) 30%,
+    rgba(255,253,245,0.9) 50%,
+    rgba(255,253,245,0) 80%, transparent 100%);
+  animation: global-loader-shimmer 1.6s ease-in-out infinite;
+}
+.global-loader-bar:nth-child(2)::after { animation-delay: 0s; }
+.global-loader-bar:nth-child(3)::after { animation-delay: 0.15s; }
+.global-loader-bar:nth-child(4)::after { animation-delay: 0.3s; }
+.global-loader-bar:nth-child(5)::after { animation-delay: 0.45s; }
+@keyframes global-loader-shimmer {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+.global-loader-progress {
+  margin-top: 22px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(18, 16, 10, 0.1);
+  border: 2px solid var(--gl-ink);
+  overflow: hidden;
+}
+.global-loader-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--gl-lime);
+  border-right: 2px solid var(--gl-ink);
+  /* Driven by phase timing rather than a flat 5s CSS animation: fills
+     over the arrive+connecting window, then snaps the rest of the way
+     once `ready` resolves (is-complete), instead of always taking
+     exactly 5s regardless of how long auth actually took. */
+  transition: width 4.3s cubic-bezier(.55,.02,.35,1);
+}
+.global-loader-boot.is-connecting .global-loader-progress-fill { width: 92%; }
+.global-loader-progress.is-complete .global-loader-progress-fill {
+  width: 100%;
+  transition: width 0.3s ease;
+}
+
+.global-loader-caption {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #4A4732;
+}
+.global-loader-dots { display: inline-flex; gap: 4px; }
+.global-loader-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gl-ink);
+  animation: global-loader-dot-bounce 1.2s ease-in-out infinite;
+}
+.global-loader-dots span:nth-child(2) { animation-delay: 0.15s; }
+.global-loader-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes global-loader-dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.55; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ---------------------------------------------------------------
+   Inline variant — the AppSkeleton replacement. No spinner: a small
+   version of the same logo + shimmering skeleton bars used by the
+   boot loader, sized to sit inside a page's own chrome instead of
+   taking over the screen. fullScreen covers the viewport (same as
+   AppSkeleton's own fullScreen prop, used by app/loading.tsx) but
+   still shows this skeleton design rather than a bare spinner.
+   --------------------------------------------------------------- */
+.global-loader-inline {
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 3rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.global-loader-inline.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  min-height: 100dvh;
+  background: var(--app-bg);
+  padding-top: calc(3rem + env(safe-area-inset-top, 0px));
+}
+
+.global-loader-inline-mark {
+  display: block;
+  width: 96px;
+  height: auto;
+  opacity: 0.92;
+  animation: global-loader-inline-pulse 1.8s ease-in-out infinite;
+}
+@keyframes global-loader-inline-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.03); }
+}
+
+.global-loader-inline-bars {
+  width: min(220px, 70vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.global-loader-inline-bars .global-loader-bar--line { margin-bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .global-loader-boot,
+  .global-loader-card,
+  .global-loader-mark,
+  .global-loader-bar::after,
+  .global-loader-dots span,
+  .global-loader-inline-mark {
+    animation: none !important;
+  }
+  .global-loader-progress-fill {
+    transition: none;
+  }
+  .global-loader-boot.is-connecting .global-loader-progress-fill,
+  .global-loader-progress.is-complete .global-loader-progress-fill {
+    width: 100%;
+  }
+}
