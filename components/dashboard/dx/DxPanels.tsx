@@ -34,6 +34,7 @@ import type { MonetizationConfig } from '@/lib/monetization';
 import type { BrokenLink } from '@/lib/types';
 import { QUICK_TOOL_OPTIONS } from '@/components/dashboard/quickToolOptions';
 import { HeatMap, Sparkline } from '@/components/dashboard/dx/DxCharts';
+import { WorldMap } from '@/components/dashboard/dx/DxWorldMap';
 
 /* ── shared bits ───────────────────────────────────────────────── */
 // Same navigation path the rest of the dashboard uses (useNavRouter drives
@@ -168,31 +169,35 @@ export function CountriesPanel({ agg, total }: { agg: VisitAggregates; total: nu
         ) : null
       }
     >
-      {rows.length === 0 ? (
-        <p className="dx-empty">Visitor locations will appear as people arrive.</p>
-      ) : (
-        <ol className="dx-rows">
-          {rows.map((c) => (
-            <li key={c.code || 'unknown'} className="dx-row">
-              <span className="dx-flag" aria-hidden="true">
-                {countryCodeToFlag(c.code)}
-              </span>
-              <span className="dx-row-main">
-                <span className="dx-row-top">
-                  <b>{c.code ? getCountryName(c.code) : 'Unknown'}</b>
-                  <span>
-                    {fmtNum(c.visits)} <small>{fmtDecimal(c.pct, 1)}%</small>
+      <div className="dx-countries-body">
+        <WorldMap countries={agg.countries} />
+
+        {rows.length === 0 ? (
+          <p className="dx-empty">Visitor locations will appear as people arrive.</p>
+        ) : (
+          <ol className="dx-rows">
+            {rows.map((c) => (
+              <li key={c.code || 'unknown'} className="dx-row">
+                <span className="dx-flag" aria-hidden="true">
+                  {countryCodeToFlag(c.code)}
+                </span>
+                <span className="dx-row-main">
+                  <span className="dx-row-top">
+                    <b>{c.code ? getCountryName(c.code) : 'Unknown'}</b>
+                    <span>
+                      {fmtNum(c.visits)} <small>{fmtDecimal(c.pct, 1)}%</small>
+                    </span>
                   </span>
+                  <span className="dx-bar">
+                    <i style={{ width: `${Math.max(3, (c.visits / max) * 100)}%` }} />
+                  </span>
+                  <small className="dx-row-sub">{fmtNum(c.visitors)} unique · {fmtDecimal(c.visits / Math.max(1, c.visitors), 1)} avg visits</small>
                 </span>
-                <span className="dx-bar">
-                  <i style={{ width: `${Math.max(3, (c.visits / max) * 100)}%` }} />
-                </span>
-                <small className="dx-row-sub">{fmtNum(c.visitors)} unique · {fmtDecimal(c.visits / Math.max(1, c.visitors), 1)} avg visits</small>
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
       {agg.loaded < total && <p className="dx-foot">Based on the latest {fmtNum(agg.loaded)} visits.</p>}
     </Panel>
   );
