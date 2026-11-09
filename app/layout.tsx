@@ -76,7 +76,7 @@ export const viewport: Viewport = {
   // background color, so the browser chrome (mobile address bar,
   // etc.) blends with the real page background instead of showing a
   // different, mismatched color of its own.
-  themeColor: '#c1b5f7',
+  themeColor: '#f6f3ff',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

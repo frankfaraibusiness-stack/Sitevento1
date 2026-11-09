@@ -141,7 +141,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--cream-deep, #c7bfe7);
+  background: var(--cream-deep, #ebe9f2);
   color: var(--walnut, #6b4a34);
   margin-bottom: 18px;
 }

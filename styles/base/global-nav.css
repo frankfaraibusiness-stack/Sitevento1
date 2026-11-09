@@ -258,11 +258,8 @@
       outline-offset: 2px;
     }
 
-    /* "Add site" — the bar's one primary action, now built from the
-       exact same parts as the mobile Upload button: the animated
-       lime/purple gradient fill, a hard ink border + offset shadow,
-       and the slow dashed spinning ring around it (::after below) —
-       instead of a flat lime circle. */
+    /* "Add site" — the bar's one primary action: solid white circle with
+       a crisp black edge and black plus, matching the mobile Add button. */
     .gnav-add {
       width: 42px;
       height: 42px;
@@ -272,33 +269,11 @@
       margin: 0 6px;
       flex-shrink: 0;
       position: relative;
-      background: var(--brand-mix-gradient);
-      background-size: 200% 200%;
-      animation: gnavDesktopMixShift 6s ease-in-out infinite;
+      background: #ffffff;
       color: #12100A;
       border: 2px solid #12100A;
-      box-shadow: 0 3px 0 0 #12100A, 0 6px 14px -6px rgba(18, 16, 10, 0.35);
+      box-shadow: 0 4px 10px -4px rgba(18, 16, 10, 0.35);
       transition: transform 160ms ease, box-shadow 160ms ease;
-    }
-
-    .gnav-add::after {
-      content: "";
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 2px dashed rgba(18, 16, 10, 0.3);
-      animation: gnavDesktopUploadRing 8s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes gnavDesktopMixShift {
-      0%, 100% { background-position: 0% 50%; }
-      50%      { background-position: 100% 50%; }
-    }
-
-    @keyframes gnavDesktopUploadRing {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
     }
 
     .gnav-add svg {
@@ -310,12 +285,12 @@
 
     .gnav-add:hover {
       transform: translateY(-1px) scale(1.05);
-      box-shadow: 0 4px 0 0 #12100A, 0 8px 18px -6px rgba(18, 16, 10, 0.4);
+      box-shadow: 0 6px 14px -4px rgba(18, 16, 10, 0.4);
     }
 
     .gnav-add:active {
       transform: translateY(1px) scale(0.97);
-      box-shadow: 0 1px 0 0 #12100A, 0 3px 8px -6px rgba(18, 16, 10, 0.35);
+      box-shadow: 0 2px 6px -3px rgba(18, 16, 10, 0.35);
     }
 
     .gnav-add:focus-visible {
@@ -358,10 +333,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .gnav-add,
-    .gnav-add::after {
-      animation: none;
-    }
     .gnav-item,
     .gnav-add {
       transition: none;
@@ -486,8 +457,9 @@
       color: #12100A;
     }
 
-    /* upload circle — centre accent (shrunk along with the rest of
-       the bar, below) */
+    /* Add button — centre accent. Clean and plain: solid white fill, a
+       crisp black edge, black plus. (Used to be the animated lime/purple
+       gradient with a dashed spinning ring; both removed.) */
     .gnav-cartoon-upload {
       all: unset;
       box-sizing: border-box;
@@ -499,36 +471,17 @@
       display: grid;
       place-items: center;
       border-radius: 50%;
-      background: var(--brand-mix-gradient);
-      background-size: 200% 200%;
-      animation: gnavCartoonMixShift 6s ease-in-out infinite;
+      background: #ffffff;
       border: 2px solid #12100A;
-      box-shadow: 0 3px 0 0 #12100A, 0 6px 12px -6px rgba(18, 16, 10, 0.4);
+      box-shadow: 0 4px 10px -4px rgba(18, 16, 10, 0.35);
       color: #12100A;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
-    @keyframes gnavCartoonMixShift {
-      0%, 100% { background-position: 0% 50%; }
-      50%      { background-position: 100% 50%; }
-    }
     .gnav-cartoon-upload:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 0 #12100A, 0 3px 8px -6px rgba(18, 16, 10, 0.4);
-    }
-    .gnav-cartoon-upload::after {
-      content: "";
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 2px dashed rgba(18, 16, 10, 0.35);
-      animation: gnavCartoonUploadRing 8s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes gnavCartoonUploadRing {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
+      transform: scale(0.94);
+      box-shadow: 0 2px 6px -3px rgba(18, 16, 10, 0.35);
     }
     .gnav-cartoon-upload svg {
       width: 19px;
@@ -536,11 +489,3 @@
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .gnav-cartoon-upload::after {
-      animation: none;
-    }
-    .gnav-cartoon-upload {
-      animation: none;
-    }
-  }

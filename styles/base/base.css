@@ -10,8 +10,8 @@
        to read as "cream" now follows the app's purple page
        background instead — same light/darker relationship (--cream
        lighter, --cream-deep ~7% darker), just a different hue. */
-    --cream: #d6cef9;
-    --cream-deep: #c7bfe7;
+    --cream: #ffffff;
+    --cream-deep: #ebe9f2;
     --ink: #22201c;
     --walnut: #6b4a34;
     --walnut-dark: #4f3626;
@@ -28,7 +28,7 @@
        background on the stripped-down marketing hero + header) —
        sampled directly from the reference design: a soft warm
        off-white, not pure white and not the bright lime field. */
-    --app-bg: #c1b5f7;
+    --app-bg: #f6f3ff;
 
     /* ---- Brand mix: the two brand colors (lime + purple) blended
        into one living accent, used anywhere the design calls for a

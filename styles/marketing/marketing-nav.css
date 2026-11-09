@@ -183,7 +183,7 @@
     object-fit: cover;
     display: block;
     border-radius: 50%;
-    border: 2px solid var(--app-bg, #c1b5f7);
+    border: 2px solid var(--app-bg, #f6f3ff);
   }
 
   .pill-nav .nav-profile .nav-profile-initial {
@@ -193,7 +193,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    border: 2px solid var(--app-bg, #c1b5f7);
+    border: 2px solid var(--app-bg, #f6f3ff);
     background: radial-gradient(circle at 32% 28%, #ab9bf5 0%, #7C5CFF 55%, #5a3fe0 100%);
     color: #FFFFFF;
     font-weight: 800;

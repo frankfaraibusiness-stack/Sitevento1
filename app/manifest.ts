@@ -16,8 +16,8 @@ export default function manifest(): MetadataRoute.Manifest {
       'Drop a single meta tag into your site and get a control panel for everything that happens on it: who visits, who converts, and what they see right now.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#d6cef9', // var(--cream)
-    theme_color: '#c1b5f7', // var(--app-bg) — matches the real html/body background
+    background_color: '#f6f3ff', // var(--app-bg)
+    theme_color: '#f6f3ff', // var(--app-bg) — matches the real html/body background
     icons: [
       {
         src: '/icon.png',

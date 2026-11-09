@@ -9,8 +9,8 @@
 
   :root {
     --bg: #ffffff;
-    --cream: #d6cef9;
-    --cream-deep: #c7bfe7;
+    --cream: #ffffff;
+    --cream-deep: #ebe9f2;
     --ink: #22201c;
     --walnut: #6b4a34;
     --walnut-dark: #4f3626;
@@ -19,7 +19,7 @@
     --lime-ink: #1a1f0a;
     --lime-glass: rgba(184, 232, 67, 0.22);
     --lime-glass-border: rgba(184, 232, 67, 0.55);
-    --app-bg: #c1b5f7;
+    --app-bg: #f6f3ff;
     --app-header-bg: var(--lime-glass);
     --surface: var(--surface-glass-strong, #fbfdf2);
     --surface-border: var(--surface-edge, #c7dba0);
