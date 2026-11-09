@@ -1,0 +1,243 @@
+/* ============================================================
+ * styles/connect/connect-side-rail.css
+ *
+ * The desktop-only side rail shown next to the step column at
+ * >=1040px (see connect-flow.css's own >=1040px block, which turns
+ * .cwz-content-grid into the two-column layout this rail is the
+ * second column of). Hidden entirely below that width — on phone and
+ * tablet there's no room for a second column, and the content it
+ * holds (a per-step "How it works" explainer + a short FAQ) is
+ * supplementary, not load-bearing, so skipping it there costs nothing
+ * actually needed to complete the step.
+ *
+ * Content is passed in per-step (see ConnectFlow.tsx / VerifyFlow.tsx
+ * / ConnectPermissionsStep.tsx, each with its own SIDE_RAIL_CONTENT
+ * constant) rather than this file/component hardcoding one copy —
+ * each step's rail genuinely differs (step 1: why we ask for the URL
+ * + domain-lookup FAQ; step 2: what the install tag does + troubleshooting;
+ * step 3: what each permission category means + privacy FAQ).
+ *
+ * Visually matches the step column's own card language (white card,
+ * thick black border, hard offset shadow, lime accent) so the rail
+ * reads as part of the same page, not a bolted-on sidebar.
+ * ============================================================ */
+
+.cwz-side-rail {
+  display: none;
+}
+
+@media (min-width: 1040px) {
+  .cwz-side-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: calc(var(--cwz-header-height, 64px) + 28px);
+    animation: cwzRailAppear 0.5s ease-out 0.1s both;
+  }
+}
+
+@keyframes cwzRailAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cwz-rail-card {
+  width: 100%;
+  background: var(--cwz-card-bg, #fff);
+  border: 3px solid var(--cwz-card-border, #1a1a1a);
+  border-radius: var(--cwz-card-radius, 20px);
+  box-shadow:
+    0 6px 0 var(--cwz-card-border, #1a1a1a),
+    0 12px 28px var(--cwz-card-shadow, rgba(26, 26, 26, 0.18));
+  padding: 20px 20px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cwz-rail-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--cwz-lime, #b8e62e);
+  border-bottom: 2px solid var(--cwz-card-border, #1a1a1a);
+}
+
+.cwz-rail-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-top: 2px;
+}
+
+.cwz-rail-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--cwz-lime, #b8e62e);
+  border: 2px solid var(--cwz-card-border, #1a1a1a);
+  box-shadow: 0 2px 0 var(--cwz-card-border, #1a1a1a);
+  flex-shrink: 0;
+}
+
+.cwz-rail-card-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #1a1a1a;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cwz-rail-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--cwz-card-border, #1a1a1a);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* "How it works" numbered list */
+.cwz-rail-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cwz-rail-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cwz-rail-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f0ffd6;
+  border: 1.5px solid var(--cwz-card-border, #1a1a1a);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--cwz-card-border, #1a1a1a);
+  margin-top: 1px;
+}
+
+.cwz-rail-step-text {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #2a2a2a;
+}
+
+.cwz-rail-step-text strong {
+  font-weight: 700;
+  color: var(--cwz-card-border, #1a1a1a);
+}
+
+/* FAQ accordion */
+.cwz-rail-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cwz-rail-faq-item {
+  border-bottom: 1.5px dashed rgba(26, 26, 26, 0.18);
+}
+
+.cwz-rail-faq-item:last-child {
+  border-bottom: none;
+}
+
+.cwz-rail-faq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--cwz-card-border, #1a1a1a);
+  line-height: 1.4;
+}
+
+.cwz-rail-faq-chevron {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.cwz-rail-faq-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.cwz-rail-faq-a {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.22s ease, padding 0.22s ease;
+}
+
+.cwz-rail-faq-a.is-open {
+  max-height: 240px;
+  padding-bottom: 12px;
+}
+
+.cwz-rail-faq-a p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #4a4a4a;
+  padding-right: 4px;
+}
+
+/* Small reassurance footer card — plain text, no icon, sits under the
+   last rail card as a quiet trust signal rather than another heavy
+   bordered card. */
+.cwz-rail-footnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 6px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgba(26, 26, 26, 0.65);
+}
+
+.cwz-rail-footnote svg {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+}

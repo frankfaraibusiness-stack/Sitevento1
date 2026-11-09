@@ -1,0 +1,127 @@
+/* ============================================================
+ * styles/widgets/drafts/visitor-pulse.css
+ *
+ * Live Visitor Pulse — CSS extracted as-is from the widget-drafts preview
+ * (widget-drafts/visitor-pulse.html). No visual redesign: colors, spacing
+ * and layout are unchanged from the draft. Demo-page-only rules
+ * (.demo-page / .demo-controls / .demo-note — the preview scaffolding,
+ * not the widget itself) have been removed.
+ *
+ * Not yet wired into the app. Once ported into a React component
+ * under app/w/[widgetId]/widgets/ and added to WIDGET_CATALOG in
+ * lib/widgets.ts, this file's colors should be swapped for the
+ * widget's per-site `accent`-style config fields so site owners can
+ * match their own site's colors from the dashboard, the same way
+ * support-chat/countdown-timer/email-capture already expose an
+ * `accent` field today.
+ * ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+  body {
+    background: linear-gradient(135deg, #f7f9f3 0%, #eef3e4 100%);
+    min-height: 100vh;
+    color: #1a1f0a;
+  }
+
+  /* ---- Pulse widget ---- */
+  #sv-pulse {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(26, 31, 10, 0.08);
+    border-radius: 999px;
+    padding: 9px 16px 9px 10px;
+    box-shadow: 0 6px 20px rgba(26, 31, 10, 0.08);
+    max-width: 280px;
+    cursor: default;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: sv-pulse-enter 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 300ms;
+  }
+
+  @keyframes sv-pulse-enter {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  #sv-pulse.sv-pulse-swap .sv-pulse-text {
+    animation: sv-pulse-text-swap 420ms ease;
+  }
+
+  @keyframes sv-pulse-text-swap {
+    0%   { opacity: 0; transform: translateY(3px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .sv-pulse-dot-wrap {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+
+  .sv-pulse-dot-core {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #6fae3f;
+  }
+
+  .sv-pulse-dot-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #6fae3f;
+    animation: sv-pulse-ring 2.2s ease-out infinite;
+  }
+
+  @keyframes sv-pulse-ring {
+    0%   { opacity: 0.55; transform: scale(1); }
+    100% { opacity: 0;    transform: scale(2.6); }
+  }
+
+  .sv-pulse-text {
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: #2b3220;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sv-pulse-text strong {
+    font-weight: 700;
+    color: #1a1f0a;
+  }
+
+  .sv-pulse-close {
+    background: none;
+    border: none;
+    color: #9aa38a;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 0 2px 6px;
+    flex-shrink: 0;
+    transition: color 120ms ease;
+  }
+  .sv-pulse-close:hover { color: #3a4230; }
+
+  #sv-pulse.sv-pulse-hidden {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+
+  @media (max-width: 420px) {
+    #sv-pulse { left: 12px; right: 12px; max-width: none; bottom: 12px; }
+    .sv-pulse-text { white-space: normal; }
+  }

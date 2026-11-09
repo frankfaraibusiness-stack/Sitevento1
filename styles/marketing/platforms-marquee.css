@@ -1,0 +1,238 @@
+/* ============================================================
+ * platforms-marquee.css — components/marketing/PlatformsMarquee.tsx
+ *
+ * "Works with the site you already have" — a continuous, never-
+ * stopping auto-scrolling row of platform chips (Shopify, Wix,
+ * Webflow, WordPress, ...). Transparent section background, same as
+ * every other marketing section (shows the page's --app-bg lavender
+ * through) — see live-stats-section.css's header comment for why.
+ *
+ * All copy/text here uses --ink (dark) or color-mixes of it, never a
+ * light/white tone, since it sits directly on the light --app-bg
+ * page background and needs to stay readable against it.
+ *
+ * Single-sided bottom padding only (see .lss / .wsx convention) so
+ * stacking this after another section never doubles up the gap
+ * between them.
+ * ============================================================ */
+
+.pfm {
+  position: relative;
+  /* Small top padding now (was 0) — this section sits directly under
+     the hero photo now (CartoonHeroContent's old CTAs/steps block
+     that used to separate them has been removed), so a little top
+     breathing room keeps the photo and this section from touching
+     edge-to-edge while staying far short of the old dead gap. */
+  padding: clamp(28px, 4.5vw, 44px) 0 clamp(56px, 9vw, 108px);
+  background: transparent;
+  overflow: hidden;
+}
+
+.pfm-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 6vw, 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---- Intro: eyebrow / title / copy, same rhythm as .lss-intro / .wsx-intro ----
+   display:flex + align-items:center keeps the eyebrow/title/copy
+   centered (text-align: center) while still letting .pfm-ctas below
+   opt out via align-self: flex-start, so the CTA row anchors left
+   instead of centering under the wider copy block. */
+.pfm-intro {
+  text-align: center;
+  max-width: 580px;
+  margin: 0 auto clamp(32px, 5vw, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pfm-eyebrow {
+  display: inline-block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lime-ink);
+  background: var(--lime);
+  border: 1.5px solid #000;
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 16px;
+}
+
+.pfm-title {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.pfm-copy {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--surface-ink-soft);
+  margin: 0;
+}
+
+/* ---- CTAs — moved here from the old under-hero block
+   (CartoonHeroContent's .hero__inner). Kept left-aligned, same as
+   they were there, even though .pfm-intro's text above is centered —
+   the two buttons form their own left-anchored action row rather than
+   centering under the (wider, centered) copy. Reuses the app's shared
+   .btn / .btn-primary / .btn-secondary classes — now genuinely shared
+   (moved to an unconditional block in marketing-hero.css, see that
+   file's header comment), since cartoon-mobile-hero.css deliberately
+   carries no .btn* rules of its own and these used to be defined only
+   inside marketing-hero.css's desktop (1024px+) media query — meaning
+   .btn had NO styling at all below 1024px, i.e. on every phone. Fixed
+   there; this file just lays the row out.
+   Always side by side, never stacked — even on the smallest phones —
+   with both buttons equal width (shared .btn's flex: 1 1 0 handles
+   the equal sizing; width: 100% here just lets that row fill the
+   available width edge to edge instead of hugging its own content). ---- */
+.pfm-ctas {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  width: 100%;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+@media (max-width: 380px) {
+  /* Only below ~380px (narrower than any current phone's viewport
+     width) do the two labels risk genuinely not fitting side by side
+     — tightens padding/font instead of stacking, so they still stay
+     side by side even there. */
+  .pfm-ctas .btn {
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 13.5px;
+  }
+}
+
+/* ---- Scrolling track ---- */
+.pfm-track-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  overflow: hidden;
+  /* Mask the hard clip edges with a fade into the page background so
+     chips appear/disappear softly instead of being sliced off. Two
+     solid overlay divs (below) achieve the same thing with broader
+     browser support than mask-image gradients on a scrolling track. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
+}
+
+@media (max-width: 640px) {
+  .pfm-track-wrap {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  }
+}
+
+/* Fallback/extra softening fades — kept transparent (mask above does
+   the real work) but left as hooks in case mask-image support is
+   ever dropped for a target browser; harmless no-ops otherwise. */
+.pfm-fade {
+  display: none;
+}
+
+.pfm-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  /* Two back-to-back copies of the same row (rendered twice in the
+     component) animate as one continuous belt: by the time the first
+     copy has scrolled fully past (-50%), the second copy sits exactly
+     where the first one started, so the loop reset is invisible. */
+  animation: pfm-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+@keyframes pfm-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Deliberately NOT paused on hover/focus/click — the strip keeps
+   moving no matter what the visitor does with their cursor or tap,
+   same as a real logo-wall marquee on a marketing site. Only
+   prefers-reduced-motion stops it, per accessibility convention. */
+@media (prefers-reduced-motion: reduce) {
+  .pfm-track {
+    animation: none;
+  }
+}
+
+.pfm-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 14px;
+  flex-shrink: 0;
+}
+
+.pfm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--surface-glass-solid, #fff);
+  border: 1.5px solid var(--surface-edge);
+  border-radius: 999px;
+  padding: 11px 20px 11px 14px;
+  box-shadow: var(--surface-shadow);
+  white-space: nowrap;
+}
+
+.pfm-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--lime);
+  border: 1.5px solid #000;
+  color: #000;
+  flex-shrink: 0;
+}
+
+.pfm-glyph svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 640px) {
+  .pfm-chip {
+    font-size: 13.5px;
+    padding: 9px 16px 9px 11px;
+    gap: 8px;
+  }
+  .pfm-glyph {
+    width: 22px;
+    height: 22px;
+  }
+  .pfm-glyph svg {
+    width: 12px;
+    height: 12px;
+  }
+}
