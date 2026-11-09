@@ -55,8 +55,8 @@
     --sb-edge-soft: color-mix(in srgb, var(--ink) 9%, transparent);
     --sb-edge-strong: color-mix(in srgb, var(--ink) 26%, transparent);
     --sb-glass: color-mix(in srgb, var(--app-bg, #fff) 70%, white 30%);
-    --sb-card: color-mix(in srgb, var(--ink) 82%, transparent);
-    --sb-card-hover: color-mix(in srgb, var(--ink) 90%, transparent);
+    /* Used by .sidebar-foot .signout only now — nav option cards
+       (.sidebar-link) are plain white/black, not this dark glass. */
     --sb-card-edge: color-mix(in srgb, white 14%, transparent);
 
     /* Genuinely see-through glass: a light, low-opacity tint of the
@@ -253,10 +253,10 @@
     gap: 8px;
   }
 
-  /* ---- Nav "cards": translucent black, not flat/opaque, so the
-     glass material carries through each option instead of the
-     panel being the only glassy part. Blur is reapplied per-card
-     since each sits as its own layer over the panel's own blur. ---- */
+  /* ---- Nav "cards": plain white with a crisp black stroke and black
+     text/icons, matching the app-wide clean/plain card treatment —
+     was translucent black with white text/icons; that's gone, along
+     with its glass blur. ---- */
   .sidebar-link {
     display: flex;
     align-items: center;
@@ -264,17 +264,12 @@
     padding: 13px 15px;
     border-radius: 16px;
     text-decoration: none;
-    color: color-mix(in srgb, white 82%, transparent);
+    color: var(--sb-ink);
     font-size: 14.5px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-weight: 600;
-    background: var(--sb-card);
-    border: 1px solid var(--sb-card-edge);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow:
-      0 1px 0 color-mix(in srgb, white 10%, transparent) inset,
-      0 6px 14px color-mix(in srgb, var(--ink) 10%, transparent);
+    background: #ffffff;
+    border: 1.5px solid var(--sb-ink);
     cursor: pointer;
     width: 100%;
     text-align: left;
@@ -282,33 +277,25 @@
   }
 
   .sidebar-link:hover {
-    background: var(--sb-card-hover);
-    border-color: color-mix(in srgb, white 24%, transparent);
+    background: color-mix(in srgb, var(--sb-ink) 6%, white 94%);
     transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 color-mix(in srgb, white 14%, transparent) inset,
-      0 10px 20px color-mix(in srgb, var(--ink) 16%, transparent);
   }
 
   .sidebar-link:active {
     transform: translateY(0);
   }
 
+  /* Active: solid lime fill (not a dark gradient) with the same black
+     stroke/text as a normal card, so "selected" still reads clearly
+     against the plain white cards around it. */
   .sidebar-link.active {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--ink) 88%, var(--lime) 12%),
-      color-mix(in srgb, var(--ink) 78%, var(--lime) 22%)
-    );
-    border-color: color-mix(in srgb, var(--lime, #b8e843) 55%, transparent);
-    color: var(--lime, #b8e843);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--lime, #b8e843) 25%, transparent) inset,
-      0 8px 18px color-mix(in srgb, var(--ink) 20%, transparent);
+    background: var(--lime, #b8e843);
+    border-color: var(--sb-ink);
+    color: var(--sb-ink);
   }
 
   .sidebar-link.active .icon {
-    color: var(--lime, #b8e843);
+    color: var(--sb-ink);
   }
 
   .sidebar-link .icon {
@@ -318,12 +305,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: color-mix(in srgb, white 65%, transparent);
+    color: var(--sb-ink);
     transition: color 0.15s ease;
   }
 
   .sidebar-link:hover .icon {
-    color: color-mix(in srgb, white 92%, transparent);
+    color: var(--sb-ink);
   }
 
   .sidebar-link .icon svg {
