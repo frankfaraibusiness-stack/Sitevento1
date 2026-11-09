@@ -38,13 +38,19 @@ interface CartoonMobileHeroProps {
 // now the one and only boot screen, mounted once by AppRoot, using
 // this same loader design wired to real auth state instead.
 
+// Each word/phrase here completes the sentence "YOUR WEBSITE ___" on
+// its own, now that the static title line is just "YOUR WEBSITE"
+// (the old line read "YOUR WEBSITE, FULLY" and these were written to
+// follow "FULLY" specifically — "FULLY YOURS", "FULLY IN CONTROL",
+// etc. — so with "FULLY" gone they're reworded to read naturally
+// right after "WEBSITE" instead).
 const ROTATOR_WORDS = [
   'YOURS',
-  'IN CONTROL',
+  'EFFORTLESS',
   'ON AUTOPILOT',
+  'IN YOUR CONTROL',
   'ANALYTICS-READY',
   'REIMAGINED',
-  'EFFORTLESS',
   'YOURS TO SHAPE',
 ];
 
@@ -176,7 +182,7 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
         <div className="hero__bannerScrim" />
         <div className="hero__bannerContent">
           <h1 className="hero__title" id="hero-title">
-            <span className="hero__titleLine">YOUR WEBSITE, FULLY</span>
+            <span className="hero__titleLine">YOUR WEBSITE</span>
             <span className="rotator">
               {ROTATOR_WORDS.map((word) => (
                 <span className="rotator__word" key={word}>
@@ -186,13 +192,24 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
             </span>
           </h1>
 
-          {/* Trimmed to the first sentence only — phones don't have the
-              room for the full two-clause description that the banner
-              photo used to carry when the whole hero sat on top of it. */}
+          {/* Single description now lives here in the banner (white,
+              over the photo). The second, near-identical copy that used
+              to repeat below in .hero__inner on plain page background
+              — right under a big empty stretch of banner photo — has
+              been removed; that empty stretch is now filled by the
+              sites-connected stat (SitesConnectedStat) instead, see
+              .hero__bannerStat below. */}
           <p className="hero__bannerSub">
             Connect your site once and get a dedicated control centre, live
             stats and controls.
           </p>
+
+          {/* Fills the empty space in the banner photo (previously just
+              blank sky between the description and the curved bottom
+              edge) instead of leaving it as dead space. */}
+          <div className="hero__bannerStat">
+            <SitesConnectedStat />
+          </div>
         </div>
       </div>
 
@@ -204,7 +221,7 @@ export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: Cartoo
               them in .hero__banner above, so they're skipped below
               860px via the same CSS file. */}
           <h1 className="hero__title hero__title--inline" aria-hidden="true">
-            <span className="hero__titleLine">YOUR WEBSITE, FULLY</span>
+            <span className="hero__titleLine">YOUR WEBSITE</span>
             <span className="rotator">
               {ROTATOR_WORDS.map((word) => (
                 <span className="rotator__word" key={word}>

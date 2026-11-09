@@ -93,21 +93,9 @@
     background-position: right center;
     background-repeat: no-repeat;
 
-    /* Same curved bottom edge the old full hero used, so the banner
-       still reads as an intentionally-shaped panel rather than a
-       rectangle that's just been clipped. */
-    -webkit-mask-image: radial-gradient(
-      ellipse 60% 42px at 50% 100%,
-      transparent 98%,
-      #000 100%
-    );
-    mask-image: radial-gradient(
-      ellipse 60% 42px at 50% 100%,
-      transparent 98%,
-      #000 100%
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
+    /* Curved-bottom mask removed per request — the banner now keeps
+       a plain straight bottom edge instead of the radial-gradient
+       mask that carved a curve into it. */
   }
 
   /* Left-to-right scrim, same approach as the desktop hero's
@@ -185,6 +173,18 @@
      below) instead of this banner copy, so the rotator animation only
      runs once per screen rather than twice in parallel. */
   .hero__title--inline {
+    display: none;
+  }
+
+  /* .hero__sub duplicated .hero__bannerSub word-for-word on mobile —
+     both rendered at once (banner copy on the photo, this one right
+     below it on the plain page background), with nothing in between
+     but blank space. This component (CartoonHeroContent/.hero__inner)
+     is only actually used for the mobile hero now (Hero.tsx's desktop
+     path renders its own separate DesktopHeroContent instead), so
+     .hero__sub has no reason to show here at all — the single banner
+     description is enough. */
+  .hero__sub {
     display: none;
   }
 
@@ -273,16 +273,13 @@
   }
 
   /* ---------- description ---------- */
-  /* Full two-clause description, shown again here below the banner
-     (which only carries the trimmed one-sentence version) — this one
-     sits on the plain page background (.hero no longer carries a
-     photo), so it's dark ink instead of the white-on-photo treatment
-     the banner's copy uses. Sized as a percentage of the hero's own
-     width (not a `ch` max-width) so the paragraph actually spans
-     ~80-90% of the hero rather than collapsing into a narrow centered
-     column of short, similar-width lines. Natural wrapping — plain
-     text-align: center, no per-line markup — so line breaks fall
-     wherever the real text/viewport width puts them. */
+  /* Full two-clause description. On mobile this duplicated the
+     banner's own trimmed description (.hero__bannerSub) right above
+     it — same message shown twice back to back — so it's hidden
+     below 1024px (see the display:none override further down,
+     scoped to this file's mobile-only range) and only shows for the
+     real two-column desktop layout at 1024px+, where .hero__banner
+     itself is hidden and this is the only description on screen. */
   .cartoon-hero .hero__sub {
     margin: 18px auto 0;
     width: 88%;
@@ -353,45 +350,89 @@
 
   .cartoon-hero .hero__visual { display: none; }
 
-  /* ---------- sites-connected stat ---------- */
-  /* Sits opposite the description paragraph (.hero__sub) — same row
-     as that text, on the empty right-hand side of the photo above
-     the mascot's head — not down by the CTAs. Positioned relative to
-     .hero__layout (same stacking context as the rest of the content,
-     z-index 2) rather than floated inline, so it doesn't push the
-     steps list around or get squeezed by it.
-     Anchored from the top, offset past the title block, rather than
-     from the bottom: the CTAs/steps column length isn't what this
-     needs to line up with, the description is. The title itself
-     varies in height by 1-2 lines depending on which rotator word is
-     showing (ROTATOR_WORDS ranges from "YOURS" to
-     "ANALYTICS-READY"), so this offset is tuned to the common case
-     (two title lines + the rotator line) and sits close enough
-     across that range to still read as "next to the description",
-     not pixel-locked to it.
-     Kept compact and right-clamped so it still clears the screen
-     edge with room to spare on a 320px-wide phone: at 320px the
-     hero has 22px of padding each side (.hero above), leaving a
-     276px content box, and this block tops out at 132px wide. */
-  .cartoon-hero .hero__statBlock {
-    position: absolute;
-    top: 196px;
-    right: 6px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    max-width: 132px;
-    text-align: right;
-    pointer-events: none;
+  /* Mobile only: hide the second copy of the description below the
+     banner — .hero__banner already shows .hero__bannerSub covering
+     the same sentence. Lifted back to display:flex at 1024px+ below,
+     where .hero__banner itself is hidden and .hero__title--inline /
+     .hero__sub become the only title+description on screen. */
+  .cartoon-hero .hero__sub { display: none; }
+
+  /* ---------- sites-connected stat (in-banner, mobile) ---------- */
+  /* Lives inside .hero__bannerContent now, in normal flow directly
+     under .hero__bannerSub — it fills what used to be a large empty
+     stretch of banner photo below the description (sky/grass with
+     nothing on it) instead of floating detached over the mascot.
+     .hero__statBlock itself (number + label) is also reused as-is by
+     the desktop stat strip (Hero.tsx's .dhero__statStrip) and the
+     laptop showcase (LaptopShowcase.tsx's .sv-stat-strip) — this
+     wrapper only controls where/how it sits specifically inside the
+     mobile banner photo. */
+  .cartoon-hero .hero__bannerStat {
+    margin-top: 16px;
   }
 
-  /* White, same as .hero__sub — the brief was to keep the number in
-     the same white as the description so the block doesn't add a
-     third/fourth colour on top of the photo. Same black-outline
-     treatment as the headline so it stays legible over the busy
-     mascot/building art behind it, not just a text-shadow blur. */
+  .cartoon-hero .hero__bannerStat .hero__statBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+  }
+
+  /* Was plain white (#FFFDF5) on this light/bright stretch of the
+     banner photo — a near-invisible white-on-white number. Switched
+     to a solid lime fill with a thick, high-contrast black cartoon
+     outline (same stroke idea as the headline/rotator words) so the
+     number reads as a bold outlined shape against the photo rather
+     than disappearing into it. */
+  .cartoon-hero .hero__bannerStat .hero__statNumber {
+    font-family: 'Baloo 2', 'Fredoka', sans-serif;
+    font-size: clamp(30px, 10vw, 42px);
+    font-weight: 800;
+    line-height: 1;
+    color: #b3ff00;
+    -webkit-text-stroke: 2px #000;
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  /* "SITES CONNECTED" label — switched from lime to solid black so it
+     reads as dark text with its own shadow for lift off the photo,
+     instead of a second lime element stacked right under the lime
+     number above it. */
+  .cartoon-hero .hero__bannerStat .hero__statLabel {
+    font-family: 'Nunito', 'Fredoka', sans-serif;
+    font-size: clamp(10px, 3vw, 12px);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: #12100A;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 340px) {
+    .cartoon-hero .hero__bannerStat .hero__statNumber {
+      font-size: 26px;
+    }
+    .cartoon-hero .hero__bannerStat .hero__statLabel {
+      font-size: 9.5px;
+    }
+  }
+
+  /* Desktop (.dhero__statStrip, Hero.tsx) and the laptop showcase
+     (.sv-stat-strip, LaptopShowcase.tsx) render the same
+     SitesConnectedStat markup centered, outside any photo, on the
+     plain page background — keep that version in its original white,
+     since it was never the white-on-white-photo case this fix is
+     for. Only the in-banner mobile placement above gets the new
+     lime/black treatment. */
+  .cartoon-hero .hero__statBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+  }
   .cartoon-hero .hero__statNumber {
     font-family: 'Baloo 2', 'Fredoka', sans-serif;
     font-size: clamp(30px, 10vw, 44px);
@@ -402,10 +443,6 @@
     paint-order: stroke fill;
     text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
   }
-
-  /* Lime — the one accent colour already doing work elsewhere in
-     this hero (the primary CTA, the loader), so the label picks it
-     up too instead of introducing a new colour just for this. */
   .cartoon-hero .hero__statLabel {
     font-family: 'Nunito', 'Fredoka', sans-serif;
     font-size: clamp(10px, 3vw, 12px);
@@ -414,27 +451,6 @@
     color: #b3ff00;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
     white-space: nowrap;
-  }
-
-  /* Smallest phones (iPhone SE / 320px-class devices): trim the
-     number down another notch and tuck the block in a touch closer
-     to the edge so there's no risk of clipping on devices that round
-     their viewport width down below 320px. */
-  @media (max-width: 340px) {
-    .cartoon-hero .hero__statBlock {
-      max-width: 112px;
-      right: 4px;
-      /* Narrower columns wrap the title onto one extra line more
-         often, pushing the description (and so this block's target
-         row) down a bit further. */
-      top: 208px;
-    }
-    .cartoon-hero .hero__statNumber {
-      font-size: 28px;
-    }
-    .cartoon-hero .hero__statLabel {
-      font-size: 9.5px;
-    }
   }
 
   /* ---------- how-it-works steps ---------- */
