@@ -186,7 +186,7 @@ export default function FeaturesPage() {
                   <p>{item.description}</p>
                   <span className="cp-badge" style={{ marginTop: 10 }}>
                     {item.minPlan}
-                    {item.minPlan !== 'Free' ? '+' : ''}
+                    {item.minPlan !== 'Ventol Free' ? '+' : ''}
                   </span>
                 </>
               );
