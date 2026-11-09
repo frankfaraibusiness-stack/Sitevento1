@@ -28,6 +28,7 @@ import { LivePill, RangePicker, RefreshControl, SiteSwitcher, siteHost } from '@
 import { TREND_METRICS, TrendChart, type TrendMetric } from '@/components/dashboard/dx/DxCharts';
 import {
   AccountPanel,
+  ApiLogsPanel,
   BehaviorPanel,
   BreakdownPanel,
   CountriesPanel,
@@ -368,6 +369,8 @@ export function DashboardShell({
               <DeviceExperiencePanel deviceExp={deviceExp} brokenLinks={data.brokenLinks} />
 
               <JourneyPanel journeys={journeys} />
+
+              <ApiLogsPanel uid={user.uid} planId={limits?.planId ?? null} />
 
               <BehaviorPanel
                 data={data}

@@ -30,8 +30,10 @@ import {
 } from '@/lib/dashboardStats';
 import { countryCodeToFlag, getCountryName } from '@/lib/countries';
 import { getPlan, type PlanId } from '@/lib/plans';
+import { planMeetsMinimum } from '@/lib/limits';
 import type { MonetizationConfig } from '@/lib/monetization';
-import type { BrokenLink } from '@/lib/types';
+import type { BrokenLink, ApiEvent } from '@/lib/types';
+import { useApiEvents } from '@/hooks/useApiEvents';
 import { QUICK_TOOL_OPTIONS } from '@/components/dashboard/quickToolOptions';
 import { HeatMap, Sparkline } from '@/components/dashboard/dx/DxCharts';
 import { WorldMap } from '@/components/dashboard/dx/DxWorldMap';
@@ -389,6 +391,132 @@ export function DeviceExperiencePanel({
             ))}
           </ol>
         </div>
+      )}
+    </Panel>
+  );
+}
+
+/* ── API logs ──────────────────────────────────────────────────────
+   Shows the account's recent server-to-server events (app/api/ingest
+   — see lib/apiKeys.ts's header for the full "deep data" model) right
+   on the dashboard, not just tucked away in Settings. Gated to Vento
+   Plus (planId 'scale') and above: below that the panel still renders
+   — same spot, same size — but as a soft-locked preview with an
+   upsell, never just vanishing, because a visible-but-locked feature
+   is what actually sells the upgrade. uid is optional only so this
+   can be mounted before auth resolves; the hook itself handles null. */
+function ApiLogsPreviewRow({ offset }: { offset: number }) {
+  // Decorative only — the locked state's "ghost" rows behind the
+  // blur, so the card reads as "a real feed, just hidden" rather than
+  // a blank placeholder box.
+  const widths = ['62%', '41%', '74%'];
+  return (
+    <div className="dx-api-row dx-api-row-ghost" style={{ opacity: 1 - offset * 0.22 }} aria-hidden="true">
+      <span className="dx-api-dot" />
+      <span className="dx-api-ghost-line" style={{ width: widths[offset % widths.length] }} />
+      <span className="dx-api-ghost-pill" />
+    </div>
+  );
+}
+
+function formatApiEventTime(ts: ApiEvent['receivedAt']): string {
+  if (!ts) return '';
+  const d = typeof ts === 'number' ? new Date(ts) : ts.toDate();
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+export function ApiLogsPanel({ uid, planId }: { uid: string | null; planId: PlanId | null }) {
+  const unlocked = planId !== null && planMeetsMinimum(planId, 'scale');
+  // Only subscribe once unlocked — a locked account has no business
+  // reason to pay for a live Firestore listener it can't see the
+  // results of, and the hook's own null-uid guard would otherwise
+  // still spin up a subscription the instant a uid exists.
+  const { liveEvents, loading } = useApiEvents(unlocked ? uid : null);
+  const plusPlan = getPlan('scale');
+
+  if (!unlocked) {
+    return (
+      <Panel className="dx-panel dx-api-logs is-locked-panel" title="API logs" hint="Live events from your own backend">
+        <div className="dx-api-locked">
+          <div className="dx-api-locked-visual" aria-hidden="true">
+            <div className="dx-api-ghost-stack">
+              <ApiLogsPreviewRow offset={0} />
+              <ApiLogsPreviewRow offset={1} />
+              <ApiLogsPreviewRow offset={2} />
+            </div>
+            <div className="dx-api-locked-badge">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </div>
+          </div>
+
+          <h4 className="dx-api-locked-title">See every event your backend sends, live</h4>
+          <p className="dx-api-locked-copy">
+            Orders, signups, refunds, CRM stage changes — anything your own server knows. Send it to the{' '}
+            <code>/api/ingest</code> endpoint and watch it land here in real time, right next to your visit data.
+          </p>
+
+          <ul className="dx-api-locked-points">
+            <li>Live feed of every event, the moment it's received</li>
+            <li>Full payload — not just a name, the real data you sent</li>
+            <li>Live + test keys, kept separate automatically</li>
+          </ul>
+
+          <NavLink href="/dashboard/plans" className="dx-link dx-api-upsell-link">
+            Unlock API logs — upgrade to {plusPlan.name}
+          </NavLink>
+          <p className="dx-api-locked-foot">Requires {plusPlan.name} or above · not available on Starter</p>
+        </div>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel
+      className="dx-panel dx-api-logs"
+      title="API logs"
+      hint="Live events from your own backend"
+      action={
+        <NavLink href="/settings/api" className="dx-link">
+          Manage API keys
+        </NavLink>
+      }
+    >
+      {loading ? (
+        <p className="dx-empty">Loading…</p>
+      ) : liveEvents.length === 0 ? (
+        <div className="dx-api-empty">
+          <p className="dx-empty">No events yet.</p>
+          <p className="dx-api-empty-sub">
+            POST to <code>/api/ingest</code> with your live key and it’ll show up here instantly.
+          </p>
+        </div>
+      ) : (
+        <ol className="dx-rows is-plain dx-api-list">
+          {liveEvents.slice(0, 8).map((ev) => {
+            const dataKeys = Object.keys(ev.data || {});
+            return (
+              <li key={ev.id} className="dx-row dx-api-row">
+                <span className="dx-row-main">
+                  <span className="dx-row-top">
+                    <b>{ev.event}</b>
+                    <span>{formatApiEventTime(ev.receivedAt)}</span>
+                  </span>
+                  {(ev.userId || dataKeys.length > 0) && (
+                    <small className="dx-api-row-sub">
+                      {ev.userId ? ev.userId : ''}
+                      {ev.userId && dataKeys.length > 0 ? ' · ' : ''}
+                      {dataKeys.length > 0 ? `${dataKeys.slice(0, 3).join(', ')}${dataKeys.length > 3 ? '…' : ''}` : ''}
+                    </small>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
       )}
     </Panel>
   );

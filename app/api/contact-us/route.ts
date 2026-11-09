@@ -22,6 +22,7 @@ import { getAdminDb } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { allow } from '@/lib/rateLimit';
 import { checkFormFlood } from '@/lib/formFloodGuard';
+import { resolveLeadAttribution } from '@/lib/leadAttribution';
 
 export const maxDuration = 10;
 export const runtime = 'nodejs';
@@ -90,13 +91,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, reason: 'blocked' }, { status: 200, headers: CORS_HEADERS });
     }
 
+    // Device attribution — same lookup email-capture/overlay-notify/
+    // appointment-booking already use (lib/leadAttribution.ts), so this
+    // lead counts toward DeviceExperiencePanel's conversion rate too
+    // instead of silently falling out of every device's numbers.
+    const attribution = await resolveLeadAttribution(db, siteRef, visitorId);
+
     await siteRef.collection('leads').add({
       name: trimmedName,
       email: trimmedEmail,
       message: trimmedMessage,
       source: 'contact-us',
       pageUrl: typeof pageUrl === 'string' ? pageUrl.slice(0, 2000) : '',
-      visitorId: typeof visitorId === 'string' ? visitorId.slice(0, 200) : '',
+      visitorId: attribution.visitorId ?? (typeof visitorId === 'string' ? visitorId.slice(0, 200) : ''),
+      device: attribution.device,
       ts: FieldValue.serverTimestamp(),
     });
 
