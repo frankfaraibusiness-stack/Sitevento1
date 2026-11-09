@@ -251,5 +251,6 @@ function planLabel(plan: PlanId): string {
   if (plan === 'starter') return 'Ventol Starter';
   if (plan === 'scale') return 'Ventol Plus';
   if (plan === 'pro-developer') return 'Ventol Business';
-  return plan.charAt(0).toUpperCase() + plan.slice(1);
+  const _exhaustive: never = plan;
+  return _exhaustive;
 }
