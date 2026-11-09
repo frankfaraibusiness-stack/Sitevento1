@@ -65,18 +65,18 @@
     padding: 0 22px 52px;
   }
 
-  /* ---------- banner: 16:9 photo band, title + one-line description ----
-     Same idea as the desktop hero (components/marketing/Hero.tsx's
-     .dhero): the mascot/building photo sits on the right, the left
-     side of the photo is kept clear, and the title + a single
-     trimmed sentence sit over that clear space. Unlike the old
-     full-hero photo, this band is a fixed 16:9 box, not a tall
-     portrait crop, and everything below it (CTAs, steps) sits on the
-     plain page background, not on the image. */
+  /* ---------- banner: plain 16:9 photo band ----------
+     Per request, this is now just the hero photo itself — no scrim,
+     no title, no rotator, no description, no stat overlaid on it.
+     The image supplied already carries its own headline/description
+     baked in as part of the artwork, so a second text layer on top
+     of it (the old .hero__bannerScrim / .hero__bannerContent /
+     .hero__title / .rotator / .hero__bannerSub / .hero__bannerStat
+     rules that used to live here) has been removed entirely, along
+     with the matching markup in CartoonMobileHero.tsx. */
   .hero__banner {
     position: relative;
     overflow: hidden;
-    isolation: isolate;
     /* Starts right under the fixed header, not behind it — no negative
        top margin here (unlike the old full hero, which deliberately
        sat behind the header's glass bar). Side margins still cancel
@@ -87,105 +87,8 @@
 
     background-image: url('/mascot/hero-bg-desktop.jpg');
     background-size: cover;
-    /* Right-weighted, same framing idea as the desktop hero: keeps
-       the mascot/building art visible on the right and leaves the
-       left side (dark sky) clear for the title/description. */
-    background-position: right center;
+    background-position: center;
     background-repeat: no-repeat;
-
-    /* Curved-bottom mask removed per request — the banner now keeps
-       a plain straight bottom edge instead of the radial-gradient
-       mask that carved a curve into it. */
-  }
-
-  /* Left-to-right scrim, same approach as the desktop hero's
-     .dhero__scrim — the photo's left side is already a dark sky with
-     plenty of contrast, this just keeps the title/description crisp
-     right up to the edge of the lighter art on the right. */
-  .hero__bannerScrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(
-      100deg,
-      rgba(5, 8, 20, 0.6) 0%,
-      rgba(5, 8, 20, 0.38) 42%,
-      rgba(5, 8, 20, 0.05) 72%
-    );
-    pointer-events: none;
-  }
-
-  .hero__bannerContent {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    max-width: 62%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 0 0 22px;
-    text-align: left;
-  }
-
-  .hero__banner .hero__title {
-    text-align: left;
-    font-size: clamp(18px, 7vw, 30px);
-  }
-
-  .hero__banner .hero__titleLine,
-  .hero__banner .rotator {
-    text-align: left;
-  }
-
-  .hero__banner .rotator {
-    place-items: start;
-    margin-top: 4px;
-    font-size: clamp(20px, 7.6vw, 34px);
-  }
-
-  .hero__banner .rotator__word {
-    text-align: left;
-    justify-self: start;
-  }
-
-  /* Trimmed to one sentence — the full two-clause description (still
-     used below the banner, in .hero__sub) doesn't fit the shallower
-     16:9 box the way it did the old full-height photo. */
-  .hero__bannerSub {
-    margin: 10px 0 0;
-    font-family: 'Fredoka', sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    font-weight: 700;
-    color: #FFFFFF;
-    text-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.5),
-      0 1px 10px rgba(0, 0, 0, 0.4);
-  }
-
-  @media (max-width: 380px) {
-    .hero__bannerSub {
-      font-size: 11px;
-    }
-  }
-
-  /* Desktop keeps its own title (inline with the CTAs/steps column,
-     below) instead of this banner copy, so the rotator animation only
-     runs once per screen rather than twice in parallel. */
-  .hero__title--inline {
-    display: none;
-  }
-
-  /* .hero__sub duplicated .hero__bannerSub word-for-word on mobile —
-     both rendered at once (banner copy on the photo, this one right
-     below it on the plain page background), with nothing in between
-     but blank space. This component (CartoonHeroContent/.hero__inner)
-     is only actually used for the mobile hero now (Hero.tsx's desktop
-     path renders its own separate DesktopHeroContent instead), so
-     .hero__sub has no reason to show here at all — the single banner
-     description is enough. */
-  .hero__sub {
-    display: none;
   }
 
   .hero__layout {
@@ -202,99 +105,6 @@
     max-width: 470px;
     margin: 0 auto;
     text-align: center;
-  }
-
-  /* ---------- headline ---------- */
-  /* White fill with a solid black outline so it pops off the photo
-     instead of blending into it, now that the hero sits on the
-     image rather than the flat lime/purple gradient it was
-     designed for. */
-  .hero__title {
-    margin: 0;
-    font-family: 'Baloo 2', 'Fredoka', sans-serif;
-    font-size: clamp(22px, 8vw, 56px);
-    line-height: 1.05;
-    letter-spacing: -0.025em;
-    font-weight: 800;
-    color: #FFFFFF;
-    text-align: center;
-    text-shadow:
-      0 1.5px 0 #000,
-      0 3px 0 rgba(0, 0, 0, 0.35);
-    -webkit-text-stroke: 1.4px #000;
-    paint-order: stroke fill;
-  }
-
-  .hero__titleLine {
-    display: block;
-    white-space: nowrap;
-    font-size: clamp(18px, 7.6vw, 52px);
-  }
-
-  .rotator {
-    display: grid;
-    place-items: center;
-    margin-top: 8px;
-    height: 1.2em;
-    overflow: hidden;
-    text-align: center;
-    font-size: clamp(24px, 9vw, 60px);
-  }
-  .rotator__word {
-    grid-area: 1 / 1;
-    white-space: nowrap;
-    line-height: 1.2;
-    opacity: 0;
-    transform: translateY(110%);
-    animation: rotatorCycle 21s cubic-bezier(.6,.05,.3,1) infinite;
-    text-align: center;
-    justify-self: center;
-    /* Black stroke on every color so each word stays legible on the
-       photo instead of just its flat fill color. */
-    text-shadow: 0 1.5px 0 #000, 0 3px 0 rgba(0, 0, 0, 0.35);
-    -webkit-text-stroke: 1.2px #000;
-    paint-order: stroke fill;
-  }
-
-  .rotator__word:nth-child(1) { color: #7C5CFF; animation-delay: 0s; }
-  .rotator__word:nth-child(2) { color: #FF5CA8; animation-delay: 3s; }
-  .rotator__word:nth-child(3) { color: #0EA5E9; animation-delay: 6s; }
-  .rotator__word:nth-child(4) { color: #F97316; animation-delay: 9s; }
-  .rotator__word:nth-child(5) { color: #10B981; animation-delay: 12s; }
-  .rotator__word:nth-child(6) { color: #E11D48; animation-delay: 15s; }
-  .rotator__word:nth-child(7) { color: #6366F1; animation-delay: 18s; }
-
-  @keyframes rotatorCycle {
-    0%      { opacity: 0; transform: translateY(110%); }
-    3%      { opacity: 1; transform: translateY(0); }
-    14%     { opacity: 1; transform: translateY(0); }
-    17%     { opacity: 0; transform: translateY(-110%); }
-    100%    { opacity: 0; transform: translateY(-110%); }
-  }
-
-  /* ---------- description ---------- */
-  /* Full two-clause description. On mobile this duplicated the
-     banner's own trimmed description (.hero__bannerSub) right above
-     it — same message shown twice back to back — so it's hidden
-     below 1024px (see the display:none override further down,
-     scoped to this file's mobile-only range) and only shows for the
-     real two-column desktop layout at 1024px+, where .hero__banner
-     itself is hidden and this is the only description on screen. */
-  .cartoon-hero .hero__sub {
-    margin: 18px auto 0;
-    width: 88%;
-    max-width: 88%;
-    font-family: 'Fredoka', sans-serif;
-    font-size: 13px;
-    line-height: 1.55;
-    font-weight: 700;
-    color: var(--ink, #12100A);
-    letter-spacing: 0.005em;
-    text-align: center;
-  }
-  .cartoon-hero .hero__sub strong {
-    font-weight: 800;
-    color: var(--ink, #12100A);
   }
 
   /* ---------- CTAs ---------- */
@@ -350,82 +160,14 @@
 
   .cartoon-hero .hero__visual { display: none; }
 
-  /* Mobile only: hide the second copy of the description below the
-     banner — .hero__banner already shows .hero__bannerSub covering
-     the same sentence. Lifted back to display:flex at 1024px+ below,
-     where .hero__banner itself is hidden and .hero__title--inline /
-     .hero__sub become the only title+description on screen. */
-  .cartoon-hero .hero__sub { display: none; }
-
-  /* ---------- sites-connected stat (in-banner, mobile) ---------- */
-  /* Lives inside .hero__bannerContent now, in normal flow directly
-     under .hero__bannerSub — it fills what used to be a large empty
-     stretch of banner photo below the description (sky/grass with
-     nothing on it) instead of floating detached over the mascot.
-     .hero__statBlock itself (number + label) is also reused as-is by
-     the desktop stat strip (Hero.tsx's .dhero__statStrip) and the
-     laptop showcase (LaptopShowcase.tsx's .sv-stat-strip) — this
-     wrapper only controls where/how it sits specifically inside the
-     mobile banner photo. */
-  .cartoon-hero .hero__bannerStat {
-    margin-top: 16px;
-  }
-
-  .cartoon-hero .hero__bannerStat .hero__statBlock {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    text-align: left;
-  }
-
-  /* Was plain white (#FFFDF5) on this light/bright stretch of the
-     banner photo — a near-invisible white-on-white number. Switched
-     to a solid lime fill with a thick, high-contrast black cartoon
-     outline (same stroke idea as the headline/rotator words) so the
-     number reads as a bold outlined shape against the photo rather
-     than disappearing into it. */
-  .cartoon-hero .hero__bannerStat .hero__statNumber {
-    font-family: 'Baloo 2', 'Fredoka', sans-serif;
-    font-size: clamp(30px, 10vw, 42px);
-    font-weight: 800;
-    line-height: 1;
-    color: #b3ff00;
-    -webkit-text-stroke: 2px #000;
-    paint-order: stroke fill;
-    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.5);
-  }
-
-  /* "SITES CONNECTED" label — switched from lime to solid black so it
-     reads as dark text with its own shadow for lift off the photo,
-     instead of a second lime element stacked right under the lime
-     number above it. */
-  .cartoon-hero .hero__bannerStat .hero__statLabel {
-    font-family: 'Nunito', 'Fredoka', sans-serif;
-    font-size: clamp(10px, 3vw, 12px);
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    color: #12100A;
-    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
-    white-space: nowrap;
-  }
-
-  @media (max-width: 340px) {
-    .cartoon-hero .hero__bannerStat .hero__statNumber {
-      font-size: 26px;
-    }
-    .cartoon-hero .hero__bannerStat .hero__statLabel {
-      font-size: 9.5px;
-    }
-  }
-
-  /* Desktop (.dhero__statStrip, Hero.tsx) and the laptop showcase
-     (.sv-stat-strip, LaptopShowcase.tsx) render the same
-     SitesConnectedStat markup centered, outside any photo, on the
-     plain page background — keep that version in its original white,
-     since it was never the white-on-white-photo case this fix is
-     for. Only the in-banner mobile placement above gets the new
-     lime/black treatment. */
+  /* ---------- sites-connected stat ---------- */
+  /* No longer rendered anywhere inside this mobile hero (the banner
+     photo carries no overlay at all now) — these rules are kept only
+     because SitesConnectedStat (CartoonMobileHero.tsx) is still
+     reused, unchanged, by the desktop stat strip (Hero.tsx's
+     .dhero__statStrip) and the laptop showcase
+     (LaptopShowcase.tsx's .sv-stat-strip), both outside the hero
+     photo entirely, on the plain page background. */
   .cartoon-hero .hero__statBlock {
     display: flex;
     flex-direction: column;
@@ -681,22 +423,10 @@
       letter-spacing: 0.02em;
     }
     .cartoon-hero .navbar { bottom: 24px; }
-
-    /* From here up, .hero__layout becomes a two-column grid with its
-       own visible placeholder box (.hero__visual, directly above) —
-       the absolute bottom/right offsets tuned for the single-column
-       portrait photo below 720px would land on top of that
-       placeholder instead of beside the mascot, so the stat block is
-       mobile-only and stops here. */
-    .cartoon-hero .hero__statBlock {
-      display: none;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .cartoon-hero .hero { animation: none; background-position: 30% 50%; }
-    .cartoon-hero .rotator__word { animation: none; opacity: 0; transform: none; }
-    .cartoon-hero .rotator__word:nth-child(1) { opacity: 1; }
     .cartoon-hero .btn { transition: none; }
     .cartoon-hero .loader__card, .cartoon-hero .loader__mark, .cartoon-hero .loader__bar::after, .cartoon-hero .loader__dots span { animation: none; }
     .cartoon-hero .loader__bar::after { display: none; }

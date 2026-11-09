@@ -34,21 +34,33 @@ import { useSidebar } from '@/hooks/useSidebar';
 import { useInstallPrompt } from '@/hooks/useInstallPrompt';
 import { useAppliedAppearance } from '@/hooks/useAppliedAppearance';
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
+import { useImagePreload } from '@/hooks/useImagePreload';
 import type { AuthPane } from '@/hooks/useAuthForms';
+
+// The marketing hero's whole photo (see components/marketing/Hero.tsx
+// and components/marketing/CartoonMobileHero.tsx, both of which now
+// render nothing but this image — no title/description/stat left
+// over it) — preloaded here so the boot loader can hold until it's
+// actually ready instead of closing on auth alone. Keep this in sync
+// with the url('/mascot/hero-bg-desktop.jpg') background-image in
+// styles/marketing/marketing-hero.css and
+// styles/marketing/cartoon-mobile-hero.css.
+const HERO_IMAGE_SRC = '/mascot/hero-bg-desktop.jpg';
 
 export default function AppRoot() {
   const { user, authReady, authError } = useAuth();
   const router = useNavRouter();
   const sidebar = useSidebar();
 
-  // Boot loader: shown for up to 5s while Firebase auth settles. If
-  // authReady flips true within that window, it closes normally. If
-  // not, it still closes (never hangs) and shows the "No network —
-  // Try again" toast below instead. See components/GlobalLoader.tsx
-  // (variant="boot") for the phase/timeout logic — this is also the
-  // one and only loading screen in the app now; the old separate
-  // cartoon-hero loader that used to show again underneath this one
-  // on the mobile marketing page has been removed.
+  // Boot loader: shown while Firebase auth settles AND the hero photo
+  // finishes loading — whichever takes longer — up to GlobalLoader's
+  // own 5s boot timeout (see components/GlobalLoader.tsx, which never
+  // hangs past that regardless of either condition). The hero section
+  // is now just that one photo with nothing else on it, so landing on
+  // it before the image has painted would look like a broken/blank
+  // page rather than a loading one — heroImageLoaded makes sure the
+  // boot loader covers that wait too, not just auth.
+  const heroImageLoaded = useImagePreload(HERO_IMAGE_SRC);
   const [bootDone, setBootDone] = useState(false);
   const [bootTimedOut, setBootTimedOut] = useState(false);
   const [networkToastOpen, setNetworkToastOpen] = useState(false);
@@ -111,7 +123,7 @@ export default function AppRoot() {
       {!bootDone && (
         <GlobalLoader
           variant="boot"
-          ready={authReady}
+          ready={authReady && heroImageLoaded}
           onDone={() => {
             setBootDone(true);
             if (bootTimedOut) setNetworkToastOpen(true);

@@ -43,62 +43,31 @@ interface HeroProps {
   onHowItWorksClick: () => void;
 }
 
-const ROTATOR_WORDS = [
-  'YOURS',
-  'IN CONTROL',
-  'ON AUTOPILOT',
-  'ANALYTICS-READY',
-  'REIMAGINED',
-  'EFFORTLESS',
-  'YOURS TO SHAPE',
-];
-
 interface DesktopHeroContentProps {
   onConnectClick: () => void;
   onHowItWorksClick: () => void;
 }
 
-// New desktop-only hero content, built against the new hero photo
-// (public/mascot/hero-bg-desktop.jpg): the mascot + branded building
-// sit on the right two-thirds, the left third is a dark night sky —
-// already dark enough for white text with no extra gradient/tint
-// needed over it, same reasoning the old photo used for its bright
-// open-sky side. Title + description + two side-by-side CTAs sit in
-// that dark left region; nothing here is copied from the mobile
-// layout except the .btn/.btn-primary/.btn-secondary CTA classes
-// themselves (still shared so both breakpoints' buttons stay visually
-// consistent and any future button-style change only has one place
-// to edit).
+// Desktop-only hero content, built against the new hero photo
+// (public/mascot/hero-bg-desktop.jpg). Per request, the photo now
+// carries no overlay at all — no title, no rotator, no description —
+// since the photo itself already carries its own baked-in headline/
+// description art; .dhero__scrim and .dhero__content (the dark-sky
+// tint and the title/description text block that used to sit on top
+// of it) have been removed below. Only the two CTAs remain, laid out
+// over the photo's own lower-left clear space; .btn/.btn-primary/
+// .btn-secondary are still shared with the mobile CTA styles.
 function DesktopHeroContent({ onConnectClick, onHowItWorksClick }: DesktopHeroContentProps) {
   return (
-    <section className="dhero" aria-labelledby="dhero-title">
-      <div className="dhero__scrim" aria-hidden="true" />
-      <div className="dhero__content">
-        <h1 className="dhero__title" id="dhero-title">
-          <span className="dhero__titleLine">YOUR WEBSITE, FULLY</span>
-          <span className="dhero__rotator">
-            {ROTATOR_WORDS.map((word) => (
-              <span className="dhero__rotatorWord" key={word}>
-                {word}
-              </span>
-            ))}
-          </span>
-        </h1>
+    <section className="dhero" aria-label="Sitevento">
+      <div className="dhero__ctas">
+        <button type="button" className="btn btn-primary" onClick={onConnectClick}>
+          Connect your site <span aria-hidden="true">➔</span>
+        </button>
 
-        <p className="dhero__sub">
-          Connect your site once and <strong>see exactly who&apos;s visiting</strong>, then deploy alerts and
-          widgets in seconds — without touching your live code.
-        </p>
-
-        <div className="dhero__ctas">
-          <button type="button" className="btn btn-primary" onClick={onConnectClick}>
-            Connect your site <span aria-hidden="true">➔</span>
-          </button>
-
-          <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
-            <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
-          </button>
-        </div>
+        <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
+          <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
+        </button>
       </div>
     </section>
   );

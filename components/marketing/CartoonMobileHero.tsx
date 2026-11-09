@@ -38,22 +38,6 @@ interface CartoonMobileHeroProps {
 // now the one and only boot screen, mounted once by AppRoot, using
 // this same loader design wired to real auth state instead.
 
-// Each word/phrase here completes the sentence "YOUR WEBSITE ___" on
-// its own, now that the static title line is just "YOUR WEBSITE"
-// (the old line read "YOUR WEBSITE, FULLY" and these were written to
-// follow "FULLY" specifically — "FULLY YOURS", "FULLY IN CONTROL",
-// etc. — so with "FULLY" gone they're reworded to read naturally
-// right after "WEBSITE" instead).
-const ROTATOR_WORDS = [
-  'YOURS',
-  'EFFORTLESS',
-  'ON AUTOPILOT',
-  'IN YOUR CONTROL',
-  'ANALYTICS-READY',
-  'REIMAGINED',
-  'YOURS TO SHAPE',
-];
-
 // Quick how-it-works steps, stacked under the CTAs on mobile — fills
 // the empty stretch of photo between the CTAs and the bottom nav, and
 // doubles as a hook into what the product actually does. Desktop
@@ -170,73 +154,22 @@ export function SitesConnectedStat() {
 // marketing-hero.css), the content and classes are identical.
 export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroContentProps) {
   return (
-    <section className="hero" aria-labelledby="hero-title">
-      {/* Mobile-only 16:9 photo band, same photo/layout idea as the
-          desktop hero (components/marketing/Hero.tsx's .dhero): the
-          mascot/building art sits on the right, the left side is kept
-          clear, and the title + a single trimmed sentence of the
-          description sit over that clear left side. Hidden on desktop
-          (.cartoon-hero--desktop .hero__banner, marketing-hero.css) —
-          desktop already has its own full-height version of this. */}
-      <div className="hero__banner" aria-hidden="true">
-        <div className="hero__bannerScrim" />
-        <div className="hero__bannerContent">
-          <h1 className="hero__title" id="hero-title">
-            <span className="hero__titleLine">YOUR WEBSITE</span>
-            <span className="rotator">
-              {ROTATOR_WORDS.map((word) => (
-                <span className="rotator__word" key={word}>
-                  {word}
-                </span>
-              ))}
-            </span>
-          </h1>
-
-          {/* Single description now lives here in the banner (white,
-              over the photo). The second, near-identical copy that used
-              to repeat below in .hero__inner on plain page background
-              — right under a big empty stretch of banner photo — has
-              been removed; that empty stretch is now filled by the
-              sites-connected stat (SitesConnectedStat) instead, see
-              .hero__bannerStat below. */}
-          <p className="hero__bannerSub">
-            Connect your site once and get a dedicated control centre, live
-            stats and controls.
-          </p>
-
-          {/* Fills the empty space in the banner photo (previously just
-              blank sky between the description and the curved bottom
-              edge) instead of leaving it as dead space. */}
-          <div className="hero__bannerStat">
-            <SitesConnectedStat />
-          </div>
-        </div>
-      </div>
+    <section className="hero" aria-label="Sitevento">
+      {/* Mobile-only 16:9 photo band. Now just the hero photo itself —
+          no title, no description, no rotator, no sites-connected
+          stat overlaid on it. All of that (headline, description,
+          stat) has been removed from both this banner and the
+          .hero__inner column below per request; the photo already
+          carries its own baked-in headline/description art, so a
+          second, separately-styled text layer on top of it was
+          redundant. Hidden on desktop (.cartoon-hero--desktop
+          .hero__banner, marketing-hero.css) — desktop renders its own
+          full-height version of the same plain photo instead (see
+          components/marketing/Hero.tsx's .dhero). */}
+      <div className="hero__banner" aria-hidden="true" />
 
       <div className="hero__layout">
         <div className="hero__inner">
-          {/* Desktop keeps the title/rotator + full description here,
-              inline with the CTAs/steps column (see .cartoon-hero--desktop
-              overrides in marketing-hero.css) — mobile already showed
-              them in .hero__banner above, so they're skipped below
-              860px via the same CSS file. */}
-          <h1 className="hero__title hero__title--inline" aria-hidden="true">
-            <span className="hero__titleLine">YOUR WEBSITE</span>
-            <span className="rotator">
-              {ROTATOR_WORDS.map((word) => (
-                <span className="rotator__word" key={word}>
-                  {word}
-                </span>
-              ))}
-            </span>
-          </h1>
-
-          <p className="hero__sub">
-            Connect your site once and <strong>see exactly who&apos;s visiting</strong>,
-            then deploy alerts and widgets in seconds — without touching your
-            live code.
-          </p>
-
           <div className="hero__ctas">
             <button type="button" className="btn btn-primary" onClick={onConnectClick}>
               Connect your site <span aria-hidden="true">➔</span>
