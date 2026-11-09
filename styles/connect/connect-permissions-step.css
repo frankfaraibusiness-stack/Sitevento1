@@ -1,0 +1,139 @@
+/* ============================================================
+ * styles/connect/connect-permissions-step.css
+ *
+ * Styles for components/connect/ConnectPermissionsStep.tsx — step 3 of
+ * the connect wizard. Reuses, rather than redefines, two existing
+ * systems:
+ *   - .cwz-vfy-card (styles/connect/verify-flow.css) as the outer
+ *     wrapper around the permissions grid, so it reads as the same
+ *     "card" as every other step instead of a new container shape.
+ *   - .cwz-perm-* (styles/sites/permissions-grid.css) for everything
+ *     inside PermissionsGrid itself — already explicitly built to work
+ *     on this route's --app-bg background (see that file's own header
+ *     comment), just not wired into app/dashboard/connect/page.tsx's
+ *     imports until now.
+ * This file only adds what neither of those already covers: the
+ * verified-success hero at the top of the stage, and the final
+ * "Go to dashboard" button.
+ * ============================================================ */
+
+.cwz-perm-success {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  animation: cwzCardPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cwz-perm-success-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--cwz-lime, #b8e62e);
+  border: 3px solid var(--cwz-stroke-dark, #1a1a1a);
+  box-shadow: 0 4px 0 var(--cwz-stroke-dark, #1a1a1a);
+}
+
+.cwz-perm-success-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: #1a1a1a;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cwz-perm-success-copy {
+  min-width: 0;
+}
+
+.cwz-perm-success-title {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--cwz-stroke-dark, #1a1a1a);
+  line-height: 1.15;
+}
+
+.cwz-perm-success-sub {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(26, 26, 26, 0.75);
+}
+
+.cwz-perm-success-sub strong {
+  color: var(--cwz-stroke-dark, #1a1a1a);
+  word-break: break-all;
+}
+
+/* The permissions grid sits inside a .cwz-vfy-card shell (same card
+   component every other step uses) — just wider than that card's
+   usual 560px cap, since a 5-tab permission grid needs more breathing
+   room than a code snippet or meta-row list. */
+.cwz-perm-card {
+  max-width: 680px;
+  padding: 24px 24px 22px;
+}
+
+.cwz-perm-finish-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 680px;
+  margin: 22px auto 0;
+  padding: 14px 20px;
+  background: var(--cwz-stroke-dark, #1a1a1a);
+  color: #fff;
+  border: 2px solid var(--cwz-stroke-dark, #1a1a1a);
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.cwz-perm-finish-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.cwz-perm-finish-btn:active {
+  transform: translateY(1px);
+}
+
+.cwz-perm-finish-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 520px) {
+  .cwz-perm-success {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+  .cwz-perm-success-title {
+    font-size: 1.25rem;
+  }
+  .cwz-perm-card {
+    padding: 18px 16px 16px;
+  }
+}

@@ -1,0 +1,188 @@
+/* styles/dashboard/analytics-panel.css
+ *
+ * Styles for components/dashboard/AnalyticsPanel.tsx — scoped the same
+ * way styles/dashboard/site-manage-page.css itself is (imported
+ * directly by app/dashboard/sites/[siteId]/page.tsx rather than added
+ * to app/globals.css's @import list). Reuses the smp- design tokens
+ * (--cream, --ink, --lime, --walnut, --line, --cream-deep) already
+ * defined by site-manage-page.css's own :root scope rather than
+ * redefining them here, so this file only ever needs to exist
+ * alongside that one, never standalone.
+ *
+ * Generalizes the Stats section's smp-country-row pattern (a fixed
+ * label column + bar + count) into a label-width-flexible smp-rank-row
+ * so the same bar-chart look works for pages/referrers/devices/
+ * campaigns, not just countries (that original pattern stays
+ * untouched, dedicated to the Stats section's own country list).
+ */
+
+.smp-analytics-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.smp-analytics-tab {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--walnut);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.smp-analytics-tab.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--cream);
+}
+
+.smp-trend-card {
+  margin-bottom: 18px;
+}
+
+.smp-trend-chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.smp-trend-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 480px;
+}
+
+.smp-trend-bar {
+  fill: var(--lime);
+}
+
+.smp-trend-axis-label {
+  font-size: 9.5px;
+  fill: var(--walnut);
+}
+
+.smp-trend-legend {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--walnut);
+}
+
+.smp-trend-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--lime);
+  vertical-align: middle;
+}
+
+.smp-rank-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 760px) {
+  .smp-rank-grid { grid-template-columns: 1fr; }
+}
+
+.smp-rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.smp-rank-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 36px;
+  align-items: center;
+  gap: 10px;
+}
+
+.smp-rank-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smp-rank-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cream-deep);
+  overflow: hidden;
+}
+
+.smp-rank-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--lime);
+}
+
+.smp-rank-count {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--walnut);
+  text-align: right;
+}
+
+.smp-session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.smp-rum-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.smp-rum-table th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a7a195;
+  font-weight: 600;
+  padding: 0 10px 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.smp-rum-table td {
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.smp-rum-table tr:last-child td {
+  border-bottom: none;
+}
+
+.smp-rum-path {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+  display: inline-block;
+}
+
+.smp-rum-slow {
+  color: #c2410c;
+}

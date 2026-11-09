@@ -1,0 +1,786 @@
+/* ============================================================
+ * styles/marketing/how-it-works-page.css
+ *
+ * Real, statically-generated, crawlable replacement for the old
+ * client-only HowItWorksModal.tsx (deleted — see app/how-it-works/
+ * page.tsx's header comment). `hiw2-` prefix throughout so nothing
+ * here collides with the removed modal's old `hiw-` classes or any
+ * other page's styles.
+ *
+ * Design language matches styles/content/content-pages.css (the
+ * ContentPageShell family every other rebuilt marketing/content route
+ * uses): cream/ink cartoon surfaces, Georgia serif headlines, a dark
+ * .cp-hero-style card up top, lime used sparingly as an accent. This
+ * file only adds what ContentPageShell doesn't already give a page —
+ * the own-header variant (.hiw2-header, a "return home" header
+ * instead of ContentHeader's signup/hamburger cluster), the sticky
+ * desktop left-rail step nav, and the pricing/plan cards — everything
+ * else (the hero, .cp-card/.cp-grid/.cp-pill/.cp-banner sections) is
+ * ContentPageShell + content-pages.css as-is.
+ *
+ * Desktop (>=1040px): a sticky left-hand progress rail (same sticky
+ * recipe as styles/content/legal.css's .legal-toc) sits beside the
+ * reading column, tracking which section is in view via scroll-spy.
+ * Below 1040px the rail is NOT shown as a second nav/tab-strip or as
+ * floating progress cards — per request, mobile just scrolls the page
+ * normally under the page's own sticky header, exactly like every
+ * other content route (About, Docs, Pricing, ...).
+ * ============================================================ */
+
+/* ── Own header: ContentHeader's .pill-nav markup, with the
+   signup/hamburger cluster swapped for a single "Return home" pill
+   with a label + arrow, since this page's right-side action is
+   always "go back", never sign up or open a menu. Reuses the real
+   fixed <header> element (styles/base/base.css's global `header {
+   position: fixed }` rule still applies) so it sits exactly where
+   ContentHeader does everywhere else — same height, same page
+   padding-top in .hiw2-page below. ── */
+.hiw2-return-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  color: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  padding: 9px 9px 9px 18px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), background 0.14s ease;
+}
+.hiw2-return-home:hover {
+  background: #000;
+  transform: translateY(-1px);
+}
+.hiw2-return-home:active {
+  transform: translateY(0);
+}
+.hiw2-return-home-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--lime-ink);
+  flex-shrink: 0;
+}
+.hiw2-return-home-arrow svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.6;
+}
+
+/* ── Page shell / hero — same recipe as .cp-page/.cp-hero, this page
+   just supplies its own hero markup inline (instead of going through
+   ContentPageShell) so it can lay the sticky rail out beside the
+   body column below. ── */
+.hiw2-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--app-bg);
+  padding-top: calc(56px + 16px + env(safe-area-inset-top, 0px));
+}
+
+.hiw2-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  margin: 0 16px 28px;
+  padding: 34px 26px 30px;
+  border-radius: 24px;
+  background: var(--ink);
+}
+@media (min-width: 600px) {
+  .hiw2-hero { margin: 0 24px 32px; padding: 44px 44px 38px; }
+}
+.hiw2-hero::before {
+  content: '';
+  position: absolute;
+  top: -90px;
+  right: -70px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, var(--lime) 0%, transparent 68%);
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+.hiw2-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+}
+.hiw2-hero-blob {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  width: 72px;
+  z-index: 1;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+@media (min-width: 600px) {
+  .hiw2-hero-blob { width: 92px; top: 10px; right: 20px; }
+}
+.hiw2-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 6px 14px 6px 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+.hiw2-eyebrow .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+}
+.hiw2-hero h1 {
+  margin: 0 0 14px;
+  padding-right: 70px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: clamp(27px, 6vw, 44px);
+  line-height: 1.12;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+@media (min-width: 600px) {
+  .hiw2-hero h1 { padding-right: 110px; }
+}
+.hiw2-hero-sub {
+  margin: 0 0 18px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 58ch;
+}
+.hiw2-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.hiw2-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.hiw2-hero-stat {
+  flex: 1 1 140px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.hiw2-hero-stat-value {
+  display: block;
+  font-family: "Georgia", serif;
+  font-size: 22px;
+  color: var(--lime);
+  margin-bottom: 2px;
+}
+.hiw2-hero-stat-label {
+  display: block;
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Body shell: reading column + sticky step rail, side by side from
+   1040px up. Below that, just one column — the rail isn't shown at
+   all on narrower viewports (see the no-rail note below). ── */
+.hiw2-body {
+  flex: 1;
+  padding: 0 16px 80px;
+}
+@media (min-width: 600px) {
+  .hiw2-body { padding: 0 24px 96px; }
+}
+.hiw2-body-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: start;
+}
+@media (min-width: 1040px) {
+  .hiw2-body-inner {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 36px;
+  }
+}
+
+/* ── Sticky left progress rail — desktop (>=1040px) only. Mirrors
+   styles/content/legal.css's .legal-toc sticky pattern: a plain
+   numbered index that stays in view as the reading column scrolls
+   past it, each item highlighting via scroll-spy as its section
+   enters view. Not shown at all below 1040px — no mobile tab strip,
+   no floating progress cards, per request; the page's own sticky
+   header is the only persistent chrome on a phone. ── */
+.hiw2-rail {
+  display: none;
+}
+@media (min-width: 1040px) {
+  .hiw2-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: sticky;
+    top: calc(56px + 24px + env(safe-area-inset-top, 0px));
+    align-self: start;
+    max-height: calc(100vh - 56px - 48px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+.hiw2-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #6b655c;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.hiw2-rail-item:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--ink);
+}
+.hiw2-rail-item.is-active {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 0 var(--ink);
+  color: var(--ink);
+}
+.hiw2-rail-num {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a39c8d;
+  flex-shrink: 0;
+  width: 18px;
+}
+.hiw2-rail-item.is-active .hiw2-rail-num { color: var(--lime-ink); }
+.hiw2-rail-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.hiw2-rail-cta {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.hiw2-rail-cta p {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: #8a8477;
+  padding: 0 4px;
+}
+.hiw2-rail-cta a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 1.5px solid var(--lime-ink);
+  box-shadow: 0 2px 0 var(--lime-ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.hiw2-rail-cta a:hover { transform: translateY(-1px); box-shadow: 0 3px 0 var(--lime-ink); }
+.hiw2-rail-cta a:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--lime-ink); }
+
+/* ── Reading column ── */
+.hiw2-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* Section anchor offset so a jump-link / scroll-into-view lands below
+   the fixed header rather than flush against it. */
+.hiw2-section {
+  scroll-margin-top: calc(56px + 20px + env(safe-area-inset-top, 0px));
+}
+
+/* ── Step cards: each "how it works" step as a numbered .cp-card
+   variant with a small live-feeling visual, same visual weight as the
+   old modal's rail+visual sections but inline in normal page flow. ── */
+.hiw2-step-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: center;
+}
+@media (min-width: 760px) {
+  .hiw2-step-card { grid-template-columns: 1.1fr 0.9fr; gap: 28px; }
+}
+.hiw2-step-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9a948a;
+  margin-bottom: 8px;
+}
+.hiw2-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.hiw2-step-card h2 {
+  margin: 0 0 10px;
+  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: clamp(19px, 3vw, 24px);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  line-height: 1.22;
+}
+.hiw2-step-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #403d38;
+}
+.hiw2-compare {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hiw2-compare li {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #403d38;
+  padding: 10px 12px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.hiw2-compare strong { color: var(--ink); }
+
+/* Step visuals — simple static/CSS illustrations, no client JS
+   needed (this whole page is a Server Component tree), so each one
+   is a styled markup snapshot rather than an animated loop. */
+.hiw2-visual {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hiw2-code-card {
+  background: var(--ink);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.hiw2-code-dots { display: flex; gap: 5px; margin-bottom: 10px; }
+.hiw2-code-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.22); }
+.hiw2-code-line {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12.5px;
+  color: #d9f27a;
+  word-break: break-all;
+}
+.hiw2-verify-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--dash-green-surface);
+  border: 1px solid var(--dash-green-border);
+  color: var(--dash-green-ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.hiw2-verify-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.hiw2-stat-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.hiw2-stat-tile {
+  flex: 1 1 110px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.hiw2-stat-label { display: block; font-family: -apple-system, sans-serif; font-size: 11px; color: #8a8477; margin-bottom: 4px; }
+.hiw2-stat-num { display: block; font-family: "Georgia", serif; font-size: 22px; color: var(--ink); font-weight: 700; }
+.hiw2-live-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  color: #6b655c;
+}
+.hiw2-live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--dash-green-ink);
+  box-shadow: 0 0 0 3px var(--dash-green-surface);
+}
+
+.hiw2-widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hiw2-widget-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.hiw2-widget-status {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--cream-deep);
+  color: #8a8477;
+}
+.hiw2-widget-status.is-live { background: #d4f5df; color: #0f5c2e; }
+
+.hiw2-user-list { display: flex; flex-direction: column; gap: 2px; }
+.hiw2-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line);
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.hiw2-user-row:last-child { border-bottom: none; }
+.hiw2-user-flag { font-size: 16px; }
+.hiw2-user-seen { flex: 1; color: #6b655c; }
+.hiw2-user-action {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cream-deep);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--walnut);
+}
+
+/* ============================================================
+ * Pricing / plans — fancy plan cards, reusing & extending the
+ * pp-card language from styles/marketing/pricing-page.css (same
+ * grid-of-cards convention, no <table>) with a richer limits block
+ * specific to this page: live-widget cap + monthly visit allowance,
+ * each as its own labeled stat row instead of a plain bullet, plus a
+ * clear overage line under every card.
+ * ============================================================ */
+.hiw2-plans-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 640px) {
+  .hiw2-plans-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1040px) {
+  .hiw2-plans-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.hiw2-plan-card {
+  position: relative;
+  background: linear-gradient(165deg, var(--bg) 0%, var(--cream) 100%);
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.hiw2-plan-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--walnut);
+}
+.hiw2-plan-card.is-featured {
+  border-color: var(--ink);
+  background: linear-gradient(165deg, #fff 0%, var(--cream) 100%);
+  box-shadow: 0 3px 0 var(--ink);
+}
+.hiw2-plan-card.is-featured:hover {
+  box-shadow: 0 5px 0 var(--ink);
+}
+
+.hiw2-plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  border: 1.5px solid var(--lime-ink);
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.hiw2-plan-name {
+  margin: 6px 0 0;
+  font-family: "Georgia", serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.hiw2-plan-tagline {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 12.5px;
+  color: #8a8477;
+  line-height: 1.45;
+  min-height: 34px;
+}
+.hiw2-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 2px 0 0;
+}
+.hiw2-plan-price-num {
+  font-family: "Georgia", serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.hiw2-plan-price-suffix {
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a8477;
+}
+
+/* The headline number on every card: monthly visit allowance — large,
+   pill-wrapped, lime-accented so it reads as the single most
+   important fact on the card (this is what the user explicitly asked
+   to have called out clearly per plan). */
+.hiw2-plan-visits {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--lime-glass, rgba(184,232,67,0.18));
+  border: 1px solid var(--lime-glass-border, rgba(184,232,67,0.5));
+}
+.hiw2-plan-visits-num {
+  font-family: "Georgia", serif;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--lime-ink);
+}
+.hiw2-plan-visits-label {
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4f5a1f;
+}
+
+.hiw2-plan-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+}
+.hiw2-plan-features li {
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  color: #4a453d;
+  padding-left: 19px;
+  position: relative;
+  line-height: 1.45;
+}
+.hiw2-plan-features li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  background: var(--lime-ink);
+  border-radius: 3px;
+}
+
+.hiw2-plan-overage {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 11.5px;
+  color: #8a8477;
+  line-height: 1.5;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.hiw2-plan-overage strong { color: var(--walnut-dark); }
+
+.hiw2-plan-cta {
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 100px;
+  padding: 13px 18px;
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 3px 0 rgba(26,31,10,0.5);
+  transition: transform 0.15s cubic-bezier(0.22,1,0.36,1), box-shadow 0.15s ease;
+}
+.hiw2-plan-cta:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(26,31,10,0.5); }
+.hiw2-plan-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(26,31,10,0.5); }
+.hiw2-plan-cta.is-featured {
+  background: var(--lime);
+  color: var(--lime-ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+/* Overage note under the whole pricing grid. */
+.hiw2-overage-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--cream);
+  border: 1px dashed var(--line);
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  color: #51493e;
+}
+.hiw2-overage-note strong { color: var(--ink); }
+
+/* ── Final conversion banner, same .cp-banner "sticker shadow"
+   recipe but bigger/bolder as this page's one closing CTA. ── */
+.hiw2-final-cta {
+  position: relative;
+  padding: 30px 26px;
+  border-radius: 22px;
+  border: 1.5px solid var(--ink);
+  background: linear-gradient(120deg, var(--lime) 0%, #d8f98e 60%, var(--lime) 100%);
+  box-shadow: 0 3px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  text-align: left;
+}
+@media (min-width: 680px) {
+  .hiw2-final-cta { flex-direction: row; align-items: center; justify-content: space-between; padding: 34px 36px; }
+}
+.hiw2-final-cta h2 {
+  margin: 0 0 6px;
+  font-family: "Georgia", serif;
+  font-size: clamp(21px, 3.4vw, 27px);
+  font-weight: 700;
+  color: var(--lime-ink);
+}
+.hiw2-final-cta p {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  font-size: 14px;
+  color: #37430f;
+  max-width: 48ch;
+}
+.hiw2-final-cta-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.hiw2-final-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  font-family: -apple-system, sans-serif;
+  font-size: 14.5px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.hiw2-final-btn.is-primary {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.5);
+}
+.hiw2-final-btn.is-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,0.5); }
+.hiw2-final-btn.is-secondary {
+  background: rgba(255,255,255,0.7);
+  color: var(--lime-ink);
+  border: 1.5px solid var(--lime-ink);
+}
+.hiw2-final-btn.is-secondary:hover { background: #fff; transform: translateY(-2px); }
+
+@media (max-width: 519px) {
+  .hiw2-hero { padding: 28px 18px 26px; }
+  .hiw2-plan-price-num { font-size: 29px; }
+}
