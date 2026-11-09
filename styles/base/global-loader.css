@@ -20,7 +20,13 @@
 
 .global-loader {
   --gl-ink: #12100A;
-  --gl-lime: #7C5CFC;
+  /* Was #7C5CFC (purple, despite the --gl-lime name) — the boot
+     progress bar fill used that purple directly. Switched to a
+     dimmed/toned-down lime (matching the app's real --lime: #b8e843,
+     muted down for a more professional, less neon fill) so the
+     progress bar actually reads as lime/cartoonic-but-calm instead of
+     purple. */
+  --gl-lime: #a3c94a;
   --gl-cream: #FFFDF5;
 }
 

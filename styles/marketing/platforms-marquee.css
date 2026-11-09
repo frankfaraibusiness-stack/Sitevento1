@@ -18,7 +18,12 @@
 
 .pfm {
   position: relative;
-  padding: 0 0 clamp(56px, 9vw, 108px);
+  /* Small top padding now (was 0) — this section sits directly under
+     the hero photo now (CartoonHeroContent's old CTAs/steps block
+     that used to separate them has been removed), so a little top
+     breathing room keeps the photo and this section from touching
+     edge-to-edge while staying far short of the old dead gap. */
+  padding: clamp(28px, 4.5vw, 44px) 0 clamp(56px, 9vw, 108px);
   background: transparent;
   overflow: hidden;
 }
@@ -32,11 +37,18 @@
   align-items: center;
 }
 
-/* ---- Intro: eyebrow / title / copy, same rhythm as .lss-intro / .wsx-intro ---- */
+/* ---- Intro: eyebrow / title / copy, same rhythm as .lss-intro / .wsx-intro ----
+   display:flex + align-items:center keeps the eyebrow/title/copy
+   centered (text-align: center) while still letting .pfm-ctas below
+   opt out via align-self: flex-start, so the CTA row anchors left
+   instead of centering under the wider copy block. */
 .pfm-intro {
   text-align: center;
   max-width: 580px;
   margin: 0 auto clamp(32px, 5vw, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .pfm-eyebrow {
@@ -69,6 +81,35 @@
   line-height: 1.55;
   color: var(--surface-ink-soft);
   margin: 0;
+}
+
+/* ---- CTAs — moved here from the old under-hero block
+   (CartoonHeroContent's .hero__inner). Kept left-aligned, same as
+   they were there, even though .pfm-intro's text above is centered —
+   the two buttons form their own left-anchored action row rather than
+   centering under the (wider, centered) copy. Reuses the app's shared
+   .btn / .btn-primary / .btn-secondary classes (marketing-hero.css /
+   cartoon-mobile-hero.css) so these are visually identical to every
+   other CTA pair on the page. ---- */
+.pfm-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: flex-start;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+@media (max-width: 480px) {
+  .pfm-ctas {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .pfm-ctas .btn {
+    width: 100%;
+  }
 }
 
 /* ---- Scrolling track ---- */

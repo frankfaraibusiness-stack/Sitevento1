@@ -152,47 +152,37 @@ export function SitesConnectedStat() {
 // of a separate, re-typed desktop copy block. Only the CSS differs
 // per breakpoint (see .hero-section-desktop .cartoon-hero in
 // marketing-hero.css), the content and classes are identical.
+//
+// The section that used to sit here — .hero__inner, with its 2 CTAs
+// (Connect your site / Watch Demo) and the 5-item .hero__steps list —
+// has been removed per request: that content now lives in
+// PlatformsMarquee.tsx instead (the "works everywhere" section), left-
+// aligned above its own platform strip, so the CTAs belong to that
+// section rather than floating in an empty block under the hero photo.
+// This component (CartoonHeroContent) is now just the hero photo band
+// itself, with no content underneath it, so nothing creates a gap
+// between the photo and whatever section follows (see
+// cartoon-mobile-hero.css for the matching spacing cleanup).
 export function CartoonHeroContent({ onConnectClick, onHowItWorksClick }: CartoonHeroContentProps) {
+  // onConnectClick / onHowItWorksClick are no longer used here (the
+  // CTAs that used them moved to PlatformsMarquee) but are kept in
+  // the prop signature so CartoonMobileHero doesn't need a matching
+  // change, and so this still composes cleanly if content is ever
+  // restored under the photo.
+  void onConnectClick;
+  void onHowItWorksClick;
+
   return (
     <section className="hero" aria-label="Sitevento">
-      {/* Mobile-only 16:9 photo band. Now just the hero photo itself —
-          no title, no description, no rotator, no sites-connected
-          stat overlaid on it. All of that (headline, description,
-          stat) has been removed from both this banner and the
-          .hero__inner column below per request; the photo already
-          carries its own baked-in headline/description art, so a
-          second, separately-styled text layer on top of it was
-          redundant. Hidden on desktop (.cartoon-hero--desktop
-          .hero__banner, marketing-hero.css) — desktop renders its own
-          full-height version of the same plain photo instead (see
-          components/marketing/Hero.tsx's .dhero). */}
+      {/* Just the hero photo itself — no title, no description, no
+          rotator, no sites-connected stat, no CTAs/steps overlaid on
+          or stacked under it. The photo already carries its own
+          baked-in headline/description art. Hidden on desktop
+          (.cartoon-hero--desktop .hero__banner, marketing-hero.css) —
+          desktop renders its own full-height version of the same
+          plain photo instead (see components/marketing/Hero.tsx's
+          .dhero). */}
       <div className="hero__banner" aria-hidden="true" />
-
-      <div className="hero__layout">
-        <div className="hero__inner">
-          <div className="hero__ctas">
-            <button type="button" className="btn btn-primary" onClick={onConnectClick}>
-              Connect your site <span aria-hidden="true">➔</span>
-            </button>
-
-            <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
-              <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
-            </button>
-          </div>
-
-          <ol className="hero__steps" aria-label="How it works">
-            {HOW_IT_WORKS_STEPS.map((step, index) => (
-              <li className="hero__step" key={step}>
-                <span className="hero__stepNum" aria-hidden="true">{index + 1}</span>
-                <span className="hero__stepText">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* desktop placeholder for the image */}
-        <div className="hero__visual" aria-hidden="true" />
-      </div>
     </section>
   );
 }

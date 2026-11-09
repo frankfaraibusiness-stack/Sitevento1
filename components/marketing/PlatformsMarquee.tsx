@@ -145,7 +145,19 @@ function PlatformRow({ ariaHidden }: { ariaHidden?: boolean }) {
   );
 }
 
-export function PlatformsMarquee() {
+interface PlatformsMarqueeProps {
+  // The 2 CTAs (Connect your site / Watch Demo) that used to sit in
+  // their own block directly under the mobile hero photo
+  // (CartoonMobileHero.tsx's .hero__inner, alongside a 5-step list)
+  // now live here instead, left-aligned under this section's intro
+  // copy — the 5-step list itself was removed, not moved. Optional so
+  // this section still renders standalone (e.g. if reused somewhere
+  // without the connect flow wired up) without crashing.
+  onConnectClick?: () => void;
+  onHowItWorksClick?: () => void;
+}
+
+export function PlatformsMarquee({ onConnectClick, onHowItWorksClick }: PlatformsMarqueeProps) {
   return (
     <section className="pfm" aria-label="Platforms sitevento works with">
       <div className="pfm-inner">
@@ -156,6 +168,18 @@ export function PlatformsMarquee() {
             Shopify store, Wix page, hand-rolled HTML — doesn&apos;t matter. One script tag and sitevento runs
             alongside your stack, not instead of it.
           </p>
+
+          {(onConnectClick || onHowItWorksClick) && (
+            <div className="pfm-ctas">
+              <button type="button" className="btn btn-primary" onClick={onConnectClick}>
+                Connect your site <span aria-hidden="true">➔</span>
+              </button>
+
+              <button type="button" className="btn btn-secondary" onClick={onHowItWorksClick}>
+                <span className="play-icon" aria-hidden="true">▶</span> Watch Demo
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="pfm-track-wrap">

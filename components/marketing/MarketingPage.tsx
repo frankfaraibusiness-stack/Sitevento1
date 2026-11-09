@@ -15,7 +15,11 @@
 //      with its own SVG glyph. Moved directly under the hero (was
 //      previously lower down, after WidgetShowcaseSection) so it's
 //      the first thing visitors see under the hero image/photo, on
-//      both mobile and desktop.
+//      both mobile and desktop. Also now owns the 2 CTAs (Connect
+//      your site / Watch Demo) that used to live in their own block
+//      directly under the mobile hero photo, left-aligned under this
+//      section's intro copy — that old block's 5-step list was
+//      removed outright, not moved.
 //   3. LaptopShowcase — the connect-flow demo (paste the script tag
 //      → verifying → connected → control panel → security).
 //   4. LiveStatsSection — "One script. No rebuild." intro copy plus
@@ -78,7 +82,7 @@ export function MarketingPage({ onConnectClick }: MarketingPageProps) {
   return (
     <div id="marketingView">
       <Hero onConnectClick={onConnectClick} onHowItWorksClick={() => setHowItWorksOpen(true)} />
-      <PlatformsMarquee />
+      <PlatformsMarquee onConnectClick={onConnectClick} onHowItWorksClick={() => setHowItWorksOpen(true)} />
       <LaptopShowcase />
       <LiveStatsSection />
       <WidgetShowcaseSection />
