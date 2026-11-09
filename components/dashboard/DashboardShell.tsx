@@ -100,6 +100,52 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const tone = useBgTone();
 
+  // Make the page chrome match the dashboard surface: <html>/<body> (the
+  // overscroll / safe-area / behind-the-header colour, via data-dx-tone in
+  // dx-dashboard.css) and the browser's own top bar (<meta theme-color>).
+  // Both are restored on unmount so other routes keep the normal page colour.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-dx-tone', tone);
+
+    const metas = Array.from(document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'));
+    const created = metas.length === 0;
+    if (created) {
+      const m = document.createElement('meta');
+      m.name = 'theme-color';
+      document.head.appendChild(m);
+      metas.push(m);
+    }
+    const originals = metas.map((m) => m.getAttribute('content'));
+
+    const toHex = (value: string): string | null => {
+      let rgb: number[] | null = null;
+      const a = /rgba?\(([^)]+)\)/.exec(value);
+      if (a) rgb = a[1].split(/[\s,/]+/).filter(Boolean).slice(0, 3).map(Number);
+      const b = /color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/.exec(value);
+      if (b) rgb = [Number(b[1]) * 255, Number(b[2]) * 255, Number(b[3]) * 255];
+      if (!rgb || rgb.length < 3 || rgb.some((n) => isNaN(n))) return null;
+      return '#' + rgb.map((n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')).join('');
+    };
+    const sync = () => {
+      const dx = document.querySelector('.dx');
+      if (!dx) return;
+      const hex = toHex(getComputedStyle(dx).backgroundColor);
+      if (hex) metas.forEach((m) => m.setAttribute('content', hex));
+    };
+    sync();
+    // Theme colour changes (Settings > Appearance) rewrite --app-bg on <html>.
+    const observer = new MutationObserver(sync);
+    observer.observe(root, { attributes: true, attributeFilter: ['style'] });
+
+    return () => {
+      observer.disconnect();
+      root.removeAttribute('data-dx-tone');
+      if (created) metas.forEach((m) => m.remove());
+      else metas.forEach((m, i) => (originals[i] === null ? m.removeAttribute('content') : m.setAttribute('content', originals[i] as string)));
+    };
+  }, [tone]);
+
   const [rangeId, setRangeId] = useState<RangeId>('7d');
   const [custom, setCustom] = useState<CustomRange>({ from: '', to: '' });
   const [metric, setMetric] = useState<TrendMetric>('visits');

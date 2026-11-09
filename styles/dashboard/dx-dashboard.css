@@ -75,6 +75,16 @@
   --dx-shadow-pop: 0 12px 32px rgba(0, 0, 0, .45);
 }
 
+/* ---------- Page chrome follows the dashboard ----------
+   DashboardShell sets data-dx-tone on <html> while the dashboard is mounted.
+   html/body then paint exactly what .dx paints (same values as --dx-surface
+   above), so overscroll, the area behind the fixed header and the safe-area
+   insets are the dashboard colour instead of the purple --app-bg. */
+html[data-dx-tone='light'] { --dx-page-bg: #f6f3ff; }
+html[data-dx-tone='dark'] { --dx-page-bg: color-mix(in srgb, var(--app-bg) 90%, #000 10%); }
+html[data-dx-tone],
+html[data-dx-tone] body { background: var(--dx-page-bg); }
+
 .dx :is(button, a, input, select):focus-visible { outline: 2px solid var(--dx-a); outline-offset: 2px; }
 .dx button { font-family: inherit; }
 

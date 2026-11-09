@@ -55,9 +55,18 @@ export function useBgTone(): BgTone {
   const [tone, setTone] = useState<BgTone>('light');
 
   useEffect(() => {
+    // Reads --app-bg (the theme colour itself) through a throwaway probe
+    // element rather than <body>'s background: on the dashboard, html/body
+    // are repainted with the dashboard surface (see dx-dashboard.css), which
+    // is derived FROM this tone — reading it back would feed on itself.
     const read = () => {
-      const fromBody = toneForColor(getComputedStyle(document.body).backgroundColor);
-      const next = fromBody ?? toneForColor(getComputedStyle(document.documentElement).backgroundColor);
+      const probe = document.createElement('div');
+      probe.style.cssText =
+        'position:fixed;width:0;height:0;visibility:hidden;pointer-events:none;background-color:var(--app-bg)';
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      const next = toneForColor(color) ?? toneForColor(getComputedStyle(document.body).backgroundColor);
       if (next) setTone(next);
     };
     let settle = 0;
