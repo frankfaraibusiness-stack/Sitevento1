@@ -219,10 +219,6 @@ export function HowItWorksPage() {
                   <div className="hiw2-code-dots"><span /><span /><span /></div>
                   <code className="hiw2-code-line">&lt;meta name=&quot;sitevento&quot; content=&quot;…&quot;&gt;</code>
                 </div>
-                <span className="hiw2-verify-pill">
-                  <span className="hiw2-verify-dot" />
-                  Tag verified — tracking live
-                </span>
               </div>
             </section>
 

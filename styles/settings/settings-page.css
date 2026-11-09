@@ -54,8 +54,8 @@
   --set-on-glass-dim: color-mix(in srgb, var(--ink) 62%, transparent);
   --set-on-glass-faint: color-mix(in srgb, var(--ink) 42%, transparent);
   --set-hairline: var(--line);
-  --set-danger: #c23b22;
-  --set-danger-strong: #a92e18;
+  --set-danger: #e21f1f;
+  --set-danger-strong: #b81414;
 }
 
 .settings-wrap {
@@ -354,8 +354,10 @@
   border-color: var(--set-glass-border-strong);
 }
 
-.sidebar-footer-btn.logout {
-  color: var(--set-danger);
+.sidebar-footer-btn.logout,
+.sidebar-footer-btn.logout svg {
+  color: var(--set-danger) !important;
+  stroke: var(--set-danger) !important;
 }
 
 .sidebar-footer-btn.logout:hover {

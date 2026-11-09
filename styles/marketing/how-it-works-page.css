@@ -426,24 +426,9 @@
 .hiw2-code-line {
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 12.5px;
-  color: #d9f27a;
+  color: #6ea8fe;
   word-break: break-all;
 }
-.hiw2-verify-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  align-self: flex-start;
-  padding: 7px 13px;
-  border-radius: 999px;
-  background: var(--dash-green-surface);
-  border: 1px solid var(--dash-green-border);
-  color: var(--dash-green-ink);
-  font-family: -apple-system, sans-serif;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.hiw2-verify-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
 .hiw2-stat-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .hiw2-stat-tile {
