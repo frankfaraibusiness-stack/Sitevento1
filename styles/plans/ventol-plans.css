@@ -2,9 +2,12 @@
  * ventol-plans.css — the plans screen (components/plans/*)
  *
  * Phone: four compact rows that drop down to the full list.
- * Desktop (>=1200px): four columns, every card already open.
+ * Desktop (>=1200px): four equal-height compact columns; clicking
+ * a card opens its full details in a fullscreen modal (.vpl-modal-*)
+ * instead of expanding inline.
  * Each plan sets its own palette through the custom properties
- * on .vpl-card[data-plan]; everything else reads from those.
+ * on .vpl-card[data-plan]; everything else reads from those,
+ * including the modal card via the same data-plan attribute.
  * ============================================================ */
 
 .vpl {
@@ -19,19 +22,26 @@
 .vpl *::after { box-sizing: border-box; }
 
 /* ---------- page heading ---------- */
-.vpl-top { text-align: center; margin: 4px 0 26px; }
+.vpl-top {
+  text-align: center;
+  margin: 4px 0 30px;
+  padding: 0 8px;
+}
 .vpl-top h1 {
-  margin: 0;
-  font-size: clamp(26px, 6vw, 38px);
+  margin: 0 auto;
+  max-width: 13ch;
+  font-size: clamp(28px, 8vw, 40px);
+  line-height: 1.08;
   font-weight: 900;
   letter-spacing: -0.02em;
   color: #14121c;
 }
 .vpl-hint-wide { display: none; }
 .vpl-top p {
-  margin: 6px auto 0;
-  max-width: 34ch;
-  font-size: 14px;
+  margin: 10px auto 0;
+  max-width: 30ch;
+  font-size: 14.5px;
+  line-height: 1.45;
   color: var(--surface-ink-soft, rgba(20, 18, 28, 0.62));
 }
 
@@ -83,7 +93,7 @@
     0 20px 32px -8px rgba(10, 9, 18, 0.5);
 }
 
-/* glass body: tinted gradient, gloss, inner rim, and a moving sheen */
+/* glass body: tinted gradient, gloss, inner rim */
 .vpl-surface {
   position: absolute;
   inset: 0;
@@ -106,22 +116,6 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04) 34%, transparent 58%);
-}
-.vpl-surface::after {
-  content: "";
-  position: absolute;
-  top: -30%;
-  bottom: -30%;
-  left: 0;
-  width: 55%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transform: translateX(-130%) skewX(-18deg);
-  animation: vpl-sheen 6.5s ease-in-out infinite;
-  animation-delay: var(--sheen-delay, 0s);
-}
-@keyframes vpl-sheen {
-  0%, 58% { transform: translateX(-130%) skewX(-18deg); }
-  100% { transform: translateX(270%) skewX(-18deg); }
 }
 
 /* "Your plan" / "Most popular" tag, sitting on the card's top edge */
@@ -402,6 +396,8 @@
   .vpl-hint-wide { display: inline; }
   .vpl { padding-top: 32px; }
   .vpl-top { margin-bottom: 34px; }
+  .vpl-top h1 { max-width: none; }
+  .vpl-top p { max-width: 44ch; }
   .vpl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 20px; align-items: stretch; }
 
   .vpl-head {
@@ -409,11 +405,12 @@
     flex-direction: column;
     align-items: center;
     gap: 0;
-    padding: 26px 16px 8px;
+    padding: 26px 16px 22px;
     text-align: center;
-    cursor: default;
-    pointer-events: none;
+    cursor: pointer;
   }
+  .vpl-card:focus-within,
+  .vpl-head:hover { transform: none; }
   .vpl-id { display: contents; }
   .vpl-mascot { order: 1; width: 108px; height: 108px; }
   .vpl-name { order: 2; margin-top: 8px; font-size: 19px; }
@@ -432,17 +429,94 @@
   .vpl-chips { order: 4; justify-content: center; margin-top: 16px; }
   .vpl-chev { display: none; }
 
-  .vpl-panel,
-  .vpl-card .vpl-panel { grid-template-rows: 1fr; visibility: visible; transition: none; }
-  .vpl-pitch { flex-direction: column; align-items: stretch; margin-top: 6px; }
-  .vpl-pitch .vpl-mascot { display: none; }
-  .vpl-bubble { margin-bottom: 4px; border-radius: 18px; text-align: center; }
-  .vpl-bubble::before { display: none; }
+  /* each collapsed card gets a quiet "view details" affordance at the foot */
+  .vpl-head::after {
+    content: "View details";
+    order: 5;
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--acc);
+    opacity: 0.85;
+  }
+  .vpl-head:hover::after { opacity: 1; text-decoration: underline; }
+
+  /* ---------- fullscreen plan modal ---------- */
+  .vpl-modal-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5vh 24px;
+    background: rgba(8, 7, 14, 0.6);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    animation: vpl-scrim-in 0.2s ease both;
+  }
+  @keyframes vpl-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .vpl-modal-card {
+    position: relative;
+    isolation: isolate;
+    width: min(620px, 100%);
+    max-height: 90vh;
+    border-radius: 28px;
+    color: #f6f4ff;
+    box-shadow:
+      0 0 0 2.5px var(--vpl-edge),
+      0 10px 0 0 var(--vpl-edge),
+      0 30px 60px -12px rgba(10, 9, 18, 0.6);
+    animation: vpl-modal-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @keyframes vpl-modal-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .vpl-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    cursor: pointer;
+  }
+  .vpl-modal-close:hover { background: rgba(255, 255, 255, 0.24); }
+  .vpl-modal-close svg { width: 18px; height: 18px; }
+
+  .vpl-modal-scroll { max-height: 90vh; overflow-y: auto; border-radius: inherit; }
+
+  .vpl-modal-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 36px 24px 8px;
+  }
+  .vpl-modal-head .vpl-mascot { width: 100px; height: 100px; }
+  .vpl-modal-head .vpl-name { margin-top: 10px; font-size: 20px; font-weight: 800; }
+  .vpl-modal-head .vpl-price { margin-top: 10px; }
+  .vpl-modal-head .vpl-price b { font-size: 46px; }
+  .vpl-modal-head .vpl-chips { justify-content: center; margin-top: 14px; }
+
+  .vpl-modal-body { padding: 10px 24px 28px; }
+  .vpl-modal-body .vpl-pitch { flex-direction: column; align-items: stretch; margin-top: 6px; }
+  .vpl-modal-body .vpl-pitch .vpl-mascot { display: none; }
+  .vpl-modal-body .vpl-bubble { margin-bottom: 4px; border-radius: 18px; text-align: center; }
+  .vpl-modal-body .vpl-bubble::before { display: none; }
 }
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .vpl-surface::after,
   .vpl-m-body,
   .vpl-m-eyes,
   .vpl-m-twinkle,

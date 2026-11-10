@@ -3,10 +3,13 @@
 // components/plans/PlanCards.tsx
 //
 // The four plan cards. On a phone each card is a compact row (mascot,
-// name, price, headline numbers) that drops down to the full list; on
-// desktop all four sit side by side, already open. Purely presentational:
-// it gets the current plan and a choose callback from VentolPlans.
-import { useEffect, useId, useState, type CSSProperties } from 'react';
+// name, price, headline numbers) that drops down to the full list in
+// place. On desktop all four sit side by side as compact cards; clicking
+// one opens its full details in a fullscreen modal instead of expanding
+// inline, so one tall card never stretches the others. Purely
+// presentational: it gets the current plan and a choose callback from
+// VentolPlans.
+import { useEffect, useId, useState } from 'react';
 import { PLANS, type PlanId } from '@/lib/plans';
 import { PLAN_FACTS, type FactState, type PlanFacts } from './planFacts';
 import { MASCOTS } from './mascots';
@@ -81,6 +84,54 @@ function StateIcon({ state }: { state: FactState }) {
   );
 }
 
+/** The pitch + fact groups + CTA, shared by the inline mobile panel and the desktop modal. */
+function PlanDetails({ planId, current, locked, busy, direction, onChoose }: {
+  planId: PlanId;
+  current: boolean;
+  locked: boolean;
+  busy: boolean;
+  direction: 'current' | 'up' | 'down';
+  onChoose: () => void;
+}) {
+  const facts = PLAN_FACTS[planId];
+  const plan = facts.plan;
+  const cta = current
+    ? 'Your current plan'
+    : busy
+      ? 'Switching…'
+      : direction === 'down'
+        ? `Switch to ${plan.name}`
+        : `Get ${plan.name}`;
+
+  return (
+    <>
+      <div className="vpl-pitch">
+        <Mascot id={planId} className="vpl-mascot vpl-mascot-lg" />
+        <p className="vpl-bubble">{PITCH[planId](facts)}</p>
+      </div>
+
+      {facts.groups.map((group) => (
+        <section className="vpl-group" key={group.title}>
+          <h4>{group.title}</h4>
+          <ul>
+            {group.facts.map((fact) => (
+              <li className="vpl-row" data-state={fact.state} key={fact.label}>
+                <StateIcon state={fact.state} />
+                <span className="vpl-label">{fact.label}</span>
+                <span className="vpl-value">{fact.value}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+
+      <button type="button" className="vpl-cta" disabled={current || locked} onClick={onChoose}>
+        {cta}
+      </button>
+    </>
+  );
+}
+
 interface PlanCardProps {
   planId: PlanId;
   index: number;
@@ -96,24 +147,16 @@ interface PlanCardProps {
 function PlanCard({ planId, index, direction, open, desktop, busy, locked, onToggle, onChoose }: PlanCardProps) {
   const facts = PLAN_FACTS[planId];
   const plan = facts.plan;
-  const expanded = open || desktop;
+  // On desktop, cards never expand inline — a click opens the fullscreen modal instead.
+  const expanded = !desktop && open;
   const panelId = `vpl-panel-${planId}`;
   const current = direction === 'current';
   const tag = current ? 'Your plan' : plan.featured ? 'Most popular' : null;
-
-  const cta = current
-    ? 'Your current plan'
-    : busy
-      ? 'Switching…'
-      : direction === 'down'
-        ? `Switch to ${plan.name}`
-        : `Get ${plan.name}`;
 
   return (
     <article
       className={`vpl-card${expanded ? ' is-open' : ''}${current ? ' is-current' : ''}`}
       data-plan={planId}
-      style={{ '--sheen-delay': `${index * 1.4}s` } as CSSProperties}
     >
       {tag && <span className="vpl-tag">{tag}</span>}
       <div className="vpl-surface" aria-hidden="true" />
@@ -121,9 +164,9 @@ function PlanCard({ planId, index, direction, open, desktop, busy, locked, onTog
       <button
         type="button"
         className="vpl-head"
-        aria-expanded={expanded}
-        aria-controls={panelId}
-        tabIndex={desktop ? -1 : 0}
+        aria-expanded={desktop ? undefined : expanded}
+        aria-haspopup={desktop ? 'dialog' : undefined}
+        aria-controls={desktop ? undefined : panelId}
         onClick={onToggle}
       >
         <Mascot id={planId} className="vpl-mascot" />
@@ -145,36 +188,87 @@ function PlanCard({ planId, index, direction, open, desktop, busy, locked, onTog
         </svg>
       </button>
 
-      <div className="vpl-panel" id={panelId}>
-        <div className="vpl-panel-in">
-          <div className="vpl-panel-pad">
-            <div className="vpl-pitch">
-              <Mascot id={planId} className="vpl-mascot vpl-mascot-lg" />
-              <p className="vpl-bubble">{PITCH[planId](facts)}</p>
+      {!desktop && (
+        <div className="vpl-panel" id={panelId}>
+          <div className="vpl-panel-in">
+            <div className="vpl-panel-pad">
+              <PlanDetails planId={planId} current={current} locked={locked} busy={busy} direction={direction} onChoose={onChoose} />
             </div>
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
 
-            {facts.groups.map((group) => (
-              <section className="vpl-group" key={group.title}>
-                <h4>{group.title}</h4>
-                <ul>
-                  {group.facts.map((fact) => (
-                    <li className="vpl-row" data-state={fact.state} key={fact.label}>
-                      <StateIcon state={fact.state} />
-                      <span className="vpl-label">{fact.label}</span>
-                      <span className="vpl-value">{fact.value}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
+/** Fullscreen desktop view of one plan, opened from its card. */
+function PlanModal({ planId, direction, busy, locked, onChoose, onClose }: {
+  planId: PlanId;
+  direction: 'current' | 'up' | 'down';
+  busy: boolean;
+  locked: boolean;
+  onChoose: () => void;
+  onClose: () => void;
+}) {
+  const facts = PLAN_FACTS[planId];
+  const plan = facts.plan;
+  const current = direction === 'current';
+  const tag = current ? 'Your plan' : plan.featured ? 'Most popular' : null;
 
-            <button type="button" className="vpl-cta" disabled={current || locked} onClick={onChoose}>
-              {cta}
-            </button>
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div className="vpl-modal-scrim" role="presentation" onClick={onClose}>
+      <div
+        className="vpl-modal-card"
+        data-plan={planId}
+        role="dialog"
+        aria-modal="true"
+        aria-label={plan.name}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="vpl-surface" aria-hidden="true" />
+        {tag && <span className="vpl-tag">{tag}</span>}
+
+        <button type="button" className="vpl-modal-close" onClick={onClose} aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+
+        <div className="vpl-modal-scroll">
+          <div className="vpl-modal-head">
+            <Mascot id={planId} className="vpl-mascot" />
+            <span className="vpl-name">{plan.name}</span>
+            <span className="vpl-price">
+              <b>{plan.priceDisplay}</b>
+              <i>/mo</i>
+            </span>
+            <span className="vpl-chips">
+              <span>{facts.visitsShort} visits/mo</span>
+              <span>
+                {facts.sites} site{facts.sites === 1 ? '' : 's'}
+              </span>
+            </span>
+          </div>
+
+          <div className="vpl-modal-body">
+            <PlanDetails planId={planId} current={current} locked={locked} busy={busy} direction={direction} onChoose={onChoose} />
           </div>
         </div>
       </div>
-    </article>
+    </div>
   );
 }
 
@@ -189,24 +283,53 @@ interface PlanCardsProps {
 export function PlanCards({ currentId, busyId, onChoose }: PlanCardsProps) {
   const desktop = useIsDesktop();
   const [openIds, setOpenIds] = useState<Partial<Record<PlanId, boolean>>>({});
+  const [modalId, setModalId] = useState<PlanId | null>(null);
   const currentIndex = currentId ? PLANS.findIndex((p) => p.id === currentId) : -1;
 
+  // Leaving desktop width (e.g. resizing down) with the modal open would strand
+  // it open behind the now-inline cards, so close it when the layout switches.
+  useEffect(() => {
+    if (!desktop) setModalId(null);
+  }, [desktop]);
+
+  const directionFor = (i: number) => (currentIndex === -1 ? 'up' : i === currentIndex ? 'current' : i < currentIndex ? 'down' : 'up');
+
   return (
-    <div className="vpl-grid">
-      {PLANS.map((p, i) => (
-        <PlanCard
-          key={p.id}
-          planId={p.id}
-          index={i}
-          direction={currentIndex === -1 ? 'up' : i === currentIndex ? 'current' : i < currentIndex ? 'down' : 'up'}
-          open={!!openIds[p.id]}
-          desktop={desktop}
-          busy={busyId === p.id}
+    <>
+      <div className="vpl-grid">
+        {PLANS.map((p, i) => (
+          <PlanCard
+            key={p.id}
+            planId={p.id}
+            index={i}
+            direction={directionFor(i)}
+            open={!!openIds[p.id]}
+            desktop={desktop}
+            busy={busyId === p.id}
+            locked={currentId === null || busyId !== null}
+            onToggle={() =>
+              desktop
+                ? setModalId(p.id)
+                : setOpenIds((prev) => ({ ...prev, [p.id]: !prev[p.id] }))
+            }
+            onChoose={() => onChoose(p.id)}
+          />
+        ))}
+      </div>
+
+      {desktop && modalId && (
+        <PlanModal
+          planId={modalId}
+          direction={directionFor(PLANS.findIndex((p) => p.id === modalId))}
+          busy={busyId === modalId}
           locked={currentId === null || busyId !== null}
-          onToggle={() => setOpenIds((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
-          onChoose={() => onChoose(p.id)}
+          onChoose={() => {
+            onChoose(modalId);
+            setModalId(null);
+          }}
+          onClose={() => setModalId(null)}
         />
-      ))}
-    </div>
+      )}
+    </>
   );
 }
