@@ -1,0 +1,455 @@
+/* ============================================================
+ * ventol-plans.css — the plans screen (components/plans/*)
+ *
+ * Phone: four compact rows that drop down to the full list.
+ * Desktop (>=1200px): four columns, every card already open.
+ * Each plan sets its own palette through the custom properties
+ * on .vpl-card[data-plan]; everything else reads from those.
+ * ============================================================ */
+
+.vpl {
+  --vpl-edge: #0a0912;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 14px 56px;
+  font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.vpl *,
+.vpl *::before,
+.vpl *::after { box-sizing: border-box; }
+
+/* ---------- page heading ---------- */
+.vpl-top { text-align: center; margin: 4px 0 26px; }
+.vpl-top h1 {
+  margin: 0;
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #14121c;
+}
+.vpl-hint-wide { display: none; }
+.vpl-top p {
+  margin: 6px auto 0;
+  max-width: 34ch;
+  font-size: 14px;
+  color: var(--surface-ink-soft, rgba(20, 18, 28, 0.62));
+}
+
+.vpl-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding-top: 10px;
+  align-items: start;
+}
+
+/* ---------- per-plan palettes ---------- */
+.vpl-card[data-plan="free"] {
+  --bg1: rgba(8, 40, 33, 0.95); --bg2: rgba(14, 80, 59, 0.95);
+  --acc: #6ee7a3; --acc2: #c4f9d9; --ex: #0c5a39; --glow: 110, 231, 163;
+}
+.vpl-card[data-plan="starter"] {
+  --bg1: rgba(6, 27, 57, 0.95); --bg2: rgba(10, 74, 132, 0.95);
+  --acc: #5ccbff; --acc2: #c2ebff; --ex: #0a4a7e; --glow: 92, 203, 255;
+}
+.vpl-card[data-plan="scale"] {
+  --bg1: rgba(35, 11, 70, 0.95); --bg2: rgba(90, 33, 154, 0.95);
+  --acc: #d8a4ff; --acc2: #f6dcff; --ex: #5b21a6; --glow: 216, 164, 255;
+}
+.vpl-card[data-plan="pro-developer"] {
+  --bg1: rgba(31, 20, 4, 0.96); --bg2: rgba(88, 58, 8, 0.96);
+  --acc: #ffd24d; --acc2: #ffeeb0; --ex: #8a5a06; --glow: 255, 210, 77;
+}
+
+/* ---------- card shell ---------- */
+.vpl-card {
+  position: relative;
+  isolation: isolate;
+  border-radius: 24px;
+  color: #f6f4ff;
+  box-shadow:
+    0 0 0 2.5px var(--vpl-edge),
+    0 7px 0 0 var(--vpl-edge),
+    0 20px 32px -8px rgba(10, 9, 18, 0.5);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.vpl-card:hover { transform: translateY(-3px); }
+@media (hover: none) { .vpl-card:hover { transform: none; } }
+.vpl-card.is-current {
+  box-shadow:
+    0 0 0 2.5px var(--vpl-edge),
+    0 7px 0 0 var(--vpl-edge),
+    0 0 34px 2px rgba(var(--glow), 0.5),
+    0 20px 32px -8px rgba(10, 9, 18, 0.5);
+}
+
+/* glass body: tinted gradient, gloss, inner rim, and a moving sheen */
+.vpl-surface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  overflow: hidden;
+  background:
+    radial-gradient(130% 90% at 0% 0%, rgba(var(--glow), 0.28), transparent 55%),
+    radial-gradient(90% 70% at 100% 100%, rgba(var(--glow), 0.14), transparent 60%),
+    linear-gradient(160deg, var(--bg1), var(--bg2));
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+    inset 0 -24px 40px -26px rgba(var(--glow), 0.4);
+}
+.vpl-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04) 34%, transparent 58%);
+}
+.vpl-surface::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 55%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  animation: vpl-sheen 6.5s ease-in-out infinite;
+  animation-delay: var(--sheen-delay, 0s);
+}
+@keyframes vpl-sheen {
+  0%, 58% { transform: translateX(-130%) skewX(-18deg); }
+  100% { transform: translateX(270%) skewX(-18deg); }
+}
+
+/* "Your plan" / "Most popular" tag, sitting on the card's top edge */
+.vpl-tag {
+  position: absolute;
+  z-index: 2;
+  top: -12px;
+  left: 18px;
+  padding: 4px 11px;
+  border-radius: 99px;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--vpl-edge);
+  background: linear-gradient(180deg, var(--acc2), var(--acc));
+  box-shadow: 0 0 0 2px var(--vpl-edge);
+}
+
+/* ---------- header row (the always-visible part) ---------- */
+.vpl-head {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px 12px 10px;
+  margin: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 24px;
+  -webkit-tap-highlight-color: transparent;
+}
+.vpl-head:focus-visible { outline: 3px solid var(--acc2); outline-offset: -4px; }
+
+.vpl-id { display: flex; flex-direction: column; min-width: 0; }
+.vpl-name {
+  font-size: 15.5px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: #fff;
+  white-space: nowrap;
+}
+.vpl-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.vpl-chips span {
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--acc2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* extruded 3D price */
+.vpl-price { display: flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+.vpl-price b {
+  display: inline-block;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--acc2);
+  transform: perspective(260px) rotateX(14deg) rotateY(-8deg);
+  transform-origin: 100% 60%;
+  text-shadow:
+    0 1px 0 var(--ex), 0 2px 0 var(--ex), 0 3px 0 var(--ex),
+    0 4px 0 var(--ex), 0 5px 0 var(--ex), 0 6px 0 var(--ex),
+    0 11px 12px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(var(--glow), 0.45);
+}
+.vpl-price i { font-style: normal; font-size: 12px; font-weight: 800; color: rgba(255, 255, 255, 0.6); }
+
+.vpl-chev {
+  width: 20px;
+  height: 20px;
+  color: var(--acc);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.vpl-card.is-open .vpl-chev { transform: rotate(180deg); }
+
+/* ---------- mascots ---------- */
+.vpl-mascot { position: relative; display: block; flex: none; width: 58px; height: 58px; }
+.vpl-mascot::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--glow), 0.5), transparent 68%);
+  filter: blur(5px);
+}
+.vpl-mascot svg { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
+
+.vpl-m-body { transform-origin: 60px 110px; animation: vpl-bob 3.4s ease-in-out infinite; }
+@keyframes vpl-bob {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-3px) scale(1.015, 0.985); }
+}
+.vpl-m-eyes { transform-box: fill-box; transform-origin: center; animation: vpl-blink 4.8s infinite; }
+@keyframes vpl-blink {
+  0%, 91%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+.vpl-m-twinkle { transform-box: fill-box; transform-origin: center; animation: vpl-twinkle 2.4s ease-in-out infinite; }
+@keyframes vpl-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.6) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(25deg); }
+}
+.vpl-m-bolt { animation: vpl-flicker 3s infinite; }
+@keyframes vpl-flicker {
+  0%, 86%, 100% { filter: none; }
+  90% { filter: brightness(1.5) drop-shadow(0 0 4px #fde047); }
+  94% { filter: none; }
+}
+
+/* ---------- dropdown panel ---------- */
+.vpl-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.38s;
+}
+.vpl-card.is-open .vpl-panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition-delay: 0s, 0s;
+}
+.vpl-panel-in { min-height: 0; overflow: hidden; }
+.vpl-panel-pad { padding: 2px 16px 20px; }
+
+.vpl-pitch { display: flex; align-items: flex-end; gap: 10px; margin: 2px 0 8px; }
+.vpl-mascot-lg { width: 86px; height: 86px; }
+.vpl-bubble {
+  position: relative;
+  margin: 0 0 14px;
+  padding: 11px 13px;
+  border-radius: 18px 18px 18px 5px;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.42;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.11);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.vpl-bubble::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  bottom: 12px;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.11);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0 0 0 3px;
+  transform: rotate(45deg);
+}
+
+.vpl-group h4 {
+  margin: 16px 0 3px;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+.vpl-group ul { margin: 0; padding: 0; list-style: none; }
+.vpl-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vpl-row:last-child { border-bottom: 0; }
+.vpl-ico { width: 18px; height: 18px; }
+.vpl-label { color: rgba(255, 255, 255, 0.88); font-weight: 600; }
+.vpl-value { font-weight: 800; color: #fff; text-align: right; white-space: nowrap; }
+
+.vpl-row[data-state="yes"] .vpl-ico { color: var(--acc); }
+.vpl-row[data-state="trial"] .vpl-ico { color: #ffc65c; }
+.vpl-row[data-state="trial"] .vpl-value { color: #ffd88a; }
+.vpl-row[data-state="no"] .vpl-ico { color: rgba(255, 255, 255, 0.3); }
+.vpl-row[data-state="no"] .vpl-label { color: rgba(255, 255, 255, 0.5); font-weight: 500; }
+.vpl-row[data-state="no"] .vpl-value { color: rgba(255, 255, 255, 0.4); font-weight: 600; }
+
+/* ---------- call to action ---------- */
+.vpl-cta {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 20px 0 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--vpl-edge);
+  background: linear-gradient(180deg, var(--acc2), var(--acc));
+  box-shadow:
+    0 0 0 2.5px var(--vpl-edge),
+    0 5px 0 0 var(--vpl-edge),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.vpl-cta:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 2.5px var(--vpl-edge), 0 1px 0 0 var(--vpl-edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
+}
+.vpl-cta:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.vpl-cta:disabled { cursor: default; }
+.vpl-card.is-current .vpl-cta:disabled {
+  color: var(--acc2);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28), inset 0 1.5px 0 rgba(255, 255, 255, 0.25);
+}
+.vpl-card:not(.is-current) .vpl-cta:disabled { opacity: 0.6; }
+
+/* ---------- footer + toast ---------- */
+.vpl-foot { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 34px; }
+.vpl-foot a {
+  padding: 9px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #14121c;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 2px var(--vpl-edge);
+}
+.vpl-foot a:hover { background: #fff; }
+
+.vpl-toast {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  padding: 11px 18px;
+  border-radius: 99px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  background: #14121c;
+  box-shadow: 0 10px 30px rgba(10, 9, 18, 0.4);
+  animation: vpl-toast-in 0.3s ease both;
+}
+@keyframes vpl-toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---------- tablet: two columns, still dropdowns ---------- */
+@media (min-width: 640px) {
+  .vpl { padding-left: 20px; padding-right: 20px; }
+  .vpl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 24px; }
+}
+
+/* ---------- desktop: four open columns ---------- */
+@media (min-width: 1200px) {
+  .vpl-hint-touch { display: none; }
+  .vpl-hint-wide { display: inline; }
+  .vpl { padding-top: 32px; }
+  .vpl-top { margin-bottom: 34px; }
+  .vpl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 20px; align-items: stretch; }
+
+  .vpl-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 26px 16px 8px;
+    text-align: center;
+    cursor: default;
+    pointer-events: none;
+  }
+  .vpl-id { display: contents; }
+  .vpl-mascot { order: 1; width: 108px; height: 108px; }
+  .vpl-name { order: 2; margin-top: 8px; font-size: 19px; }
+  .vpl-price { order: 3; margin-top: 12px; }
+  .vpl-price b {
+    font-size: 58px;
+    transform-origin: 50% 60%;
+    transform: perspective(380px) rotateX(12deg) rotateY(-7deg);
+    text-shadow:
+      0 1px 0 var(--ex), 0 2px 0 var(--ex), 0 3px 0 var(--ex), 0 4px 0 var(--ex),
+      0 5px 0 var(--ex), 0 6px 0 var(--ex), 0 7px 0 var(--ex), 0 8px 0 var(--ex),
+      0 9px 0 var(--ex), 0 15px 16px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(var(--glow), 0.5);
+  }
+  .vpl-price i { font-size: 14px; }
+  .vpl-chips { order: 4; justify-content: center; margin-top: 16px; }
+  .vpl-chev { display: none; }
+
+  .vpl-panel,
+  .vpl-card .vpl-panel { grid-template-rows: 1fr; visibility: visible; transition: none; }
+  .vpl-pitch { flex-direction: column; align-items: stretch; margin-top: 6px; }
+  .vpl-pitch .vpl-mascot { display: none; }
+  .vpl-bubble { margin-bottom: 4px; border-radius: 18px; text-align: center; }
+  .vpl-bubble::before { display: none; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .vpl-surface::after,
+  .vpl-m-body,
+  .vpl-m-eyes,
+  .vpl-m-twinkle,
+  .vpl-m-bolt,
+  .vpl-toast { animation: none; }
+  .vpl-card,
+  .vpl-panel,
+  .vpl-chev,
+  .vpl-cta { transition: none; }
+}

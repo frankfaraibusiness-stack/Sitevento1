@@ -1,0 +1,429 @@
+/* ============================================================
+ * upsell-overlay.css — "you've hit your plan's site limit" overlay
+ * Mirrors styles/auth/auth-overlay.css's showcase-panel visual language
+ * closely on purpose (same dark --ink panel, floating lime/walnut
+ * blobs, pulsing live dot) so it reads as the same product.
+ * ============================================================ */
+
+  .upsell-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 220; /* above connect-wizard's 200/210 */
+    /* Match the real html/body background (--app-bg) instead of the
+       hardcoded --bg (pure white), so this full-screen takeover
+       doesn't flash a different color than the body behind it. */
+    background: var(--app-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(14px);
+    transition: opacity 0.35s cubic-bezier(0.22,1,0.36,1), transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .upsell-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .upsell-overlay { transition: opacity 0.2s ease; transform: none !important; }
+  }
+
+  .upsell-exit {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 230;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    /* Darker, thicker edge (was --line, nearly invisible) so this
+       light button stands out against the --app-bg (lime) page now
+       behind it instead of reading as a soft blob. */
+    border: 1.5px solid var(--lime-ink);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(34,32,28,0.08);
+  }
+
+  .upsell-exit svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--ink);
+  }
+
+  @supports (padding: max(0px)) {
+    .upsell-exit { top: max(18px, env(safe-area-inset-top, 0px)); }
+  }
+
+  .upsell-stage {
+    min-height: 100%;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+  }
+
+  @media (max-width: 920px) {
+    .upsell-stage { grid-template-columns: 1fr; }
+  }
+
+  /* ---- Left: dark visual / brand panel (mirrors .auth-overlay .showcase) ---- */
+  .upsell-showcase {
+    position: relative;
+    background: var(--ink);
+    color: var(--cream);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+    padding: 44px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 920px) {
+    .upsell-showcase { display: none; }
+  }
+
+  .upsell-showcase::before {
+    content: "";
+    position: absolute;
+    inset: -40% -10% auto auto;
+    width: 560px;
+    height: 560px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(198,255,61,0.18), transparent 70%);
+    animation: upsell-float-blob 14s ease-in-out infinite;
+  }
+
+  .upsell-showcase::after {
+    content: "";
+    position: absolute;
+    inset: auto auto -30% -10%;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(107,74,52,0.35), transparent 70%);
+    animation: upsell-float-blob 18s ease-in-out infinite reverse;
+  }
+
+  @keyframes upsell-float-blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-30px, 40px) scale(1.08); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .upsell-showcase::before, .upsell-showcase::after { animation: none; }
+  }
+
+  .upsell-showcase-brand {
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .upsell-brand-logo {
+    height: 28px;
+    width: auto;
+    display: block;
+  }
+
+  .upsell-showcase-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 32ch;
+  }
+
+  .upsell-showcase-copy h1 {
+    font-size: clamp(26px, 2.4vw, 36px);
+    line-height: 1.22;
+    font-weight: 400;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .upsell-showcase-copy p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #b8b2a4;
+    margin: 0;
+  }
+
+  .upsell-showcase-card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: upsell-card-rise 0.9s cubic-bezier(0.22,1,0.36,1) both;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes upsell-card-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .upsell-live-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--lime);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .upsell-live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: var(--lime);
+    opacity: 0.5;
+    animation: upsell-pulse-ring 1.6s ease-out infinite;
+  }
+
+  @keyframes upsell-pulse-ring {
+    0% { transform: scale(0.6); opacity: 0.5; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .upsell-live-dot::after { animation: none; }
+  }
+
+  .upsell-ctext {
+    font-size: 13px;
+    color: #d9d4c8;
+    font-family: "SFMono-Regular", Consolas, monospace;
+  }
+
+  .upsell-showcase-stats {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 36px;
+  }
+
+  .upsell-s-num {
+    font-size: 24px;
+    font-weight: 600;
+    display: block;
+    color: var(--lime);
+  }
+
+  .upsell-s-label {
+    font-size: 12.5px;
+    color: #b8b2a4;
+  }
+
+  /* ---- Right: upgrade panel ---- */
+  .upsell-form-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px 48px;
+  }
+
+  .upsell-form-panel {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .upsell-mobile-brand {
+    display: none;
+    align-items: center;
+    gap: 9px;
+    font-weight: 700;
+    font-size: 15px;
+    margin: -32px -24px 28px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 14px;
+    position: sticky;
+    top: -32px;
+    z-index: 5;
+    background: var(--bg);
+  }
+
+  @media (max-width: 920px) {
+    .upsell-mobile-brand { display: flex; }
+  }
+
+  .upsell-mobile-brand .upsell-brand-logo {
+    height: 26px;
+  }
+
+  .upsell-limit-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(107,74,52,0.08);
+    color: var(--walnut-dark);
+    border: 1px solid rgba(107,74,52,0.18);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-bottom: 18px;
+  }
+
+  .upsell-form-header {
+    margin-bottom: 22px;
+  }
+
+  .upsell-form-header h2 {
+    font-size: clamp(22px, 3.6vw, 27px);
+    font-weight: 400;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .upsell-form-header p {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: #6b665e;
+    margin: 0;
+  }
+
+  .upsell-plan-card {
+    /* Darker edge (was --line, too faint) so this light card stands
+       out against the --app-bg (lime) page now behind it, matching
+       the dark-bordered card convention used elsewhere (e.g.
+       .wgp-card, .wsp-card). */
+    border: 1.5px solid var(--lime-ink);
+    border-radius: 16px;
+    padding: 20px 20px 18px;
+    margin-bottom: 22px;
+    background: var(--cream);
+  }
+
+  .upsell-plan-card-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .upsell-plan-name {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .upsell-plan-tagline {
+    display: block;
+    font-size: 13px;
+    color: #6b665e;
+    margin-top: 3px;
+  }
+
+  .upsell-plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .upsell-price-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .upsell-price-period {
+    font-size: 13px;
+    color: #8a8477;
+  }
+
+  .upsell-plan-highlights {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .upsell-plan-highlights li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+
+  .upsell-plan-highlights svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--walnut-dark);
+    flex-shrink: 0;
+  }
+
+  .upsell-submit-btn {
+    width: 100%;
+    background: var(--lime);
+    color: var(--lime-ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(34,32,28,0.9);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    margin-bottom: 10px;
+  }
+
+  .upsell-submit-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(34,32,28,0.9);
+  }
+
+  .upsell-secondary-btn {
+    width: 100%;
+    background: transparent;
+    color: #6b665e;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .upsell-secondary-btn:hover {
+    color: var(--ink);
+  }
+
+  .upsell-terms-note {
+    font-size: 12.5px;
+    color: #8a8477;
+    text-align: center;
+    margin-top: 18px;
+    line-height: 1.6;
+  }
+
+  .upsell-terms-note a {
+    color: var(--walnut-dark);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .upsell-terms-note a:hover {
+    text-decoration: underline;
+  }

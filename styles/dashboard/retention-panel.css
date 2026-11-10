@@ -1,0 +1,86 @@
+/* styles/dashboard/retention-panel.css
+ *
+ * Scoped styles for components/dashboard/RetentionPanel.tsx. Reuses
+ * the existing --ink/--walnut/--line/--cream-deep tokens (same
+ * convention as analytics-panel.css / heatmap-panel.css). Outer
+ * section/panel/empty-state chrome comes from the shared smp-* rules
+ * in site-manage-page.css (same as CustomEventsPanel/HeatmapPanel);
+ * only the cohort table itself is new, scoped under rtp-*.
+ */
+
+.rtp-caption {
+  margin: 0 0 14px;
+  color: var(--walnut);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.rtp-table-scroll {
+  /* A cohort grid widens with weeksOut — horizontal scroll on a
+     narrow viewport rather than squeezing cells illegibly small,
+     same "wide content scrolls inside its own container" rule used
+     everywhere else data gets dense. */
+  overflow-x: auto;
+}
+
+.rtp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rtp-table th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a7a195;
+  font-weight: 600;
+  padding: 0 10px 8px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.rtp-table td {
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.rtp-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rtp-cohort-label {
+  font-weight: 700;
+}
+
+.rtp-cohort-size {
+  color: var(--walnut);
+}
+
+.rtp-cell-wrap {
+  padding: 4px 6px 4px 0 !important;
+}
+
+.rtp-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.rtp-cell-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  padding: 5px 6px;
+  color: #c9c3b8;
+}
