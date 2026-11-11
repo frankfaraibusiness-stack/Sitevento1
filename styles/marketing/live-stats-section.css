@@ -1,0 +1,535 @@
+/* ============================================================
+ * live-stats-section.css — components/marketing/LiveStatsSection.tsx
+ *
+ * New section between the laptop demo and whatever comes next.
+ * Two halves: a plain-language "one script, no rebuild" intro, and a
+ * live-feeling stats demo (radar dial + 6 ticking stat cards) done in
+ * the site's own cartoon language — thick ink borders, flat offset
+ * "sticker" shadows, chunky radii — rather than the soft glass/blur
+ * look of the dashboard-metrics.html reference this was built from.
+ *
+ * No background of its own (transparent) — it shows the page's own
+ * body background (--app-bg, lavender purple) through, same as every
+ * other marketing section, so the whole page reads as one consistent
+ * surface instead of cutting from purple to a flat white band here.
+ * Every piece inside this section (the stat cards, the radar circle,
+ * the <script> tag pill) already paints its own solid background —
+ * see .lss-card's theme-* rules, .lss-radar, .lss-tag-code below — so
+ * dropping the section's own flat white fill doesn't orphan any text
+ * that depended on it for contrast.
+ * ============================================================ */
+
+.lss {
+  position: relative;
+  /* No top padding: LaptopShowcase (the section right before this
+     one) already carries its own bottom padding, which is the gap
+     between them. Sections used to each pad both their top AND
+     bottom independently, so two adjacent sections' padding stacked
+     into a huge dead-space gap (~110-220px) — this is the fix: only
+     bottom padding here, single-sided, so the gap is just one
+     section's worth instead of two added together. */
+  padding: 0 clamp(20px, 6vw, 72px) clamp(64px, 9vw, 112px);
+  background: transparent;
+  overflow: hidden;
+}
+
+.lss-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  gap: clamp(40px, 6vw, 72px);
+}
+
+@media (min-width: 960px) {
+  .lss-inner {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+    gap: clamp(48px, 5vw, 88px);
+  }
+}
+
+/* ---------------- Intro half ---------------- */
+/* Rebuilt for mobile (below 960px): .lss-title and .lss-copy used to
+   carry a fixed ch-based max-width (12ch / 42ch) meant for the
+   desktop two-column layout. ch caps don't shrink with the viewport
+   — on a narrow phone the measured text at that font-size is wider
+   than the screen, so the box itself ran past the right edge instead
+   of wrapping inside it. Every size below is now either a percentage
+   of .lss-intro or clamped to the viewport, so there is no fixed
+   width anywhere in this block that content can outgrow. */
+.lss-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 959px) {
+  .lss-intro {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+@media (min-width: 960px) {
+  .lss-intro {
+    position: sticky;
+    top: calc(96px + env(safe-area-inset-top, 0px));
+  }
+}
+
+.lss-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lime-ink);
+  background: var(--lime);
+  border: 1.5px solid #000;
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 959px) {
+  /* Now centered along with the heading/description below it so the
+     whole intro reads as one evenly-centered block on mobile instead
+     of the eyebrow sitting alone at the left edge. */
+  .lss-eyebrow {
+    align-self: center;
+  }
+}
+
+.lss-title {
+  font-size: clamp(26px, 7vw, 44px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0 0 16px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lss-copy {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--muted-dark);
+  margin: 0 0 24px;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 960px) {
+  .lss-title {
+    max-width: 12ch;
+  }
+
+  .lss-copy {
+    max-width: 42ch;
+  }
+}
+
+.lss-tagline {
+  /* Was display: inline-flex, which sizes to its content's intrinsic
+     width instead of respecting max-width: 100% — the nowrap code
+     line inside pushed this (and the whole section/page) wider than
+     the viewport on mobile instead of scrolling inside its own box.
+     display: block (or flex) actually honors the 100% cap. Centered
+     within .lss-intro (which is itself a left-aligned flex column)
+     so the code pill sits in the middle of the intro block instead of
+     flush left. */
+  display: block;
+  width: 80%;
+  max-width: 80%;
+  margin: 0 auto;
+  /* .lss-intro is a flex column with align-items: flex-start (so the
+     eyebrow/title/copy above stay left-aligned at their own content
+     width) — without this, that same flex-start would pin this
+     item's 80%-width box to the left edge too instead of letting
+     margin: 0 auto center it. */
+  align-self: center;
+}
+
+.lss-tag-code {
+  /* 80% of .lss-tagline's own box, centered — the nowrap code line is
+     wider than that on most screens, so it scrolls horizontally
+     inside its own pill instead of forcing the pill (or the page)
+     wider. */
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid #000;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 3px 0 #000;
+}
+
+/* ---------------- Demo half ---------------- */
+.lss-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---- Radar dial ---- */
+.lss-radar-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.lss-radar {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--lime-mist);
+  border: 2px solid #000;
+  box-shadow: 0 4px 0 #000;
+}
+
+.lss-radar-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--lime) 55%, transparent), transparent 70%);
+  filter: blur(8px);
+  animation: lss-breathe 2.6s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes lss-breathe {
+  0%, 100% { opacity: 0.45; transform: scale(0.94); }
+  50%      { opacity: 0.9;  transform: scale(1.05); }
+}
+
+.lss-radar-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.lss-radar-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 22%, transparent);
+  stroke-width: 1.2;
+}
+
+.lss-radar-sweep-group {
+  transform-origin: 72px 72px;
+  animation: lss-spin 2.6s linear infinite;
+}
+
+@keyframes lss-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.lss-radar-sweep {
+  fill: color-mix(in srgb, var(--dash-purple) 55%, transparent);
+}
+
+.lss-radar-blip {
+  fill: var(--dash-purple);
+  animation: lss-blip-fade 1.4s ease-out forwards;
+}
+
+@keyframes lss-blip-fade {
+  0%   { opacity: 1; r: 4.4px; }
+  100% { opacity: 0; r: 1.5px; }
+}
+
+.lss-radar-core {
+  fill: var(--ink);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.lss-radar-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+  flex: 1;
+}
+
+.lss-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ink);
+  border-radius: 999px;
+  padding: 6px 13px 6px 10px;
+}
+
+/* Mobile only: the radar circle wraps onto its own line above the
+   caption at narrow widths (.lss-radar-row's flex-wrap), so the
+   caption reads as its own centered block underneath it — same
+   treatment as the intro heading/description above. */
+@media (max-width: 959px) {
+  .lss-radar-row {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .lss-radar-caption {
+    align-items: center;
+  }
+
+  .lss-live-pill {
+    align-self: center;
+  }
+}
+
+.lss-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--lime) 70%, transparent);
+  animation: lss-pulse-dot 1.6s ease-out infinite;
+}
+
+@keyframes lss-pulse-dot {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lime) 70%, transparent); }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.lss-radar-caption p {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted-dark);
+  max-width: 36ch;
+}
+
+/* ---- Stat cards ---- */
+.lss-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 560px) {
+  .lss-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Mobile/tablet (below 760px): only the 4 primary cards take up grid
+   space — the 2 "extra" cards are collapsed to zero height and
+   hidden, not just visually hidden, so they don't reserve empty grid
+   row space while collapsed. .is-expanded reveals them in place. */
+@media (max-width: 759px) {
+  .lss-card.is-extra {
+    grid-column: span 2;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+    border-width: 0;
+    box-shadow: none;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: max-height 0.32s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease, padding 0.32s ease, border-width 0.32s ease;
+  }
+  .lss-stats.is-expanded .lss-card.is-extra {
+    grid-column: span 1;
+    max-height: 160px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    margin-top: 0;
+    border-width: 1px;
+    box-shadow:
+      0 1px 2px rgba(16, 15, 10, 0.04),
+      0 8px 20px -12px rgba(16, 15, 10, 0.14);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Rebuilt as uniform, professional iOS-style cards: one consistent
+   white surface + soft neutral border + gentle elevation shadow for
+   every card, rather than each card being flat-filled with a
+   different color (which read as a childish, mismatched "sticker
+   grid" — see the screenshot this was flagged from). Color now lives
+   in exactly one place per card — the icon chip — which is enough to
+   keep each metric visually distinct without making the whole card
+   loud. Numbers animate via .lss-card-value's tabular-nums + the
+   JS-driven count-up in the component (StatCard), which re-triggers
+   on every interval tick for as long as the section is on screen —
+   effectively an infinite, repeating roll rather than a one-off
+   animation. */
+.lss-card {
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(16, 15, 10, 0.04),
+    0 8px 20px -12px rgba(16, 15, 10, 0.14);
+  padding: 16px 16px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.lss-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow:
+    0 2px 4px rgba(16, 15, 10, 0.05),
+    0 14px 28px -14px rgba(16, 15, 10, 0.2);
+}
+
+.lss-card:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 2px rgba(16, 15, 10, 0.04),
+    0 6px 14px -10px rgba(16, 15, 10, 0.16);
+}
+
+.lss-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lss-card-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lss-card-icon svg { width: 15px; height: 15px; }
+
+/* Single accent tint per card, carried only by the icon chip — this
+   is the one deliberate spot of color on an otherwise neutral card. */
+.lss-card-icon.icon-lime   { background: color-mix(in srgb, var(--dash-green) 16%, transparent);  color: var(--dash-green-ink); }
+.lss-card-icon.icon-purple { background: color-mix(in srgb, var(--dash-purple) 14%, transparent);  color: var(--dash-purple-ink); }
+.lss-card-icon.icon-blue   { background: color-mix(in srgb, var(--dash-blue) 14%, transparent);   color: var(--dash-blue-ink); }
+.lss-card-icon.icon-orange { background: color-mix(in srgb, var(--dash-orange) 16%, transparent);  color: var(--dash-orange-ink); }
+
+.lss-card-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted-mid);
+  flex: 1;
+}
+
+.lss-card-trend {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  opacity: 0.85;
+}
+.lss-card-trend svg { width: 100%; height: 100%; }
+.lss-card-trend.trend-up { color: var(--dash-green-ink); }
+.lss-card-trend.trend-down { color: var(--dash-orange-ink); }
+
+.lss-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.lss-card-sub {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted-mid);
+}
+
+/* ---- Expand toggle (mobile/tablet only) ---- */
+.lss-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 999px;
+  padding: 9px 18px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16, 15, 10, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.lss-expand-btn:hover {
+  border-color: color-mix(in srgb, var(--ink) 20%, transparent);
+  box-shadow: 0 2px 6px rgba(16, 15, 10, 0.08);
+}
+.lss-expand-btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(16, 15, 10, 0.04); }
+
+.lss-expand-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
+}
+
+.lss-expand-btn[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 760px) {
+  .lss-expand-btn { display: none; }
+}
+
+/* ---------------- Reduced motion / off-screen gating ----------------
+   Same IntersectionObserver-driven .is-paused convention as
+   .sv-laptop-demo (LaptopShowcase.tsx) — LiveStatsSection.tsx stops
+   its ticking interval entirely when off-screen; this just also
+   freezes the couple of CSS animations that keep running regardless
+   (the radar sweep, the glow breathe, the live-dot pulse). */
+.lss.is-paused .lss-radar-sweep-group,
+.lss.is-paused .lss-radar-glow,
+.lss.is-paused .lss-live-dot {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lss-radar-sweep-group,
+  .lss-radar-glow,
+  .lss-live-dot,
+  .lss-radar-blip {
+    animation: none !important;
+  }
+}
