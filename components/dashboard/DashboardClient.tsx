@@ -20,6 +20,7 @@ import { GlobalLoader } from '@/components/GlobalLoader';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
+import { AnalyticsPage } from '@/components/analytics/AnalyticsPage';
 import { VentolPlans } from '@/components/plans/VentolPlans';
 import { WalletPage } from '@/components/dashboard/WalletPage';
 import { SiteManagePage } from '@/components/dashboard/SiteManagePage';
@@ -40,7 +41,9 @@ import type { DashSection } from '@/hooks/useAppView';
 import type { PlanId } from '@/lib/plans';
 
 interface DashboardClientProps {
-  // Defaults to the main dashboard. "plans" renders the
+  // Defaults to the main dashboard. "analytics" renders the redesigned
+  // analytics page (see app/dashboard/analytics/page.tsx and
+  // components/analytics/AnalyticsPage.tsx). "plans" renders the
   // plan-switch/compare page (see app/dashboard/plans/page.tsx),
   // "site-manage" renders the standalone per-site management page (see
   // app/dashboard/sites/[siteId]/page.tsx and SiteManagePage.tsx),
@@ -55,7 +58,7 @@ interface DashboardClientProps {
   // has been removed entirely. The profile page/component/route have
   // also been removed (a replacement is planned); onProfileClick and
   // nav links still point at /profile intentionally.
-  view?: 'dashboard' | 'plans' | 'wallet' | 'site-manage' | 'leads' | 'sites' | 'users';
+  view?: 'dashboard' | 'analytics' | 'plans' | 'wallet' | 'site-manage' | 'leads' | 'sites' | 'users';
   // Required when view="site-manage" — the [siteId] route param,
   // passed straight through to SiteManagePage so it can look the site
   // up out of useSites() itself rather than this component owning a
@@ -281,7 +284,7 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
   // stays closed until BOTH the real data condition AND the timer are
   // satisfied, so this never masks genuinely slow loads, it only adds
   // a floor under fast ones.
-  const dashboardDataLoading = view === 'dashboard' && !!user && dashState === 'loading';
+  const dashboardDataLoading = (view === 'dashboard' || view === 'analytics') && !!user && dashState === 'loading';
   const dataReady = authReady && !dashboardDataLoading;
 
   const [minHoldDone, setMinHoldDone] = useState(false);
@@ -328,6 +331,16 @@ export default function DashboardClient({ view = 'dashboard', siteId }: Dashboar
         {user ? (
           view === 'plans' ? (
             <VentolPlans user={user} />
+          ) : view === 'analytics' ? (
+            <AnalyticsPage
+              user={user}
+              sites={sites}
+              activeSiteId={activeSiteId}
+              setActiveSiteId={setActiveSiteId}
+              activeSite={activeSite}
+              dashState={dashState}
+              onOpenAddSiteModal={openAddSiteModal}
+            />
           ) : view === 'wallet' ? (
             <WalletPage user={user} />
           ) : view === 'site-manage' && siteId ? (

@@ -133,6 +133,7 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate 
     };
   }
 
+  const goToAnalytics = goToPath('/dashboard/analytics');
   const goToMonetization = goToPath('/dashboard/monetization');
   const goToAdvertise = goToPath('/dashboard/advertise');
   const goToUsers = goToPath('/dashboard/users');
@@ -252,6 +253,16 @@ export function Sidebar({ open, user, leadsCount, onClose, onSignIn, onNavigate 
               </svg>
             </span>
             Dashboard
+          </a>
+          <a href="#" className={`sidebar-link${isActive('/dashboard/analytics') ? ' active' : ''}`} onClick={(e) => { e.preventDefault(); goToAnalytics(); }}>
+            <span className="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+                <path d="m13 8 3-3 3 3" />
+              </svg>
+            </span>
+            Analytics
+            <span className="badge">New</span>
           </a>
           <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); navigate('logs'); }}>
             <span className="icon">
