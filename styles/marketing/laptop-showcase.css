@@ -1,0 +1,426 @@
+/* ============================================================
+ * laptop-showcase.css
+ *
+ * Full rebuild (second pass): the previous version ran a separate
+ * dark violet "app" color scheme (--bg-0/--bg-1/--bg-2, lilac/violet
+ * text tokens, color-scheme:dark) inside the laptop screen, which is
+ * fine for the screen's own browser-chrome illustration, but the
+ * desktop right-column step list reused those same pale tokens
+ * (--text-1/--text-2) while sitting directly on the site's actual
+ * light page background — low-contrast, easy to lose. It also packed
+ * 5 steps + a 5-dot progress row under the screen into a small space,
+ * reading as cluttered.
+ *
+ * This pass:
+ *   1. The laptop screen itself is now LIGHT — a plain white/near-
+ *      white panel using the site's own --ink text color, matching
+ *      the rest of the page instead of carrying its own dark theme.
+ *   2. Down to 3 steps (Connect / Verify / Live) — simpler content,
+ *      more breathing room per panel.
+ *   3. No dot-row progress indicator under the screen — removed
+ *      entirely; the right-column numbered list already shows
+ *      progress on desktop, and mobile's own step content is enough
+ *      without a redundant row of dots.
+ *   4. Right-column text now uses --ink (title) and --surface-ink-soft
+ *      (description) — the same dark, readable ink tokens the rest of
+ *      the marketing page uses on this light background — with the
+ *      active step called out by a solid --lime numbered chip rather
+ *      than a translucent violet highlight that disappeared against
+ *      the light page.
+ *
+ * Still lightweight by construction: LaptopShowcase.tsx advances a
+ * `step` index on a plain setInterval (one state update per step), a
+ * single CSS opacity cross-fade shows the active panel, no DOM
+ * measurement. The IntersectionObserver `.is-paused` gating (stop the
+ * interval + freeze animations off-screen) is unchanged.
+ * ============================================================ */
+.sv-laptop-demo {
+  --violet: #7c5cfc;
+  --violet-soft: rgba(124, 92, 252, 0.14);
+  --green: #1f9d55;
+  --green-soft: rgba(31, 157, 85, 0.12);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(8px, 1.5vw, 20px) clamp(20px, 6vw, 72px) clamp(40px, 6vw, 72px);
+  background: transparent;
+}
+.sv-laptop-demo *, .sv-laptop-demo *::before, .sv-laptop-demo *::after { box-sizing: border-box; }
+
+/* ---------- Layout: single column (mobile/tablet) / two columns
+   (desktop, matching the hero's own 1024px breakpoint) ---------- */
+.sv-laptop-demo-grid {
+  display: block;
+}
+@media (min-width: 1024px) {
+  .sv-laptop-demo-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.7fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 72px);
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .sv-laptop-demo-grid .stage {
+    max-width: none;
+  }
+}
+
+/* ---------- Laptop mockup shell — kept compact so it doesn't
+   dominate the section; a smaller max-width than before. ---------- */
+.sv-laptop-demo .stage {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 640px;
+  perspective: 1800px;
+}
+.sv-laptop-demo .laptop {
+  position: relative;
+  width: 100%;
+}
+.sv-laptop-demo .screen-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  padding: 10px;
+  background: linear-gradient(160deg, #e7e2ff, #d9d2fb);
+  border: 1px solid var(--surface-edge);
+  box-shadow: var(--surface-shadow);
+}
+.sv-laptop-demo .screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 11px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--surface-edge);
+  display: flex;
+  flex-direction: column;
+}
+
+/* browser chrome */
+.sv-laptop-demo .browser-bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 12px);
+  padding: clamp(8px, 1.4vw, 12px) clamp(10px, 2vw, 16px);
+  background: var(--app-bg);
+  border-bottom: 1px solid var(--surface-edge);
+  flex-shrink: 0;
+}
+.sv-laptop-demo .traffic { display: flex; gap: 6px; flex-shrink: 0; }
+.sv-laptop-demo .traffic span {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--surface-edge);
+}
+.sv-laptop-demo .addr-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border: 1px solid var(--surface-edge);
+  border-radius: 999px;
+  padding: clamp(5px, 1.2vw, 7px) clamp(10px, 2vw, 14px);
+  min-width: 0;
+}
+.sv-laptop-demo .addr-field svg {
+  width: 11px; height: 11px; flex-shrink: 0;
+  color: var(--green);
+}
+.sv-laptop-demo .addr-text {
+  font-size: clamp(0.68rem, 1.5vw, 0.84rem);
+  white-space: nowrap;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+.sv-laptop-demo .addr-text .proto { color: var(--surface-ink-soft); }
+.sv-laptop-demo .addr-text .typed { color: var(--ink); font-weight: 600; }
+.sv-laptop-demo .caret {
+  display: inline-block;
+  width: 1px; height: 1em;
+  background: var(--violet);
+  margin-left: 1px;
+  vertical-align: -2px;
+  animation: lsx-blink 1s step-end infinite;
+}
+@keyframes lsx-blink { 50% { opacity: 0; } }
+
+.sv-laptop-demo .base {
+  height: clamp(8px, 1.6vw, 12px);
+  margin: 0 auto;
+  width: 94%;
+  background: linear-gradient(180deg, #ddd6fb, #cfc6f7);
+  border-radius: 0 0 10px 10px;
+  border: 1px solid var(--surface-edge);
+  border-top: none;
+}
+
+.sv-laptop-demo .shadow-pool {
+  width: 60%;
+  max-width: 420px;
+  height: 28px;
+  margin: 10px auto 0;
+  background: radial-gradient(ellipse, rgba(124, 92, 252, 0.18), transparent 70%);
+  filter: blur(10px);
+}
+
+/* ============================================================
+ * Step panels — the screen content. Each `.cstep-panel` is
+ * absolutely stacked on the others inside `.cstep-stage` and shown
+ * with a plain opacity cross-fade driven by `.is-active`, toggled by
+ * LaptopShowcase.tsx on a setInterval. No dot-row indicator here by
+ * design — the desktop right column (or, on mobile, the panel's own
+ * content) already communicates progress.
+ * ============================================================ */
+.sv-laptop-demo .cstep-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.sv-laptop-demo .cstep-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 28px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+.sv-laptop-demo .cstep-panel.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---- Step 1: the script tag ---- */
+.sv-laptop-demo .cstep-codecard {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.4vw, 10px);
+  border-radius: 10px;
+  background: var(--app-bg);
+  border: 1px solid var(--surface-edge);
+  padding: clamp(14px, 2.6vw, 22px);
+  overflow: hidden;
+}
+.sv-laptop-demo .cstep-codeline {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(0.66rem, 1.5vw, 0.84rem);
+  color: var(--surface-ink-soft);
+}
+.sv-laptop-demo .cstep-codeline.is-tag {
+  color: var(--ink);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sv-laptop-demo .cstep-codeline.is-tag::-webkit-scrollbar { display: none; }
+.sv-laptop-demo .cstep-codeline.is-tag > span { flex-shrink: 0; white-space: nowrap; }
+.sv-laptop-demo .cstep-codeline .tag-punc { color: var(--surface-ink-soft); }
+.sv-laptop-demo .cstep-codeline .tag-attr { color: var(--violet); }
+.sv-laptop-demo .cstep-codeline .tag-val { color: var(--green); }
+.sv-laptop-demo .cstep-codeline .cs-caret {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: var(--violet);
+  margin-left: 1px;
+  vertical-align: -2px;
+  animation: lsx-blink 1s step-end infinite;
+}
+
+/* ---- Step 2 & 3: centered status content ---- */
+.sv-laptop-demo .cstep-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+.sv-laptop-demo .cstep-spinner {
+  width: clamp(34px, 6vw, 44px);
+  height: clamp(34px, 6vw, 44px);
+  border-radius: 50%;
+  border: 3px solid var(--surface-edge);
+  border-top-color: var(--violet);
+  animation: lsx-spin 0.9s linear infinite;
+}
+@keyframes lsx-spin { to { transform: rotate(360deg); } }
+.sv-laptop-demo .cstep-sub {
+  font-size: clamp(0.76rem, 1.6vw, 0.9rem);
+  font-weight: 600;
+  color: var(--ink);
+  max-width: 300px;
+}
+
+.sv-laptop-demo .cstep-check {
+  width: clamp(42px, 7vw, 54px);
+  height: clamp(42px, 7vw, 54px);
+  border-radius: 50%;
+  background: var(--green-soft);
+  border: 1.5px solid var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lsx-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.sv-laptop-demo .cstep-check svg {
+  width: 52%; height: 52%;
+  stroke: var(--green);
+}
+@keyframes lsx-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-laptop-demo .cstep-spinner,
+  .sv-laptop-demo .caret,
+  .sv-laptop-demo .cs-caret {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+ * Desktop-only right column — numbered steps list, synced to the
+ * laptop's current panel via [data-step] on the section root. Text
+ * uses the site's real light-mode ink tokens (readable on --app-bg),
+ * active step called out with a solid lime chip instead of a
+ * translucent dark-mode highlight.
+ * ============================================================ */
+.sv-laptop-demo .sv-steps-col {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .sv-laptop-demo .sv-steps-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.sv-laptop-demo .sv-step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  transition: background 0.3s ease;
+}
+
+.sv-laptop-demo .sv-step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--surface-ink-soft);
+  background: var(--surface-glass-solid, #fff);
+  border: 1.5px solid var(--surface-edge);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.sv-laptop-demo .sv-step-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.sv-laptop-demo .sv-step-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.sv-laptop-demo .sv-step-desc {
+  font-size: 0.84rem;
+  color: var(--surface-ink-soft);
+  line-height: 1.45;
+}
+
+/* Active-step highlight — solid lime chip on the number, soft lime
+   tint on the row, both at full opacity so it stands out clearly
+   against the light page background. */
+.sv-laptop-demo[data-step="0"] .sv-step-row:nth-child(1),
+.sv-laptop-demo[data-step="1"] .sv-step-row:nth-child(2),
+.sv-laptop-demo[data-step="2"] .sv-step-row:nth-child(3) {
+  background: var(--lime-glass, rgba(184, 232, 67, 0.22));
+}
+.sv-laptop-demo[data-step="0"] .sv-step-row:nth-child(1) .sv-step-num,
+.sv-laptop-demo[data-step="1"] .sv-step-row:nth-child(2) .sv-step-num,
+.sv-laptop-demo[data-step="2"] .sv-step-row:nth-child(3) .sv-step-num {
+  background: var(--lime);
+  border-color: #000;
+  color: var(--lime-ink, #1a1f0a);
+}
+
+/* ============================================================
+ * Mobile-only sites-connected stat, centered above the laptop stage.
+ * Desktop already renders this same stat under the hero instead.
+ * ============================================================ */
+.sv-laptop-demo .sv-stat-strip {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 clamp(20px, 4vw, 32px);
+}
+@media (min-width: 1024px) {
+  .sv-laptop-demo .sv-stat-strip {
+    display: none;
+  }
+}
+
+.sv-laptop-demo .sv-stat-strip .hero__statBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.sv-laptop-demo .sv-stat-strip .hero__statNumber {
+  font-family: 'Baloo 2', 'Fredoka', sans-serif;
+  font-size: clamp(28px, 7vw, 34px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.sv-laptop-demo .sv-stat-strip .hero__statLabel {
+  font-family: 'Nunito', 'Fredoka', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--surface-ink-soft);
+  white-space: nowrap;
+}
+
+/* ---------- Scroll-performance gating (unchanged mechanism) ---------- */
+.sv-laptop-demo.is-paused,
+.sv-laptop-demo.is-paused *,
+.sv-laptop-demo.is-paused *::before,
+.sv-laptop-demo.is-paused *::after {
+  animation-play-state: paused !important;
+}
