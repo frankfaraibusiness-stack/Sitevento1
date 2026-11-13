@@ -1,0 +1,3 @@
+{
+  "crons": [{ "path": "/api/uptime-check", "schedule": "0 5 * * *" }]
+}
