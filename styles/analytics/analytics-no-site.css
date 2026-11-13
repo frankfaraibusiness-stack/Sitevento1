@@ -1,0 +1,159 @@
+/* ==========================================================================
+   No-site state of the Analytics page (components/analytics/NoSiteBanner.tsx
+   + the `is-empty` state of AnalyticsSections). Uses the .anx tokens only.
+   Mobile-first; desktop at 901px.
+   ========================================================================== */
+
+/* ---------- Banner ---------- */
+.anx-nosite {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  gap: 22px;
+  margin: 0 0 24px;
+  padding: 22px 18px;
+  border: 1px solid var(--anx-line-2);
+  border-radius: 22px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--anx-violet) 14%, var(--anx-card)) 0%,
+    var(--anx-card) 58%,
+    color-mix(in srgb, var(--anx-pink) 10%, var(--anx-card)) 100%
+  );
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 14px 34px color-mix(in srgb, var(--anx-violet) 12%, transparent);
+}
+.anx-nosite-orb {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(46px);
+  pointer-events: none;
+}
+.anx-nosite-orb.is-a { width: 220px; height: 220px; top: -90px; right: -50px; background: #8a5bff; opacity: 0.32; }
+.anx-nosite-orb.is-b { width: 180px; height: 180px; bottom: -90px; left: -40px; background: var(--anx-pink); opacity: 0.2; }
+
+.anx-nosite-main { min-width: 0; }
+.anx-nosite-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: var(--anx-tint);
+  color: var(--anx-violet-ink);
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.anx-nosite-eyebrow i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--anx-violet);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--anx-violet) 20%, transparent);
+  animation: anx-nosite-pulse 2.2s ease-in-out infinite;
+}
+@keyframes anx-nosite-pulse {
+  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--anx-violet) 0%, transparent); }
+}
+
+.anx-nosite h2 {
+  margin: 0 0 8px;
+  font-family: var(--anx-font), system-ui, sans-serif;
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--anx-ink);
+  text-wrap: balance;
+}
+.anx-nosite-main > p {
+  margin: 0 0 18px;
+  max-width: 52ch;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--anx-mut);
+}
+
+.anx-nosite-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; }
+.anx-nosite-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 24px;
+  font-size: 0.9375em;
+  width: 100%;
+}
+.anx-nosite-cta svg { width: 18px; height: 18px; transition: transform 0.18s; }
+.anx-nosite-cta:hover svg { transform: translateX(4px); }
+.anx-nosite-hint { font-size: 0.75em; color: var(--anx-mut); }
+
+.anx-nosite-perks { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+.anx-nosite-perks li {
+  padding: 6px 12px;
+  border: 1px solid var(--anx-line);
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--anx-card) 70%, transparent);
+  font-size: 0.75em;
+  font-weight: 500;
+  color: var(--anx-ink);
+}
+
+/* Steps: stacked on phones, a connected rail on desktop */
+.anx-nosite-steps {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 14px;
+  list-style: none;
+  border: 1px solid var(--anx-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--anx-card) 78%, transparent);
+  backdrop-filter: blur(6px);
+}
+.anx-nosite-steps li { position: relative; display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.anx-nosite-steps li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: calc(50% + 18px);
+  height: calc(100% - 20px);
+  border-left: 2px dashed var(--anx-line-2);
+}
+.anx-nosite-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--anx-violet);
+  color: #fff;
+  font: 700 0.8125em var(--anx-font), system-ui, sans-serif;
+}
+.anx-nosite-step-text { display: grid; gap: 2px; min-width: 0; }
+.anx-nosite-step-text strong { font-size: 0.875em; font-weight: 600; color: var(--anx-ink); }
+.anx-nosite-step-text small { font-size: 0.75em; line-height: 1.35; color: var(--anx-mut); }
+
+@media (min-width: 901px) {
+  .anx-nosite { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: center; gap: 40px; padding: 36px 40px; }
+  .anx-nosite h2 { font-size: 2em; }
+  .anx-nosite-cta { width: auto; }
+  .anx-nosite-steps { padding: 18px 22px; }
+  .anx-nosite-steps li { padding: 12px 0; }
+  .anx-nosite-steps li:not(:last-child)::after { top: calc(50% + 20px); height: calc(100% - 24px); left: 15px; }
+}
+
+/* ---------- Empty sections underneath ----------
+   Real sections, real layout — just quiet and not clickable, so nothing
+   looks like real data. */
+.an-page.is-empty .an-shell { opacity: 0.5; pointer-events: none; user-select: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anx-nosite-eyebrow i { animation: none; }
+  .anx-nosite-cta svg { transition: none; }
+}

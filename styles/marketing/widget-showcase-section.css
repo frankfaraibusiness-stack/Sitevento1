@@ -1,0 +1,378 @@
+/* ============================================================
+ * widget-showcase-section.css — "Deploy in one click"
+ *
+ * Mirrors LaptopShowcase's dark-panel + perspective-tilt language
+ * (gradient #180f2e → #0d0818, subtle rotateX, glass border) instead
+ * of a white card on the lilac --app-bg — see theme-tokens.css's
+ * header comment for why a plain white surface reads wrong against
+ * this background. Each card's glow is tinted per-widget via the
+ * --wsx-glow inline custom property set in the component.
+ *
+ * Layout: desktop = fixed 3-column grid, never stacked. Mobile =
+ * identical card width, horizontal scroll-snap row (same
+ * scroll-snap-type: x proximity convention as
+ * dashboard-premium.css's .dnx-sites-scroller) instead of stacking,
+ * so it stays compact on a small screen.
+ * ============================================================ */
+
+.wsx {
+  position: relative;
+  /* No top padding — see live-stats-section.css's .lss comment: the
+     section before this one already supplies the gap via its own
+     bottom padding, so padding both sides here would double it up. */
+  padding: 0 20px clamp(56px, 9vw, 108px);
+}
+
+.wsx-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ---- Intro half (matches .lss-intro's eyebrow/title/copy rhythm) ---- */
+.wsx-intro {
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto clamp(32px, 5vw, 52px);
+}
+
+.wsx-eyebrow {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  /* Was the --dash-purple set (purple text on a tinted-purple
+     surface with a purple border) — against this section's purple
+     page background that whole pill read as a washed-out blue with
+     no real contrast. Solid black background + white text instead,
+     matching the site's own thick-ink-pill language. */
+  color: #FFFFFF;
+  background: #12100A;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.wsx-title {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.wsx-copy {
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--surface-ink-soft);
+  margin: 0;
+}
+
+/* ---- Row: desktop fixed 3-up, mobile scroll-snap, never stacked ---- */
+.wsx-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+@media (max-width: 860px) {
+  /* Horizontally-scrolling, snap-to-card row instead of stacking.
+     Cards keep a fixed comfortable width and the row scrolls under
+     the finger; scroll-snap-align centers each card as it settles so
+     it never stops half-on/half-off screen. Negative margin + matching
+     padding lets the row bleed to the viewport edges while the first/
+     last card still lines up with the section's own side padding. */
+  .wsx-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -20px;
+    padding: 4px 20px 10px;
+  }
+
+  .wsx-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wsx-card {
+    flex: 0 0 auto;
+    width: min(78vw, 300px);
+    scroll-snap-align: center;
+  }
+}
+
+/* ---- Card shell: dark panel, same family as the laptop screen ---- */
+.wsx-card {
+  border-radius: 20px;
+  padding: 10px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02));
+  /* Solid black stroke (was a faint translucent glass border) so each
+     card reads as a clearly defined shape against the purple page
+     background, matching the site's own thick-ink-outline language
+     used elsewhere (e.g. the hero's step dots, the navbar). */
+  border: 1.5px solid #12100A;
+  box-shadow:
+    0 24px 60px -18px rgba(76,29,149,0.55),
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 1px 0 rgba(255,255,255,0.12) inset;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+}
+
+.wsx-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 30px 72px -16px rgba(76,29,149,0.62),
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 1px 0 rgba(255,255,255,0.14) inset;
+}
+
+/* ---- Mini device preview: dark screen, gentle 3D tilt ---- */
+.wsx-demo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(170deg, #180f2e 0%, #0d0818 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  perspective: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wsx-demo-glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--wsx-glow) 38%, transparent), transparent 68%);
+  pointer-events: none;
+}
+
+/* ---- Support Chat demo ---- */
+.wsx-demo-chat { align-items: flex-end; justify-content: flex-end; }
+
+.wsx-chat-card {
+  position: relative;
+  width: 86%;
+  margin: 14px 14px 46px auto;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  transform: rotateX(4deg) rotateY(-2deg);
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.wsx-chat-head {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.wsx-chat-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--wsx-glow);
+  box-shadow: 0 0 8px var(--wsx-glow);
+  flex-shrink: 0;
+}
+
+.wsx-chat-head-label {
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85);
+  flex: 1;
+}
+
+.wsx-chat-live {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.04em;
+  color: var(--lime-ink);
+  background: var(--wsx-glow);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.wsx-chat-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+
+.wsx-bubble {
+  font-size: 10.5px; line-height: 1.4;
+  padding: 7px 9px;
+  border-radius: 10px;
+  max-width: 88%;
+}
+
+.wsx-bubble-in {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.82);
+  border-bottom-left-radius: 3px;
+}
+
+.wsx-bubble-out {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--wsx-glow) 85%, white 15%);
+  color: var(--lime-ink);
+  font-weight: 600;
+  border-bottom-right-radius: 3px;
+}
+
+.wsx-launcher {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--wsx-glow);
+  color: var(--lime-ink);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 18px -4px color-mix(in srgb, var(--wsx-glow) 70%, transparent);
+}
+.wsx-launcher svg { width: 15px; height: 15px; }
+
+/* ---- Site Alert demo: full-screen takeover mock ---- */
+.wsx-alert-screen {
+  position: relative;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 16px;
+}
+
+.wsx-alert-badge {
+  position: absolute; top: 10px; left: 10px;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.wsx-live-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+}
+
+.wsx-alert-art {
+  width: 30px; height: 30px;
+  color: var(--wsx-glow);
+  margin-bottom: 2px;
+}
+.wsx-alert-art svg { width: 100%; height: 100%; }
+
+.wsx-alert-title { font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.92); }
+.wsx-alert-sub { font-size: 10px; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
+
+.wsx-alert-cta {
+  font-size: 9.5px; font-weight: 700;
+  color: #0d1420;
+  background: var(--wsx-glow);
+  padding: 5px 14px;
+  border-radius: 999px;
+}
+
+.wsx-alert-rings {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.wsx-alert-rings span {
+  position: absolute; inset: 8px;
+  border: 1px solid color-mix(in srgb, var(--wsx-glow) 30%, transparent);
+  border-radius: 10px;
+}
+.wsx-alert-rings span:nth-child(2) { inset: 16px; opacity: 0.6; }
+.wsx-alert-rings span:nth-child(3) { inset: 24px; opacity: 0.3; }
+
+/* ---- Email Capture demo ---- */
+.wsx-email-card {
+  position: relative;
+  width: 78%;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  padding: 14px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  text-align: center;
+  transform: rotateX(3deg);
+  transform-style: preserve-3d;
+  box-shadow: 0 16px 34px -14px rgba(0,0,0,0.5);
+}
+
+.wsx-email-icon {
+  width: 26px; height: 26px;
+  color: var(--wsx-glow);
+  margin-bottom: 2px;
+}
+.wsx-email-icon svg { width: 100%; height: 100%; }
+
+.wsx-email-title { font-size: 12.5px; font-weight: 800; color: rgba(255,255,255,0.92); }
+.wsx-email-sub { font-size: 9.5px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+
+.wsx-email-input {
+  width: 100%;
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.wsx-email-btn {
+  width: 100%;
+  font-size: 10px; font-weight: 700;
+  color: #1a1030;
+  background: var(--wsx-glow);
+  padding: 6px;
+  border-radius: 7px;
+}
+
+/* ---- Card footer: title + label + deploy pill ---- */
+.wsx-card-foot {
+  padding: 14px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wsx-card-heading { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+.wsx-card-eyebrow {
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--surface-ink-soft);
+}
+
+.wsx-card-title {
+  font-size: 15.5px; font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.wsx-card-label {
+  font-size: 12px; line-height: 1.5;
+  color: var(--surface-ink-soft);
+  margin: 0;
+}
+
+.wsx-deploy-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  align-self: flex-start;
+  font-size: 11px; font-weight: 700;
+  color: var(--lime-ink);
+  background: var(--lime);
+  padding: 6px 12px;
+  border-radius: 999px;
+  margin-top: 2px;
+}
+.wsx-deploy-pill svg { width: 12px; height: 12px; }

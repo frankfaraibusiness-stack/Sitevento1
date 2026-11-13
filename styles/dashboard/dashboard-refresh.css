@@ -1,0 +1,81 @@
+/* ============================================================
+   Sitevento dashboard refresh
+   Light, calm, mobile-first workspace UI. Kept in a separate file
+   so the existing dashboard logic/components remain untouched.
+   ============================================================ */
+
+/* Dropdown menu: opaque so page content never shows through list
+   items the user is about to click. */
+
+/* Was hardcoded pastel hex per tone (#eaf7df, #f0eaff, ...) — now
+   the shared --dash-*-surface tokens (theme-tokens.css), a
+   color-mix of each accent hue with --app-bg, so these icon tints
+   re-derive from the page background instead of staying pinned to
+   colors picked for the old lime page. The hue itself (icon color)
+   is unchanged — only the light wash behind it now follows --app-bg. */
+
+.dnx-usage-strip { gap: 18px; margin-bottom: 28px; padding: 17px 18px; background: var(--dnx-glass); border: 1px solid var(--dnx-glass-border); border-radius: 17px; box-shadow: var(--dnx-shadow); backdrop-filter: var(--surface-glass-blur); -webkit-backdrop-filter: var(--surface-glass-blur); }
+.dnx-usage-strip.is-at-limit { background: #fffaf4; border-color: #f3d9bf; }
+.dnx-usage-plan-pill { background: #edf6df; color: #4e722b; font-size: 10px; letter-spacing: .06em; }
+.dnx-usage-count { color: #6d7568; font-size: 12px; font-weight: 600; }
+.dnx-usage-bar-track { background: #edf0e9; height: 7px; }
+.dnx-usage-bar-fill { background: #a3cf55; }
+.dnx-usage-cta { background: var(--dnx-glass-strong); border: 1px solid var(--dnx-glass-border); box-shadow: none; border-radius: 12px; }
+.dnx-usage-cta:hover { box-shadow: var(--dnx-shadow); }
+.dnx-usage-cta svg { color: #5a762f; }
+.dnx-usage-cta-text strong { font-size: 12.5px; }
+.dnx-usage-cta-text span { color: #7e8678; }
+
+/* Existing activity panels remain functional, but now sit inside the
+   same restrained card system as the refreshed overview. */
+
+@media (max-width: 639px) {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  .dnx-usage-strip { align-items: stretch; flex-direction: column; gap: 14px; padding: 14px; border-radius: 15px; }
+  /* .dnx-usage-main's desktop rule (dashboard-premium.css) sets
+     `flex: 1 1 220px` — a 220px FLEX-BASIS meant to set a minimum
+     WIDTH in the strip's normal horizontal/row layout. Flipping
+     .dnx-usage-strip to flex-direction: column just above rotates
+     the flex main axis to vertical, so that same flex-basis now
+     controls HEIGHT instead — forcing this block to be 220px tall
+     no matter how little content (plan pill + count + bar) it
+     actually has, which is the dead gap that sat between the bar and
+     the Upgrade button on mobile. `flex-basis: auto` (with min-width
+     already reset to 0 right after) lets it size to its real content
+     height, and flex-grow: 0 stops it claiming the column's leftover
+     space instead of the row below it. */
+  .dnx-usage-main { flex: 0 1 auto; min-width: 0; }
+  .dnx-usage-head { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .dnx-usage-cta { width: 100%; justify-content: space-between; white-space: normal; }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+}
+

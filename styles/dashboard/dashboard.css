@@ -1,0 +1,247 @@
+/* ============================================================
+ * dashboard.css — panel/row primitives, the BannerCard banner visual,
+ * and the SiteManagePage route.
+ *
+ * The main /dashboard route's own shell, stat tiles, site switcher,
+ * connected-sites rail, Quick Tools, and empty state now live entirely
+ * in styles/dashboard/dashboard-premium.css + their matching `dnx-*` components.
+ * (ProfilePage and its styles/dashboard/profile-page.css have been
+ * removed entirely — a replacement profile page is planned.) Nothing
+ * in this file renders those anymore — what's left here is what's still shared or
+ * specific to the remaining routes: .dash-wrap (also used by
+ * SiteManagePage), .dash-panel*, .visit-row/.v-*, .lead-row/.l-*,
+ * .ghost-btn, .empty-row (VisitLogPanel/LeadsPanel/BlockedVisitorsPanel),
+ * .bc-* (BannerCard — the live-banner visual, now used by the Site
+ * Alert page's own preview at styles/site-alert/site-alert-page.css
+ * rather than by anything in this file), and the SiteManagePage
+ * section below. The former banner composer (.bcp-*) and the Site
+ * Alert popup (.feat-panel-*) that used to live here have both been
+ * removed — Site Alert is now its own route, see
+ * components/site-alert/SiteAlertPageClient.tsx.
+ * ============================================================ */
+
+  /* ============ Real dashboard shell ============ */
+  
+
+  
+  
+  
+  
+  
+  
+
+  .ghost-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--surface-border); border-radius: 100px;
+    padding: 9px 15px; font-family: -apple-system, sans-serif; font-size: 12.5px; font-weight: 600;
+    color: var(--ink); cursor: pointer; white-space: nowrap;
+    box-shadow: 0 1px 0 rgba(34, 32, 28, 0.08);
+    transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+  }
+  .ghost-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(34, 32, 28, 0.1); }
+  .ghost-btn:not(:disabled):active { transform: translateY(1px); box-shadow: none; }
+  .ghost-btn:disabled { opacity: 0.45; cursor: default; }
+  .ghost-btn.danger { color: #b3432b; border-color: #e9c9bd; }
+  .ghost-btn.live {
+    background: var(--lime); border-color: var(--lime-ink); color: var(--lime-ink);
+    box-shadow: 0 2px 0 rgba(34, 32, 28, 0.9);
+  }
+  .ghost-btn.live:not(:disabled):hover { box-shadow: 0 4px 0 rgba(34, 32, 28, 0.9); }
+  .ghost-btn.live:not(:disabled):active { box-shadow: none; }
+  .ghost-btn svg { width: 13px; height: 13px; }
+
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+  /* Scroll container for any list of rows that can grow large (visit
+     log, blocked visitors) — caps the panel's height instead of letting
+     it push the whole dashboard page down as more rows come in. Rows
+     scroll inside this box; the panel itself stays a fixed height. */
+  
+  
+  
+
+  /* ============================================================
+   * BannerCard — the actual banner visual, shared between the Site
+   * Alert page's phone/desktop preview (styles/site-alert/site-alert-page.css
+   * scales it via its own .sap-phone-screen/.sap-desktop-screen rules)
+   * and anywhere else it might be shown at full size. Mirrors
+   * public/sitevento.js's hand-written renderer 1:1 in structure/class
+   * intent (.sv-* there, .bc-* here) so "what the owner previews" and
+   * "what a visitor on the connected site sees" never drift apart in
+   * design.
+   * ============================================================ */
+  .bc-stage {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
+  }
+  .bc-stage.bc-popup { align-items: flex-end; justify-content: flex-end; }
+  .bc-card {
+    position: relative; width: 100%; max-width: 420px; border-radius: 22px; padding: 26px 22px 22px;
+    box-sizing: border-box; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  }
+  .bc-popup .bc-card { max-width: 320px; text-align: left; padding: 16px 18px 18px; border-radius: 16px; }
+  .bc-card-solid { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .bc-art {
+    width: 48px; height: 48px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;
+    border-radius: 14px; background: color-mix(in srgb, var(--sv-accent) 16%, transparent); color: var(--sv-accent);
+  }
+  .bc-popup .bc-art { margin: 0 0 8px; width: 34px; height: 34px; }
+  .bc-art svg { width: 24px; height: 24px; }
+  .bc-badge {
+    display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px;
+    background: var(--sv-accent); color: var(--sv-accent-text);
+  }
+  .bc-title { margin: 0 0 7px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; color: var(--sv-title); }
+  .bc-popup .bc-title { font-size: 15px; margin-bottom: 4px; }
+  .bc-desc { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--sv-text); }
+  .bc-popup .bc-desc { font-size: 12px; }
+  .bc-cta {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; padding: 11px 20px; border-radius: 11px;
+    border: none; font-size: 13.5px; font-weight: 700; cursor: pointer;
+    background: var(--sv-accent); color: var(--sv-accent-text); font-family: inherit;
+  }
+  .bc-popup .bc-cta { margin-top: 12px; padding: 9px 14px; font-size: 12px; }
+  .bc-cta svg { width: 15px; height: 15px; }
+  .bc-notify-row { margin-top: 14px; display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
+  .bc-popup .bc-notify-row { justify-content: flex-start; }
+  .bc-notify-input {
+    flex: 1 1 150px; min-width: 0; padding: 10px 12px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.08); color: inherit; font-size: 12.5px; font-family: inherit;
+  }
+  .bc-notify-btn {
+    padding: 10px 14px; border-radius: 9px; border: none; background: var(--sv-accent); color: var(--sv-accent-text);
+    font-weight: 700; font-size: 12.5px; cursor: pointer; white-space: nowrap; font-family: inherit;
+  }
+  .bc-close {
+    position: absolute; top: 11px; right: 11px; width: 28px; height: 28px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.14); color: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bc-close svg { width: 12px; height: 12px; }
+
+  /* ============================================================
+   * GlobalNav (styles/base/global-nav.css) now owns the fixed bottom bar on
+   * mobile, with its own clearance reserved globally on <body> (see
+   * base.css) — not here. The old fixed 96px .dash-wrap-v2 padding,
+   * reserved for the previous dashboard-local DashBottomNav, is what
+   * was producing the big empty gap under DashFooter (that nav no
+   * longer renders at all), so it's removed rather than replaced.
+   * ============================================================ */
+  
+
+/* ============================================================
+ * Analytics tab (VisitLogPanel / AnalyticsCharts.tsx) — stats, trend
+ * chart and breakdown lists above the existing visit log. Reuses the
+ * --dash-green/purple/blue/orange tone tokens from base.css (same set
+ * OverviewStats' tiles use) so this reads as one system rather than a
+ * bolted-on second style.
+ * ============================================================ */
+
+  /* Break the Analytics panel out of .dnx-wrap's max-width:1120px
+     column so it spans the full viewport edge-to-edge, wider than
+     every other card on the page, instead of sitting centered at the
+     same width as the stat tiles above it. Standard full-bleed trick:
+     100vw + pulling back by half the viewport minus half of .dnx-wrap's
+     own centered width undoes the parent's centering. .dash-panel
+     itself carries no padding (its .dash-panel-head/-body do that
+     internally, see above), so widening it here doesn't need any
+     padding compensation; border-radius comes off the two edges that
+     now meet the viewport sides so it reads as a true full-bleed strip
+     rather than a card with clipped corners. */
+  
+
+  
+
+  
+  
+  
+
+  /* ---- KPI row ---- */
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  /* ---- chart cards ---- */
+  
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+
+  /* ---- breakdown bar lists ---- */
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+  
+
+/* ============================================================
+ * DashBottomNav (components/dashboard/DashBottomNav.tsx)
+ * Sticky bottom tab bar. Each tab is its own floating pill-card with
+ * a solid --ink edge and an opaque fill, so the label stays legible
+ * no matter what color the section scrolling behind the bar is.
+ * ============================================================ */
+

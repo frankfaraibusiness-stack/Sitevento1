@@ -1,0 +1,292 @@
+/* ============================================================
+ * dashboard-premium.css
+ *
+ * Full visual redesign of the main /dashboard body. Imported LAST in
+ * app/globals.css (after dashboard.css) so these rules win on every
+ * class they share a name with, even though in practice they do not
+ * share names: everything here lives under its own dnx- prefix and
+ * fully replaces dashboard.css dash-wrap/dash-grid/dash-card/css-/
+ * qt-/feat-/empty- primitives for the main dashboard route.
+ * VisitLogPanel, LeadsPanel, BlockedVisitorsPanel and BannerComposer
+ * keep their existing dashboard.css styling untouched, since
+ * restyling those is not part of this pass; only everything above
+ * them on the page is new.
+ *
+ * Design brief: the page raw lime background (var(--lime), set in
+ * base.css on html/body) IS the canvas. No section here paints its
+ * own opaque white/cream block to sit on top of the lime like a card
+ * dropped onto a different-colored page; instead every surface is a
+ * soft frosted glass tint of the SAME lime (color-mix of var(--lime)
+ * into var(--surface)/white), so the whole dashboard reads as one
+ * continuous material, just with elevation, not a patchwork of
+ * clashing panel backgrounds. Every token used below already exists
+ * in base.css (--lime, --lime-ink, --ink, --surface, --dash-*);
+ * nothing new is hardcoded outside that palette.
+ * ============================================================ */
+
+:root {
+  /* Frosted glass surfaces now defer to the global tokens in
+     styles/base/theme-tokens.css (--surface-glass*, --surface-edge*,
+     --surface-shadow*) — the single source of truth for every card
+     surface/edge app-wide, derived from --app-bg instead of a
+     hardcoded --lime mix. Kept as dnx-* aliases so every existing
+     var(--dnx-glass) / var(--dnx-glass-border) / etc. usage across
+     dashboard + profile updates automatically. dashboard-refresh.css
+     (imported later) scopes its own copy of these same aliases onto
+     .dnx-wrap specifically — see that file. */
+  --dnx-glass: var(--surface-glass);
+  --dnx-glass-strong: var(--surface-glass-strong);
+  --dnx-glass-border: var(--surface-edge);
+  --dnx-glass-border-strong: var(--surface-edge-strong);
+  --dnx-ink-soft: var(--surface-ink-soft);
+  --dnx-ink-faint: var(--surface-ink-faint);
+  --dnx-shadow: var(--surface-shadow);
+  --dnx-shadow-lg: var(--surface-shadow-lg);
+  --dnx-radius: 22px;
+  --dnx-radius-sm: 14px;
+  --dnx-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@keyframes dnx-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dnx-pop {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes dnx-pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--dash-green) 55%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--dash-green) 0%, transparent); }
+}
+@keyframes dnx-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ============ Shell ============ */
+
+/* ============ Hero header ============ */
+
+/* ── Site switcher ── */
+
+/* ============ Verify banner ============ */
+
+/* ============ Section heads ============ */
+
+/* ============ Stat tiles ============ */
+
+/* ============ Plan usage / upsell strip ============ */
+.dnx-usage-strip {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--dnx-glass-strong), var(--dnx-glass));
+  border: 1.5px solid var(--dnx-glass-border);
+  border-radius: var(--dnx-radius);
+  padding: 18px 20px;
+  margin-bottom: 26px;
+  box-shadow: var(--dnx-shadow);
+  animation: dnx-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.1s;
+}
+.dnx-usage-strip.is-at-limit {
+  border-color: color-mix(in srgb, var(--dash-orange) 45%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--dash-orange-surface) 65%, var(--lime) 35%), var(--dnx-glass));
+}
+
+.dnx-usage-main { flex: 1 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 9px; }
+.dnx-usage-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.dnx-usage-plan-pill {
+  display: inline-flex; align-items: center;
+  background: var(--lime-ink); color: var(--lime);
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase;
+  border-radius: 999px; padding: 4px 11px;
+}
+.dnx-usage-count { font-size: 13px; font-weight: 700; color: var(--dnx-ink-soft); }
+.dnx-usage-bar-track {
+  height: 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--lime-ink) 12%, transparent);
+  overflow: hidden;
+}
+.dnx-usage-bar-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--dash-green), var(--dash-blue));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.is-at-limit .dnx-usage-bar-fill { background: linear-gradient(90deg, var(--dash-orange), #e05252); }
+
+.dnx-usage-cta {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg);
+  border: 1.5px solid var(--dnx-glass-border-strong);
+  border-radius: 16px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-family: var(--dnx-font);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--lime-ink) 10%, transparent);
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+.dnx-usage-cta:hover { transform: translateY(-2px); box-shadow: var(--dnx-shadow); }
+.dnx-usage-cta:active { transform: translateY(0) scale(0.98); }
+.dnx-usage-cta-text { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+.dnx-usage-cta-text strong { font-size: 13.5px; color: var(--ink); }
+.dnx-usage-cta-text span { font-size: 11.5px; color: var(--dnx-ink-faint); font-weight: 600; }
+.dnx-usage-cta svg { width: 16px; height: 16px; color: var(--lime-ink); flex-shrink: 0; }
+
+/* ============ Connected sites rail ============ */
+
+/* ============ Quick Tools ============ */
+/* All tiles are live now — FEATURE_OPTIONS no longer carries any
+   disabled stubs (see FeatureOptionsGrid.tsx's header comment), so
+   the old "More options" expand button and the .dnx-feat-* collapsed
+   grid it revealed are gone; every tool lives in this one grid. */
+
+/* 5-tile variant (adds Advertise) keeps 2-per-row on mobile but goes
+   to 5 even columns on desktop instead of wrapping a 4-col grid. */
+
+/* 6-tile variant (adds Users) keeps 2-per-row on mobile but goes to 3
+   even columns on desktop — two full rows of 3 — rather than wrapping
+   a 5-col grid down to a lonely single tile on its own row. */
+
+/* 7-tile variant (adds Bot Shield) goes to 4 columns on desktop — a
+   full row of 4 then a row of 3 — rather than a 3-col grid's lonely
+   single tile stranded on its own third row. */
+
+/* ============ Empty state (pre-connection) ============
+ * Premium "why connect" sell, built in four layers: hero (copy +
+ * live-look preview panel), benefit cards, a numbered how-it-works
+ * strip, and a closing CTA band. Uses the same --dnx-* glass/shadow
+ * tokens as the connected dashboard so it reads as part of the same
+ * product, not a separate marketing insert. */
+
+/* ---- 1. Hero band: copy left, live preview mockup right ---- */
+
+/* ---- Live-look preview panel: a believable sample of the connected
+   dashboard, not a feature icon — this is what sells the click. ---- */
+
+@keyframes dnx-live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* ---- Section head ---- */
+
+/* ---- 2. Benefit cards ---- */
+
+/* ---- 3. How it works ---- */
+
+/* ---- 4. Closing CTA band ---- */
+
+/* ============ Auth-gate / error empty state ============
+ * Shared shell used by three call sites for the exact same shape
+ * (h2 + p + .btn-primary inside .dash-empty-inner):
+ *   - ConnectFlowClient: "Sign in to connect a site"
+ *   - DashboardClient:   "Sign in to view your dashboard"
+ *   - DashboardShell:    "Couldn't load your dashboard" (error state)
+ *
+ * Previously rendered as a near-opaque white card (--dnx-glass at
+ * 86% white) with a full-size bright-lime mascot sitting on top of
+ * it — read as a flat white box fighting the purple --app-bg instead
+ * of belonging to the page. This version drops the opacity so the
+ * page's own purple tints through (a true tinted-glass surface, not
+ * "white with a hairline border"), replaces the lime glow behind the
+ * blob with a soft ink-toned one so the mascot reads as a quiet
+ * accent rather than the loudest thing in the card, and sizes it
+ * down accordingly — present, but not a centerpiece. */
+.dashboard-empty {
+  min-height: calc(100vh - 56px - 16px - 82px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 60px;
+}
+
+.dash-empty-inner {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  background: color-mix(in srgb, var(--app-bg) 30%, white 70%);
+  backdrop-filter: var(--surface-glass-blur);
+  -webkit-backdrop-filter: var(--surface-glass-blur);
+  border: 1px solid var(--dnx-glass-border);
+  border-radius: var(--dnx-radius);
+  box-shadow: var(--dnx-shadow-lg);
+  padding: 36px 32px 32px;
+  font-family: var(--dnx-font);
+  animation: dnx-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-empty-inner .auth-blob {
+  width: 56px;
+  margin: 0 auto 16px;
+  position: relative;
+}
+
+/* Soft ink-toned glow in place of the bare mascot floating on a
+   white field — gives it a surface to sit on that matches the
+   card's own tone instead of standing out against it. */
+.dash-empty-inner .auth-blob::before {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ink) 7%, transparent) 0%, transparent 72%);
+  border-radius: 50%;
+}
+
+.dash-empty-inner h2 {
+  font-family: "Georgia", serif;
+  font-size: clamp(21px, 4vw, 25px);
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.dash-empty-inner p {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--dnx-ink-soft);
+  margin: 0 0 26px;
+}
+
+.dash-empty-inner .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--ink);
+  color: var(--lime);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--dnx-shadow);
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s ease;
+}
+
+.dash-empty-inner .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--dnx-shadow-lg);
+}
+
+.dash-empty-inner .btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Mutes AuthBlob's default bright-lime body for this one context
+   only — the full-saturation lime reads fine against the auth
+   overlay's near-black panel, but on this lighter tinted-glass card
+   it fought for attention instead of greeting the visitor. Keeps the
+   same shape/character, just dialed back so the card's copy and CTA
+   stay the visual lead. */
+.dash-empty-inner .auth-blob-body {
+  fill: color-mix(in srgb, var(--lime) 78%, var(--ink) 22%);
+  stroke: color-mix(in srgb, var(--lime) 78%, var(--ink) 22%);
+}
+.dash-empty-inner .auth-blob-shadow {
+  opacity: 0.18;
+}

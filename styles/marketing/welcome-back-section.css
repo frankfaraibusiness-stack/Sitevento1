@@ -1,0 +1,173 @@
+/* ============================================================
+ * welcome-back-section.css (components/marketing/WelcomeBackSection.tsx)
+ *
+ * Sits directly under the hero photo, signed-in users only. Reuses
+ * the same visual language as the rest of the marketing page — black
+ * 1.5px strokes, hard drop-shadow, rounded pill shapes, Nunito/Fredoka
+ * — so it reads as part of the same page rather than a bolted-on
+ * dashboard widget.
+ *
+ * Two states:
+ *   .wb-card (default)      → has a site: greeting + stats + link
+ *   .wb-card .wb-upsell     → no site yet: copy + one real CTA button
+ * ============================================================ */
+
+.wb-section {
+  padding: 28px 16px 8px;
+}
+
+.wb-card {
+  max-width: 1180px;
+  margin: 0 auto;
+  border: 1.5px solid #000;
+  border-radius: 24px;
+  background: var(--surface-glass-solid, #fff);
+  box-shadow: 0 4px 0 #000;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  font-family: 'Nunito', 'Fredoka', sans-serif;
+}
+
+.wb-eyebrow {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dash-purple, #7c5cfc);
+}
+
+.wb-greet h2,
+.wb-upsell-copy h2 {
+  margin: 4px 0 0;
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: #14121c;
+}
+
+/* ---------- stats row (has a site) ---------- */
+.wb-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+.wb-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 84px;
+}
+.wb-stat-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: #14121c;
+}
+.wb-stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--surface-ink-soft, rgba(20, 18, 28, 0.62));
+}
+.wb-stat-divider {
+  width: 1.5px;
+  height: 30px;
+  background: #000;
+  opacity: 0.12;
+  flex-shrink: 0;
+}
+
+/* link, not a button — plain text + arrow, same family as PfLink/ArrowIcon */
+.wb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--dash-purple, #7c5cfc);
+  text-decoration: none;
+}
+.wb-link svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.15s ease;
+}
+.wb-link:hover {
+  text-decoration: underline;
+}
+.wb-link:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------- upsell banner (no site yet) ---------- */
+.wb-upsell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+.wb-upsell-sub {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--surface-ink-soft, rgba(20, 18, 28, 0.62));
+  max-width: 42ch;
+}
+.wb-upsell-btn {
+  background: var(--lime, #b8e843);
+  color: #14121c;
+  width: auto;
+  flex: 0 0 auto;
+}
+
+/* ---------- desktop: single row, everything inline ---------- */
+@media (min-width: 1024px) {
+  .wb-section {
+    padding: 36px 24px 12px;
+  }
+  .wb-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: 28px 36px;
+    gap: 28px;
+  }
+  .wb-greet {
+    flex: 1 1 auto;
+  }
+  .wb-stats {
+    flex: 0 0 auto;
+    width: auto;
+  }
+  .wb-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .wb-upsell {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+  .wb-upsell-copy {
+    flex: 1 1 auto;
+  }
+  .wb-upsell-btn {
+    flex: 0 0 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-link svg {
+    transition: none;
+  }
+}
